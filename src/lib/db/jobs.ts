@@ -12,7 +12,12 @@ import { query } from "./client";
 // ---- job-run log ------------------------------------------------------------
 
 /** Mark this job's "running" rows older than `beforeIso` as errors; returns how many. Throws on failure. */
-export async function closeAbandonedJobRuns(jobName: string, finishedAtIso: string, beforeIso: string, detail: object): Promise<number> {
+export async function closeAbandonedJobRuns(
+  jobName: string,
+  finishedAtIso: string,
+  beforeIso: string,
+  detail: object,
+): Promise<number> {
   const rows = await query(
     `update public.job_runs set status = 'error', finished_at = $2, detail = $4::jsonb
      where job_name = $1 and status = 'running' and started_at < $3 returning id`,
@@ -30,13 +35,16 @@ export async function startJobRun(jobName: string, detail: object): Promise<numb
   return row?.id ?? null;
 }
 
-export async function finishJobRun(id: number, status: "success" | "error", detail: object): Promise<void> {
+export async function finishJobRun(
+  id: number,
+  status: "success" | "error",
+  detail: object,
+): Promise<void> {
   try {
-    await query("update public.job_runs set status = $2, finished_at = now(), detail = $3::jsonb where id = $1", [
-      id,
-      status,
-      JSON.stringify(detail),
-    ]);
+    await query(
+      "update public.job_runs set status = $2, finished_at = now(), detail = $3::jsonb where id = $1",
+      [id, status, JSON.stringify(detail)],
+    );
   } catch (error) {
     console.error("Failed to finish job run:", error instanceof Error ? error.message : error);
   }
@@ -66,7 +74,9 @@ export async function lastSuccessfulRun(jobName: string, sinceIso: string): Prom
 }
 
 /** roll_up_and_prune_readings: one transaction, nothing deleted without its rollup. Throws on failure. */
-export async function rollUpAndPruneReadings(cutoffIso: string): Promise<{ rolled_up?: number; deleted?: number }> {
+export async function rollUpAndPruneReadings(
+  cutoffIso: string,
+): Promise<{ rolled_up?: number; deleted?: number }> {
   const [row] = await query<{ result: { rolled_up?: number; deleted?: number } | null }>(
     "select public.roll_up_and_prune_readings($1) as result",
     [cutoffIso],
@@ -113,7 +123,11 @@ export type StuckFacts = {
 };
 
 /** Everything evaluateStuckSensor needs for one sensor, in one query. Throws on failure. */
-export async function stuckSensorFacts(sensorId: string, windowStartIso: string, lookbackStartIso: string): Promise<StuckFacts | null> {
+export async function stuckSensorFacts(
+  sensorId: string,
+  windowStartIso: string,
+  lookbackStartIso: string,
+): Promise<StuckFacts | null> {
   const [row] = await query<StuckFacts>(
     `with latest as (
        select value_num, recorded_at from public.sensor_readings
@@ -158,7 +172,10 @@ export async function insertFeedUptimeChecks(
       [JSON.stringify(rows)],
     );
   } catch (error) {
-    console.error("Failed to store feed uptime checks:", error instanceof Error ? error.message : error);
+    console.error(
+      "Failed to store feed uptime checks:",
+      error instanceof Error ? error.message : error,
+    );
   }
 }
 
@@ -182,6 +199,9 @@ export async function markFeedUptimeAlert(userId: string): Promise<void> {
       [userId],
     );
   } catch (error) {
-    console.error("Failed to stamp feed uptime alert:", error instanceof Error ? error.message : error);
+    console.error(
+      "Failed to stamp feed uptime alert:",
+      error instanceof Error ? error.message : error,
+    );
   }
 }

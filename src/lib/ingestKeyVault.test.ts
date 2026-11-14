@@ -5,10 +5,7 @@ vi.mock("./runtimeEnv", () => ({
     key === "INGEST_KEY_ENCRYPTION_SECRET" ? "test-vault-secret-32chars-minimum" : undefined,
 }));
 
-import {
-  decryptStoredIngestKey,
-  encryptIngestKeyForStorage,
-} from "./ingestKeyVault";
+import { decryptStoredIngestKey, encryptIngestKeyForStorage } from "./ingestKeyVault";
 
 describe("ingestKeyVault", () => {
   it("round-trips ingest keys", async () => {

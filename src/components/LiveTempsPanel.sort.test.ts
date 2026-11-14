@@ -8,7 +8,8 @@ const s = (deviceName: string, kind: string, label: string, space: string | null
   label,
   space,
 });
-const order = (list: S[]) => [...list].sort(compareLiveSensors).map((x) => `${x.deviceName}/${x.kind}`);
+const order = (list: S[]) =>
+  [...list].sort(compareLiveSensors).map((x) => `${x.deviceName}/${x.kind}`);
 
 describe("Live tile order", () => {
   it("keeps each device's temperature and humidity side by side", () => {
@@ -65,7 +66,15 @@ describe("Live tile order", () => {
 
 describe("Type filter options", () => {
   it("lists each kind once, climate first, then A–Z", () => {
-    const kinds = ["door", "humidity", "pressure", "temperature", "humidity", "co2"].map((kind) => ({ kind }));
-    expect(sensorKindOptions(kinds)).toEqual(["temperature", "humidity", "co2", "door", "pressure"]);
+    const kinds = ["door", "humidity", "pressure", "temperature", "humidity", "co2"].map(
+      (kind) => ({ kind }),
+    );
+    expect(sensorKindOptions(kinds)).toEqual([
+      "temperature",
+      "humidity",
+      "co2",
+      "door",
+      "pressure",
+    ]);
   });
 });

@@ -30,8 +30,22 @@ describe("humidity helpers", () => {
 describe("CSV export", () => {
   it("leaves unmeasured values empty instead of writing 0.0", () => {
     const rows: GarageTempReading[] = [
-      { tempc: 4.4, tempf: 40, humidity: null, timestamp: "2026-01-01T12:00:00Z", feed_name: "Pi", probe_key: "t1" },
-      { tempc: null, tempf: null, humidity: 55, timestamp: "2026-01-01T12:00:00Z", feed_name: "Pi", probe_key: "h1" },
+      {
+        tempc: 4.4,
+        tempf: 40,
+        humidity: null,
+        timestamp: "2026-01-01T12:00:00Z",
+        feed_name: "Pi",
+        probe_key: "t1",
+      },
+      {
+        tempc: null,
+        tempf: null,
+        humidity: 55,
+        timestamp: "2026-01-01T12:00:00Z",
+        feed_name: "Pi",
+        probe_key: "h1",
+      },
     ];
     const [, tempOnly, humidityOnly] = buildGarageTempsCsv(rows).split("\n");
     expect(tempOnly?.endsWith(",40.0,4.4,")).toBe(true);
@@ -54,7 +68,13 @@ describe("reports and insights", () => {
       freezeThresholdF: 34,
       nightsAtRisk: 0,
       nights: [],
-      freezeHours: { hoursBelow34: 0, degreeHoursBelow: 0, readingsBelow34: 0, totalReadings: 2, coldestF: 40 },
+      freezeHours: {
+        hoursBelow34: 0,
+        degreeHoursBelow: 0,
+        readingsBelow34: 0,
+        totalReadings: 2,
+        coldestF: 40,
+      },
       probes: [summary!],
       alertsUrl: "https://example.com/a",
       historyUrl: "https://example.com/h",
@@ -64,7 +84,9 @@ describe("reports and insights", () => {
   });
 
   it("skip the humidity insight when nothing measured humidity", () => {
-    const titles = summarizeSeasonal([point(40, null), point(30, null)], 7).map((i) => i.title.toLowerCase());
+    const titles = summarizeSeasonal([point(40, null), point(30, null)], 7).map((i) =>
+      i.title.toLowerCase(),
+    );
     expect(titles.some((title) => title.includes("humid"))).toBe(false);
   });
 });

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  brandedEmailParts,
-  buildBrandedEmailHtml,
-  escapeEmailHtml,
-} from "./emailLayout";
+import { brandedEmailParts, buildBrandedEmailHtml, escapeEmailHtml } from "./emailLayout";
 import { buildDripEmail } from "./dripEmails";
 import { buildTrialReminderEmail } from "./trialEmails";
 

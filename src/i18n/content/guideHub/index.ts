@@ -19,7 +19,9 @@ export type GuideHubOverlay = {
 const loadOverlays = () =>
   fromContentModules("guideHub", undefined, (modules) => {
     const overlays: Partial<Record<TranslatedLocale, GuideHubOverlay>> = {};
-    for (const [file, mod] of Object.entries(modules as Record<string, { default: GuideHubOverlay }>)) {
+    for (const [file, mod] of Object.entries(
+      modules as Record<string, { default: GuideHubOverlay }>,
+    )) {
       const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/[^/]+\.ts$/.exec(file)?.[1];
       if (!isLocale(locale) || locale === "en") continue;
       const prev = overlays[locale] ?? {};

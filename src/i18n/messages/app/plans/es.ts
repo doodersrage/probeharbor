@@ -2,7 +2,8 @@ import type { PlansMessages } from "./en";
 
 const es: PlansMessages = {
   title: "Planes",
-  subtitle: "Compara los planes y mejora el tuyo cuando necesites más historial, SMS o más propiedades.",
+  subtitle:
+    "Compara los planes y mejora el tuyo cuando necesites más historial, SMS o más propiedades.",
   comparisonTitle: "Comparación de funciones",
   comparisonHint: "Tu columna está resaltada.",
   card: {

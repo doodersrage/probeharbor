@@ -30,8 +30,7 @@ const ptBr: DeviceSetupFirmwareMessages = {
     pic18: "PIC18F67J60 MLA Ethernet (relay HTTP)",
     particle: "Particle Boron celular (webhook do Console)",
   },
-  otherBoards:
-    "Outras placas: Pico W, STM32, CH32V, AVR, Teensy, PIC18, celular",
+  otherBoards: "Outras placas: Pico W, STM32, CH32V, AVR, Teensy, PIC18, celular",
   pico: {
     heading: "Gravar um Pico W",
     ledeHtml:

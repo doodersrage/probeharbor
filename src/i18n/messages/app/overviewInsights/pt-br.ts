@@ -91,7 +91,8 @@ const ptBr: OverviewInsightsMessages = {
   },
   battery: {
     title: "Tendência da bateria",
-    subtitle: "Queda com base nas amostras recentes de bateria dos dispositivos. Os dias restantes supõem que o ritmo de descarga dos últimos 7 dias continua.",
+    subtitle:
+      "Queda com base nas amostras recentes de bateria dos dispositivos. Os dias restantes supõem que o ritmo de descarga dos últimos 7 dias continua.",
     daysRemaining: {
       one: "~{count} dia restante neste ritmo",
       other: "~{count} dias restantes neste ritmo",
@@ -104,7 +105,8 @@ const ptBr: OverviewInsightsMessages = {
   },
   rssi: {
     title: "Intensidade do sinal",
-    subtitle: "Sinal de Wi-Fi informado por último por cada dispositivo, em dBm (mais perto de 0 é mais forte). Conexões fracas perdem leituras primeiro.",
+    subtitle:
+      "Sinal de Wi-Fi informado por último por cada dispositivo, em dBm (mais perto de 0 é mais forte). Conexões fracas perdem leituras primeiro.",
     quality: {
       strong: "forte",
       good: "bom",
@@ -195,7 +197,8 @@ const ptBr: OverviewInsightsMessages = {
         "Ative a Smart Device Management API no Google Cloud e depois atualize: {url}",
       sdmDisabled:
         "Ative a Smart Device Management API no projeto do Google Cloud dono do seu cliente OAuth do Nest.",
-      nestAuth: "A autorização do Nest pode ter expirado: tente Desconectar e depois Conectar novamente.",
+      nestAuth:
+        "A autorização do Nest pode ter expirado: tente Desconectar e depois Conectar novamente.",
       nestError: "O Nest retornou um erro, tente novamente ou reconecte.",
       noToken: "Reconecte seu termostato para restaurar o acesso.",
       ecobeeNetwork: "Não foi possível acessar o Ecobee, tente novamente em um minuto.",

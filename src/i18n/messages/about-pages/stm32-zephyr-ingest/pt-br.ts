@@ -1,4 +1,3 @@
-
 /**
  * /about/stm32-zephyr-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Commands, pin names and
@@ -26,7 +25,8 @@ const ptBr: Stm32ZephyrIngestMessages = {
     probeWhyHtml: "Sonda para cano ou porão. Dados no pino Arduino <strong>D4</strong> (PF14).",
     amazon: "Amazon",
     resistorPart: "Resistor de 4,7 kΩ",
-    resistorWhy: "Pull-up dos dados do DS18B20 para 3,3 V. Não alimente a sonda pelo pino de 5 V do Arduino.",
+    resistorWhy:
+      "Pull-up dos dados do DS18B20 para 3,3 V. Não alimente a sonda pelo pino de 5 V do Arduino.",
     amazonResistor: "4,7k na Amazon",
     ethernetPart: "Ponto de rede",
     ethernetWhy: "DHCP na sua rede local. Uma Pi, um NAS ou um notebook roda o relay TLS.",

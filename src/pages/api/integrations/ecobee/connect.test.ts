@@ -69,9 +69,9 @@ beforeEach(() => {
     ctx: { householdId: "house-1", role: "owner" },
   });
   mockBuildSiteUrl.mockReset().mockReturnValue("https://example.com");
-  mockBuildEcobeeAuthorizeUrl.mockReset().mockReturnValue(
-    "https://ecobee.example/authorize?state=abc",
-  );
+  mockBuildEcobeeAuthorizeUrl
+    .mockReset()
+    .mockReturnValue("https://ecobee.example/authorize?state=abc");
 });
 
 describe("GET /api/integrations/ecobee/connect", () => {
@@ -102,9 +102,7 @@ describe("GET /api/integrations/ecobee/connect", () => {
 
     await GET(context);
 
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?error=manager_required",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?error=manager_required");
   });
 
   it("redirects with not_configured when Ecobee OAuth is not configured", async () => {
@@ -134,8 +132,6 @@ describe("GET /api/integrations/ecobee/connect", () => {
       expect.any(String),
       "https://example.com/api/integrations/ecobee/callback",
     );
-    expect(context.redirect).toHaveBeenCalledWith(
-      "https://ecobee.example/authorize?state=abc",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("https://ecobee.example/authorize?state=abc");
   });
 });

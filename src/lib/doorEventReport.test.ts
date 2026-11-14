@@ -37,7 +37,11 @@ function sensor(id: string, kind: string, extra: Partial<DeviceSensor> = {}): De
   };
 }
 
-function device(id: string, sensors: DeviceSensor[], extra: Partial<DeviceWithSensors> = {}): DeviceWithSensors {
+function device(
+  id: string,
+  sensors: DeviceSensor[],
+  extra: Partial<DeviceWithSensors> = {},
+): DeviceWithSensors {
   return {
     id,
     household_id: "hh-1",
@@ -67,9 +71,13 @@ const event = (over: Partial<DoorEventRecord> = {}): DoorEventRecord => ({
 describe("pairDoorSensors", () => {
   it("prefers a sensor on the door's own device", () => {
     const pairs = pairDoorSensors([
-      device("esp", [sensor("door-1", "door"), sensor("t-own", "temperature"), sensor("h-own", "humidity")], {
-        space: "Garage",
-      }),
+      device(
+        "esp",
+        [sensor("door-1", "door"), sensor("t-own", "temperature"), sensor("h-own", "humidity")],
+        {
+          space: "Garage",
+        },
+      ),
       device("other", [sensor("t-other", "temperature")], { space: "Garage" }),
     ]);
     expect(pairs.get("door-1")).toEqual({
@@ -81,9 +89,13 @@ describe("pairDoorSensors", () => {
   it("falls back to another device in the same space (ignoring case and spaces)", () => {
     const pairs = pairDoorSensors([
       device("reed", [sensor("door-1", "door")], { space: " garage " }),
-      device("probe", [sensor("t-hidden", "temperature", { visible: false }), sensor("t-1", "temperature")], {
-        space: "Garage",
-      }),
+      device(
+        "probe",
+        [sensor("t-hidden", "temperature", { visible: false }), sensor("t-1", "temperature")],
+        {
+          space: "Garage",
+        },
+      ),
       device("attic", [sensor("h-attic", "humidity")], { space: "Attic" }),
     ]);
     expect(pairs.get("door-1")).toEqual({
@@ -140,7 +152,11 @@ describe("buildDoorReportRows", () => {
   });
 
   it("has no comparison for a door that no longer exists", () => {
-    const [row] = buildDoorReportRows([event({ sensorId: "gone", label: "Old door" })], devices, new Map());
+    const [row] = buildDoorReportRows(
+      [event({ sensorId: "gone", label: "Old door" })],
+      devices,
+      new Map(),
+    );
     expect(row?.temperatureSensor).toBeNull();
     expect(row?.temperature.change).toBeNull();
   });
@@ -150,9 +166,24 @@ describe("summarizeDoorReport", () => {
   it("averages changes only over openings that have both readings", () => {
     const base = { temperatureSensor: null, humiditySensor: null };
     const summary = summarizeDoorReport([
-      { ...event(), ...base, temperature: { atOpen: 50, atClose: 44, change: -6 }, humidity: { atOpen: null, atClose: null, change: null } },
-      { ...event({ id: "ev-2", label: "Shop door", durationMs: 10 * 60 * 1000 }), ...base, temperature: { atOpen: 50, atClose: 48, change: -2 }, humidity: { atOpen: null, atClose: null, change: null } },
-      { ...event({ id: "ev-3" }), ...base, temperature: { atOpen: null, atClose: null, change: null }, humidity: { atOpen: 40, atClose: 45, change: 5 } },
+      {
+        ...event(),
+        ...base,
+        temperature: { atOpen: 50, atClose: 44, change: -6 },
+        humidity: { atOpen: null, atClose: null, change: null },
+      },
+      {
+        ...event({ id: "ev-2", label: "Shop door", durationMs: 10 * 60 * 1000 }),
+        ...base,
+        temperature: { atOpen: 50, atClose: 48, change: -2 },
+        humidity: { atOpen: null, atClose: null, change: null },
+      },
+      {
+        ...event({ id: "ev-3" }),
+        ...base,
+        temperature: { atOpen: null, atClose: null, change: null },
+        humidity: { atOpen: 40, atClose: 45, change: 5 },
+      },
     ]);
     expect(summary).toEqual({
       openings: 3,
@@ -186,7 +217,7 @@ describe("buildDoorEventsCsv", () => {
       "door,opened_at_utc,closed_at_utc,open_minutes,temperature_sensor,temperature_sensor_match,temp_at_open_f,temp_at_close_f,temp_change_f,humidity_sensor,humidity_sensor_match,humidity_at_open_pct,humidity_at_close_pct,humidity_change_pct",
     );
     expect(line).toBe(
-      "'=HYPERLINK(1),2026-10-29T10:00:00.000Z,2026-10-29T10:20:00.000Z,20.0,\"Bay, north\",space,50.0,44.3,-5.8,,,,,",
+      '\'=HYPERLINK(1),2026-10-29T10:00:00.000Z,2026-10-29T10:20:00.000Z,20.0,"Bay, north",space,50.0,44.3,-5.8,,,,,',
     );
   });
 });
@@ -204,15 +235,21 @@ describe("doorReportRange", () => {
   });
 
   it("uses whole days from the browser's zone when given", () => {
-    expect(doorReportRange({ from: "2026-10-01", to: "2026-10-05" }, 365, start, end, now)).toEqual({
-      fromIso: "2026-10-01T04:00:00.000Z",
-      toIso: "2026-10-05T03:59:59.999Z",
-    });
+    expect(doorReportRange({ from: "2026-10-01", to: "2026-10-05" }, 365, start, end, now)).toEqual(
+      {
+        fromIso: "2026-10-01T04:00:00.000Z",
+        toIso: "2026-10-05T03:59:59.999Z",
+      },
+    );
   });
 
   it("never starts before the plan's history window", () => {
-    expect(doorReportRange({ days: 90 }, 30, start, end, now).fromIso).toBe("2026-09-29T12:00:00.000Z");
-    expect(doorReportRange({ from: "2026-01-01" }, 30, start, end, now).fromIso).toBe("2026-09-29T12:00:00.000Z");
+    expect(doorReportRange({ days: 90 }, 30, start, end, now).fromIso).toBe(
+      "2026-09-29T12:00:00.000Z",
+    );
+    expect(doorReportRange({ from: "2026-01-01" }, 30, start, end, now).fromIso).toBe(
+      "2026-09-29T12:00:00.000Z",
+    );
   });
 });
 
@@ -226,15 +263,26 @@ describe("database access", () => {
     mockValuesBefore.mockResolvedValue([
       { sensor_id: "t-1", at_time: "2026-10-29T10:00:00+00:00", value_num: 50 },
     ]);
-    const { values, error } = await fetchValuesBefore("hh-1", ["t-1", "t-1"], ["2026-10-29T10:00:00.000Z"]);
+    const { values, error } = await fetchValuesBefore(
+      "hh-1",
+      ["t-1", "t-1"],
+      ["2026-10-29T10:00:00.000Z"],
+    );
     expect(error).toBeNull();
     expect(values.get(valueKey("t-1", "2026-10-29T10:00:00.000Z"))).toBe(50);
-    expect(mockValuesBefore).toHaveBeenCalledWith("hh-1", ["t-1"], ["2026-10-29T10:00:00.000Z"], 1800);
+    expect(mockValuesBefore).toHaveBeenCalledWith(
+      "hh-1",
+      ["t-1"],
+      ["2026-10-29T10:00:00.000Z"],
+      1800,
+    );
   });
 
   it("splits many times into calls of 1000 and skips the call when there is nothing to ask", async () => {
     mockValuesBefore.mockResolvedValue([]);
-    const times = Array.from({ length: 1500 }, (_, i) => new Date(Date.UTC(2026, 9, 1, 0, i)).toISOString());
+    const times = Array.from({ length: 1500 }, (_, i) =>
+      new Date(Date.UTC(2026, 9, 1, 0, i)).toISOString(),
+    );
     await fetchValuesBefore("hh-1", ["t-1"], times);
     expect(mockValuesBefore).toHaveBeenCalledTimes(2);
     expect(mockValuesBefore.mock.calls[1]![2] as string[]).toHaveLength(500);
@@ -256,18 +304,54 @@ describe("database access", () => {
     expect(result.error).toBe("function missing");
 
     mockListSessions.mockRejectedValue(new Error("db down"));
-    expect(await listDoorEventsForReport("hh-1", "a", "b", 500)).toEqual({ events: [], truncated: false, error: "db down" });
+    expect(await listDoorEventsForReport("hh-1", "a", "b", 500)).toEqual({
+      events: [],
+      truncated: false,
+      error: "db down",
+    });
   });
 
   it("lists closed events in the window and flags when there are more than the limit", async () => {
     mockListSessions.mockResolvedValue([
-      { id: "a", sensor_id: "door-1", label: "Garage door", opened_at: "2026-10-29T10:00:00Z", closed_at: "2026-10-29T10:20:00Z", duration_ms: 1200000 },
-      { id: "b", sensor_id: null, label: "Garage door", opened_at: "2026-10-28T10:00:00Z", closed_at: "2026-10-28T10:05:00Z", duration_ms: null },
-      { id: "c", sensor_id: null, label: "Garage door", opened_at: "2026-10-27T10:00:00Z", closed_at: "2026-10-27T10:05:00Z", duration_ms: 300000 },
+      {
+        id: "a",
+        sensor_id: "door-1",
+        label: "Garage door",
+        opened_at: "2026-10-29T10:00:00Z",
+        closed_at: "2026-10-29T10:20:00Z",
+        duration_ms: 1200000,
+      },
+      {
+        id: "b",
+        sensor_id: null,
+        label: "Garage door",
+        opened_at: "2026-10-28T10:00:00Z",
+        closed_at: "2026-10-28T10:05:00Z",
+        duration_ms: null,
+      },
+      {
+        id: "c",
+        sensor_id: null,
+        label: "Garage door",
+        opened_at: "2026-10-27T10:00:00Z",
+        closed_at: "2026-10-27T10:05:00Z",
+        duration_ms: 300000,
+      },
     ]);
-    const result = await listDoorEventsForReport("hh-1", "2026-10-22T00:00:00Z", "2026-10-29T23:59:59Z", 2);
+    const result = await listDoorEventsForReport(
+      "hh-1",
+      "2026-10-22T00:00:00Z",
+      "2026-10-29T23:59:59Z",
+      2,
+    );
     // One row past the limit tells it there are more.
-    expect(mockListSessions).toHaveBeenCalledWith("hh-1", "2026-10-22T00:00:00Z", "2026-10-29T23:59:59Z", 3, undefined);
+    expect(mockListSessions).toHaveBeenCalledWith(
+      "hh-1",
+      "2026-10-22T00:00:00Z",
+      "2026-10-29T23:59:59Z",
+      3,
+      undefined,
+    );
     expect(result.truncated).toBe(true);
     expect(result.events.map((e) => e.id)).toEqual(["a", "b"]);
     expect(result.events[1]?.durationMs).toBe(5 * 60 * 1000);
@@ -276,7 +360,10 @@ describe("database access", () => {
 
 describe("door filter", () => {
   const devices = [
-    device("esp", [sensor("door-1", "door", { label: "Garage door" }), sensor("t-1", "temperature")]),
+    device("esp", [
+      sensor("door-1", "door", { label: "Garage door" }),
+      sensor("t-1", "temperature"),
+    ]),
     device("shelly", [sensor("door-2", "door", { label: "Side door" })]),
   ];
 

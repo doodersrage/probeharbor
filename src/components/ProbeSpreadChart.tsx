@@ -78,7 +78,12 @@ export default function ProbeSpreadChart({
   const points = useMemo(
     () =>
       useCelsius
-        ? pointsF.map((p) => ({ ...p, spreadF: diffToC(p.spreadF), minF: toC(p.minF), maxF: toC(p.maxF) }))
+        ? pointsF.map((p) => ({
+            ...p,
+            spreadF: diffToC(p.spreadF),
+            minF: toC(p.minF),
+            maxF: toC(p.maxF),
+          }))
         : pointsF,
     [pointsF, useCelsius],
   );
@@ -87,7 +92,14 @@ export default function ProbeSpreadChart({
     [textProp],
   );
   const summaryText = useMemo(
-    () => probeSpreadSummary(points, text.summary, (v) => fixed(v, 1, locale), (iso) => hoverTime(iso, locale), unit),
+    () =>
+      probeSpreadSummary(
+        points,
+        text.summary,
+        (v) => fixed(v, 1, locale),
+        (iso) => hoverTime(iso, locale),
+        unit,
+      ),
     [points, text.summary, locale, unit],
   );
   const title = (titleProp ?? text.title).replace("{unit}", unit);
@@ -218,9 +230,17 @@ export default function ProbeSpreadChart({
       g.fillStyle = "#94a3b8";
       g.font = "10px system-ui, sans-serif";
       g.textAlign = "left";
-      g.fillText(new Date(minTs).toLocaleDateString(isEnglishLocale(locale) ? undefined : locale), pad.left, height - 8);
+      g.fillText(
+        new Date(minTs).toLocaleDateString(isEnglishLocale(locale) ? undefined : locale),
+        pad.left,
+        height - 8,
+      );
       g.textAlign = "right";
-      g.fillText(new Date(maxTs).toLocaleDateString(isEnglishLocale(locale) ? undefined : locale), width - pad.right, height - 8);
+      g.fillText(
+        new Date(maxTs).toLocaleDateString(isEnglishLocale(locale) ? undefined : locale),
+        width - pad.right,
+        height - 8,
+      );
     }
 
     draw();
@@ -278,9 +298,7 @@ export default function ProbeSpreadChart({
             )}
           </div>
         </div>
-        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          {text.hint}
-        </p>
+        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">{text.hint}</p>
         <div
           class="history-chart-canvas-wrap"
           onPointerLeave={() => {
@@ -323,18 +341,25 @@ export default function ProbeSpreadChart({
                   <span class="history-chart-tooltip-swatch" style={{ background: LINE }} />
                   <span class="history-chart-tooltip-label">{text.spread}</span>
                   <span class="history-chart-tooltip-value">
-                    {fixed(hover.spreadF, 1, locale)}{unit}
+                    {fixed(hover.spreadF, 1, locale)}
+                    {unit}
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#38bdf8" }} />
                   <span class="history-chart-tooltip-label">{text.coldest}</span>
-                  <span class="history-chart-tooltip-value">{fixed(hover.minF, 1, locale)}{unit}</span>
+                  <span class="history-chart-tooltip-value">
+                    {fixed(hover.minF, 1, locale)}
+                    {unit}
+                  </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#fb923c" }} />
                   <span class="history-chart-tooltip-label">{text.warmest}</span>
-                  <span class="history-chart-tooltip-value">{fixed(hover.maxF, 1, locale)}{unit}</span>
+                  <span class="history-chart-tooltip-value">
+                    {fixed(hover.maxF, 1, locale)}
+                    {unit}
+                  </span>
                 </li>
               </ul>
             </div>

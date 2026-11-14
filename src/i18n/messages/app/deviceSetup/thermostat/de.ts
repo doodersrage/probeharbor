@@ -10,8 +10,7 @@ const de: DeviceSetupThermostatMessages = {
     noneOption: "Keiner, nur Thermostat verwenden",
     optionLabel: "{label} ({device})",
     save: "Speichern",
-    configured:
-      "Für diesen Haushalt ist ein Innenreferenz-Fühler eingerichtet.",
+    configured: "Für diesen Haushalt ist ein Innenreferenz-Fühler eingerichtet.",
     notSelected: "Keine Innenreferenz ausgewählt.",
     noOptionsHtml:
       'Füge zuerst einen Temperatursensor hinzu, zum Beispiel per Push aus Home Assistant mit <code class="text-xs">thermaltrace.push</code> oder einen ESP im Flur. Siehe <a class="text-link" href="/integrations/home-assistant#indoor-temperature">HA-Anleitung zur Innentemperatur</a>.',
@@ -23,13 +22,10 @@ const de: DeviceSetupThermostatMessages = {
     connected: "{provider} verbunden.",
     disconnected: "{provider} getrennt.",
     errors: {
-      state_mismatch:
-        "Dieser Verbindungsversuch ist abgelaufen – bitte erneut versuchen.",
+      state_mismatch: "Dieser Verbindungsversuch ist abgelaufen – bitte erneut versuchen.",
       denied: "Die Verbindung wurde abgebrochen.",
-      not_configured:
-        "Dieser Anbieter ist auf dieser Installation noch nicht eingerichtet.",
-      exchange_failed:
-        "Die Verbindung konnte nicht abgeschlossen werden – bitte erneut versuchen.",
+      not_configured: "Dieser Anbieter ist auf dieser Installation noch nicht eingerichtet.",
+      exchange_failed: "Die Verbindung konnte nicht abgeschlossen werden – bitte erneut versuchen.",
       save_failed:
         "Verbunden, aber das Speichern der Verbindung ist fehlgeschlagen – bitte erneut versuchen.",
       generic: "Beim Verbinden deines Thermostats ist etwas schiefgelaufen.",

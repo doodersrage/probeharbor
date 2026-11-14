@@ -65,7 +65,8 @@ const en = {
       detail: "Outdoor conditions look cold: run the checklist and confirm forecast alerts are on.",
     },
     nights: {
-      detail: "Outdoor conditions look cold: confirm probes on Live and that forecast alerts are on.",
+      detail:
+        "Outdoor conditions look cold: confirm probes on Live and that forecast alerts are on.",
     },
     finishAlerts: {
       title: "Space looks fine: finish alerts",
@@ -211,7 +212,8 @@ const en = {
     },
     hvacCooling: {
       label: "HVAC cooling",
-      detail: "AC is running (house {house}{unit}). A hot attic, shop, or garage probe can still spike on sunny days.",
+      detail:
+        "AC is running (house {house}{unit}). A hot attic, shop, or garage probe can still spike on sunny days.",
     },
   },
 
@@ -258,7 +260,8 @@ const en = {
       band: "The window assumes the space runs up to {band}{unit} colder or milder than usual.",
       trendCooling: "Cooling about {rate}{unit}/hr.",
       trendCoolingOver: "Cooling about {rate}{unit}/hr over the last {duration}.",
-      noForecast: "No outdoor forecast for this space yet, so this assumes the current cooling rate holds.",
+      noForecast:
+        "No outdoor forecast for this space yet, so this assumes the current cooling rate holds.",
     },
     runwayAlert:
       "This space is projected to hit {threshold}°F (in {duration}). Drip faucets or turn on heat now: you still have a window before the probe crosses freeze.",
@@ -309,8 +312,10 @@ const en = {
     window: "Window: {from} to {to}",
     windowEarliest: "Window: as early as {from}; a milder night may not reach it",
     basedOn: "What this is based on",
-    estimateNote: "An estimate from this space's history and the outdoor forecast, not a measurement.",
-    confidenceHelp: "High confidence: the forecast model is fitted from 24+ readings paired with outdoor weather. Medium: 8+ paired readings, or a cooling trend over 2+ hours. Low: less data than that. The window widens as confidence drops.",
+    estimateNote:
+      "An estimate from this space's history and the outdoor forecast, not a measurement.",
+    confidenceHelp:
+      "High confidence: the forecast model is fitted from 24+ readings paired with outdoor weather. Medium: 8+ paired readings, or a cooling trend over 2+ hours. Low: less data than that. The window widens as confidence drops.",
     learnMore: "How time to freeze is estimated",
     cooling: "Cooling {rate}{unit}/hr",
     offset: "Typical offset {offset}{unit} vs outdoor",
@@ -390,7 +395,8 @@ const en = {
     cardTitle: "Temperature (last {days} days)",
     subtitleHtml:
       'Every probe against your freeze line.\n        <a class="text-link" href="/dashboard/history">Open History</a> for filters, exports, and year-over-year.',
-    empty: "The chart fills in as readings arrive: give it an hour or two after your first reading.",
+    empty:
+      "The chart fills in as readings arrive: give it an hour or two after your first reading.",
   },
   metricCard: {
     pin: "Pin {label}",

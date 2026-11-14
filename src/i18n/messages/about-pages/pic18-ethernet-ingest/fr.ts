@@ -1,4 +1,3 @@
-
 /** Body copy for /about/pic18-ethernet-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -15,9 +14,11 @@ const fr: Messages = {
   boardPart: "Carte PIC18F67J60",
   boardWhy: "MAC + PHY + RJ45 intégrés. PICkit / ICD pour le flash.",
   probePart: "DS18B20 étanche",
-  probeWhyHtml: "Broche par défaut de l’exemple : <strong>RD0</strong> (à changer si votre démo l’utilise).",
+  probeWhyHtml:
+    "Broche par défaut de l’exemple : <strong>RD0</strong> (à changer si votre démo l’utilise).",
   resistorPart: "Résistance 4.7kΩ",
-  resistorWhy: "Pull-up vers le VDD 1-Wire de la carte (adaptez les niveaux si les E/S sont uniquement en 5V).",
+  resistorWhy:
+    "Pull-up vers le VDD 1-Wire de la carte (adaptez les niveaux si les E/S sont uniquement en 5V).",
   ethernetPart: "Prise Ethernet",
   ethernetWhy: "DHCP ou IP statique dans la démo MLA. Machine relais sur le même LAN.",
   ethernetBuy: "Câble Cat5e jusqu’à votre switch.",

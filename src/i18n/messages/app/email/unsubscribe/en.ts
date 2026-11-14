@@ -10,12 +10,14 @@ const en = {
   },
   emailSettings: "Email settings",
   invalidTitle: "Link not valid",
-  invalidBody: "This unsubscribe link is invalid. You can change email preferences from your dashboard.",
+  invalidBody:
+    "This unsubscribe link is invalid. You can change email preferences from your dashboard.",
   confirmTitle: "Unsubscribe?",
   confirmBody: "Stop sending {emails}? Freeze and flood alerts are not affected.",
   confirmButton: "Unsubscribe",
   errorTitle: "Something went wrong",
-  errorBody: "We couldn't update your preferences. Please try again, or change them from your dashboard.",
+  errorBody:
+    "We couldn't update your preferences. Please try again, or change them from your dashboard.",
   doneTitle: "You're unsubscribed",
   doneBody: "You won't receive {emails} anymore. Freeze and flood alerts are not affected.",
 };

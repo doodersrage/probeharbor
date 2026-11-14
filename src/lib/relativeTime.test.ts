@@ -1,10 +1,5 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import {
-  LAG_MS,
-  STALE_MS,
-  formatRelativeAge,
-  freshnessDetail,
-} from "./relativeTime";
+import { LAG_MS, STALE_MS, formatRelativeAge, freshnessDetail } from "./relativeTime";
 
 describe("formatRelativeAge", () => {
   afterEach(() => {
@@ -20,15 +15,11 @@ describe("formatRelativeAge", () => {
     expect(fresh.stale).toBe(false);
     expect(fresh.label).toBe("15m ago");
 
-    const lagging = formatRelativeAge(
-      new Date(Date.now() - LAG_MS - 60_000).toISOString(),
-    );
+    const lagging = formatRelativeAge(new Date(Date.now() - LAG_MS - 60_000).toISOString());
     expect(lagging.lagging).toBe(true);
     expect(lagging.stale).toBe(false);
 
-    const stale = formatRelativeAge(
-      new Date(Date.now() - STALE_MS - 60_000).toISOString(),
-    );
+    const stale = formatRelativeAge(new Date(Date.now() - STALE_MS - 60_000).toISOString());
     expect(stale.lagging).toBe(true);
     expect(stale.stale).toBe(true);
   });

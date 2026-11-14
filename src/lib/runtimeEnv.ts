@@ -21,10 +21,7 @@ function readEnvRecord(
 
 export function getRuntimeEnv(key: string): string | undefined {
   try {
-    const fromWorker = readEnvRecord(
-      cloudflareEnv as unknown as Record<string, unknown>,
-      key,
-    );
+    const fromWorker = readEnvRecord(cloudflareEnv as unknown as Record<string, unknown>, key);
     if (fromWorker) return fromWorker;
   } catch {
     // Outside Workers (vitest / Node scripts).

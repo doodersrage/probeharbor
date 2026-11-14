@@ -45,7 +45,8 @@ const fr: ClaimsPackMessages = {
   },
   adjuster: {
     title: "Ce qu’il faut dire à l’expert",
-    subtitle: "Restez bref. Remettez-lui le dossier (ou le lien envoyé par e-mail) et abordez ces points :",
+    subtitle:
+      "Restez bref. Remettez-lui le dossier (ou le lien envoyé par e-mail) et abordez ces points :",
     items: [
       {
         lead: "Nous surveillons ce local en continu.",
@@ -89,7 +90,8 @@ const fr: ClaimsPackMessages = {
     title: "Comment en générer un",
     step1:
       "Connectez au moins une sonde et laissez ProbeHarbor accumuler un peu d’historique (les alertes de gel fonctionnent dès le premier jour ; le dossier de sinistre couvre toute la période que vous avez surveillée).",
-    step2: "Passez à Pro si ce n’est pas déjà fait : le dossier de sinistre est une fonction Pro. Déjà sur Free ou Member avec un épisode de gel récent ? Les relevés encore dans votre fenêtre de {free} / {member} restent stockés ; Pro débloque le dossier sur cet historique conservé (et allonge la période accessible à l’avenir).",
+    step2:
+      "Passez à Pro si ce n’est pas déjà fait : le dossier de sinistre est une fonction Pro. Déjà sur Free ou Member avec un épisode de gel récent ? Les relevés encore dans votre fenêtre de {free} / {member} restent stockés ; Pro débloque le dossier sur cet historique conservé (et allonge la période accessible à l’avenir).",
     step3Html:
       'Depuis <a class="text-link" href="/dashboard/history?tab=exports#claims-pack">History → claims pack</a>, choisissez une période et téléchargez le dossier, ou envoyez-le directement à l’adresse e-mail d’un expert.',
     samplePdf: "Exemple PDF",
@@ -103,8 +105,10 @@ const fr: ClaimsPackMessages = {
         "Le dossier de sinistre est une fonction Pro (et Portfolio). Les forfaits Free et Member permettent de voir les relevés en direct et l’historique, mais générer et envoyer un dossier de sinistre par e-mail nécessite Pro.",
     },
     {
-      question: "Si je suis sur Free ou Member et que quelque chose vient de geler, puis-je passer à Pro et quand même créer un dossier ?",
-      answer: "Oui, tant que les relevés sont encore dans la fenêtre d’historique de votre forfait. Free conserve environ {free} ; Member environ {member} ; Pro environ {pro} ou plus. Changer de forfait n’efface pas les relevés stockés : tout ce qui se trouve encore dans la fenêtre plus longue de Pro devient disponible pour les graphiques, le CSV et le dossier de sinistre. Changez de forfait rapidement si vous avez besoin d’un dossier qui remonte plus loin que ce qu’affiche votre forfait actuel.",
+      question:
+        "Si je suis sur Free ou Member et que quelque chose vient de geler, puis-je passer à Pro et quand même créer un dossier ?",
+      answer:
+        "Oui, tant que les relevés sont encore dans la fenêtre d’historique de votre forfait. Free conserve environ {free} ; Member environ {member} ; Pro environ {pro} ou plus. Changer de forfait n’efface pas les relevés stockés : tout ce qui se trouve encore dans la fenêtre plus longue de Pro devient disponible pour les graphiques, le CSV et le dossier de sinistre. Changez de forfait rapidement si vous avez besoin d’un dossier qui remonte plus loin que ce qu’affiche votre forfait actuel.",
     },
     {
       question: "Puis-je l’envoyer directement à l’expert de mon assurance ?",

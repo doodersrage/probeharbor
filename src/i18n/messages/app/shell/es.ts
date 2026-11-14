@@ -46,7 +46,8 @@ const es: ShellMessages = {
     switchError: "No se pudo cambiar de propiedad. Inténtalo de nuevo.",
   },
   billing: {
-    paymentFailed: "Tu último pago no se completó. Tu plan sigue activo mientras Stripe reintenta el cobro; actualiza tu método de pago para no perder las funciones de pago.",
+    paymentFailed:
+      "Tu último pago no se completó. Tu plan sigue activo mientras Stripe reintenta el cobro; actualiza tu método de pago para no perder las funciones de pago.",
     updatePayment: "Actualizar método de pago",
   },
   kiosk: {
@@ -180,7 +181,8 @@ const es: ShellMessages = {
     title: "Instala la app web (PWA)",
     body: "ProbeHarbor ya funciona: añádela a tu pantalla de inicio desde Chrome o Safari. La misma cuenta, lecturas en vivo y alertas. La app nativa de Android está en acceso anticipado en GitHub mientras termina la revisión de Google Play; no hace falta esperar a Play.",
     step1: "Abre probeharbor.dev en Chrome (Android) o Safari (iPhone).",
-    step2Html: "Usa <strong>Instalar app</strong> o Compartir → <strong>Añadir a pantalla de inicio</strong>.",
+    step2Html:
+      "Usa <strong>Instalar app</strong> o Compartir → <strong>Añadir a pantalla de inicio</strong>.",
     step3: "Abre el icono; activa las notificaciones push más tarde en Panel → Alertas.",
     installApp: "Instalar app",
     guide: "Pasos para instalar la PWA",

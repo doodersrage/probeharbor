@@ -31,9 +31,7 @@ export type YubiKeyOtpConfig = {
   apiKeyBase64: string;
 };
 
-export type YubiKeyOtpVerifyResult =
-  | { ok: true; publicId: string }
-  | { ok: false; error: string };
+export type YubiKeyOtpVerifyResult = { ok: true; publicId: string } | { ok: false; error: string };
 
 export function isYubiKeyOtpConfigured(): boolean {
   return getYubiKeyOtpConfig() !== null;
@@ -115,10 +113,7 @@ function buildSignString(params: Record<string, string>): string {
     .join("&");
 }
 
-async function signRequest(
-  params: Record<string, string>,
-  apiKeyBase64: string,
-): Promise<string> {
+async function signRequest(params: Record<string, string>, apiKeyBase64: string): Promise<string> {
   const key = decodeApiKey(apiKeyBase64);
   const message = buildSignString(params);
   const signature = await hmacSha1(key, message);

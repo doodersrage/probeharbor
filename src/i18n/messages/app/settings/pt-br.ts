@@ -16,7 +16,8 @@ const ptBr: SettingsMessages = {
     tipsHidden: "Dicas de apps complementares ocultas na Visão geral.",
     tipsReset: "As dicas de apps complementares voltaram a aparecer na Visão geral.",
     retentionSaved: "Preferência de retenção salva.",
-    retentionError: "Não foi possível salvar a preferência de retenção. A configuração anterior continua valendo; tente de novo.",
+    retentionError:
+      "Não foi possível salvar a preferência de retenção. A configuração anterior continua valendo; tente de novo.",
     tenantSaved: "Contato do inquilino salvo.",
     tenantError: "Não foi possível salvar o contato do inquilino.",
   },
@@ -28,8 +29,7 @@ const ptBr: SettingsMessages = {
   },
   accountSecurity: {
     summary: "Conta e segurança",
-    subtitle:
-      "MFA, aviso ao inquilino e exclusão da conta: só mexa nisso se precisar.",
+    subtitle: "MFA, aviso ao inquilino e exclusão da conta: só mexa nisso se precisar.",
     yourAccount: "sua conta",
   },
   display: {
@@ -134,10 +134,14 @@ const ptBr: SettingsMessages = {
   mfa: {
     checking: "Verificando o status da MFA…",
     loadError: "Não foi possível carregar o status da MFA",
-    noneWithYubikey: "Nenhum fator de MFA cadastrado ainda — adicione um app autenticador ou uma YubiKey abaixo.",
+    noneWithYubikey:
+      "Nenhum fator de MFA cadastrado ainda — adicione um app autenticador ou uma YubiKey abaixo.",
     none: "Nenhum fator de MFA cadastrado — adicione um app autenticador abaixo.",
     allVerified: "{factors}{breakdown}.",
-    factorsEnrolled: { one: "{count} fator de MFA cadastrado", other: "{count} fatores de MFA cadastrados" },
+    factorsEnrolled: {
+      one: "{count} fator de MFA cadastrado",
+      other: "{count} fatores de MFA cadastrados",
+    },
     breakdown: " ({apps} app · {keys})",
     keyCount: { one: "{count} chave", other: "{count} chaves" },
     someUnfinished: "{verified} cadastrados · {unfinished} (remova se travou).",
@@ -147,7 +151,8 @@ const ptBr: SettingsMessages = {
     scanQr:
       "Escaneie o QR code com seu app autenticador (ou o Yubico Authenticator em uma YubiKey) e digite abaixo um código de verificação.",
     verifyFailed: "Falha na verificação",
-    totpEnrolled: "App autenticador cadastrado. Na próxima vez que você entrar, será pedido um código.",
+    totpEnrolled:
+      "App autenticador cadastrado. Na próxima vez que você entrar, será pedido um código.",
     keyEnrollFailed: "Não foi possível cadastrar a chave de segurança",
     keyStartFailed: "Não foi possível iniciar o cadastro da chave de segurança",
     keyVerifyFailed: "Falha na verificação da chave de segurança",
@@ -182,7 +187,8 @@ const ptBr: SettingsMessages = {
     passwordLabel: "Senha da conta",
     passwordHint: "Necessária para ativar ou desativar o app autenticador.",
     passkeysHeading: "Chaves de acesso (passkeys)",
-    passkeysHint: "Entre com sua digital, rosto ou PIN do dispositivo em vez de senha e código. Uma passkey pula a etapa do app autenticador.",
+    passkeysHint:
+      "Entre com sua digital, rosto ou PIN do dispositivo em vez de senha e código. Uma passkey pula a etapa do app autenticador.",
     addPasskey: "Adicionar uma passkey",
     passkeyDefaultName: "Passkey",
     passkeyAdded: "Passkey adicionada.",
@@ -220,7 +226,8 @@ const ptBr: SettingsMessages = {
     upgradeHtml:
       'Mude para o Member para ter 90 dias de histórico, ou para o Pro para 1 ano ou mais, e guardar um período maior. <a class="text-link" href="/pricing#data-retention">Comparar retenção</a>.',
     deleteHeading: "Excluir conta",
-    deleteBody: "Exclui permanentemente {email}, as configurações de alerta e as casas das quais você é o único dono.",
+    deleteBody:
+      "Exclui permanentemente {email}, as configurações de alerta e as casas das quais você é o único dono.",
     deleteConfirmPassword: " Digite sua senha novamente e digite DELETE para confirmar.",
     deleteConfirmEmail: " Confirme seu e-mail e digite DELETE para confirmar.",
     errorConfirm: "Digite exatamente DELETE para confirmar.",

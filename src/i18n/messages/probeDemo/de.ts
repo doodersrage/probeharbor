@@ -14,8 +14,7 @@ const de: ProbeDemoMessages = {
   reset: "Demo zurücksetzen",
   updated: "Simulierte Aktualisierung alle 2 Sekunden · Letzte Aktualisierung {time}",
   statusEyebrow: "Raumstatus (simuliert)",
-  coldestLine:
-    "Kältester Fühler {coldest} · Schwelle {threshold} · außen {outdoor}",
+  coldestLine: "Kältester Fühler {coldest} · Schwelle {threshold} · außen {outdoor}",
   riskNote:
     "In der echten App würden jetzt deine Frost-Grundwarnungen ausgelöst (standardmäßig per E-Mail), mit derselben Logik wie die Raumstatus-Karte in Overview.",
   readingsTitle: "Live-Messwerte der Fühler",
@@ -96,8 +95,7 @@ const de: ProbeDemoMessages = {
   },
   status: {
     freezeRiskTitle: "Akute Frostgefahr",
-    freezeRiskDetail:
-      "Der kälteste Fühler misst {coldest}; Schwelle: {threshold}.",
+    freezeRiskDetail: "Der kälteste Fühler misst {coldest}; Schwelle: {threshold}.",
     coldSnapTitle: "Kälteeinbruch im Anmarsch",
     nightsTitleOne: "{n} Nacht mit Frostgefahr",
     nightsTitleOther: "{n} Nächte mit Frostgefahr",
@@ -106,10 +104,10 @@ const de: ProbeDemoMessages = {
     nightsDetail:
       "Draußen wird es kalt: Prüfe die Fühler unter Live und ob die Vorhersagewarnungen aktiv sind.",
     nearTitle: "Nahe an der Frostschwelle",
-    nearDetail:
-      "Kältester Fühler {coldest}, weniger als 2,8 °C (5 °F) über {threshold}.",
+    nearDetail: "Kältester Fühler {coldest}, weniger als 2,8 °C (5 °F) über {threshold}.",
     okTitle: "Alles im grünen Bereich",
-    okDetail: "Die Fühler melden Werte: nichts an der Frostschwelle, keine nassen Hochwasserkontakte.",
+    okDetail:
+      "Die Fühler melden Werte: nichts an der Frostschwelle, keine nassen Hochwasserkontakte.",
   },
 };
 

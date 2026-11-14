@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  applySensorOffset,
-  clampSensorOffset,
-} from "./sensorCalibration";
+import { applySensorOffset, clampSensorOffset } from "./sensorCalibration";
 import {
   buildColdestDayOverlay,
   findColdestUtcDay,

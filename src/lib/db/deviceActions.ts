@@ -7,21 +7,14 @@ import { query } from "./client";
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
-export async function deleteDevices(householdId: string, deviceIds: string[]): Promise<{ error: string | null }> {
+export async function deleteDevices(
+  householdId: string,
+  deviceIds: string[],
+): Promise<{ error: string | null }> {
   try {
-    await query("delete from public.devices where household_id = $1 and id = any($2::uuid[])", [householdId, deviceIds]);
-    return { error: null };
-  } catch (error) {
-    return { error: message(error) };
-  }
-}
-
-export async function setDevicesEnabled(householdId: string, deviceIds: string[], enabled: boolean): Promise<{ error: string | null }> {
-  try {
-    await query("update public.devices set enabled = $3 where household_id = $1 and id = any($2::uuid[])", [
+    await query("delete from public.devices where household_id = $1 and id = any($2::uuid[])", [
       householdId,
       deviceIds,
-      enabled,
     ]);
     return { error: null };
   } catch (error) {
@@ -29,13 +22,32 @@ export async function setDevicesEnabled(householdId: string, deviceIds: string[]
   }
 }
 
-export async function setDevicesSpace(householdId: string, deviceIds: string[], space: string | null): Promise<{ error: string | null }> {
+export async function setDevicesEnabled(
+  householdId: string,
+  deviceIds: string[],
+  enabled: boolean,
+): Promise<{ error: string | null }> {
   try {
-    await query("update public.devices set space = $3 where household_id = $1 and id = any($2::uuid[])", [
-      householdId,
-      deviceIds,
-      space,
-    ]);
+    await query(
+      "update public.devices set enabled = $3 where household_id = $1 and id = any($2::uuid[])",
+      [householdId, deviceIds, enabled],
+    );
+    return { error: null };
+  } catch (error) {
+    return { error: message(error) };
+  }
+}
+
+export async function setDevicesSpace(
+  householdId: string,
+  deviceIds: string[],
+  space: string | null,
+): Promise<{ error: string | null }> {
+  try {
+    await query(
+      "update public.devices set space = $3 where household_id = $1 and id = any($2::uuid[])",
+      [householdId, deviceIds, space],
+    );
     return { error: null };
   } catch (error) {
     return { error: message(error) };
@@ -48,7 +60,11 @@ export type NewSensor = { key: string; label: string; kind: string; unit: string
  * Add sensors to a device in this household, all or none (one statement).
  * Refuses a device outside the household.
  */
-export async function addSensors(householdId: string, deviceId: string, sensors: NewSensor[]): Promise<{ error: string | null }> {
+export async function addSensors(
+  householdId: string,
+  deviceId: string,
+  sensors: NewSensor[],
+): Promise<{ error: string | null }> {
   try {
     const rows = await query(
       `insert into public.device_sensors (device_id, key, label, kind, unit, visible)

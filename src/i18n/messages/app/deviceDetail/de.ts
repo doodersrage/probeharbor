@@ -26,15 +26,18 @@ const de: DeviceDetailMessages = {
     title: "Status",
     health: "Zustand",
     healthHowSummary: "So wird der Wert berechnet",
-    healthHow: "Der Wert zeigt das schwerwiegendste gefundene Problem, in dieser Reihenfolge geprüft: deaktiviert (25) oder nie gesehen (30); ein nasser Wassersensor (10–20); seit einem Tag (20) oder seit 2 Stunden (45) kein Upload; festhängende Messwerte (40); Akku bei 15 % oder weniger (55) oder voraussichtlich höchstens 14 Tage Laufzeit (60); WLAN auf oder unter deiner Signalschwelle (65). Ohne all das ist es gesund (95).",
-    batteryHow: "Die verbleibenden Tage setzen voraus, dass der Akku weiter mit der Rate der letzten 7 Tage sinkt. Sie erscheinen nur, wenn er über mindestens einen halben Tag mehr als 0,5 % pro Tag gefallen ist.",
+    healthHow:
+      "Der Wert zeigt das schwerwiegendste gefundene Problem, in dieser Reihenfolge geprüft: deaktiviert (25) oder nie gesehen (30); ein nasser Wassersensor (10–20); seit einem Tag (20) oder seit 2 Stunden (45) kein Upload; festhängende Messwerte (40); Akku bei 15 % oder weniger (55) oder voraussichtlich höchstens 14 Tage Laufzeit (60); WLAN auf oder unter deiner Signalschwelle (65). Ohne all das ist es gesund (95).",
+    batteryHow:
+      "Die verbleibenden Tage setzen voraus, dass der Akku weiter mit der Rate der letzten 7 Tage sinkt. Sie erscheinen nur, wenn er über mindestens einen halben Tag mehr als 0,5 % pro Tag gefallen ist.",
     lastSeen: "Zuletzt gesehen",
     never: "Nie",
     battery: "Akku",
     wifiSignal: "WLAN-Signal",
     firmware: "Firmware",
     updateTo: "Auf {version} aktualisieren",
-    tlsUnverified: "Diese Sonde kann das Zertifikat von ProbeHarbor nicht prüfen, ihre Verbindung ist daher nicht vor Manipulation geschützt. Messwerte kommen weiterhin an. Meist hat die Zertifizierungsstelle der Website gewechselt; ein Firmware-Update behebt das.",
+    tlsUnverified:
+      "Diese Sonde kann das Zertifikat von ProbeHarbor nicht prüfen, ihre Verbindung ist daher nicht vor Manipulation geschützt. Messwerte kommen weiterhin an. Meist hat die Zertifizierungsstelle der Website gewechselt; ein Firmware-Update behebt das.",
     state: "Status",
     disabled: "Deaktiviert: Messwerte werden ignoriert",
     noReadingsYet:
@@ -67,7 +70,8 @@ const de: DeviceDetailMessages = {
   },
   sensors: {
     title: "Sensoren ({count})",
-    noneYetPush: "Noch keine: Sie werden beim ersten Upload automatisch aus den JSON-Schlüsseln angelegt.",
+    noneYetPush:
+      "Noch keine: Sie werden beim ersten Upload automatisch aus den JSON-Schlüsseln angelegt.",
     noneYetPull: "Noch keine: Sie erscheinen nach dem nächsten Feed-Abruf.",
     intro: "Benenne sie nach dem, was sie messen. Ein Klick auf Speichern gilt für alle Sensoren.",
     name: "Name",
@@ -86,7 +90,8 @@ const de: DeviceDetailMessages = {
     deleteSensor: "Sensor löschen",
     saveSensors: "Sensoren speichern",
     addByHand: "Sensor manuell hinzufügen",
-    addHint: "Nur nötig, um vor dem ersten Upload einen Namen festzulegen; sonst werden Schlüssel automatisch angelegt.",
+    addHint:
+      "Nur nötig, um vor dem ersten Upload einen Namen festzulegen; sonst werden Schlüssel automatisch angelegt.",
     addLabelPlaceholder: "Garagenrohr",
     addSensor: "Sensor hinzufügen",
   },
@@ -128,7 +133,8 @@ const de: DeviceDetailMessages = {
   },
   connection: {
     title: "Verbindung",
-    sendsJsonHtml: "Das Gerät sendet JSON an <code>{url}</code>. Sein Schlüssel beginnt mit <code>{prefix}</code>.",
+    sendsJsonHtml:
+      "Das Gerät sendet JSON an <code>{url}</code>. Sein Schlüssel beginnt mit <code>{prefix}</code>.",
     checkPayload: "Payload prüfen",
     browserFlasher: "Browser-Flasher",
     ingestDocs: "Ingest-Doku",
@@ -143,18 +149,22 @@ const de: DeviceDetailMessages = {
     title: "Wartung",
     downloadDiagnostics: "Diagnose herunterladen",
     historyChart: "Verlaufsdiagramm",
-    diagnosticsHint: "Die Diagnose ist eine geschwärzte JSON-Datei, die du an einen Fehlerbericht oder eine Support-E-Mail anhängen kannst.",
+    diagnosticsHint:
+      "Die Diagnose ist eine geschwärzte JSON-Datei, die du an einen Fehlerbericht oder eine Support-E-Mail anhängen kannst.",
     moveTo: "In ein anderes Objekt verschieben",
     moveDevice: "Gerät verschieben",
   },
   danger: {
     title: "Schlüssel und Entfernen",
     rotateTitle: "Ingest-Schlüssel erneuern",
-    rotateBody: "Erstellt einen neuen Schlüssel. Der alte funktioniert sofort nicht mehr; flashe das Gerät neu oder aktualisiere es.",
-    rotateConfirm: "Diesen Ingest-Schlüssel erneuern? Der alte Schlüssel funktioniert sofort nicht mehr.",
+    rotateBody:
+      "Erstellt einen neuen Schlüssel. Der alte funktioniert sofort nicht mehr; flashe das Gerät neu oder aktualisiere es.",
+    rotateConfirm:
+      "Diesen Ingest-Schlüssel erneuern? Der alte Schlüssel funktioniert sofort nicht mehr.",
     rotateButton: "Schlüssel erneuern",
     deleteTitle: "Gerät löschen",
-    deleteBody: "Entfernt das Gerät, seine Sensoren und deren Verlauf. Kann nicht rückgängig gemacht werden.",
+    deleteBody:
+      "Entfernt das Gerät, seine Sensoren und deren Verlauf. Kann nicht rückgängig gemacht werden.",
     deleteConfirm: "„{name}“, seine Sensoren und deren Verlauf löschen?",
     deleteButton: "Gerät löschen",
   },
@@ -163,7 +173,8 @@ const de: DeviceDetailMessages = {
     title: "Sensor ersetzen",
     intro:
       "Einen defekten Fühler oder eine ganze Platine getauscht? Sobald der neue Sensor einen Messwert gesendet hat, übertrage den Verlauf des alten darauf, damit Diagramme, Berichte und Alarme als ein Sensor weiterlaufen.",
-    confirm: "Den gesamten Verlauf vom alten auf den neuen Sensor übertragen und den alten Sensor löschen? Das kann nicht rückgängig gemacht werden.",
+    confirm:
+      "Den gesamten Verlauf vom alten auf den neuen Sensor übertragen und den alten Sensor löschen? Das kann nicht rückgängig gemacht werden.",
     oldSensor: "Alter Sensor (ausgemustert)",
     newSensor: "Neuer Sensor",
     choose: "Auswählen…",

@@ -33,10 +33,9 @@ function reading(overrides: Partial<AlertReading> = {}): AlertReading {
 
 describe("evaluateAlerts", () => {
   it("produces nothing when alerts are disabled, even past every threshold", () => {
-    const messages = evaluateAlerts(
-      { ...enabled, enabled: false },
-      [reading({ tempf: 10, humidity: 99 })],
-    );
+    const messages = evaluateAlerts({ ...enabled, enabled: false }, [
+      reading({ tempf: 10, humidity: 99 }),
+    ]);
     expect(messages).toEqual([]);
   });
 
@@ -64,9 +63,7 @@ describe("evaluateAlerts", () => {
       ...enabled,
       thresholdSensorScope: { includedSensorIds: ["sensor-a"], overrides: {} },
     };
-    const messages = evaluateAlerts(scoped, [
-      reading({ tempf: 10, sensorId: "sensor-b" }),
-    ]);
+    const messages = evaluateAlerts(scoped, [reading({ tempf: 10, sensorId: "sensor-b" })]);
     expect(messages).toEqual([]);
   });
 
@@ -78,12 +75,8 @@ describe("evaluateAlerts", () => {
         overrides: { "sensor-a": { freezeThresholdF: 40 } },
       },
     };
-    const messages = evaluateAlerts(scoped, [
-      reading({ tempf: 38, sensorId: "sensor-a" }),
-    ]);
-    expect(messages).toEqual([
-      "Garage is 38.0°F (at or below freeze threshold 40°F).",
-    ]);
+    const messages = evaluateAlerts(scoped, [reading({ tempf: 38, sensorId: "sensor-a" })]);
+    expect(messages).toEqual(["Garage is 38.0°F (at or below freeze threshold 40°F)."]);
   });
 
   it("waits for freeze dwell minutes before firing", () => {
@@ -114,9 +107,7 @@ describe("evaluateAlerts", () => {
         dwellSamplesBySensorId: longEnough,
         nowMs: now,
       }),
-    ).toEqual([
-      "Garage is 30.0°F (at or below freeze threshold 34°F for 10+ min).",
-    ]);
+    ).toEqual(["Garage is 30.0°F (at or below freeze threshold 34°F for 10+ min)."]);
   });
 
   it("fires for slow reporters when the last pre-window sample was cold", () => {
@@ -271,9 +262,7 @@ describe("evaluateOutage", () => {
   });
 
   it("reports a device that has never reported", () => {
-    expect(evaluateOutage(enabled, "Garage", null)).toBe(
-      "Garage has never reported a reading.",
-    );
+    expect(evaluateOutage(enabled, "Garage", null)).toBe("Garage has never reported a reading.");
   });
 
   it("is silent before the outage window elapses and fires once it does", () => {
@@ -373,12 +362,8 @@ describe("resolveAlertEmail", () => {
   });
 
   it("falls back to the account email when settings has none", () => {
-    expect(resolveAlertEmail({ email: null }, "account@example.com")).toBe(
-      "account@example.com",
-    );
-    expect(resolveAlertEmail({ email: "   " }, "account@example.com")).toBe(
-      "account@example.com",
-    );
+    expect(resolveAlertEmail({ email: null }, "account@example.com")).toBe("account@example.com");
+    expect(resolveAlertEmail({ email: "   " }, "account@example.com")).toBe("account@example.com");
   });
 
   it("returns null when neither is set", () => {
@@ -407,7 +392,6 @@ describe("parseChannelSeverity", () => {
     expect(parseChannelSeverity("email")).toEqual({});
   });
 });
-
 
 describe("ingest payload (cross-module smoke test)", () => {
   it("parses classic temp JSON and typed sensors", () => {
@@ -479,9 +463,16 @@ describe("detectTemperatureAnomalies (cross-module smoke test)", () => {
 });
 
 describe("freeze threshold boundary", () => {
-  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0 };
+  const settings = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    freezeThresholdF: 34,
+    freezeDwellMinutes: 0,
+  };
   const at = (tempf: number) =>
-    evaluateAlertDetails(settings, [{ label: "Garage pipe", tempf, humidity: null }]).filter((d) => d.kind === "freeze");
+    evaluateAlertDetails(settings, [{ label: "Garage pipe", tempf, humidity: null }]).filter(
+      (d) => d.kind === "freeze",
+    );
 
   it("alerts at exactly the threshold (at or below)", () => {
     expect(at(34)).toHaveLength(1);

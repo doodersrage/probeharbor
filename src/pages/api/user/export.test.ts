@@ -106,9 +106,7 @@ describe("GET /api/user/export", () => {
     };
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Disposition")).toContain(
-      "probeharbor-export.json",
-    );
+    expect(response.headers.get("Content-Disposition")).toContain("probeharbor-export.json");
     expect(body.user).toEqual({ id: "user-1", email: "user@example.com" });
     expect(body.history).toEqual([{ id: 1 }]);
     expect(body.devices).toEqual([

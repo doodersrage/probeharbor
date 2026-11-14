@@ -16,8 +16,10 @@ import type { HouseholdInvite, PendingInvite } from "../householdInvites";
 import { query } from "./client";
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
-const INVITE_COLUMNS = "id, household_id, email, invited_by, expires_at, accepted_at, created_at, role";
-const KEY_COLUMNS = "id, household_id, name, key_prefix, scope, created_at, last_used_at, revoked_at";
+const INVITE_COLUMNS =
+  "id, household_id, email, invited_by, expires_at, accepted_at, created_at, role";
+const KEY_COLUMNS =
+  "id, household_id, name, key_prefix, scope, created_at, last_used_at, revoked_at";
 
 // ---- invites ----------------------------------------------------------------
 
@@ -60,7 +62,9 @@ export async function reissueInvite(
   }
 }
 
-export async function listPendingInvites(householdId: string): Promise<{ invites: PendingInvite[]; error: string | null }> {
+export async function listPendingInvites(
+  householdId: string,
+): Promise<{ invites: PendingInvite[]; error: string | null }> {
   try {
     const invites = await query<PendingInvite>(
       `select ${INVITE_COLUMNS} from public.household_invites
@@ -110,18 +114,24 @@ export async function findInviteStateByTokenKeys(
 
 export async function markInviteAccepted(inviteId: string): Promise<void> {
   try {
-    await query("update public.household_invites set accepted_at = now() where id = $1 and accepted_at is null", [inviteId]);
+    await query(
+      "update public.household_invites set accepted_at = now() where id = $1 and accepted_at is null",
+      [inviteId],
+    );
   } catch (error) {
     console.error("Failed to mark invite accepted:", message(error));
   }
 }
 
-export async function revokeInvite(householdId: string, inviteId: string): Promise<{ error: string | null }> {
+export async function revokeInvite(
+  householdId: string,
+  inviteId: string,
+): Promise<{ error: string | null }> {
   try {
-    await query("delete from public.household_invites where id = $1 and household_id = $2 and accepted_at is null", [
-      inviteId,
-      householdId,
-    ]);
+    await query(
+      "delete from public.household_invites where id = $1 and household_id = $2 and accepted_at is null",
+      [inviteId, householdId],
+    );
     return { error: null };
   } catch (error) {
     return { error: message(error) };
@@ -162,10 +172,16 @@ export async function insertApiKey(row: {
   }
 }
 
-export async function revokeApiKey(householdId: string, keyId: string): Promise<{ error: string | null }> {
+export async function revokeApiKey(
+  householdId: string,
+  keyId: string,
+): Promise<{ error: string | null }> {
   try {
-    await query(`update public.api_keys set revoked_at = now()
-       where id = $1 and household_id = $2 and revoked_at is null`, [keyId, householdId]);
+    await query(
+      `update public.api_keys set revoked_at = now()
+       where id = $1 and household_id = $2 and revoked_at is null`,
+      [keyId, householdId],
+    );
     return { error: null };
   } catch (error) {
     return { error: message(error) };
@@ -183,7 +199,11 @@ export async function resolveApiKey(
       [keyHash],
     );
     return row
-      ? { householdId: row.household_id, keyId: row.id, scope: row.scope === "write" ? "write" : "read" }
+      ? {
+          householdId: row.household_id,
+          keyId: row.id,
+          scope: row.scope === "write" ? "write" : "read",
+        }
       : null;
   } catch {
     return null;

@@ -16,7 +16,8 @@ export type SettingsFlag = (typeof FLAG_COLUMNS)[number];
 
 /** Users with a report turned on. Throws on failure. */
 export async function userIdsWithFlag(flag: SettingsFlag): Promise<string[]> {
-  if (!(FLAG_COLUMNS as readonly string[]).includes(flag)) throw new Error(`Unknown settings flag: ${flag}`);
+  if (!(FLAG_COLUMNS as readonly string[]).includes(flag))
+    throw new Error(`Unknown settings flag: ${flag}`);
   const rows = await query<{ user_id: string }>(
     `select user_id from public.alert_settings where "${flag}" order by user_id`,
   );
@@ -24,7 +25,12 @@ export async function userIdsWithFlag(flag: SettingsFlag): Promise<string[]> {
 }
 
 export async function dripCandidates(): Promise<
-  Array<{ user_id: string; drip_emails_enabled: boolean; drip_email_stage: number | null; last_drip_email_at: string | null }>
+  Array<{
+    user_id: string;
+    drip_emails_enabled: boolean;
+    drip_email_stage: number | null;
+    last_drip_email_at: string | null;
+  }>
 > {
   try {
     return await query(
@@ -51,7 +57,8 @@ export async function stampSettings(
   column: StampColumn,
   options: { touchUpdatedAt?: boolean; dripStage?: number } = {},
 ): Promise<void> {
-  if (!(STAMP_COLUMNS as readonly string[]).includes(column)) throw new Error(`Unknown stamp column: ${column}`);
+  if (!(STAMP_COLUMNS as readonly string[]).includes(column))
+    throw new Error(`Unknown stamp column: ${column}`);
   const sets = [`"${column}" = now()`];
   const params: unknown[] = [userId];
   if (options.touchUpdatedAt) sets.push("updated_at = now()");
@@ -71,7 +78,12 @@ export async function lastTrialReminderAt(userId: string): Promise<string | null
 }
 
 export async function trialingSubscriptions(): Promise<
-  Array<{ user_id: string; status: string; current_period_end: string | null; plan_tier: string | null }>
+  Array<{
+    user_id: string;
+    status: string;
+    current_period_end: string | null;
+    plan_tier: string | null;
+  }>
 > {
   try {
     return await query(
@@ -139,7 +151,9 @@ export async function firstOwnedHouseholdId(userId: string): Promise<string | nu
 
 export async function optOutOfAllDigests(userId: string): Promise<{ error: string | null }> {
   try {
-    await query("update public.household_members set digest_opt_in = false where user_id = $1", [userId]);
+    await query("update public.household_members set digest_opt_in = false where user_id = $1", [
+      userId,
+    ]);
     return { error: null };
   } catch (error) {
     return { error: message(error) };
@@ -155,7 +169,11 @@ export async function isSuppressed(email: string): Promise<boolean> {
 }
 
 /** Throws on failure. */
-export async function upsertSuppression(email: string, reason: string, lastError: string | null): Promise<void> {
+export async function upsertSuppression(
+  email: string,
+  reason: string,
+  lastError: string | null,
+): Promise<void> {
   await query(
     `insert into public.email_suppressions (email, reason, last_error, updated_at) values ($1, $2, $3, now())
      on conflict (email) do update set reason = excluded.reason, last_error = excluded.last_error, updated_at = excluded.updated_at`,

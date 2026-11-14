@@ -30,8 +30,10 @@ const de: AdminMessages = {
     pushNoSubscriptionHtml:
       'Öffne <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-channels">Alarme → Kanäle → Push</a>, klicke auf <strong>Browser-Push auf diesem Gerät aktivieren</strong>, erlaube Benachrichtigungen, speichere bei Bedarf und versuche es dann erneut.',
     channelErrors: {
-      sms_no_phone: "Keine SMS-Nummer in den Alarmeinstellungen oder im Feld für die abweichende Nummer.",
-      sms_send_failed: "SMS-Versand über Twilio fehlgeschlagen. Prüfe die Twilio-Zugangsdaten und die Zielnummer.",
+      sms_no_phone:
+        "Keine SMS-Nummer in den Alarmeinstellungen oder im Feld für die abweichende Nummer.",
+      sms_send_failed:
+        "SMS-Versand über Twilio fehlgeschlagen. Prüfe die Twilio-Zugangsdaten und die Zielnummer.",
       unknown_kind: "Unbekannte Art von Kanaltest.",
       sms_not_configured: "SMS (Twilio auf dem Server nicht eingerichtet)",
       push_not_configured: "Push (VAPID-Schlüssel fehlen auf dem Server)",
@@ -120,7 +122,8 @@ const de: AdminMessages = {
       notSubscribed: " dieser Browser ist noch nicht abonniert.",
       enableUnder: "Zuerst unter",
       alertsPush: "Alarme → Push",
-      hintEnd: "aktivieren. Android-FCM-Tokens registriert die native App, sobald die FCM-Secrets gesetzt sind.",
+      hintEnd:
+        "aktivieren. Android-FCM-Tokens registriert die native App, sobald die FCM-Secrets gesetzt sind.",
     },
     funnel: {
       title: "Checkout-Trichter (30 Tage)",
@@ -145,7 +148,8 @@ const de: AdminMessages = {
       title: "Registrierte Nutzer",
       subtitle: "Konten und Gruppen prüfen, Admin-Zugriff vergeben oder entziehen.",
       updated: "Zugriff des Nutzers aktualisiert.",
-      updateError: "Zugriff des Nutzers konnte nicht aktualisiert werden. Bitte versuche es erneut.",
+      updateError:
+        "Zugriff des Nutzers konnte nicht aktualisiert werden. Bitte versuche es erneut.",
       searchPlaceholder: "E-Mail oder Nutzer-ID",
       group: "Gruppe",
       allGroups: "Alle Gruppen",
@@ -175,12 +179,14 @@ const de: AdminMessages = {
     title: "Jobs",
     subtitle: "Cron-Verlauf, Übersichten und Überwachung von Ingest-Missbrauch.",
     abuseTitle: "Überwachung von Ingest-Missbrauch",
-    abuseSubtitle: "Geräte mit ≥ 50 % Ingest-Fehlern in den letzten 7 Tagen (mindestens 5 Sendungen).",
+    abuseSubtitle:
+      "Geräte mit ≥ 50 % Ingest-Fehlern in den letzten 7 Tagen (mindestens 5 Sendungen).",
     abuseEmpty: "Derzeit keine auffälligen Ingest-Muster.",
     abuseRow: " am {day}: {errors} Fehler / {total} gesamt ({rate} %)",
     runsTitle: "Job-Läufe",
     runsError: "Job-Läufe konnten nicht geladen werden: {error}",
-    runsEmpty: "Noch keine Job-Läufe erfasst. Sie erscheinen nach der ersten geplanten Abfrage (alle 15 Minuten).",
+    runsEmpty:
+      "Noch keine Job-Läufe erfasst. Sie erscheinen nach der ersten geplanten Abfrage (alle 15 Minuten).",
     started: "Gestartet",
     job: "Job",
     finished: "Beendet",
@@ -201,7 +207,8 @@ const de: AdminMessages = {
     title: "Kontakte",
     subtitle: "Nachrichten aus dem Kontaktformular der Website prüfen.",
     heading: "Einsendungen über das Kontaktformular",
-    intro: "Über das öffentliche Kontaktformular gesendete Nachrichten; gespeichert, wenn die E-Mail-Zustellung klappt.",
+    intro:
+      "Über das öffentliche Kontaktformular gesendete Nachrichten; gespeichert, wenn die E-Mail-Zustellung klappt.",
     downloadCsv: "CSV herunterladen",
     all: "Alle",
     statusNew: "Neu",
@@ -228,7 +235,8 @@ const de: AdminMessages = {
     removed: "Sperre entfernt.",
     updateError: "Aktualisierung fehlgeschlagen: {error}",
     addTitle: "Sperre hinzufügen",
-    addSubtitle: "Eine Adresse vor dem nächsten Versand manuell sperren (bekannter Bounce, noreply, Testmüll).",
+    addSubtitle:
+      "Eine Adresse vor dem nächsten Versand manuell sperren (bekannter Bounce, noreply, Testmüll).",
     reason: "Grund",
     reasons: {
       manual: "manuell",
@@ -247,7 +255,8 @@ const de: AdminMessages = {
     remove: "Entfernen",
     showing: {
       one: "{count} Zeile angezeigt (max. 200). Prüfe auch die Sperren von Cloudflare Email Service in dessen Dashboard.",
-      other: "{count} Zeilen angezeigt (max. 200). Prüfe auch die Sperren von Cloudflare Email Service in dessen Dashboard.",
+      other:
+        "{count} Zeilen angezeigt (max. 200). Prüfe auch die Sperren von Cloudflare Email Service in dessen Dashboard.",
     },
   },
   api: {

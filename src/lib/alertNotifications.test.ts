@@ -23,7 +23,10 @@ vi.mock("./alertEvents", () => ({
   // Same fake log, filtered by kind like the real query.
   listRecentAlertEventsFiltered: async (userId: string, options: { kind?: string | null } = {}) => {
     const events = ((await mockListRecentAlertEvents(userId, 10)) ?? []) as Array<{ kind: string }>;
-    return { events: events.filter((event) => !options.kind || event.kind === options.kind), hasMore: false };
+    return {
+      events: events.filter((event) => !options.kind || event.kind === options.kind),
+      hasMore: false,
+    };
   },
   autoResolveAlerts: (...args: unknown[]) => mockAutoResolveAlerts(...args),
 }));
@@ -70,8 +73,7 @@ describe("sendThresholdAlertsIfNeeded escalation", () => {
     escalationEnabled: true,
     escalationMinutes: 30,
   };
-  const smsOnlyCalls = () =>
-    mockNotifyUser.mock.calls.filter((call) => call[4]?.smsOnly === true);
+  const smsOnlyCalls = () => mockNotifyUser.mock.calls.filter((call) => call[4]?.smsOnly === true);
 
   it("escalates an unacknowledged alert once escalationMinutes pass", async () => {
     mockListRecentAlertEvents.mockResolvedValue([{ kind: "threshold", acknowledged_at: null }]);
@@ -118,9 +120,7 @@ describe("sendThresholdAlertsIfNeeded escalation", () => {
   });
 });
 
-const freezingReading: AlertReading[] = [
-  { label: "Garage", tempf: 30, humidity: 40 },
-];
+const freezingReading: AlertReading[] = [{ label: "Garage", tempf: 30, humidity: 40 }];
 
 describe("sendThresholdAlertsIfNeeded context block", () => {
   it("sends the alert with no context when buildFreezeAlertContext returns null", async () => {
@@ -253,7 +253,12 @@ describe("sendThresholdAlertsIfNeeded delivery retry", () => {
 
   it("throttles retries to one per 30 minutes after a failed attempt", async () => {
     mockListRecentAlertEvents.mockResolvedValue([
-      { kind: "threshold", created_at: minutesAgo(10), channels_sent: [], channels_skipped: ["email"] },
+      {
+        kind: "threshold",
+        created_at: minutesAgo(10),
+        channels_sent: [],
+        channels_skipped: ["email"],
+      },
     ]);
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
 
@@ -309,7 +314,7 @@ describe("maybeSendRateAndOutageAlerts outages", () => {
   });
 });
 
-describe("sendThresholdAlertsIfNeeded after \"I'm on it\"", () => {
+describe('sendThresholdAlertsIfNeeded after "I\'m on it"', () => {
   const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true };
   const ackedAt = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
   const withSensor: AlertReading[] = [{ label: "Garage", tempf: 30, humidity: 40, sensorId: "s1" }];
@@ -324,7 +329,12 @@ describe("sendThresholdAlertsIfNeeded after \"I'm on it\"", () => {
 
     await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, withSensor, "house-1");
 
-    expect(mockHasNumericReadingAboveSince).toHaveBeenCalledWith("house-1", "s1", ackedAt, settings.freezeThresholdF);
+    expect(mockHasNumericReadingAboveSince).toHaveBeenCalledWith(
+      "house-1",
+      "s1",
+      ackedAt,
+      settings.freezeThresholdF,
+    );
     expect(sentTemperatureAlerts()).toHaveLength(0);
     expect(mockMarkCooldown).not.toHaveBeenCalled();
   });
@@ -390,21 +400,30 @@ describe("alerts close themselves when the condition clears", () => {
     mockAutoResolveAlerts.mockClear();
     mockListRecentAlertEvents.mockResolvedValue([]);
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
-    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Garage", tempf: 40, humidity: 40 }]);
-    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["threshold"], reason: "recovered" });
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Garage", tempf: 40, humidity: 40 },
+    ]);
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", {
+      kinds: ["threshold"],
+      reason: "recovered",
+    });
   });
 
   it("leaves them open while a probe is still at or just above the line", async () => {
     mockAutoResolveAlerts.mockClear();
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
-    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Garage", tempf: 33, humidity: 40 }]);
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Garage", tempf: 33, humidity: 40 },
+    ]);
     expect(mockAutoResolveAlerts).not.toHaveBeenCalled();
   });
 
   it("tells people once, on the channels the alert reached", async () => {
     mockAutoResolveAlerts.mockResolvedValueOnce({ resolved: 2, channels: ["email", "push"] });
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
-    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Garage", tempf: 40, humidity: 40 }]);
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Garage", tempf: 40, humidity: 40 },
+    ]);
     const recovery = mockNotifyUser.mock.calls.find((call) => call[3]?.kind === "recovery");
     expect(recovery?.[3]).toMatchObject({ title: "Recovered: temperatures are back to normal" });
     expect(recovery?.[3].body).toContain("Garage 40.0°F (freeze line 32°F)");
@@ -414,7 +433,9 @@ describe("alerts close themselves when the condition clears", () => {
   it("sends nothing when no alert was open", async () => {
     mockAutoResolveAlerts.mockResolvedValueOnce({ resolved: 0, channels: [] });
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
-    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Garage", tempf: 40, humidity: 40 }]);
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Garage", tempf: 40, humidity: 40 },
+    ]);
     expect(mockNotifyUser).not.toHaveBeenCalled();
   });
 
@@ -422,22 +443,37 @@ describe("alerts close themselves when the condition clears", () => {
     mockAutoResolveAlerts.mockClear();
     const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
     await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, []);
-    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["flood"], reason: "recovered" });
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", {
+      kinds: ["flood"],
+      reason: "recovered",
+    });
   });
 });
 
 describe("stuck probe alerts", () => {
   const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true };
-  const stuck = [{ sensorId: "s1", label: "Crawlspace", message: "Crawlspace has reported exactly 41.0°F for 30 hours.", detail: "" }];
+  const stuck = [
+    {
+      sensorId: "s1",
+      label: "Crawlspace",
+      message: "Crawlspace has reported exactly 41.0°F for 30 hours.",
+      detail: "",
+    },
+  ];
 
   it("alerts on a stuck probe", async () => {
     const { maybeSendStuckSensorAlerts } = await import("./alertNotifications");
     await maybeSendStuckSensorAlerts("user-1", "a@example.com", settings, stuck);
-    expect(mockNotifyUser.mock.calls[0]?.[3]).toMatchObject({ kind: "stuck", title: "Check Crawlspace: readings look stuck" });
+    expect(mockNotifyUser.mock.calls[0]?.[3]).toMatchObject({
+      kind: "stuck",
+      title: "Check Crawlspace: readings look stuck",
+    });
   });
 
   it("waits a day before repeating", async () => {
-    mockListRecentAlertEvents.mockResolvedValue([{ kind: "stuck", created_at: new Date(Date.now() - 3600_000).toISOString() }]);
+    mockListRecentAlertEvents.mockResolvedValue([
+      { kind: "stuck", created_at: new Date(Date.now() - 3600_000).toISOString() },
+    ]);
     const { maybeSendStuckSensorAlerts } = await import("./alertNotifications");
     await maybeSendStuckSensorAlerts("user-1", "a@example.com", settings, stuck);
     expect(mockNotifyUser).not.toHaveBeenCalled();
@@ -447,7 +483,10 @@ describe("stuck probe alerts", () => {
     mockAutoResolveAlerts.mockClear();
     const { maybeSendStuckSensorAlerts } = await import("./alertNotifications");
     await maybeSendStuckSensorAlerts("user-1", "a@example.com", settings, []);
-    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["stuck"], reason: "recovered" });
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", {
+      kinds: ["stuck"],
+      reason: "recovered",
+    });
   });
 });
 
@@ -461,7 +500,9 @@ describe("power-off alerts", () => {
     const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
     await sendPowerAlertsIfNeeded("user-1", "a@example.com", settings, off);
     expect(mockNotifyUser.mock.calls[0]?.[3]).toMatchObject({ kind: "power", title: "Power off" });
-    expect(String(mockNotifyUser.mock.calls[0]?.[3]?.body)).toContain("Garage outlet reports the power is off.");
+    expect(String(mockNotifyUser.mock.calls[0]?.[3]?.body)).toContain(
+      "Garage outlet reports the power is off.",
+    );
     expect(mockNotifyUser.mock.calls[0]?.[4]).toEqual({ space: "Garage" });
     expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_power_alert_at");
   });
@@ -469,8 +510,18 @@ describe("power-off alerts", () => {
   it("stays quiet when turned off or inside the cooldown", async () => {
     mockNotifyUser.mockClear();
     const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
-    await sendPowerAlertsIfNeeded("user-1", "a@example.com", { ...settings, powerAlertsEnabled: false }, off);
-    await sendPowerAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastPowerAlertAt: new Date().toISOString() }, off);
+    await sendPowerAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...settings, powerAlertsEnabled: false },
+      off,
+    );
+    await sendPowerAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...settings, lastPowerAlertAt: new Date().toISOString() },
+      off,
+    );
     expect(mockNotifyUser).not.toHaveBeenCalled();
   });
 
@@ -478,7 +529,10 @@ describe("power-off alerts", () => {
     mockAutoResolveAlerts.mockClear();
     const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
     await sendPowerAlertsIfNeeded("user-1", "a@example.com", settings, []);
-    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["power"], reason: "recovered" });
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", {
+      kinds: ["power"],
+      reason: "recovered",
+    });
   });
 });
 
@@ -521,7 +575,12 @@ describe("delivery-aware cooldown for every alert type", () => {
 
   it("doesn't let a failed freeze alert hold back a leak alert", async () => {
     mockListRecentAlertEvents.mockResolvedValue([
-      { kind: "threshold", channels_sent: [], channels_skipped: ["email"], created_at: minutesAgo(5) },
+      {
+        kind: "threshold",
+        channels_sent: [],
+        channels_skipped: ["email"],
+        created_at: minutesAgo(5),
+      },
     ]);
     const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
 
@@ -534,7 +593,9 @@ describe("delivery-aware cooldown for every alert type", () => {
     mockNotifyUser.mockResolvedValue({ sent: [], skipped: ["email"] });
     const { sendPowerAlertsIfNeeded } = await import("./alertNotifications");
 
-    await sendPowerAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Freezer outlet", space: null }]);
+    await sendPowerAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Freezer outlet", space: null },
+    ]);
 
     expect(mockMarkCooldown).not.toHaveBeenCalledWith("user-1", "last_power_alert_at");
   });
@@ -581,7 +642,12 @@ describe("a new incident after recovery isn't held back by the old cooldown", ()
     mockListRecentAlertEvents.mockResolvedValue([recoveredFlood(150, 120)]);
     const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
 
-    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: minutesAgo(150) }, wet);
+    await sendFloodAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...settings, lastFloodAlertAt: minutesAgo(150) },
+      wet,
+    );
 
     expect(mockNotifyUser).toHaveBeenCalledWith(
       "user-1",
@@ -595,11 +661,22 @@ describe("a new incident after recovery isn't held back by the old cooldown", ()
 
   it("stays quiet while the first leak is still open", async () => {
     mockListRecentAlertEvents.mockResolvedValue([
-      { kind: "flood", channels_sent: ["email"], channels_skipped: [], created_at: minutesAgo(60), acknowledged_at: null },
+      {
+        kind: "flood",
+        channels_sent: ["email"],
+        channels_skipped: [],
+        created_at: minutesAgo(60),
+        acknowledged_at: null,
+      },
     ]);
     const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
 
-    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: minutesAgo(60) }, wet);
+    await sendFloodAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...settings, lastFloodAlertAt: minutesAgo(60) },
+      wet,
+    );
 
     expect(mockNotifyUser).not.toHaveBeenCalled();
   });
@@ -608,18 +685,35 @@ describe("a new incident after recovery isn't held back by the old cooldown", ()
     mockListRecentAlertEvents.mockResolvedValue([recoveredFlood(30, 3)]);
     const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
 
-    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: minutesAgo(30) }, wet);
+    await sendFloodAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...settings, lastFloodAlertAt: minutesAgo(30) },
+      wet,
+    );
 
     expect(mockNotifyUser).not.toHaveBeenCalled();
   });
 
   it("doesn't treat a person's acknowledgement as a recovery", async () => {
     mockListRecentAlertEvents.mockResolvedValue([
-      { kind: "flood", channels_sent: ["email"], channels_skipped: [], created_at: minutesAgo(90), acknowledged_at: minutesAgo(60), meta: {} },
+      {
+        kind: "flood",
+        channels_sent: ["email"],
+        channels_skipped: [],
+        created_at: minutesAgo(90),
+        acknowledged_at: minutesAgo(60),
+        meta: {},
+      },
     ]);
     const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
 
-    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: minutesAgo(90) }, wet);
+    await sendFloodAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...settings, lastFloodAlertAt: minutesAgo(90) },
+      wet,
+    );
 
     expect(mockNotifyUser).not.toHaveBeenCalled();
   });
@@ -657,7 +751,12 @@ describe("concurrent evaluations send an alert once", () => {
     mockClaimCooldown.mockResolvedValue({ claimed: true, claimedAt: "2026-01-02T00:00:00.000Z" });
     const { sendFloodAlertsIfNeeded } = await import("./alertNotifications");
 
-    await sendFloodAlertsIfNeeded("user-1", "a@example.com", { ...settings, lastFloodAlertAt: previous }, wet);
+    await sendFloodAlertsIfNeeded(
+      "user-1",
+      "a@example.com",
+      { ...settings, lastFloodAlertAt: previous },
+      wet,
+    );
 
     expect(mockClaimCooldown).toHaveBeenCalledWith("user-1", "last_flood_alert_at", previous);
     expect(mockNotifyUser).toHaveBeenCalledTimes(1);
@@ -672,7 +771,12 @@ describe("concurrent evaluations send an alert once", () => {
 
     await sendFloodAlertsIfNeeded("user-1", "a@example.com", settings, wet);
 
-    expect(mockReleaseCooldown).toHaveBeenCalledWith("user-1", "last_flood_alert_at", "2026-01-02T00:00:00.000Z", null);
+    expect(mockReleaseCooldown).toHaveBeenCalledWith(
+      "user-1",
+      "last_flood_alert_at",
+      "2026-01-02T00:00:00.000Z",
+      null,
+    );
   });
 });
 
@@ -708,36 +812,57 @@ describe("freeze dwell without a household", () => {
     );
 
     expect(mockNotifyUser.mock.calls.some((call) => call[3]?.kind === "threshold")).toBe(true);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("no household for the freeze dwell check"));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("no household for the freeze dwell check"),
+    );
     warn.mockRestore();
   });
 });
 
 describe("freeze recovery needs a 2°F margin (no flapping at the line)", () => {
-  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0 };
+  const settings = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    freezeThresholdF: 34,
+    freezeDwellMinutes: 0,
+  };
   const recoveryCalls = () =>
-    mockAutoResolveAlerts.mock.calls.filter((call) => (call[1] as { kinds?: string[] })?.kinds?.includes("threshold"));
+    mockAutoResolveAlerts.mock.calls.filter((call) =>
+      (call[1] as { kinds?: string[] })?.kinds?.includes("threshold"),
+    );
 
   it("isn't recovered just above the threshold", async () => {
     mockAutoResolveAlerts.mockClear();
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
-    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Pipe", tempf: 35.9, humidity: null }]);
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Pipe", tempf: 35.9, humidity: null },
+    ]);
     expect(recoveryCalls()).toHaveLength(0);
   });
 
   it("is recovered at threshold + 2°F", async () => {
     mockAutoResolveAlerts.mockClear();
     const { sendThresholdAlertsIfNeeded } = await import("./alertNotifications");
-    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [{ label: "Pipe", tempf: 36, humidity: null }]);
+    await sendThresholdAlertsIfNeeded("user-1", "a@example.com", settings, [
+      { label: "Pipe", tempf: 36, humidity: null },
+    ]);
     expect(recoveryCalls()).toHaveLength(1);
   });
 });
 
 describe("no 'back to normal' from a probe that stopped reporting", () => {
-  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0, outageHours: 2 };
+  const settings = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    freezeThresholdF: 34,
+    freezeDwellMinutes: 0,
+    outageHours: 2,
+  };
   const hoursAgo = (h: number) => new Date(Date.now() - h * 3600_000).toISOString();
   const thresholdResolves = () =>
-    mockAutoResolveAlerts.mock.calls.filter((call) => (call[1] as { kinds?: string[] })?.kinds?.includes("threshold"));
+    mockAutoResolveAlerts.mock.calls.filter((call) =>
+      (call[1] as { kinds?: string[] })?.kinds?.includes("threshold"),
+    );
 
   it("doesn't announce recovery while an in-scope probe is stale", async () => {
     mockAutoResolveAlerts.mockClear();
@@ -763,8 +888,19 @@ describe("no 'back to normal' from a probe that stopped reporting", () => {
 describe("rule alerts re-arm when the rule stops matching", () => {
   const rule = { id: "r1", name: "Garage door left open", conditions: [], channels: [] };
   const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
-  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, alertRules: [rule] as never, lastRuleAlertAt: minutesAgo(60) };
-  const openRuleEvent = { kind: "rule", channels_sent: ["push"], channels_skipped: [], created_at: minutesAgo(60), acknowledged_at: null };
+  const settings = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    alertRules: [rule] as never,
+    lastRuleAlertAt: minutesAgo(60),
+  };
+  const openRuleEvent = {
+    kind: "rule",
+    channels_sent: ["push"],
+    channels_skipped: [],
+    created_at: minutesAgo(60),
+    acknowledged_at: null,
+  };
 
   it("closes the open rule alert silently once nothing matches", async () => {
     mockListRecentAlertEvents.mockResolvedValue([openRuleEvent]);
@@ -774,7 +910,10 @@ describe("rule alerts re-arm when the rule stops matching", () => {
 
     await maybeSendRuleAlerts("user-1", "a@example.com", [], settings, freezingReading);
 
-    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["rule"], reason: "recovered" });
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", {
+      kinds: ["rule"],
+      reason: "recovered",
+    });
     expect(mockNotifyUser).not.toHaveBeenCalled(); // non-door rules re-arm silently
   });
 
@@ -802,13 +941,25 @@ describe("rule alerts re-arm when the rule stops matching", () => {
 
   it("marks a rule alert that involves a door", async () => {
     mockListRecentAlertEvents.mockResolvedValue([]);
-    mockEvaluateAlertRules.mockReturnValue([{ message: "Garage door open 20 min", involvesDoor: true }]);
+    mockEvaluateAlertRules.mockReturnValue([
+      { message: "Garage door open 20 min", involvesDoor: true },
+    ]);
     const { maybeSendRuleAlerts } = await import("./alertNotifications");
 
-    await maybeSendRuleAlerts("user-1", "a@example.com", [], { ...settings, lastRuleAlertAt: null }, freezingReading);
+    await maybeSendRuleAlerts(
+      "user-1",
+      "a@example.com",
+      [],
+      { ...settings, lastRuleAlertAt: null },
+      freezingReading,
+    );
 
     const payload = mockNotifyUser.mock.calls.find((call) => call[3]?.kind === "rule")?.[3];
-    expect(payload).toMatchObject({ kind: "rule", body: "Garage door open 20 min", meta: { doorRule: true } });
+    expect(payload).toMatchObject({
+      kind: "rule",
+      body: "Garage door open 20 min",
+      meta: { doorRule: true },
+    });
   });
 
   it("sends a short 'door alert cleared' notice on the alert's channels once a door rule stops matching", async () => {
@@ -821,13 +972,21 @@ describe("rule alerts re-arm when the rule stops matching", () => {
 
     expect(mockNotifyUser).toHaveBeenCalledTimes(1);
     const [, , , payload, options] = mockNotifyUser.mock.calls[0]!;
-    expect(payload).toMatchObject({ kind: "recovery", title: "Recovered: door alert cleared", meta: { recoveredKind: "rule" } });
+    expect(payload).toMatchObject({
+      kind: "recovery",
+      title: "Recovered: door alert cleared",
+      meta: { recoveredKind: "rule" },
+    });
     expect(options).toEqual({ channelFilter: ["push"] });
   });
 
   it("sends nothing on later evaluations once the door alert is closed", async () => {
     mockListRecentAlertEvents.mockResolvedValue([
-      { ...openRuleEvent, acknowledged_at: minutesAgo(15), meta: { doorRule: true, autoResolved: "recovered" } },
+      {
+        ...openRuleEvent,
+        acknowledged_at: minutesAgo(15),
+        meta: { doorRule: true, autoResolved: "recovered" },
+      },
     ]);
     mockEvaluateAlertRules.mockClear().mockReturnValue([]);
     mockAutoResolveAlerts.mockClear(); // default: nothing left to resolve
@@ -842,14 +1001,19 @@ describe("rule alerts re-arm when the rule stops matching", () => {
 
   it("still closes a door alert left open past the 4h cooldown (within a day)", async () => {
     const overnight = { ...settings, lastRuleAlertAt: minutesAgo(9 * 60) };
-    mockListRecentAlertEvents.mockResolvedValue([{ ...openRuleEvent, created_at: minutesAgo(9 * 60), meta: { doorRule: true } }]);
+    mockListRecentAlertEvents.mockResolvedValue([
+      { ...openRuleEvent, created_at: minutesAgo(9 * 60), meta: { doorRule: true } },
+    ]);
     mockEvaluateAlertRules.mockReturnValue([]);
     mockAutoResolveAlerts.mockClear().mockResolvedValueOnce({ resolved: 1, channels: ["email"] });
     const { maybeSendRuleAlerts } = await import("./alertNotifications");
 
     await maybeSendRuleAlerts("user-1", "a@example.com", [], overnight, freezingReading);
 
-    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", { kinds: ["rule"], reason: "recovered" });
+    expect(mockAutoResolveAlerts).toHaveBeenCalledWith("user-1", {
+      kinds: ["rule"],
+      reason: "recovered",
+    });
     expect(mockNotifyUser.mock.calls[0]?.[3]).toMatchObject({ kind: "recovery" });
   });
 
@@ -859,14 +1023,22 @@ describe("rule alerts re-arm when the rule stops matching", () => {
     mockAutoResolveAlerts.mockClear();
     const { maybeSendRuleAlerts } = await import("./alertNotifications");
 
-    await maybeSendRuleAlerts("user-1", "a@example.com", [], { ...settings, lastRuleAlertAt: minutesAgo(25 * 60) }, freezingReading);
+    await maybeSendRuleAlerts(
+      "user-1",
+      "a@example.com",
+      [],
+      { ...settings, lastRuleAlertAt: minutesAgo(25 * 60) },
+      freezingReading,
+    );
 
     expect(mockAutoResolveAlerts).not.toHaveBeenCalled();
     expect(mockNotifyUser).not.toHaveBeenCalled();
   });
 
   it("skips evaluation in the cooldown when nothing is open or recovered", async () => {
-    mockListRecentAlertEvents.mockResolvedValue([{ ...openRuleEvent, acknowledged_at: minutesAgo(40), meta: {} }]);
+    mockListRecentAlertEvents.mockResolvedValue([
+      { ...openRuleEvent, acknowledged_at: minutesAgo(40), meta: {} },
+    ]);
     mockEvaluateAlertRules.mockClear();
     const { maybeSendRuleAlerts } = await import("./alertNotifications");
 
@@ -906,7 +1078,11 @@ describe("quiet hours recap", () => {
 
     expect(mockNotifyUser).toHaveBeenCalledTimes(1);
     const payload = mockNotifyUser.mock.calls[0]![3];
-    expect(payload).toMatchObject({ kind: "digest", title: "While quiet hours were on", meta: { quietHoursSummary: true } });
+    expect(payload).toMatchObject({
+      kind: "digest",
+      title: "While quiet hours were on",
+      meta: { quietHoursSummary: true },
+    });
     expect(payload.body).toContain("• Battery low: Garage probe 12%");
     expect(payload.body).toContain("• Weak Wi-Fi: Attic");
   });
@@ -915,12 +1091,31 @@ describe("quiet hours recap", () => {
     mockListRecentAlertEvents.mockResolvedValue([held("Battery low", "2026-01-15T03:00:00Z")]);
     const { maybeSendQuietHoursSummary } = await import("./alertNotifications");
 
-    await maybeSendQuietHoursSummary("user-1", "a@example.com", settings, "en", Date.parse("2026-01-15T06:00:00Z"));
-    await maybeSendQuietHoursSummary("user-1", "a@example.com", settings, "en", Date.parse("2026-01-15T09:00:00Z"));
+    await maybeSendQuietHoursSummary(
+      "user-1",
+      "a@example.com",
+      settings,
+      "en",
+      Date.parse("2026-01-15T06:00:00Z"),
+    );
+    await maybeSendQuietHoursSummary(
+      "user-1",
+      "a@example.com",
+      settings,
+      "en",
+      Date.parse("2026-01-15T09:00:00Z"),
+    );
     expect(mockNotifyUser).not.toHaveBeenCalled();
 
     mockListRecentAlertEvents.mockResolvedValue([
-      { kind: "digest", title: "While quiet hours were on", channels_sent: ["email"], channels_skipped: [], created_at: "2026-01-15T07:05:00Z", meta: { quietHoursSummary: true } },
+      {
+        kind: "digest",
+        title: "While quiet hours were on",
+        channels_sent: ["email"],
+        channels_skipped: [],
+        created_at: "2026-01-15T07:05:00Z",
+        meta: { quietHoursSummary: true },
+      },
       held("Battery low", "2026-01-15T03:00:00Z"),
     ]);
     await maybeSendQuietHoursSummary("user-1", "a@example.com", settings, "en", now);

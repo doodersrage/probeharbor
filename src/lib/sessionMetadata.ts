@@ -27,7 +27,10 @@ export async function updateSessionUserMetadata(
   try {
     const userId = await userIdForSessionToken(accessToken);
     if (!userId) return { user: null, error: new Error("Invalid session") };
-    const [{ mergeUserMetadata }, { getUserRecord }] = await Promise.all([import("./db/userMetadata"), import("./userRecords")]);
+    const [{ mergeUserMetadata }, { getUserRecord }] = await Promise.all([
+      import("./db/userMetadata"),
+      import("./userRecords"),
+    ]);
     await mergeUserMetadata(userId, patch);
     return { user: (await getUserRecord(userId)) as User | null, error: null };
   } catch (error) {

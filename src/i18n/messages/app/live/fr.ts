@@ -4,7 +4,8 @@ const fr: LiveMessages = {
   title: "En direct",
   subtitle: "La mesure actuelle de chaque sonde, plus la météo extérieure.",
   hiddenTitle: "Les panneaux en direct sont masqués",
-  hiddenBody: "Vos préférences d’affichage masquent actuellement les cartes des sondes et la météo.",
+  hiddenBody:
+    "Vos préférences d’affichage masquent actuellement les cartes des sondes et la météo.",
   showBoth: "Afficher sondes et météo",
   openSettings: "Ouvrir les paramètres",
   waitingTitle: "En attente d’une mesure",

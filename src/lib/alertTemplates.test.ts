@@ -3,9 +3,7 @@ import { applyAlertTemplates, interpolateTemplate } from "./alertTemplates";
 
 describe("alert templates", () => {
   it("interpolates variables", () => {
-    expect(interpolateTemplate("Hello {{kind}}", { kind: "threshold" })).toBe(
-      "Hello threshold",
-    );
+    expect(interpolateTemplate("Hello {{kind}}", { kind: "threshold" })).toBe("Hello threshold");
   });
 
   it("applies kind-specific templates", () => {

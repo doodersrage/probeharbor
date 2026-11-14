@@ -2,12 +2,14 @@ import type { AlertMessages } from "./en";
 
 const es: AlertMessages = {
   threshold: {
-    freezeDetail: "{label} está a {temp} {unit} (en el umbral de congelación de {threshold} {unit} o por debajo).",
+    freezeDetail:
+      "{label} está a {temp} {unit} (en el umbral de congelación de {threshold} {unit} o por debajo).",
     freezeDetailDwell:
       "{label} está a {temp} {unit} (en el umbral de congelación de {threshold} {unit} o por debajo durante {minutes}+ min).",
     /** Appended to a freeze line when the reading is a few minutes old or more. */
     readingAge: " Última lectura {age}.",
-    humidityDetail: "La humedad de {label} es del {humidity} % (por encima del umbral del {threshold} %).",
+    humidityDetail:
+      "La humedad de {label} es del {humidity} % (por encima del umbral del {threshold} %).",
     titleFreeze: "Congelación: {label} {temp} {unit}",
     titleMore: " (+{count} más)",
     titleHumidityNote: ", humedad alta",
@@ -22,11 +24,13 @@ const es: AlertMessages = {
   power: {
     title: "Sin corriente",
     detail: "{label} indica que no hay corriente.",
-    footer: "Puede que los calefactores, los cables calefactores y las bombas de sumidero de ese circuito también estén apagados.",
+    footer:
+      "Puede que los calefactores, los cables calefactores y las bombas de sumidero de ese circuito también estén apagados.",
   },
   forecast: {
     title: "Riesgo de congelación previsto",
-    detail: "La previsión exterior llega a {temp} {unit} en {hours} h (umbral de congelación {threshold} {unit}).",
+    detail:
+      "La previsión exterior llega a {temp} {unit} en {hours} h (umbral de congelación {threshold} {unit}).",
   },
   rate: {
     title: "Cambio rápido de temperatura",
@@ -87,12 +91,15 @@ const es: AlertMessages = {
     outageTitle: "Recuperado: los dispositivos vuelven a enviar datos",
     outageBody: "Todos los dispositivos se han vuelto a conectar. La alerta de caída está cerrada.",
     stuckTitle: "Recuperado: las lecturas de la sonda vuelven a cambiar",
-    stuckBody: "La sonda que parecía atascada vuelve a enviar temperaturas que cambian. La alerta está cerrada.",
+    stuckBody:
+      "La sonda que parecía atascada vuelve a enviar temperaturas que cambian. La alerta está cerrada.",
     doorTitle: "Recuperado: alerta de puerta resuelta",
-    doorBody: "La regla de puerta que generó la alerta ya no se cumple (por ejemplo, se cerró la puerta). La alerta está cerrada.",
+    doorBody:
+      "La regla de puerta que generó la alerta ya no se cumple (por ejemplo, se cerró la puerta). La alerta está cerrada.",
   },
   context: {
-    doorOpen: "Un sensor de puerta está abierto. Espera una pérdida de calor más rápida hasta que se cierre.",
+    doorOpen:
+      "Un sensor de puerta está abierto. Espera una pérdida de calor más rápida hasta que se cierre.",
   },
   delivery: {
     smsLine: "{title}: {body}",
@@ -168,7 +175,8 @@ const es: AlertMessages = {
   },
   channelErrors: {
     smsNoPhone: "No hay teléfono para SMS en los ajustes de alertas ni en el campo de reemplazo.",
-    smsSendFailed: "Falló el envío del SMS con Twilio. Revisa las credenciales de Twilio y el número de destino.",
+    smsSendFailed:
+      "Falló el envío del SMS con Twilio. Revisa las credenciales de Twilio y el número de destino.",
     unknownKind: "Tipo de prueba de canal desconocido.",
   },
 };

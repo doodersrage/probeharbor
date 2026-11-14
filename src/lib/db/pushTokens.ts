@@ -11,7 +11,9 @@ const message = (error: unknown) => (error instanceof Error ? error.message : St
 // ---- Web Push ---------------------------------------------------------------
 
 /** Throws on failure (the sender reports "push_load_failed"). */
-export function listPushSubscriptions(userId: string): Promise<Array<{ endpoint: string; p256dh: string; auth: string }>> {
+export function listPushSubscriptions(
+  userId: string,
+): Promise<Array<{ endpoint: string; p256dh: string; auth: string }>> {
   return query(
     "select endpoint, p256dh, auth from public.push_subscriptions where user_id = $1 order by created_at, id",
     [userId],
@@ -38,7 +40,10 @@ export async function savePushSubscription(
 
 export async function deletePushSubscription(userId: string, endpoint: string): Promise<void> {
   try {
-    await query("delete from public.push_subscriptions where user_id = $1 and endpoint = $2", [userId, endpoint]);
+    await query("delete from public.push_subscriptions where user_id = $1 and endpoint = $2", [
+      userId,
+      endpoint,
+    ]);
   } catch (error) {
     console.error("Failed to delete push subscription:", message(error));
   }
@@ -48,7 +53,10 @@ export async function deletePushSubscription(userId: string, endpoint: string): 
 
 /** Throws on failure (the sender reports "fcm_load_failed"). */
 export function listFcmTokens(userId: string): Promise<Array<{ token: string }>> {
-  return query("select token from public.fcm_device_tokens where user_id = $1 order by created_at, id", [userId]);
+  return query(
+    "select token from public.fcm_device_tokens where user_id = $1 order by created_at, id",
+    [userId],
+  );
 }
 
 export async function saveFcmToken(
@@ -72,7 +80,10 @@ export async function saveFcmToken(
 
 export async function deleteFcmToken(userId: string, token: string): Promise<void> {
   try {
-    await query("delete from public.fcm_device_tokens where user_id = $1 and token = $2", [userId, token]);
+    await query("delete from public.fcm_device_tokens where user_id = $1 and token = $2", [
+      userId,
+      token,
+    ]);
   } catch (error) {
     console.error("Failed to delete FCM token:", message(error));
   }
@@ -81,13 +92,19 @@ export async function deleteFcmToken(userId: string, token: string): Promise<voi
 /** A device signed in as `userId` stops receiving other accounts' alerts. */
 export async function releaseFcmTokenFromOtherUsers(userId: string, token: string): Promise<void> {
   try {
-    await query("delete from public.fcm_device_tokens where token = $1 and user_id <> $2", [token, userId]);
+    await query("delete from public.fcm_device_tokens where token = $1 and user_id <> $2", [
+      token,
+      userId,
+    ]);
   } catch (error) {
     console.error("Failed to release FCM token from other users:", message(error));
   }
 }
 
 export async function countFcmTokens(userId: string): Promise<number> {
-  const [row] = await query<{ n: number }>("select count(*) as n from public.fcm_device_tokens where user_id = $1", [userId]);
+  const [row] = await query<{ n: number }>(
+    "select count(*) as n from public.fcm_device_tokens where user_id = $1",
+    [userId],
+  );
   return row?.n ?? 0;
 }

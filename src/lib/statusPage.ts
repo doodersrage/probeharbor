@@ -36,7 +36,11 @@ export async function createStatusPageToken(
   label: string,
 ): Promise<{ token: string | null; error: string | null }> {
   const token = randomToken();
-  const created = await neonStatus.insertStatusPage(householdId, await sha256Hex(token), label.trim() || "Status page");
+  const created = await neonStatus.insertStatusPage(
+    householdId,
+    await sha256Hex(token),
+    label.trim() || "Status page",
+  );
   return { token: created.error ? null : token, error: created.error };
 }
 
@@ -53,16 +57,11 @@ export async function regenerateStatusPageToken(
   return updated.error ? { token: null, error: updated.error } : { token, error: null };
 }
 
-export async function listStatusPageTokens(
-  householdId: string,
-): Promise<StatusPageToken[]> {
+export async function listStatusPageTokens(householdId: string): Promise<StatusPageToken[]> {
   return neonStatus.listStatusPages(householdId);
 }
 
-export async function revokeStatusPageToken(
-  householdId: string,
-  id: string,
-): Promise<void> {
+export async function revokeStatusPageToken(householdId: string, id: string): Promise<void> {
   return neonStatus.revokeStatusPage(householdId, id);
 }
 

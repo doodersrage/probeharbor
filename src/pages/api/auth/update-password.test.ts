@@ -38,8 +38,13 @@ function makeContext(form: Record<string, string>, resetToken?: string): APICont
   const formData = new FormData();
   for (const [k, v] of Object.entries(form)) formData.set(k, v);
   const request = { formData: async () => formData } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
-  const cookies = { get: (name: string) => (name === "ph_reset_token" && resetToken ? { value: resetToken } : undefined) };
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
+  const cookies = {
+    get: (name: string) =>
+      name === "ph_reset_token" && resetToken ? { value: resetToken } : undefined,
+  };
   return { request, cookies, redirect } as unknown as APIContext;
 }
 
@@ -82,11 +87,15 @@ describe("POST /api/auth/update-password", () => {
   });
 
   it("redirects with a weak error when the password is missing", async () => {
-    expect((await post({ confirm: "password1" })).headers.get("Location")).toBe("/reset-password?error=weak");
+    expect((await post({ confirm: "password1" })).headers.get("Location")).toBe(
+      "/reset-password?error=weak",
+    );
   });
 
   it("redirects with a weak error for a short password", async () => {
-    expect((await post({ password: "short", confirm: "short" })).headers.get("Location")).toBe("/reset-password?error=weak");
+    expect((await post({ password: "short", confirm: "short" })).headers.get("Location")).toBe(
+      "/reset-password?error=weak",
+    );
   });
 
   it("redirects with a mismatch error when the passwords differ", async () => {
@@ -110,10 +119,16 @@ describe("POST /api/auth/update-password", () => {
 
   it("with a reset token: resets, confirms the address, signs in and lands on the dashboard", async () => {
     const res = await post({ password: "password1", confirm: "password1" }, "tok");
-    expect(mockResetPassword).toHaveBeenCalledWith({ body: { newPassword: "password1", token: "tok" }, asResponse: true });
+    expect(mockResetPassword).toHaveBeenCalledWith({
+      body: { newPassword: "password1", token: "tok" },
+      asResponse: true,
+    });
     expect(mockClearResetTokenCookie).toHaveBeenCalled();
     expect(mockMarkEmailVerified).toHaveBeenCalledWith(expect.anything(), "user-1");
-    expect(mockSignInEmail).toHaveBeenCalledWith({ body: { email: "a@example.com", password: "password1" }, asResponse: true });
+    expect(mockSignInEmail).toHaveBeenCalledWith({
+      body: { email: "a@example.com", password: "password1" },
+      asResponse: true,
+    });
     expect(res.headers.get("Location")).toBe("/dashboard?password=updated");
     expect(res.headers.getSetCookie().join(";")).toContain("session_token=new");
   });
@@ -121,7 +136,9 @@ describe("POST /api/auth/update-password", () => {
   it("with a reset token and two-factor on: goes through the MFA challenge", async () => {
     mockSignInEmail.mockImplementation(async () => signedIn({ twoFactorRedirect: true }));
     const res = await post({ password: "password1", confirm: "password1" }, "tok");
-    expect(res.headers.get("Location")).toBe(`/signin/mfa?next=${encodeURIComponent("/dashboard?password=updated")}`);
+    expect(res.headers.get("Location")).toBe(
+      `/signin/mfa?next=${encodeURIComponent("/dashboard?password=updated")}`,
+    );
   });
 
   it("refuses an expired or unknown reset token", async () => {

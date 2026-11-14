@@ -23,10 +23,7 @@ vi.mock("../../../lib/userTempConfig", () => ({
   saveHouseholdPullSetup: (...a: unknown[]) => mockSaveHouseholdPullSetup(...a),
 }));
 
-function makeContext(options: {
-  auth?: string | null;
-  body?: unknown | string;
-} = {}): APIContext {
+function makeContext(options: { auth?: string | null; body?: unknown | string } = {}): APIContext {
   const headers = new Headers({ "Content-Type": "application/json" });
   if (options.auth !== null) {
     headers.set("Authorization", options.auth ?? "Bearer good-key");
@@ -65,8 +62,12 @@ const sampleFeed = {
 };
 
 beforeEach(() => {
-  mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
-  mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "write" });
+  mockCheckApiPlan
+    .mockReset()
+    .mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
+  mockResolveApiKey
+    .mockReset()
+    .mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "write" });
   mockSanitizeTempFeeds.mockReset().mockImplementation((feeds: unknown) => feeds);
   mockSanitizeTempProbes.mockReset().mockImplementation((probes: unknown) => probes);
   mockSaveHouseholdPullSetup.mockReset().mockResolvedValue({
@@ -143,7 +144,11 @@ describe("POST /api/v1/pull-setup", () => {
 
 describe("POST /api/v1/pull-setup plan check", () => {
   it("returns 403 and saves nothing after a downgrade", async () => {
-    mockCheckApiPlan.mockResolvedValue({ ok: false, status: 403, error: "API access needs a Pro plan" });
+    mockCheckApiPlan.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "API access needs a Pro plan",
+    });
     const { POST } = await import("./pull-setup");
 
     const response = await POST(makeContext());
@@ -162,7 +167,11 @@ describe("POST /api/v1/pull-setup key scope (write route)", () => {
     const response = await POST(makeContext({ body: { feeds: [sampleFeed] } }));
 
     expect(response.status).toBe(403);
-    expect(await response.json()).toMatchObject({ ok: false, code: "insufficient_scope", required_scope: "write" });
+    expect(await response.json()).toMatchObject({
+      ok: false,
+      code: "insufficient_scope",
+      required_scope: "write",
+    });
     expect(mockSaveHouseholdPullSetup).not.toHaveBeenCalled();
   });
 });

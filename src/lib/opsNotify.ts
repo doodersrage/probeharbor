@@ -15,7 +15,9 @@ async function readOpsEnv(key: string): Promise<string> {
 }
 
 function cleanEnv(value: unknown): string {
-  return String(value ?? "").replace(/\r/g, "").trim();
+  return String(value ?? "")
+    .replace(/\r/g, "")
+    .trim();
 }
 
 async function sendOpsEmail(subject: string, body: string): Promise<boolean> {
@@ -47,8 +49,7 @@ async function sendOpsEmail(subject: string, body: string): Promise<boolean> {
 async function sendOpsDiscord(title: string, body: string): Promise<boolean> {
   // OPS_DISCORD_WEBHOOK_URL is a Worker runtime secret, not a build-time var.
   const webhook =
-    (await readOpsEnv("OPS_DISCORD_WEBHOOK_URL")) ||
-    (await readOpsEnv("DISCORD_OPS_WEBHOOK_URL"));
+    (await readOpsEnv("OPS_DISCORD_WEBHOOK_URL")) || (await readOpsEnv("DISCORD_OPS_WEBHOOK_URL"));
   if (!webhook) return false;
 
   try {
@@ -79,10 +80,7 @@ export function formatJobFailureBody(
   jobName: string,
   details: Record<string, unknown> | null | undefined,
 ): string {
-  const lines = [
-    `Job: ${jobName}`,
-    `Time: ${new Date().toISOString()}`,
-  ];
+  const lines = [`Job: ${jobName}`, `Time: ${new Date().toISOString()}`];
 
   if (details && typeof details === "object") {
     const message = details.message;

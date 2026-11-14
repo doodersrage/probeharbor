@@ -22,7 +22,9 @@ import { readMigrationFiles } from "../../scripts/db-migrate.mjs";
 import { setQueryRunnerForTests } from "../lib/db/client";
 import { makeGetTypeParser } from "../lib/db/types";
 
-const getTypeParser = makeGetTypeParser(pg.types.getTypeParser as (oid: number, format?: "text" | "binary") => unknown);
+const getTypeParser = makeGetTypeParser(
+  pg.types.getTypeParser as (oid: number, format?: "text" | "binary") => unknown,
+);
 
 /** Only local servers: setup creates and drops databases. */
 export function localAdminUrl(): URL {
@@ -80,13 +82,18 @@ export function useTestDatabase(): { client: () => pg.Client } {
   let client: pg.Client | null = null;
   beforeAll(async () => {
     const name = process.env.PROBEHARBOR_TEST_DB;
-    if (!name) throw new Error("Run database tests with `pnpm test:db` (it creates the test database).");
-    client = new pg.Client({ connectionString: testDatabaseUrl(name), types: { getTypeParser } as never });
+    if (!name)
+      throw new Error("Run database tests with `pnpm test:db` (it creates the test database).");
+    client = new pg.Client({
+      connectionString: testDatabaseUrl(name),
+      types: { getTypeParser } as never,
+    });
     await client.connect();
     await client.query("set time zone 'America/New_York'"); // prove results don't depend on the session zone
     const c = client;
-    setQueryRunnerForTests(async <Row>(text: string, params: readonly unknown[] = []) =>
-      (await c.query(text, params as unknown[])).rows as Row[],
+    setQueryRunnerForTests(
+      async <Row>(text: string, params: readonly unknown[] = []) =>
+        (await c.query(text, params as unknown[])).rows as Row[],
     );
     await emptyTables(c);
   });

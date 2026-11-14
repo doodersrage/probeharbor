@@ -2,7 +2,8 @@ import type { PlansMessages } from "./en";
 
 const ptBr: PlansMessages = {
   title: "Planos",
-  subtitle: "Compare os planos e faça upgrade quando precisar de histórico mais longo, SMS ou mais imóveis.",
+  subtitle:
+    "Compare os planos e faça upgrade quando precisar de histórico mais longo, SMS ou mais imóveis.",
   comparisonTitle: "Comparação de recursos",
   comparisonHint: "Sua coluna está destacada.",
   card: {

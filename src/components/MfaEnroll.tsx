@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { trackProductEvent } from "../lib/productAnalytics";
-import {
-  browserSupportsWebAuthn,
-  performWebAuthnCreate,
-} from "../lib/webauthnMfaBrowser";
+import { browserSupportsWebAuthn, performWebAuthnCreate } from "../lib/webauthnMfaBrowser";
 import { MFA_WEBAUTHN_UI_ENABLED } from "../lib/mfaWebAuthnUi";
 import { fmt, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
@@ -17,9 +14,7 @@ type FactorRow = {
 
 type LoadState = "loading" | "ready" | "error";
 
-async function mfaFetch(
-  init?: RequestInit & { method?: string },
-): Promise<Response> {
+async function mfaFetch(init?: RequestInit & { method?: string }): Promise<Response> {
   return fetch("/api/auth/mfa-manage", {
     credentials: "same-origin",
     ...init,
@@ -53,8 +48,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
   const [passwordRequired, setPasswordRequired] = useState(false);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const webauthnSupported =
-    MFA_WEBAUTHN_UI_ENABLED && browserSupportsWebAuthn();
+  const webauthnSupported = MFA_WEBAUTHN_UI_ENABLED && browserSupportsWebAuthn();
 
   async function refreshFactorList() {
     const res = await mfaFetch({ method: "GET" });
@@ -112,9 +106,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
         }),
       );
     } else {
-      setStatus(
-        fmt(t.onlyUnfinished, { unfinished: plural(t.unfinishedCount, pending, locale) }),
-      );
+      setStatus(fmt(t.onlyUnfinished, { unfinished: plural(t.unfinishedCount, pending, locale) }));
     }
     setLoadState("ready");
   }
@@ -127,9 +119,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
       } catch (err) {
         if (cancelled) return;
         setLoadState("error");
-        setStatus(
-          err instanceof Error ? err.message : t.loadError,
-        );
+        setStatus(err instanceof Error ? err.message : t.loadError);
       }
     })();
     return () => {
@@ -319,7 +309,11 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
     try {
       const res = await mfaFetch({
         method: "POST",
-        body: JSON.stringify({ action: "unenroll", factorId: id, ...(passwordRequired ? { password } : {}) }),
+        body: JSON.stringify({
+          action: "unenroll",
+          factorId: id,
+          ...(passwordRequired ? { password } : {}),
+        }),
       });
       const payload = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) throw new Error(payload.error ?? t.factorRemoveFailed);
@@ -342,11 +336,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
 
   return (
     <div>
-      <p
-        class="text-sm text-[var(--color-text-muted)] mb-3"
-        role="status"
-        aria-live="polite"
-      >
+      <p class="text-sm text-[var(--color-text-muted)] mb-3" role="status" aria-live="polite">
         {status}
       </p>
       {loadState === "error" && (
@@ -359,9 +349,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
             setStatus(t.checking);
             void refreshFactorList().catch((err) => {
               setLoadState("error");
-              setStatus(
-                err instanceof Error ? err.message : t.loadError,
-              );
+              setStatus(err instanceof Error ? err.message : t.loadError);
             });
           }}
         >
@@ -373,7 +361,8 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
           {factors.map((factor) => (
             <li class="flex flex-wrap items-center gap-2" key={factor.id}>
               <span>
-                {factor.friendly_name || t.authenticator} ({t.statusLabels[factor.status] ?? factor.status})
+                {factor.friendly_name || t.authenticator} (
+                {t.statusLabels[factor.status] ?? factor.status})
               </span>
               <button
                 type="button"
@@ -392,7 +381,8 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
           {webauthnFactors.map((factor) => (
             <li class="flex flex-wrap items-center gap-2" key={factor.id}>
               <span>
-                {factor.friendly_name || t.securityKey} ({t.statusLabels[factor.status] ?? factor.status})
+                {factor.friendly_name || t.securityKey} (
+                {t.statusLabels[factor.status] ?? factor.status})
               </span>
               <button
                 type="button"
@@ -406,9 +396,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
           ))}
         </ul>
       )}
-      <p class="text-sm text-[var(--color-text-muted)] mb-3">
-        {t.totpHint}
-      </p>
+      <p class="text-sm text-[var(--color-text-muted)] mb-3">{t.totpHint}</p>
       {passwordRequired && (
         <div class="form-field mb-3">
           <label class="form-label" for="mfa-account-password">
@@ -423,7 +411,10 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
             value={password}
             onInput={(e) => setPassword((e.target as HTMLInputElement).value)}
           />
-          <p class="text-sm text-[var(--color-text-muted)] mt-1 mb-0" id="mfa-account-password-hint">
+          <p
+            class="text-sm text-[var(--color-text-muted)] mt-1 mb-0"
+            id="mfa-account-password-hint"
+          >
             {t.passwordHint}
           </p>
         </div>
@@ -450,9 +441,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
       </div>
       {yubikeyConfigured && (
         <div class="mb-3 pt-3 border-t border-[var(--color-border)]">
-          <p class="text-sm text-[var(--color-text-muted)] mb-3">
-            {t.otpHint}
-          </p>
+          <p class="text-sm text-[var(--color-text-muted)] mb-3">{t.otpHint}</p>
           {yubikeyPublicIds.length > 0 && (
             <ul class="mb-3 space-y-2 text-sm">
               {yubikeyPublicIds.map((publicId) => (
@@ -496,9 +485,7 @@ export default function MfaEnroll({ text: t = en.mfa, locale = "en" }: Props) {
           </button>
         </div>
       )}
-      {qrCode && (
-        <img src={qrCode} alt={t.qrAlt} width={180} height={180} class="mb-3" />
-      )}
+      {qrCode && <img src={qrCode} alt={t.qrAlt} width={180} height={180} class="mb-3" />}
       {factorId && (
         <div class="form-field mb-3">
           <label class="form-label" for="mfa-verify-code">

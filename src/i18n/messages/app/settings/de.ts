@@ -16,7 +16,8 @@ const de: SettingsMessages = {
     tipsHidden: "Tipps zu Begleit-Apps in der Übersicht ausgeblendet.",
     tipsReset: "Tipps zu Begleit-Apps werden in der Übersicht wieder angezeigt.",
     retentionSaved: "Aufbewahrungseinstellung gespeichert.",
-    retentionError: "Die Aufbewahrungseinstellung konnte nicht gespeichert werden. Die bisherige Einstellung gilt weiter; versuche es erneut.",
+    retentionError:
+      "Die Aufbewahrungseinstellung konnte nicht gespeichert werden. Die bisherige Einstellung gilt weiter; versuche es erneut.",
     tenantSaved: "Mieterkontakt gespeichert.",
     tenantError: "Mieterkontakt konnte nicht gespeichert werden.",
   },
@@ -134,10 +135,14 @@ const de: SettingsMessages = {
   mfa: {
     checking: "MFA-Status wird geprüft…",
     loadError: "MFA-Status konnte nicht geladen werden",
-    noneWithYubikey: "Noch keine MFA-Faktoren eingerichtet – füge unten eine Authenticator-App oder einen YubiKey hinzu.",
+    noneWithYubikey:
+      "Noch keine MFA-Faktoren eingerichtet – füge unten eine Authenticator-App oder einen YubiKey hinzu.",
     none: "Keine MFA-Faktoren eingerichtet – füge unten eine Authenticator-App hinzu.",
     allVerified: "{factors}{breakdown}.",
-    factorsEnrolled: { one: "{count} MFA-Faktor eingerichtet", other: "{count} MFA-Faktoren eingerichtet" },
+    factorsEnrolled: {
+      one: "{count} MFA-Faktor eingerichtet",
+      other: "{count} MFA-Faktoren eingerichtet",
+    },
     breakdown: " ({apps} App · {keys})",
     keyCount: { one: "{count} Schlüssel", other: "{count} Schlüssel" },
     someUnfinished: "{verified} eingerichtet · {unfinished} (entfernen, falls hängengeblieben).",
@@ -150,7 +155,8 @@ const de: SettingsMessages = {
     scanQr:
       "Scanne den QR-Code mit deiner Authenticator-App (oder Yubico Authenticator auf einem YubiKey) und gib unten einen Bestätigungscode ein.",
     verifyFailed: "Bestätigung fehlgeschlagen",
-    totpEnrolled: "Authenticator-App eingerichtet. Bei der nächsten Anmeldung wird ein Code abgefragt.",
+    totpEnrolled:
+      "Authenticator-App eingerichtet. Bei der nächsten Anmeldung wird ein Code abgefragt.",
     keyEnrollFailed: "Sicherheitsschlüssel konnte nicht eingerichtet werden",
     keyStartFailed: "Registrierung des Sicherheitsschlüssels konnte nicht gestartet werden",
     keyVerifyFailed: "Bestätigung des Sicherheitsschlüssels fehlgeschlagen",
@@ -185,7 +191,8 @@ const de: SettingsMessages = {
     passwordLabel: "Kontopasswort",
     passwordHint: "Wird benötigt, um die Authenticator-App ein- oder auszuschalten.",
     passkeysHeading: "Passkeys",
-    passkeysHint: "Melde dich mit Fingerabdruck, Gesicht oder Geräte-PIN statt mit Passwort und Code an. Ein Passkey überspringt den Schritt mit der Authenticator-App.",
+    passkeysHint:
+      "Melde dich mit Fingerabdruck, Gesicht oder Geräte-PIN statt mit Passwort und Code an. Ein Passkey überspringt den Schritt mit der Authenticator-App.",
     addPasskey: "Passkey hinzufügen",
     passkeyDefaultName: "Passkey",
     passkeyAdded: "Passkey hinzugefügt.",
@@ -223,7 +230,8 @@ const de: SettingsMessages = {
     upgradeHtml:
       'Wechsle zu Member für 90 Tage Verlauf oder zu Pro für 1 Jahr und mehr, um einen längeren Zeitraum aufzubewahren. <a class="text-link" href="/pricing#data-retention">Aufbewahrung vergleichen</a>.',
     deleteHeading: "Konto löschen",
-    deleteBody: "Löscht {email}, die Alarmeinstellungen und Haushalte, die nur dir gehören, endgültig.",
+    deleteBody:
+      "Löscht {email}, die Alarmeinstellungen und Haushalte, die nur dir gehören, endgültig.",
     deleteConfirmPassword: " Gib dein Passwort erneut ein und tippe DELETE zur Bestätigung.",
     deleteConfirmEmail: " Bestätige deine E-Mail-Adresse und tippe DELETE zur Bestätigung.",
     errorConfirm: "Tippe zur Bestätigung genau DELETE.",

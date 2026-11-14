@@ -5,14 +5,12 @@
 export function unquoteEnvValue(value) {
   const trimmed = value.trim();
   if (trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"')) {
-    return trimmed
-      .slice(1, -1)
-      .replace(/\\([nrt"'\\])/g, (_, ch) => {
-        if (ch === "n") return "\n";
-        if (ch === "r") return "\r";
-        if (ch === "t") return "\t";
-        return ch;
-      });
+    return trimmed.slice(1, -1).replace(/\\([nrt"'\\])/g, (_, ch) => {
+      if (ch === "n") return "\n";
+      if (ch === "r") return "\r";
+      if (ch === "t") return "\t";
+      return ch;
+    });
   }
   if (trimmed.length >= 2 && trimmed.startsWith("'") && trimmed.endsWith("'")) {
     return trimmed.slice(1, -1);

@@ -10,10 +10,7 @@ export async function canDownloadHistoryCsv(userId: string): Promise<boolean> {
   return entitlements.canDownloadCsv;
 }
 
-export async function isUserInGroup(
-  userId: string,
-  groupName: string,
-): Promise<boolean> {
+export async function isUserInGroup(userId: string, groupName: string): Promise<boolean> {
   return neonAdmin.isUserInGroup(userId, groupName);
 }
 

@@ -50,11 +50,7 @@ vi.mock("../../../lib/householdActivity", () => ({
   recordHouseholdActivity: (...a: unknown[]) => mockRecordHouseholdActivity(...a),
 }));
 
-function makeContext(options: {
-  token?: string;
-  body?: string;
-  search?: string;
-} = {}): APIContext {
+function makeContext(options: { token?: string; body?: string; search?: string } = {}): APIContext {
   const { token = "tok", body = "", search = "" } = options;
   const request = {
     text: async () => body,
@@ -76,7 +72,9 @@ beforeEach(() => {
   mockApplyHouseholdVacation.mockReset().mockResolvedValue(2);
   mockClearHouseholdSnooze.mockReset().mockResolvedValue(2);
   mockClearHouseholdVacation.mockReset().mockResolvedValue(2);
-  mockGetHouseholdAlertHold.mockReset().mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
+  mockGetHouseholdAlertHold
+    .mockReset()
+    .mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [{ id: "d1" }] });
   mockFetchLatestSensorValues.mockReset().mockResolvedValue([]);
   mockRecordHouseholdActivity.mockReset().mockResolvedValue(undefined);
@@ -204,8 +202,16 @@ describe("POST /api/inbound/[token]", () => {
 
   it("returns a status summary limited to temperature sensors", async () => {
     mockFetchLatestSensorValues.mockResolvedValue([
-      { sensor: { kind: "temperature", label: "Garage", unit: "F" }, value_num: 40, recorded_at: "2024-01-01" },
-      { sensor: { kind: "humidity", label: "Garage", unit: "%" }, value_num: 55, recorded_at: "2024-01-01" },
+      {
+        sensor: { kind: "temperature", label: "Garage", unit: "F" },
+        value_num: 40,
+        recorded_at: "2024-01-01",
+      },
+      {
+        sensor: { kind: "humidity", label: "Garage", unit: "%" },
+        value_num: 55,
+        recorded_at: "2024-01-01",
+      },
     ]);
     const { POST } = await import("./[token]");
     const context = makeContext({ body: JSON.stringify({ action: "status" }) });
@@ -227,7 +233,9 @@ describe("POST /api/inbound/[token]", () => {
     });
     const { POST } = await import("./[token]");
 
-    const json = (await (await POST(makeContext({ body: '{"action":"status"}' }))).json()) as Record<string, unknown>;
+    const json = (await (
+      await POST(makeContext({ body: '{"action":"status"}' }))
+    ).json()) as Record<string, unknown>;
 
     expect(mockGetHouseholdAlertHold).toHaveBeenCalledWith("house-1");
     expect(json.alertHold).toEqual({ snoozedUntil: until, vacationUntil: null });

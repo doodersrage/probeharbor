@@ -46,7 +46,8 @@ const es: ReportEmailMessages = {
 
   viewHistory: "Ver historial",
   manageAlerts: "Gestionar alertas",
-  attachedEmail: "Se adjunta el informe completo en HTML: ábrelo en un navegador o imprímelo en PDF.",
+  attachedEmail:
+    "Se adjunta el informe completo en HTML: ábrelo en un navegador o imprímelo en PDF.",
   printHint: "Imprime esta página (Ctrl/Cmd+P) para guardarla como PDF.",
   documentTitle: "Informe de ProbeHarbor: {label}",
 

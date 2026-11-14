@@ -10,9 +10,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       status: 429,
       headers: {
         "Content-Type": "application/json",
-        ...(rate.retryAfterSec
-          ? { "Retry-After": String(rate.retryAfterSec) }
-          : {}),
+        ...(rate.retryAfterSec ? { "Retry-After": String(rate.retryAfterSec) } : {}),
       },
     });
   }

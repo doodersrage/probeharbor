@@ -9,10 +9,8 @@ vi.mock("../../../lib/auth", () => ({
 const mockApplyVacationForHouseholdMembers = vi.fn();
 const mockClearVacationForHouseholdMembers = vi.fn();
 vi.mock("../../../lib/alertSnoozeTokens", () => ({
-  applyVacationForHouseholdMembers: (...a: unknown[]) =>
-    mockApplyVacationForHouseholdMembers(...a),
-  clearVacationForHouseholdMembers: (...a: unknown[]) =>
-    mockClearVacationForHouseholdMembers(...a),
+  applyVacationForHouseholdMembers: (...a: unknown[]) => mockApplyVacationForHouseholdMembers(...a),
+  clearVacationForHouseholdMembers: (...a: unknown[]) => mockClearVacationForHouseholdMembers(...a),
 }));
 
 const mockGetUserEntitlements = vi.fn();
@@ -36,10 +34,9 @@ function fakeRedirect(path: string): Response {
   return new Response(null, { status: 302, headers: { Location: path } });
 }
 
-function makeContext(options: {
-  body?: Record<string, string | number> | string;
-  json?: boolean;
-} = {}): APIContext {
+function makeContext(
+  options: { body?: Record<string, string | number> | string; json?: boolean } = {},
+): APIContext {
   const { body, json = false } = options;
   const headers: Record<string, string> = {};
   if (json) headers["content-type"] = "application/json";
@@ -57,7 +54,10 @@ function makeContext(options: {
     if (body && typeof body === "object") {
       for (const [key, value] of Object.entries(body)) formData.set(key, String(value));
     }
-    request = { formData: async () => formData, headers: new Headers(headers) } as unknown as Request;
+    request = {
+      formData: async () => formData,
+      headers: new Headers(headers),
+    } as unknown as Request;
   }
 
   const redirect = vi.fn(fakeRedirect);
@@ -167,9 +167,7 @@ describe("POST /api/user/portfolio-vacation (JSON)", () => {
       members: 2,
     });
 
-    const cleared = await POST(
-      makeContext({ json: true, body: { action: "clear_vacation" } }),
-    );
+    const cleared = await POST(makeContext({ json: true, body: { action: "clear_vacation" } }));
     expect(await cleared.json()).toEqual({
       ok: true,
       action: "clear_vacation",

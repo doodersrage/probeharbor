@@ -18,7 +18,8 @@ const de: DevicesMessages = {
     deviceNotFound: "Dieses Gerät gehört nicht mehr zu diesem Objekt.",
     sensorReplaced: {
       one: "Sensor ersetzt: {count} Messwert aus dem Verlauf wurde auf den neuen Sensor übertragen.",
-      other: "Sensor ersetzt: {count} Messwerte aus dem Verlauf wurden auf den neuen Sensor übertragen.",
+      other:
+        "Sensor ersetzt: {count} Messwerte aus dem Verlauf wurden auf den neuen Sensor übertragen.",
     },
     deviceDeleted: "Gerät gelöscht.",
     bulkDeleted: { one: "{count} Eintrag gelöscht.", other: "{count} Einträge gelöscht." },
@@ -36,15 +37,19 @@ const de: DevicesMessages = {
     feedDeleted: "Feed gelöscht.",
     probeDeleted: "Fühler gelöscht.",
     saveFailed: "Änderungen konnten nicht gespeichert werden. Bitte versuch es noch einmal.",
-    deviceLimit: "Limit für Push-Geräte erreicht ({max} pro Objekt). Wechsle den Tarif, um weitere hinzuzufügen.",
+    deviceLimit:
+      "Limit für Push-Geräte erreicht ({max} pro Objekt). Wechsle den Tarif, um weitere hinzuzufügen.",
     viewer: "Nur-Lese-Zugriff: Du kannst keine Geräte oder Feeds ändern.",
-    deviceActionFailed: "Diese Geräteaktion konnte nicht abgeschlossen werden. Prüfe das Formular und versuch es noch einmal.",
-    actionFailed: "Diese Aktion konnte nicht abgeschlossen werden ({code}). Bitte versuch es noch einmal.",
+    deviceActionFailed:
+      "Diese Geräteaktion konnte nicht abgeschlossen werden. Prüfe das Formular und versuch es noch einmal.",
+    actionFailed:
+      "Diese Aktion konnte nicht abgeschlossen werden ({code}). Bitte versuch es noch einmal.",
     viewPlans: "Tarife ansehen",
     /** At the device limit with push devices that never reported; device links follow. */
     neverReported: {
       one: "{count} deiner Geräte hat noch nie einen Messwert gesendet. Lösche es, wenn du es nicht brauchst, oder nutze es für die Hardware, die du gerade einrichtest (Schlüssel erneuern auf seiner Seite gibt dir einen neuen Schlüssel):",
-      other: "{count} deiner Geräte haben noch nie einen Messwert gesendet. Lösche eines, das du nicht brauchst, oder nutze eines für die Hardware, die du gerade einrichtest (Schlüssel erneuern auf seiner Seite gibt dir einen neuen Schlüssel):",
+      other:
+        "{count} deiner Geräte haben noch nie einen Messwert gesendet. Lösche eines, das du nicht brauchst, oder nutze eines für die Hardware, die du gerade einrichtest (Schlüssel erneuern auf seiner Seite gibt dir einen neuen Schlüssel):",
     },
   },
   tabs: {
@@ -111,7 +116,8 @@ const de: DevicesMessages = {
       lede: "Die meisten ersten Messwerte kommen innerhalb einer Minute an, nachdem das Gerät im WLAN ist. Wenn noch nichts angekommen ist, prüfe Folgendes:",
       wifi: "WLAN: Die meisten Boards (ESP32, Pico W) verbinden sich nur mit 2,4-GHz-Netzen, nicht mit 5 GHz. Prüfe Netzwerkname und Passwort, die du dem Gerät gegeben hast.",
       key: "Schlüssel: Wenn du den Schlüssel selbst eingetippt oder eingefügt hast, muss er genau mit deinem Schlüssel übereinstimmen, ohne zusätzliche Leerzeichen. Verloren? Nutze Schlüssel erneuern auf der Gerätekarte und aktualisiere das Gerät.",
-      network: "Netzwerk: Das Gerät muss das Internet per HTTPS (Port 443) erreichen. Gästenetze und WLANs mit Anmeldeseite blockieren das meist.",
+      network:
+        "Netzwerk: Das Gerät muss das Internet per HTTPS (Port 443) erreichen. Gästenetze und WLANs mit Anmeldeseite blockieren das meist.",
       payloadChecker: "Payload prüfen",
       staleGuide: "Fehlende Messwerte untersuchen",
       troubleshooting: "Anleitung zur Fehlerbehebung",

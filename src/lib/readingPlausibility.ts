@@ -14,7 +14,10 @@ const DS18B20_FAULTS_F = [185, -196.6];
 const TEMP_MIN_F = -100;
 const TEMP_MAX_F = 250;
 
-export function implausibleReason(kind: SensorKind, value: number | null): ImplausibleReason | null {
+export function implausibleReason(
+  kind: SensorKind,
+  value: number | null,
+): ImplausibleReason | null {
   if (value == null) return null;
   if (kind === "temperature") {
     if (DS18B20_FAULTS_F.some((fault) => Math.abs(value - fault) < 0.05)) return "sensor_fault";

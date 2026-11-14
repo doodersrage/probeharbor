@@ -5,7 +5,8 @@ const ptBr: AlertJobsMessages = {
     confirm: {
       eyebrow: "Alertas de congelamento",
       title: "Confirme seus alertas de congelamento",
-      intro: "Clique abaixo e enviaremos um e-mail na tarde anterior a cada noite de geada em {place}.",
+      intro:
+        "Clique abaixo e enviaremos um e-mail na tarde anterior a cada noite de geada em {place}.",
       ignore: "Se você não pediu isso, ignore esta mensagem. Você não receberá nada sem confirmar.",
       cta: "Confirmar alertas de congelamento",
       footerNote:
@@ -15,9 +16,11 @@ const ptBr: AlertJobsMessages = {
     move: {
       eyebrow: "Alertas de congelamento",
       title: "Mudar seus alertas de congelamento para {place}?",
-      intro: "Este endereço já recebe alertas de congelamento para {current}. Alguém acabou de pedir para enviá-los para {place} em vez disso.",
+      intro:
+        "Este endereço já recebe alertas de congelamento para {current}. Alguém acabou de pedir para enviá-los para {place} em vez disso.",
       keep: "Nada muda até você clicar abaixo. Seus alertas para {current} continuam chegando normalmente.",
-      ignore: "Se você não pediu isso, ignore esta mensagem. O link deixa de funcionar depois de 7 dias.",
+      ignore:
+        "Se você não pediu isso, ignore esta mensagem. O link deixa de funcionar depois de 7 dias.",
       cta: "Mudar meus alertas de congelamento",
       footerNote:
         "Você está recebendo isto porque alguém informou este endereço na previsão de congelamento de canos da ProbeHarbor.",
@@ -58,13 +61,16 @@ const ptBr: AlertJobsMessages = {
       },
       above: "Fica acima de zero (mínima {low}).",
       wind: "Vento de até {wind} com temperatura abaixo de zero tira o calor dos canos expostos mais rápido.",
-      nextDay: "O dia seguinte também fica abaixo de zero, então os espaços sem aquecimento não vão voltar a esquentar.",
+      nextDay:
+        "O dia seguinte também fica abaixo de zero, então os espaços sem aquecimento não vão voltar a esquentar.",
     },
   },
   stuck: {
-    faultReset: "o valor que um DS18B20 envia após um reset (muitas vezes alimentação fraca ou cabo longo)",
+    faultReset:
+      "o valor que um DS18B20 envia após um reset (muitas vezes alimentação fraca ou cabo longo)",
     faultDisconnected: "o valor que a biblioteca do DS18B20 envia quando a sonda está desconectada",
-    faultMessage: "{label} marca {value} °F, {why}. Verifique a fiação da sonda; esta não é uma temperatura real.",
+    faultMessage:
+      "{label} marca {value} °F, {why}. Verifique a fiação da sonda; esta não é uma temperatura real.",
     faultDetail: "{label} marca {value} {unit} (falha do sensor), verifique a fiação",
     stuckMessage:
       "{label} está enviando exatamente {value} °F há {span}. A sonda pode estar travada ou a placa pode estar reenviando um valor antigo; um congelamento aqui pode passar despercebido.",
@@ -83,7 +89,8 @@ const ptBr: AlertJobsMessages = {
   tenant: {
     greetingName: "Olá, {name},",
     greeting: "Olá,",
-    intro: "O administrador de {household} pediu que repassássemos um alerta de risco de congelamento:",
+    intro:
+      "O administrador de {household} pediu que repassássemos um alerta de risco de congelamento:",
     eyebrow: "Alerta repassado ao inquilino",
     footerNote:
       "Você recebeu isto porque o proprietário indicou você como contato no local. Este não é um acesso completo ao painel.",
@@ -109,12 +116,16 @@ const ptBr: AlertJobsMessages = {
     ackFailed: "Não foi possível confirmar o alerta.",
     raised:
       "Alarme falso resolvido: limite de congelamento elevado para {value} °F e alertas adiados por 24 h.",
-    falseAlarmTip: "Marcado como alarme falso: alertas adiados por 24 h. Correção sugerida: {tip}. Abra {href}",
+    falseAlarmTip:
+      "Marcado como alarme falso: alertas adiados por 24 h. Correção sugerida: {tip}. Abra {href}",
     results: {
       ack: "Alerta marcado como resolvido.",
-      snooze_1h: "Alerta resolvido: outros alertas adiados por 1 hora. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
-      snooze_4h: "Alerta resolvido: outros alertas adiados por 4 horas. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
-      snooze_24h: "Alerta resolvido: outros alertas adiados por 24 horas. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
+      snooze_1h:
+        "Alerta resolvido: outros alertas adiados por 1 hora. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
+      snooze_4h:
+        "Alerta resolvido: outros alertas adiados por 4 horas. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
+      snooze_24h:
+        "Alerta resolvido: outros alertas adiados por 24 horas. Alertas de congelamento continuam ativos; este não se repetirá enquanto continuar.",
       false_alarm:
         "Marcado como alarme falso: alertas adiados por 24 h. Se continuar acontecendo, verifique a posição da sonda.",
       raise_threshold: "Alarme falso resolvido e limite de congelamento elevado.",
@@ -124,19 +135,22 @@ const ptBr: AlertJobsMessages = {
   },
   telegram: {
     help: "Comandos: /status [nome], /snooze [horas], /vacation [dias], /help",
-    commandsDisabled: "Os comandos do Telegram ficam desativados até você salvar um Chat ID em Alertas.",
+    commandsDisabled:
+      "Os comandos do Telegram ficam desativados até você salvar um Chat ID em Alertas.",
     snoozed: {
       one: "Alertas adiados por {count} hora. Alertas de congelamento e vazamento continuam sendo enviados.",
-      other: "Alertas adiados por {count} horas. Alertas de congelamento e vazamento continuam sendo enviados.",
+      other:
+        "Alertas adiados por {count} horas. Alertas de congelamento e vazamento continuam sendo enviados.",
     },
     vacation: {
       one: "Modo férias ativado por {count} dia. Alertas de congelamento e vazamento continuam sendo enviados.",
-      other: "Modo férias ativado por {count} dias. Alertas de congelamento e vazamento continuam sendo enviados.",
+      other:
+        "Modo férias ativado por {count} dias. Alertas de congelamento e vazamento continuam sendo enviados.",
     },
     noHousehold: "Nenhuma casa ativa.",
     open: "ABERTO",
     closed: "fechado",
-    noMatch: "Nenhum sensor corresponde a \"{query}\".",
+    noMatch: 'Nenhum sensor corresponde a "{query}".',
     noReadings: "Ainda não há leituras.",
   },
   events: {
@@ -162,7 +176,10 @@ const ptBr: AlertJobsMessages = {
     missingToken: "Token ausente",
     resultInvalid: "Link para adiar inválido ou já usado.",
     resultExpired: "O link para adiar expirou.",
-    resultSnoozed: { one: "Alertas adiados por {count} hora.", other: "Alertas adiados por {count} horas." },
+    resultSnoozed: {
+      one: "Alertas adiados por {count} hora.",
+      other: "Alertas adiados por {count} horas.",
+    },
   },
 };
 

@@ -17,17 +17,21 @@ const UNTESTED: Record<string, RegExp> = {
 };
 
 const FILES: Array<[locale: string, path: string]> = [
-  ...["en", "de", "es", "fr", "pt-br"].flatMap((l): Array<[string, string]> => [
-    [l, `src/i18n/messages/flash/${l}.ts`],
-    [l, `src/i18n/messages/flashBrowser/${l}.ts`],
-  ]),
+  ...["en", "de", "es", "fr", "pt-br"].flatMap(
+    (l): Array<[string, string]> => [
+      [l, `src/i18n/messages/flash/${l}.ts`],
+      [l, `src/i18n/messages/flashBrowser/${l}.ts`],
+    ],
+  ),
   ["en", "src/lib/aboutFaqs.ts"],
   ["en", "src/lib/marketingFaqs.ts"],
   ["en", "src/pages/llms.txt.ts"],
-  ...["de", "es", "fr", "pt-br"].flatMap((l): Array<[string, string]> => [
-    [l, `src/i18n/content/aboutFaqs/${l}/faqs.ts`],
-    [l, `src/i18n/content/marketingFaqs/${l}/faqs.ts`],
-  ]),
+  ...["de", "es", "fr", "pt-br"].flatMap(
+    (l): Array<[string, string]> => [
+      [l, `src/i18n/content/aboutFaqs/${l}/faqs.ts`],
+      [l, `src/i18n/content/marketingFaqs/${l}/faqs.ts`],
+    ],
+  ),
 ];
 
 /** Lines that list the leak and battery inputs together. */
@@ -35,9 +39,14 @@ const MENTIONS_LEAK_BATTERY =
   /leak and battery inputs|Wasser- und Akku-Eingänge|entradas de fuga y batería|entrées fuite et batterie|entradas de vazamento e bateria/;
 
 describe("hardware claims match the verified hardware", () => {
-  it.each(FILES)("%s %s labels the leak and battery inputs as not yet hardware-tested", (locale, path) => {
-    const lines = readFileSync(path, "utf8").split("\n").filter((line) => MENTIONS_LEAK_BATTERY.test(line));
-    const unlabeled = lines.filter((line) => !UNTESTED[locale]!.test(line));
-    expect(unlabeled).toEqual([]);
-  });
+  it.each(FILES)(
+    "%s %s labels the leak and battery inputs as not yet hardware-tested",
+    (locale, path) => {
+      const lines = readFileSync(path, "utf8")
+        .split("\n")
+        .filter((line) => MENTIONS_LEAK_BATTERY.test(line));
+      const unlabeled = lines.filter((line) => !UNTESTED[locale]!.test(line));
+      expect(unlabeled).toEqual([]);
+    },
+  );
 });

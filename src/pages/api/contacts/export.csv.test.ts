@@ -72,7 +72,7 @@ describe("GET /api/contacts/export.csv", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
     expect(response.headers.get("Content-Disposition")).toContain(
-      "attachment; filename=\"contact-submissions-",
+      'attachment; filename="contact-submissions-',
     );
     expect(await response.text()).toBe("name,email,message\nJane,a@b.com,hi\n");
   });

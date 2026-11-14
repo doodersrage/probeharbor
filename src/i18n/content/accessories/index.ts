@@ -1,8 +1,4 @@
-import {
-  ACCESSORIES,
-  type AccessoryDef,
-  type AccessoryId,
-} from "../../../lib/accessories";
+import { ACCESSORIES, type AccessoryDef, type AccessoryId } from "../../../lib/accessories";
 import {
   CLAIM_PUCK_BAY_BUDDY_NOTE,
   CLAIM_PUCK_NAME,
@@ -27,8 +23,10 @@ export interface ClaimPuckText {
 /** `<locale>/claimPuck.ts`: `{ claimPuck: { name?, tagline?, bayBuddyNote? } }`. */
 export type ClaimPuckOverlay = { claimPuck: DeepPartial<ClaimPuckText> };
 
-const accessoryOverlays = () => keyedOverlays<DeepPartial<AccessoryDef>>("accessories", "accessories");
-const claimPuckOverlays = () => keyedOverlays<DeepPartial<ClaimPuckText>>("accessories", "claimPuck");
+const accessoryOverlays = () =>
+  keyedOverlays<DeepPartial<AccessoryDef>>("accessories", "accessories");
+const claimPuckOverlays = () =>
+  keyedOverlays<DeepPartial<ClaimPuckText>>("accessories", "claimPuck");
 
 const CLAIM_PUCK_EN: ClaimPuckText = {
   name: CLAIM_PUCK_NAME,

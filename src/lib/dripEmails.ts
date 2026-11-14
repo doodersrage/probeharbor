@@ -2,15 +2,8 @@ import * as neonEmail from "./db/emailJobs";
 import { getUserRecord } from "./userRecords";
 import { PRO_MAX_DEVICES } from "./entitlements";
 import { resolveSiteUrl } from "./schemaMarkup";
-import {
-  brandedEmailParts,
-  type BrandedEmailContent,
-} from "./emailLayout";
-import {
-  isMailerRecipientNotAllowed,
-  partitionMailErrors,
-  sendEmail,
-} from "./mailer";
+import { brandedEmailParts, type BrandedEmailContent } from "./emailLayout";
+import { isMailerRecipientNotAllowed, partitionMailErrors, sendEmail } from "./mailer";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 import { isEmailSuppressed } from "./emailSuppressions";
 import { fmt, formatNumber } from "../i18n/format";
@@ -171,7 +164,8 @@ export async function sendDripEmailsForAllUsers(
   errors: string[];
   restricted: number;
 }> {
-  const hasFirstReading = deps.hasFirstReading ?? ((userId: string) => neonEmail.userHasFirstReading(userId));
+  const hasFirstReading =
+    deps.hasFirstReading ?? ((userId: string) => neonEmail.userHasFirstReading(userId));
   const siteUrl = resolveSiteUrl(null);
   let sent = 0;
   let skipped = 0;
@@ -223,14 +217,22 @@ export async function sendDripEmailsForAllUsers(
           ? nextStage.id
           : dripEmailIdForStage(nextStage.id, await hasFirstReading(row.user_id));
       if (emailId) {
-        const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, row.user_id, "drip", getUserLocale(user));
+        const unsubscribeUrl = await buildUnsubscribeUrl(
+          siteUrl,
+          row.user_id,
+          "drip",
+          getUserLocale(user),
+        );
         const mail = buildDripEmail(emailId, siteUrl, unsubscribeUrl, getUserLocale(user));
         await sendEmail(user.email, mail.subject, mail.text, {
           html: mail.html,
           headers: unsubscribeHeaders(unsubscribeUrl),
         });
       }
-      await neonEmail.stampSettings(row.user_id, "last_drip_email_at", { touchUpdatedAt: true, dripStage: nextStage.day });
+      await neonEmail.stampSettings(row.user_id, "last_drip_email_at", {
+        touchUpdatedAt: true,
+        dripStage: nextStage.day,
+      });
       if (emailId) sent += 1;
       else skipped += 1;
     } catch (error) {
@@ -242,9 +244,7 @@ export async function sendDripEmailsForAllUsers(
         );
         continue;
       }
-      errors.push(
-        `${row.user_id}: ${error instanceof Error ? error.message : "unknown"}`,
-      );
+      errors.push(`${row.user_id}: ${error instanceof Error ? error.message : "unknown"}`);
     }
   }
 

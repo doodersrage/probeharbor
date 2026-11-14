@@ -30,7 +30,14 @@ export async function insertInboundWebhook(row: {
     await query(
       `insert into public.inbound_webhooks (household_id, name, token_prefix, token_hash, created_by, signing_secret)
        values ($1, $2, $3, $4, $5, $6)`,
-      [row.household_id, row.name, row.token_prefix, row.token_hash, row.created_by, row.signing_secret],
+      [
+        row.household_id,
+        row.name,
+        row.token_prefix,
+        row.token_hash,
+        row.created_by,
+        row.signing_secret,
+      ],
     );
     return { error: null };
   } catch (error) {
@@ -71,9 +78,15 @@ export async function listInboundWebhooks(householdId: string): Promise<{
   }
 }
 
-export async function deleteInboundWebhook(householdId: string, webhookId: string): Promise<{ error: string | null }> {
+export async function deleteInboundWebhook(
+  householdId: string,
+  webhookId: string,
+): Promise<{ error: string | null }> {
   try {
-    await query("delete from public.inbound_webhooks where id = $1 and household_id = $2", [webhookId, householdId]);
+    await query("delete from public.inbound_webhooks where id = $1 and household_id = $2", [
+      webhookId,
+      householdId,
+    ]);
     return { error: null };
   } catch (error) {
     return { error: message(error) };
@@ -89,7 +102,13 @@ export async function resolveInboundWebhook(
        returning id, household_id, signing_secret`,
       [tokenHash],
     );
-    return row ? { householdId: row.household_id, webhookId: row.id, signingSecret: row.signing_secret ?? null } : null;
+    return row
+      ? {
+          householdId: row.household_id,
+          webhookId: row.id,
+          signingSecret: row.signing_secret ?? null,
+        }
+      : null;
   } catch {
     return null;
   }
@@ -97,7 +116,10 @@ export async function resolveInboundWebhook(
 
 /** Throws on failure (caller logs). */
 export async function setSignatureFormat(webhookId: string, format: string): Promise<void> {
-  await query("update public.inbound_webhooks set last_signature_format = $2 where id = $1", [webhookId, format]);
+  await query("update public.inbound_webhooks set last_signature_format = $2 where id = $1", [
+    webhookId,
+    format,
+  ]);
 }
 
 // ---- claims-pack exports ----------------------------------------------------
@@ -117,7 +139,16 @@ export async function insertClaimsPack(row: {
       `insert into public.claims_pack_exports
          (household_id, token, range_from, range_to, content_hash, pack_data, generated_by, expires_at)
        values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)`,
-      [row.household_id, row.token, row.range_from, row.range_to, row.content_hash, JSON.stringify(row.pack_data), row.generated_by, row.expires_at],
+      [
+        row.household_id,
+        row.token,
+        row.range_from,
+        row.range_to,
+        row.content_hash,
+        JSON.stringify(row.pack_data),
+        row.generated_by,
+        row.expires_at,
+      ],
     );
     return { error: null };
   } catch (error) {
@@ -130,7 +161,11 @@ export async function findClaimsPack(
   token: string,
 ): Promise<{ pack_data: unknown; expires_at: string | null; revoked_at: string | null } | null> {
   try {
-    const [row] = await query<{ pack_data: unknown; expires_at: string | null; revoked_at: string | null }>(
+    const [row] = await query<{
+      pack_data: unknown;
+      expires_at: string | null;
+      revoked_at: string | null;
+    }>(
       `select pack_data, expires_at, revoked_at from public.claims_pack_exports
        where token = $1 and revoked_at is null and (expires_at is null or expires_at >= now())`,
       [token],
@@ -156,7 +191,14 @@ export async function revokeClaimsPack(householdId: string, token: string): Prom
 // ---- saved History views ----------------------------------------------------
 
 export async function listSavedViews(userId: string): Promise<
-  Array<{ id: string; user_id: string; household_id: string | null; name: string; params: HistorySavedViewParams | null; created_at: string }>
+  Array<{
+    id: string;
+    user_id: string;
+    household_id: string | null;
+    name: string;
+    params: HistorySavedViewParams | null;
+    created_at: string;
+  }>
 > {
   try {
     return await query(
@@ -186,9 +228,15 @@ export async function insertSavedView(
   }
 }
 
-export async function deleteSavedView(userId: string, id: string): Promise<{ ok: boolean; error?: string }> {
+export async function deleteSavedView(
+  userId: string,
+  id: string,
+): Promise<{ ok: boolean; error?: string }> {
   try {
-    await query("delete from public.history_saved_views where id = $1 and user_id = $2", [id, userId]);
+    await query("delete from public.history_saved_views where id = $1 and user_id = $2", [
+      id,
+      userId,
+    ]);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: message(error) };
@@ -199,7 +247,10 @@ export async function deleteSavedView(userId: string, id: string): Promise<{ ok:
 
 /** Throws on failure. */
 export async function householdIds(limit: number): Promise<string[]> {
-  const rows = await query<{ id: string }>("select id from public.households order by created_at, id limit $1", [limit]);
+  const rows = await query<{ id: string }>(
+    "select id from public.households order by created_at, id limit $1",
+    [limit],
+  );
   return rows.map((r) => r.id);
 }
 
@@ -208,7 +259,9 @@ export function oldReadings(
   householdId: string,
   cutoffIso: string,
   limit: number,
-): Promise<Array<{ id: number; value_num: number | null; recorded_at: string; sensor_id: string }>> {
+): Promise<
+  Array<{ id: number; value_num: number | null; recorded_at: string; sensor_id: string }>
+> {
   return query(
     `select id, value_num, recorded_at, sensor_id from public.sensor_readings
      where household_id = $1 and recorded_at < $2 order by recorded_at, id limit $3`,

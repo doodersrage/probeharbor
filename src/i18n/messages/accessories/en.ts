@@ -39,7 +39,8 @@ const en = {
   },
   hub: {
     title: "Hardware accessories",
-    description: "Companion devices and kit pieces for ProbeHarbor: mood lights, door and leak contacts, labels, and mounts.",
+    description:
+      "Companion devices and kit pieces for ProbeHarbor: mood lights, door and leak contacts, labels, and mounts.",
     kicker: "Hardware",
     lede: "Companion devices and kit pieces for ProbeHarbor. Temperature probes stay on the freeze-kit path — these prove presence, show moods, POST contacts, or finish a garage install.",
     freezeKitBom: "Freeze kit BOM",
@@ -79,7 +80,8 @@ const en = {
   },
   claimPuckCase: {
     title: "Claim puck case",
-    description: "Enclosure, claim button, and optional LED diffuser for the RP2040-Zero ProbeHarbor claim puck — finish the bare-board build.",
+    description:
+      "Enclosure, claim button, and optional LED diffuser for the RP2040-Zero ProbeHarbor claim puck — finish the bare-board build.",
     firmware: "Firmware ↗",
     doesHtml:
       "Turns the Waveshare RP2040-Zero + GP4 button into a desk-safe presence key with a softer mood glow.",
@@ -88,7 +90,8 @@ const en = {
     caption: "Claim puck case parts",
     zeroWhy: "Claim puck MCU.",
     casePart: "3D-printed or laser case",
-    caseWhy: "USB cutout, button hole, LED window. Publish your STL next to the firmware repo if you share one.",
+    caseWhy:
+      "USB cutout, button hole, LED window. Publish your STL next to the firmware repo if you share one.",
     caseBuy: "DIY / local print shop.",
     diffuserPart: "LED diffuser (optional)",
     diffuserWhy: "Softer mood color for the onboard RGB.",
@@ -102,9 +105,11 @@ const en = {
   },
   alertBeacon: {
     title: "Alert beacon",
-    description: "A desk or hallway mood light that mirrors ProbeHarbor freeze and flood moods. Same Bay Buddy mood API as the claim puck — not a temperature probe.",
+    description:
+      "A desk or hallway mood light that mirrors ProbeHarbor freeze and flood moods. Same Bay Buddy mood API as the claim puck — not a temperature probe.",
     moodApi: "Mood API",
-    doesHtml: "Shows live bay mood (cozy, drafty, shiver, panic, offline, hero) on a brighter NeoPixel stick or ring, driven from <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
+    doesHtml:
+      "Shows live bay mood (cozy, drafty, shiver, panic, offline, hero) on a brighter NeoPixel stick or ring, driven from <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
     doesNotHtml:
       'Sense temperature, replace Alerts SMS/email, or claim a bay by itself. Pair with a freeze probe and optionally a <a class="text-link" href="/claim-puck">claim puck</a> for presence.',
     caption: "Alert beacon parts",
@@ -126,7 +131,8 @@ const en = {
   },
   doorPuck: {
     title: "Door contact puck",
-    description: "Magnetic reed or button contact that POSTs door open/closed to ProbeHarbor. Feeds drafty-bay moods and optional custom alerts — not a freeze probe.",
+    description:
+      "Magnetic reed or button contact that POSTs door open/closed to ProbeHarbor. Feeds drafty-bay moods and optional custom alerts — not a freeze probe.",
     addingDevices: "Adding devices",
     doesHtml:
       'POSTs <code>{ "door1": true }</code> (open) / <code>false</code> (closed) to your push ingest URL about once a minute or on change.',
@@ -146,7 +152,8 @@ const en = {
   },
   leakPuck: {
     title: "Leak contact puck",
-    description: "Water-contact pads that POST wet/dry flood sensors to ProbeHarbor. Flood/leak contacts auto-alert when wet once alerts are enabled — not a freeze probe.",
+    description:
+      "Water-contact pads that POST wet/dry flood sensors to ProbeHarbor. Flood/leak contacts auto-alert when wet once alerts are enabled — not a freeze probe.",
     doesHtml:
       'POSTs <code>{ "leak1": true }</code> when wet (or <code>flood1</code>). Keys containing leak/flood import as flood sensors.',
     doesNotHtml:
@@ -165,7 +172,8 @@ const en = {
   },
   powerNudge: {
     title: "Power outage nudge",
-    description: "USB-mains or UPS sense contact that POSTs power lost/restored to ProbeHarbor. Know when the bay went dark — not a freeze probe.",
+    description:
+      "USB-mains or UPS sense contact that POSTs power lost/restored to ProbeHarbor. Know when the bay went dark — not a freeze probe.",
     staleReadings: "Stale readings",
     doesHtml:
       'POSTs <code>{ "power1": true }</code> while mains/USB sense is present, <code>false</code> when lost (keys with power/relay import as power sensors).',
@@ -185,7 +193,8 @@ const en = {
   },
   kitLabels: {
     title: "Kit QR & NFC labels",
-    description: "Printable QR stickers and optional NFC tags encoding your ProbeHarbor push ingest URL — onboard firmware without typing the key.",
+    description:
+      "Printable QR stickers and optional NFC tags encoding your ProbeHarbor push ingest URL — onboard firmware without typing the key.",
     kitQrGuide: "Kit QR guide",
     claimsPack: "Claims pack",
     doesHtml:
@@ -208,7 +217,8 @@ const en = {
   },
   probeMountKit: {
     title: "Probe mount kit",
-    description: "Zip-ties, pipe clips, adhesive pads, 4.7k pull-up, and waterproof DS18B20 mounting notes for a reliable ProbeHarbor freeze probe.",
+    description:
+      "Zip-ties, pipe clips, adhesive pads, 4.7k pull-up, and waterproof DS18B20 mounting notes for a reliable ProbeHarbor freeze probe.",
     mountingGuide: "Mounting guide",
     picoIngest: "Pico W ingest",
     doesHtml:

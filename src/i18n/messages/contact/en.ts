@@ -26,7 +26,8 @@ const en = {
     "Ingest or probe questions after checking the guides",
   ],
   issuesTitle: "GitHub issues",
-  issuesHtml: 'Bugs, firmware patches, and feature ideas belong in <a class="text-link" href="{url}" target="_blank" rel="noreferrer">GitHub issues</a> so other builders can follow along. Prefer not to use a web form? That is the best public path.',
+  issuesHtml:
+    'Bugs, firmware patches, and feature ideas belong in <a class="text-link" href="{url}" target="_blank" rel="noreferrer">GitHub issues</a> so other builders can follow along. Prefer not to use a web form? That is the best public path.',
   beforeTitle: "Before you write",
   beforeHtml:
     'Many answers are already in the <a class="text-link" href="/guides">guides hub</a>, <a class="text-link" href="/about">about library</a>, <a class="text-link" href="/about/probe-demo">probe demo</a>, and <a class="text-link" href="/about/arduino-sketches">Arduino sketches</a>. Useful details for a reply: board, sensors, expected vs observed readings, and any feed URLs.',

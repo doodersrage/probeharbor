@@ -87,7 +87,9 @@ for (const e of events) {
   if (e.kind === "generic" && /test alert/i.test(e.title)) deliveredTest.add(e.user_id);
   else if (e.kind !== "generic" && e.kind !== "digest") deliveredReal.add(e.user_id);
 }
-const paying = new Set(subs.filter((s) => s.status === "active" || s.status === "trialing").map((s) => s.user_id));
+const paying = new Set(
+  subs.filter((s) => s.status === "active" || s.status === "trialing").map((s) => s.user_id),
+);
 
 const STEPS = [
   ["signed up", () => true],
@@ -133,8 +135,11 @@ const width = Math.max(...STEPS.map(([label]) => label.length));
 STEPS.forEach(([label], i) => {
   const n = counts[i];
   const pct = users.length ? Math.round((n / users.length) * 100) : 0;
-  const prev = i > 0 && counts[i - 1] ? ` (${Math.round((n / counts[i - 1]) * 100)}% of previous)` : "";
-  console.log(`  ${label.padEnd(width)}  ${String(n).padStart(4)}  ${String(pct).padStart(3)}%${prev}`);
+  const prev =
+    i > 0 && counts[i - 1] ? ` (${Math.round((n / counts[i - 1]) * 100)}% of previous)` : "";
+  console.log(
+    `  ${label.padEnd(width)}  ${String(n).padStart(4)}  ${String(pct).padStart(3)}%${prev}`,
+  );
 });
 if (listAccounts) console.log(`\nAccounts\n${accountLines.join("\n")}`);
 
@@ -149,12 +154,17 @@ const SETUP_PATHS = [
 ];
 const includedHouseholds = new Set(users.flatMap((u) => householdsByUser.get(u.id) ?? []));
 const pathDevices = devices.filter(
-  (d) => d.source === "push" && includedHouseholds.has(d.household_id) && Date.parse(d.created_at) >= since,
+  (d) =>
+    d.source === "push" &&
+    includedHouseholds.has(d.household_id) &&
+    Date.parse(d.created_at) >= since,
 );
 // The demo feed is a pull device named after the example feed.
 const demoFeedUsers = users.filter((u) =>
   (householdsByUser.get(u.id) ?? []).some((h) =>
-    (devicesByHousehold.get(h) ?? []).some((d) => d.source === "pull_url" && /example/i.test(d.name ?? "")),
+    (devicesByHousehold.get(h) ?? []).some(
+      (d) => d.source === "pull_url" && /example/i.test(d.name ?? ""),
+    ),
   ),
 ).length;
 console.log("\nSetup paths (devices named by the first-run chooser)\n");
@@ -162,41 +172,90 @@ const pathWidth = Math.max(...SETUP_PATHS.map(([label]) => label.length));
 for (const [label, name] of SETUP_PATHS) {
   const created = pathDevices.filter((d) => d.name === name);
   const reporting = created.filter((d) => d.last_seen_at).length;
-  console.log(`  ${label.padEnd(pathWidth)}  ${String(created.length).padStart(3)} created  ${String(reporting).padStart(3)} reporting`);
+  console.log(
+    `  ${label.padEnd(pathWidth)}  ${String(created.length).padStart(3)} created  ${String(reporting).padStart(3)} reporting`,
+  );
 }
 console.log(`  ${"Demo feed".padEnd(pathWidth)}  ${String(demoFeedUsers).padStart(3)} account(s)`);
 
 // Feature usage across every household, to see what nobody touches.
-const [thermostats, apiKeys, inbound, shares, statusPages, pucks, claims, pushSubs, fcm, savedViews, chartShares, referrals] =
-  await Promise.all([
-    all("household_thermostat_connections", "household_id, provider"),
-    all("api_keys", "household_id, revoked_at"),
-    all("inbound_webhooks", "household_id"),
-    all("share_links", "household_id"),
-    all("status_page_tokens", "household_id, revoked_at"),
-    all("pucks", "household_id"),
-    all("claims_pack_exports", "household_id"),
-    all("push_subscriptions", "user_id"),
-    all("fcm_device_tokens", "user_id"),
-    all("history_saved_views", "user_id"),
-    all("chart_share_tokens", "user_id"),
-    all("referral_signups", "referrer_user_id"),
-  ]);
+const [
+  thermostats,
+  apiKeys,
+  inbound,
+  shares,
+  statusPages,
+  pucks,
+  claims,
+  pushSubs,
+  fcm,
+  savedViews,
+  chartShares,
+  referrals,
+] = await Promise.all([
+  all("household_thermostat_connections", "household_id, provider"),
+  all("api_keys", "household_id, revoked_at"),
+  all("inbound_webhooks", "household_id"),
+  all("share_links", "household_id"),
+  all("status_page_tokens", "household_id, revoked_at"),
+  all("pucks", "household_id"),
+  all("claims_pack_exports", "household_id"),
+  all("push_subscriptions", "user_id"),
+  all("fcm_device_tokens", "user_id"),
+  all("history_saved_views", "user_id"),
+  all("chart_share_tokens", "user_id"),
+  all("referral_signups", "referrer_user_id"),
+]);
 
 const distinct = (rows, key) => new Set(rows.map((r) => r[key])).size;
 const usage = [
-  ["Push devices", distinct(devices.filter((d) => d.source === "push"), "household_id"), "households"],
-  ["Pull devices", distinct(devices.filter((d) => d.source === "pull_url"), "household_id"), "households"],
-  ["Shared households (2+ members)", [...membersByHousehold.values()].filter((n) => n > 1).length, "households"],
+  [
+    "Push devices",
+    distinct(
+      devices.filter((d) => d.source === "push"),
+      "household_id",
+    ),
+    "households",
+  ],
+  [
+    "Pull devices",
+    distinct(
+      devices.filter((d) => d.source === "pull_url"),
+      "household_id",
+    ),
+    "households",
+  ],
+  [
+    "Shared households (2+ members)",
+    [...membersByHousehold.values()].filter((n) => n > 1).length,
+    "households",
+  ],
   ...[...new Set(thermostats.map((t) => t.provider))].map((p) => [
     `Thermostat: ${p}`,
-    distinct(thermostats.filter((t) => t.provider === p), "household_id"),
+    distinct(
+      thermostats.filter((t) => t.provider === p),
+      "household_id",
+    ),
     "households",
   ]),
-  ["Metrics API keys", distinct(apiKeys.filter((k) => !k.revoked_at), "household_id"), "households"],
+  [
+    "Metrics API keys",
+    distinct(
+      apiKeys.filter((k) => !k.revoked_at),
+      "household_id",
+    ),
+    "households",
+  ],
   ["Inbound webhooks", distinct(inbound, "household_id"), "households"],
   ["Share links", distinct(shares, "household_id"), "households"],
-  ["Status pages", distinct(statusPages.filter((s) => !s.revoked_at), "household_id"), "households"],
+  [
+    "Status pages",
+    distinct(
+      statusPages.filter((s) => !s.revoked_at),
+      "household_id",
+    ),
+    "households",
+  ],
   ["Pucks", distinct(pucks, "household_id"), "households"],
   ["Claims packs", distinct(claims, "household_id"), "households"],
   ["Web push", distinct(pushSubs, "user_id"), "users"],
@@ -205,10 +264,16 @@ const usage = [
   ["Chart share links", distinct(chartShares, "user_id"), "users"],
   ["Referrals", distinct(referrals, "referrer_user_id"), "users"],
 ];
-const channelColumns = Object.keys(alertSettings[0] ?? {}).filter((c) => c.startsWith("channel_") && c !== "channel_severity");
+const channelColumns = Object.keys(alertSettings[0] ?? {}).filter(
+  (c) => c.startsWith("channel_") && c !== "channel_severity",
+);
 for (const column of channelColumns) {
   const name = column.slice("channel_".length);
-  usage.push([`Alert channel: ${name}${name === "email" ? " (on by default)" : ""}`, alertSettings.filter((s) => s[column] === true).length, "users"]);
+  usage.push([
+    `Alert channel: ${name}${name === "email" ? " (on by default)" : ""}`,
+    alertSettings.filter((s) => s[column] === true).length,
+    "users",
+  ]);
 }
 for (const [label, column] of [
   ["Custom rules", "alert_rules"],
@@ -219,7 +284,9 @@ for (const [label, column] of [
 ]) {
   usage.push([
     label,
-    alertSettings.filter((s) => (Array.isArray(s[column]) ? s[column].length > 0 : s[column] === true)).length,
+    alertSettings.filter((s) =>
+      Array.isArray(s[column]) ? s[column].length > 0 : s[column] === true,
+    ).length,
     "users",
   ]);
 }
@@ -227,7 +294,9 @@ for (const [label, column] of [
 console.log("\nFeature usage (all accounts)\n");
 const usageWidth = Math.max(...usage.map(([label]) => label.length));
 for (const [label, n, unit] of usage.sort((a, b) => b[1] - a[1])) {
-  console.log(`  ${label.padEnd(usageWidth)}  ${String(n).padStart(4)} ${unit}${n === 0 ? "  ← unused" : ""}`);
+  console.log(
+    `  ${label.padEnd(usageWidth)}  ${String(n).padStart(4)} ${unit}${n === 0 ? "  ← unused" : ""}`,
+  );
 }
 
 await db.end();

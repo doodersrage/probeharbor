@@ -60,14 +60,18 @@ export async function persistDoorSessions(
   try {
     saved = await neonDoors.savedSessionKeysSince(householdId, since);
   } catch (error) {
-    throw new Error(`door_open_events fetch failed: ${error instanceof Error ? error.message : error}`);
+    throw new Error(
+      `door_open_events fetch failed: ${error instanceof Error ? error.message : error}`,
+    );
   }
   const existing = new Set(saved.map((r) => doorEventKey(r.label, r.opened_at)));
   const rows = buildDoorEventRows(householdId, sessions, existing, sensorIdByLabel);
   try {
     await neonDoors.insertDoorSessions(rows);
   } catch (error) {
-    throw new Error(`door_open_events insert failed: ${error instanceof Error ? error.message : error}`);
+    throw new Error(
+      `door_open_events insert failed: ${error instanceof Error ? error.message : error}`,
+    );
   }
 }
 
@@ -89,7 +93,9 @@ export async function findOpenStartBefore(
   try {
     return await neonDoors.findOpenStartBefore(householdId, sensorId, beforeIso);
   } catch (error) {
-    throw new Error(`door open-start lookup failed: ${error instanceof Error ? error.message : error}`);
+    throw new Error(
+      `door open-start lookup failed: ${error instanceof Error ? error.message : error}`,
+    );
   }
 }
 
@@ -109,7 +115,12 @@ export async function readDoorSessions(
     if (start) readings.unshift({ value: true, recordedAt: start });
   }
   return computeDoorOpenSessions(
-    readings.map((r) => ({ label: sensor.label, kind: "door", value: r.value, recordedAt: r.recordedAt })),
+    readings.map((r) => ({
+      label: sensor.label,
+      kind: "door",
+      value: r.value,
+      recordedAt: r.recordedAt,
+    })),
   );
 }
 
@@ -147,7 +158,9 @@ export async function lastDoorStateBefore(
   try {
     return await neonDoors.lastDoorStateBefore(householdId, sensorId, beforeIso);
   } catch (error) {
-    throw new Error(`last door state lookup failed: ${error instanceof Error ? error.message : error}`);
+    throw new Error(
+      `last door state lookup failed: ${error instanceof Error ? error.message : error}`,
+    );
   }
 }
 
@@ -165,14 +178,12 @@ export async function recordDoorSessionsIfJustClosed(
   const justClosed: Array<{ id: string; label: string }> = [];
   for (const sensor of sensors) {
     // Unknown (lookup returned nothing) still records, so a first close isn't lost.
-    if ((await lastDoorStateBefore(householdId, sensor.id, closedAt)) !== false) justClosed.push(sensor);
+    if ((await lastDoorStateBefore(householdId, sensor.id, closedAt)) !== false)
+      justClosed.push(sensor);
   }
   if (justClosed.length > 0) await recordDoorSessions(householdId, justClosed);
 }
 
-export async function listDoorEvents(
-  householdId: string,
-  limit = 20,
-): Promise<DoorEventRow[]> {
+export async function listDoorEvents(householdId: string, limit = 20): Promise<DoorEventRow[]> {
   return neonDoors.listDoorEvents(householdId, limit);
 }

@@ -50,7 +50,8 @@ const de: PublicShareMessages = {
       updatesEvery: "Aktualisiert alle 90 Sekunden",
       trendTitle: "Temperaturverlauf über 7 Tage",
       trendAria: "Diagramm des Temperaturverlaufs",
-      emptyTitle: "Noch keine Messwerte. Die Sensoren dieses Links haben vielleicht noch keine Daten gesendet.",
+      emptyTitle:
+        "Noch keine Messwerte. Die Sensoren dieses Links haben vielleicht noch keine Daten gesendet.",
       emptyNote: "Diese Seite prüft automatisch weiter.",
       loadError: "Dieser geteilte Link konnte nicht geladen werden.",
       fetchError: "Die geteilten Messwerte konnten nicht geladen werden.",
@@ -110,7 +111,8 @@ const de: PublicShareMessages = {
   pipeFreeze: {
     heading: "Rohrfrost-Prognose · {place}",
     thisArea: "Diese Gegend",
-    source: "Tiefstwerte im Freien vom National Weather Service (USA), bewertet für Rohre in unbeheizten Räumen.",
+    source:
+      "Tiefstwerte im Freien vom National Weather Service (USA), bewertet für Rohre in unbeheizten Räumen.",
     hours: "{hours} Std. bei {temp} oder kälter",
     needCoords: "Füge ?lat= und ?lon= für einen Ort in den USA hinzu.",
     usOnly: "Die Prognose deckt nur Orte in den USA ab.",

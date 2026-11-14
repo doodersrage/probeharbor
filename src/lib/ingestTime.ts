@@ -27,9 +27,7 @@ export type RecordedAtProblem =
   | "recorded_at_too_old"
   | "recorded_at_in_future";
 
-export type ParsedRecordedAt =
-  | { ok: true; iso: string }
-  | { ok: false; reason: RecordedAtProblem };
+export type ParsedRecordedAt = { ok: true; iso: string } | { ok: false; reason: RecordedAtProblem };
 
 const ZONED_ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})$/i;
 
@@ -93,19 +91,38 @@ export function splitIngestBody(body: unknown, nowMs: number): SplitIngestBody {
     // Passed through as is: a top-level array is SenML (with no record
     // times), which the interpreter reads; anything else finds no sensor
     // values there.
-    return { ok: true, batch: false, entries: [{ payload: body, recordedAt: serverTime, deviceTime: false }], rejectedEntries: [] };
+    return {
+      ok: true,
+      batch: false,
+      entries: [{ payload: body, recordedAt: serverTime, deviceTime: false }],
+      rejectedEntries: [],
+    };
   }
   const top = body as Record<string, unknown>;
 
   if (!Array.isArray(top.readings)) {
     if (top.recorded_at === undefined || top.recorded_at === null) {
-      return { ok: true, batch: false, entries: [{ payload: top, recordedAt: serverTime, deviceTime: false }], rejectedEntries: [] };
+      return {
+        ok: true,
+        batch: false,
+        entries: [{ payload: top, recordedAt: serverTime, deviceTime: false }],
+        rejectedEntries: [],
+      };
     }
     const parsed = parseRecordedAt(top.recorded_at, nowMs);
     if (!parsed.ok) {
-      return { ok: false, error: "Invalid recorded_at", rejectedEntries: [{ index: 0, reason: parsed.reason }] };
+      return {
+        ok: false,
+        error: "Invalid recorded_at",
+        rejectedEntries: [{ index: 0, reason: parsed.reason }],
+      };
     }
-    return { ok: true, batch: false, entries: [{ payload: top, recordedAt: parsed.iso, deviceTime: true }], rejectedEntries: [] };
+    return {
+      ok: true,
+      batch: false,
+      entries: [{ payload: top, recordedAt: parsed.iso, deviceTime: true }],
+      rejectedEntries: [],
+    };
   }
 
   const items = top.readings;
@@ -135,7 +152,8 @@ export function splitIngestBody(body: unknown, nowMs: number): SplitIngestBody {
 /** SenML (RFC 8428 §4.5.3): resolved times below 2^28 s are relative to now. */
 const SENML_RELATIVE_LIMIT_S = 2 ** 28;
 
-const isFiniteNumber = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
 
 /**
  * A SenML pack whose records carry times (`t`, and the base time `bt` that
@@ -158,7 +176,10 @@ const isFiniteNumber = (value: unknown): value is number => typeof value === "nu
  * grouping them doesn't change how any record is read.
  */
 function splitSenMLByTime(records: unknown[], nowMs: number): SplitIngestBody | null {
-  if (records.length === 0 || !records.every((r) => r != null && typeof r === "object" && !Array.isArray(r))) {
+  if (
+    records.length === 0 ||
+    !records.every((r) => r != null && typeof r === "object" && !Array.isArray(r))
+  ) {
     return null;
   }
   const groups = new Map<string, { ms: number; deviceTime: boolean; records: unknown[] }>();
@@ -199,10 +220,17 @@ function splitSenMLByTime(records: unknown[], nowMs: number): SplitIngestBody | 
   });
   if (!anyTimed) return null;
   if (groups.size > MAX_BATCH_READINGS) {
-    return { ok: false, error: `Too many reading times in one SenML pack (max ${MAX_BATCH_READINGS})` };
+    return {
+      ok: false,
+      error: `Too many reading times in one SenML pack (max ${MAX_BATCH_READINGS})`,
+    };
   }
   const entries = [...groups.values()]
     .sort((a, b) => a.ms - b.ms)
-    .map((g) => ({ payload: g.records, recordedAt: new Date(g.ms).toISOString(), deviceTime: g.deviceTime }));
+    .map((g) => ({
+      payload: g.records,
+      recordedAt: new Date(g.ms).toISOString(),
+      deviceTime: g.deviceTime,
+    }));
   return { ok: true, batch: true, entries, rejectedEntries };
 }

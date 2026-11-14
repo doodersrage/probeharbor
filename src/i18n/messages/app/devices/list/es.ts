@@ -3,13 +3,15 @@ import type { DevicesListMessages } from "./en";
 const es: DevicesListMessages = {
   list: {
     title: "Dispositivos ({count})",
-    subtitle: "Del peor al mejor. Abre un dispositivo para cambiarle el nombre, asignarle un espacio o arreglar sus sensores.",
+    subtitle:
+      "Del peor al mejor. Abre un dispositivo para cambiarle el nombre, asignarle un espacio o arreglar sus sensores.",
     addDevice: "Añadir dispositivo",
     warmHint:
       "marca {gap}{unit} más que tus otras sondas. Si ese sensor está pegado a su placa, aléjalo unos centímetros con sus cables: las placas ESP32 se calientan y falsean la lectura.",
     unplaced: {
       one: "{count} dispositivo no tiene espacio asignado, así que la cobertura y las alertas no pueden decir dónde está.",
-      other: "{count} dispositivos no tienen espacio asignado, así que la cobertura y las alertas no pueden decir dónde están.",
+      other:
+        "{count} dispositivos no tienen espacio asignado, así que la cobertura y las alertas no pueden decir dónde están.",
     },
     unplacedBulk: "Usa Seleccionar varios abajo para asignar un lote de una vez.",
     unplacedSingle: "Ábrelo para asignarle uno.",
@@ -77,8 +79,10 @@ const es: DevicesListMessages = {
     unassigned: "Sin espacio asignado",
     gaps: {
       unassigned: "Asigna un espacio a estos dispositivos para seguir la cobertura por habitación.",
-      noTemperature: "No hay sonda de temperatura: las alertas de congelación no pueden cubrir este espacio.",
-      staleTemperature: "La sonda de temperatura no ha reportado recientemente, así que las alertas de congelación no pueden saltar aquí.",
+      noTemperature:
+        "No hay sonda de temperatura: las alertas de congelación no pueden cubrir este espacio.",
+      staleTemperature:
+        "La sonda de temperatura no ha reportado recientemente, así que las alertas de congelación no pueden saltar aquí.",
       staleLeak: "El sensor de fugas no ha reportado recientemente.",
       noLeakWetSpace: "No hay sensor de fugas aquí, y este tipo de espacio suele tener tuberías.",
       staleDoor: "El sensor de puerta no ha reportado recientemente.",

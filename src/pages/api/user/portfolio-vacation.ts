@@ -26,10 +26,7 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   });
 }
 
-function withFlashParams(
-  redirectTo: string,
-  params: Record<string, string | number>,
-): string {
+function withFlashParams(redirectTo: string, params: Record<string, string | number>): string {
   const url = new URL(redirectTo, "https://probeharbor.local");
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, String(value));
@@ -71,10 +68,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
         if (!untilIso) {
           return jsonResponse({ error: tc.pickFutureReturnDate }, 400);
         }
-        days = Math.max(
-          1,
-          Math.ceil((Date.parse(untilIso) - Date.now()) / (24 * 60 * 60 * 1000)),
-        );
+        days = Math.max(1, Math.ceil((Date.parse(untilIso) - Date.now()) / (24 * 60 * 60 * 1000)));
       } else {
         days = Math.min(Math.max(Number(body.days) || 7, 1), VACATION_MAX_DAYS);
       }
@@ -90,10 +84,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
       if (!untilIso) {
         return redirect(withFlashParams(redirectTo, { vacation_error: 1 }));
       }
-      days = Math.max(
-        1,
-        Math.ceil((Date.parse(untilIso) - Date.now()) / (24 * 60 * 60 * 1000)),
-      );
+      days = Math.max(1, Math.ceil((Date.parse(untilIso) - Date.now()) / (24 * 60 * 60 * 1000)));
     } else {
       const parsed = Number.parseInt(String(formData.get("days") ?? "7"), 10);
       days = Math.min(Math.max(Number.isFinite(parsed) ? parsed : 7, 1), VACATION_MAX_DAYS);

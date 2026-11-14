@@ -35,14 +35,22 @@ const groupsOf = async (userId: string) =>
 
 describe("Stripe webhook dedup (Neon)", () => {
   it("a duplicate delivery is skipped; a released event can be processed again", async () => {
-    await expect(claimStripeWebhookEvent("evt_1", "customer.subscription.updated")).resolves.toEqual({ alreadyProcessed: false });
-    await expect(claimStripeWebhookEvent("evt_1", "customer.subscription.updated")).resolves.toEqual({ alreadyProcessed: true });
+    await expect(
+      claimStripeWebhookEvent("evt_1", "customer.subscription.updated"),
+    ).resolves.toEqual({ alreadyProcessed: false });
+    await expect(
+      claimStripeWebhookEvent("evt_1", "customer.subscription.updated"),
+    ).resolves.toEqual({ alreadyProcessed: true });
     await releaseStripeWebhookEvent("evt_1");
-    await expect(claimStripeWebhookEvent("evt_1", "customer.subscription.updated")).resolves.toEqual({ alreadyProcessed: false });
+    await expect(
+      claimStripeWebhookEvent("evt_1", "customer.subscription.updated"),
+    ).resolves.toEqual({ alreadyProcessed: false });
   });
 
   it("five simultaneous deliveries: exactly one gets processed", async () => {
-    const results = await Promise.all(Array.from({ length: 5 }, () => claimStripeWebhookEvent("evt_2", "invoice.paid")));
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () => claimStripeWebhookEvent("evt_2", "invoice.paid")),
+    );
     expect(results.filter((r) => !r.alreadyProcessed)).toHaveLength(1);
   });
 });
@@ -50,12 +58,17 @@ describe("Stripe webhook dedup (Neon)", () => {
 describe("subscriptions (Neon)", () => {
   it("an active subscription is stored and grants the plan group; canceling removes it", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
-    await expect(upsertUserSubscription(userId, subscription("sub_1", "active"), "cus_1")).resolves.toEqual({ error: null });
+    await expect(
+      upsertUserSubscription(userId, subscription("sub_1", "active"), "cus_1"),
+    ).resolves.toEqual({ error: null });
     await expect(getUserSubscription(userId)).resolves.toMatchObject({
       stripe_subscription_id: "sub_1",
       status: "active",
       plan_tier: "member",
-      current_period_end: new Date(1_800_000_000_000).toISOString().replace("Z", "+00:00").replace(".000", ""),
+      current_period_end: new Date(1_800_000_000_000)
+        .toISOString()
+        .replace("Z", "+00:00")
+        .replace(".000", ""),
     });
     expect(await groupsOf(userId)).toContain("member");
     await expect(findUserIdByStripeSubscriptionId("sub_1")).resolves.toBe(userId);
@@ -69,7 +82,10 @@ describe("subscriptions (Neon)", () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await upsertUserSubscription(userId, subscription("sub_live", "active"), "cus_1");
     await upsertUserSubscription(userId, subscription("sub_stray", "incomplete_expired"), "cus_1");
-    await expect(getUserSubscription(userId)).resolves.toMatchObject({ stripe_subscription_id: "sub_live", status: "active" });
+    await expect(getUserSubscription(userId)).resolves.toMatchObject({
+      stripe_subscription_id: "sub_live",
+      status: "active",
+    });
     expect(await groupsOf(userId)).toContain("member");
   });
 

@@ -24,10 +24,10 @@ export async function verifyTurnstileToken(
     formData.append("remoteip", remoteIp);
   }
 
-  const result = await fetch(
-    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    { method: "POST", body: formData },
-  );
+  const result = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    body: formData,
+  });
 
   const outcome = (await result.json()) as { success?: boolean };
 

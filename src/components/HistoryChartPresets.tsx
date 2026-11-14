@@ -1,4 +1,8 @@
-import { CHART_VIEW_PRESETS, presetNarrowsDomain, type TimeWindow } from "../lib/historyChartInteraction";
+import {
+  CHART_VIEW_PRESETS,
+  presetNarrowsDomain,
+  type TimeWindow,
+} from "../lib/historyChartInteraction";
 import { fill } from "../lib/historyChartFormat";
 import type { HistoryChartUi } from "./historyChartUi";
 
@@ -41,7 +45,9 @@ export default function HistoryChartPresets({
                   ? fill(t.presetShowLast, { label: presetLabel })
                   : isCurrentWindow
                     ? fill(t.presetAlreadyShowing, { label: presetLabel })
-                    : fill(t.presetOnlyLoaded, { hours: Math.max(1, Math.round(domainSpan / 36e5)) })
+                    : fill(t.presetOnlyLoaded, {
+                        hours: Math.max(1, Math.round(domainSpan / 36e5)),
+                      })
             }
             onClick={() => onPreset(preset.spanMs)}
           >

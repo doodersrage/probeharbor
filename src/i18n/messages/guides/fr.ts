@@ -25,7 +25,8 @@ const fr: GuidesMessages = {
   },
   alsoRelevant: "Concerne aussi :",
   alsoUsefulTitle: "À voir aussi",
-  alsoUsefulSubtitle: "Scénarios, comparatifs et intégrations, à côté de la bibliothèque de guides pratiques.",
+  alsoUsefulSubtitle:
+    "Scénarios, comparatifs et intégrations, à côté de la bibliothèque de guides pratiques.",
   alsoUseful: {
     "/stories": {
       label: "Scénarios",
@@ -41,11 +42,13 @@ const fr: GuidesMessages = {
     },
     "/accessories": {
       label: "Accessoires",
-      summary: "Claim puck, balise d’alerte, contacts porte/fuite/courant, étiquettes de kit, supports.",
+      summary:
+        "Claim puck, balise d’alerte, contacts porte/fuite/courant, étiquettes de kit, supports.",
     },
     "/gift": {
       label: "Cadeau / parrainage",
-      summary: "Partagez un lien d’invitation : la personne invitée obtient des jours d’essai Pro en plus, et vous aussi quand elle s’abonne.",
+      summary:
+        "Partagez un lien d’invitation : la personne invitée obtient des jours d’essai Pro en plus, et vous aussi quand elle s’abonne.",
     },
   },
   itemListName: "Guides ProbeHarbor par besoin",

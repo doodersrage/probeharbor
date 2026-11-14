@@ -77,14 +77,20 @@ describe("per-sensor freeze overrides in the display unit", () => {
     expect(thresholdScopeFromDisplayUnit(scope, "F", scope)).toBe(scope);
     expect(thresholdScopeToDisplayUnit(scope, true)).toEqual({
       includedSensorIds: ["a"],
-      overrides: { a: { freezeThresholdF: -1.1, humidityThreshold: 70 }, b: { humidityThreshold: 60 } },
+      overrides: {
+        a: { freezeThresholdF: -1.1, humidityThreshold: 70 },
+        b: { humidityThreshold: 60 },
+      },
     });
   });
 
   it("round-trips untouched values exactly and converts typed °C", () => {
     const shown = thresholdScopeToDisplayUnit(scope, true);
     expect(thresholdScopeFromDisplayUnit(shown, "C", scope)).toEqual(scope);
-    const typed = { includedSensorIds: [], overrides: { a: { freezeThresholdF: 0 }, c: { freezeThresholdF: 2 } } };
+    const typed = {
+      includedSensorIds: [],
+      overrides: { a: { freezeThresholdF: 0 }, c: { freezeThresholdF: 2 } },
+    };
     expect(thresholdScopeFromDisplayUnit(typed, "C", scope).overrides).toEqual({
       a: { freezeThresholdF: 32 },
       c: { freezeThresholdF: 35.6 },

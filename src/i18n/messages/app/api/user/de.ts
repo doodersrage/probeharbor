@@ -9,7 +9,10 @@ const de: ApiUserMessages = {
     failed: "Testalarm fehlgeschlagen",
   },
   snooze: {
-    snoozed: { one: "Alarme für {count} Stunde pausiert.", other: "Alarme für {count} Stunden pausiert." },
+    snoozed: {
+      one: "Alarme für {count} Stunde pausiert.",
+      other: "Alarme für {count} Stunden pausiert.",
+    },
     vacationUntil: "Urlaub bis {date}.",
     vacationDays: { one: "Urlaubsmodus für {count} Tag.", other: "Urlaubsmodus für {count} Tage." },
     snoozeCleared: "Pause aufgehoben.",
@@ -33,11 +36,15 @@ const de: ApiUserMessages = {
   noValidFeeds: "Keine gültigen Feeds angegeben.",
   feedIdRequired: "Feed-ID fehlt",
   csvRequiresPlan: "Der CSV-Export erfordert ein aktives Abo oder Administratorzugriff",
-  doorCsvFailed: "Der Export des Türverlaufs ist fehlgeschlagen. Bitte versuch es gleich noch einmal.",
-  doorCsvTooMany: "Zu viele Türöffnungen für eine CSV (mehr als 5.000). Wähl weniger Tage aus und versuch es noch einmal.",
-  doorEventsInvalidDate: "Verwende für from und to JJJJ-MM-TT oder einen vollständigen Zeitstempel.",
+  doorCsvFailed:
+    "Der Export des Türverlaufs ist fehlgeschlagen. Bitte versuch es gleich noch einmal.",
+  doorCsvTooMany:
+    "Zu viele Türöffnungen für eine CSV (mehr als 5.000). Wähl weniger Tage aus und versuch es noch einmal.",
+  doorEventsInvalidDate:
+    "Verwende für from und to JJJJ-MM-TT oder einen vollständigen Zeitstempel.",
   doorEventsRangeOrder: "„from“ muss vor „to“ liegen.",
-  doorEventsFailed: "Der Türverlauf konnte nicht geladen werden. Bitte versuch es gleich noch einmal.",
+  doorEventsFailed:
+    "Der Türverlauf konnte nicht geladen werden. Bitte versuch es gleich noch einmal.",
   push: {
     invalidSubscription: "Ungültiges Abonnement",
     missingEndpoint: "Endpoint fehlt",

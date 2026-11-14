@@ -12,7 +12,8 @@ export default {
     },
     hardware: {
       title: "Matériel et firmware",
-      description: "Firmware Arduino, ESP32, Pico W, STM32, CH32V et assembleur AVR, câblage et écran LCD local.",
+      description:
+        "Firmware Arduino, ESP32, Pico W, STM32, CH32V et assembleur AVR, câblage et écran LCD local.",
     },
     software: {
       title: "Backend et site web",
@@ -40,7 +41,8 @@ export default {
     },
     "first-dht22": {
       title: "Câbler mon premier DHT22",
-      description: "Les bases du capteur, le câblage des broches et le sketch Arduino qui publie du JSON.",
+      description:
+        "Les bases du capteur, le câblage des broches et le sketch Arduino qui publie du JSON.",
       ctaLabel: "Ouvrir la présentation Arduino",
       steps: [
         { label: "Présentation du DHT22" },
@@ -84,7 +86,8 @@ export default {
     },
     "share-household": {
       title: "Partager avec mon foyer",
-      description: "Invitez votre famille, comprenez les rôles et regroupez les alertes de gel et de fuite au même endroit.",
+      description:
+        "Invitez votre famille, comprenez les rôles et regroupez les alertes de gel et de fuite au même endroit.",
       ctaLabel: "Créer un compte gratuit",
       steps: [
         { label: "Guide du partage" },

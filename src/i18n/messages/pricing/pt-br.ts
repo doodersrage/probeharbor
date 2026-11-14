@@ -43,8 +43,10 @@ const ptBr: PricingMessages = {
     saveApprox: "Economize ~20%",
     saveVsMonthly: "Economize {pct} em relação ao mensal",
     switchToAnnual: "Mude para o anual e economize {pct}",
-    monthlyHint: "Você está vendo os preços mensais. O plano anual garante {pct} de desconto ({memberAnnual} / {proAnnual} por ano).",
-    annualHint: "Você está vendo os totais anuais. Mude para Mensal para ver {memberMonthly} / {proMonthly} por mês.",
+    monthlyHint:
+      "Você está vendo os preços mensais. O plano anual garante {pct} de desconto ({memberAnnual} / {proAnnual} por ano).",
+    annualHint:
+      "Você está vendo os totais anuais. Mude para Mensal para ver {memberMonthly} / {proMonthly} por mês.",
     withTrial: "{sub} · teste grátis de 14 dias",
   },
   cards: {
@@ -84,7 +86,8 @@ const ptBr: PricingMessages = {
     },
     portfolio: {
       badge: "Para carteiras de imóveis",
-      tagline: "Para operações acima do limite de {proMax} imóveis do Pro: administradores sem acesso à cobrança",
+      tagline:
+        "Para operações acima do limite de {proMax} imóveis do Pro: administradores sem acesso à cobrança",
       everythingInPro: "Tudo do Pro, mais: ",
       properties: "Até {max} imóveis próprios (o Pro já cobre até {proMax})",
       crossProperty: "Painel de risco de congelamento entre imóveis",
@@ -113,7 +116,8 @@ const ptBr: PricingMessages = {
     title: "Comparação completa de recursos",
     subtitleHtml:
       'A matriz oficial de planos Free / Member / Pro / Portfolio: número de dispositivos, retenção, alertas de congelamento e vazamento, termostato e logins de administradores. Comparando o ProbeHarbor com MQTT, Govee ou uma estação meteorológica? <a class="text-link" href="/compare">Veja as alternativas</a> (guias de concorrentes, não uma segunda cópia desta tabela).',
-    noteHtml: 'O Portfolio inclui tudo do Pro, depois aumenta o limite de imóveis próprios (o Pro já permite até {proMax}; o Portfolio até {portfolioMax}) e adiciona logins para administradores de imóveis: veja o cartão do Portfolio acima e <a class="text-link" href="/property-management">administração de imóveis</a>.',
+    noteHtml:
+      'O Portfolio inclui tudo do Pro, depois aumenta o limite de imóveis próprios (o Pro já permite até {proMax}; o Portfolio até {portfolioMax}) e adiciona logins para administradores de imóveis: veja o cartão do Portfolio acima e <a class="text-link" href="/property-management">administração de imóveis</a>.',
   },
   hosted: {
     title: "Hospedado na edge da Cloudflare",

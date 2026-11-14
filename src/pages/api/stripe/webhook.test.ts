@@ -11,8 +11,7 @@ vi.mock("../../../lib/stripe", () => ({
 const mockFindUserIdByStripeSubscriptionId = vi.fn();
 const mockUpsertUserSubscription = vi.fn();
 vi.mock("../../../lib/stripeSubscriptions", () => ({
-  findUserIdByStripeSubscriptionId: (...a: unknown[]) =>
-    mockFindUserIdByStripeSubscriptionId(...a),
+  findUserIdByStripeSubscriptionId: (...a: unknown[]) => mockFindUserIdByStripeSubscriptionId(...a),
   upsertUserSubscription: (...a: unknown[]) => mockUpsertUserSubscription(...a),
 }));
 
@@ -41,10 +40,7 @@ function stubEnv(key: string, value: string | undefined) {
   }
 }
 
-function makePostContext(
-  body: string,
-  headers: Record<string, string> = {},
-): APIContext {
+function makePostContext(body: string, headers: Record<string, string> = {}): APIContext {
   const request = new Request("https://example.com/api/stripe/webhook", {
     method: "POST",
     body,
@@ -89,8 +85,7 @@ describe("GET /api/stripe/webhook", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       ok: true,
-      message:
-        "Stripe webhook endpoint is active. Stripe delivers events here via POST.",
+      message: "Stripe webhook endpoint is active. Stripe delivers events here via POST.",
     });
   });
 });
@@ -112,9 +107,7 @@ describe("POST /api/stripe/webhook", () => {
     });
     const { POST } = await import("./webhook");
 
-    const response = await POST(
-      makePostContext("{}", { "stripe-signature": "bad-sig" }),
-    );
+    const response = await POST(makePostContext("{}", { "stripe-signature": "bad-sig" }));
 
     expect(response.status).toBe(400);
     expect(await response.text()).toBe("Invalid signature");
@@ -130,9 +123,7 @@ describe("POST /api/stripe/webhook", () => {
     mockClaimStripeWebhookEvent.mockResolvedValue({ alreadyProcessed: true });
     const { POST } = await import("./webhook");
 
-    const response = await POST(
-      makePostContext("{}", { "stripe-signature": "sig" }),
-    );
+    const response = await POST(makePostContext("{}", { "stripe-signature": "sig" }));
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ received: true, duplicate: true });
@@ -153,25 +144,28 @@ describe("POST /api/stripe/webhook", () => {
     });
     const { POST } = await import("./webhook");
 
-    const response = await POST(
-      makePostContext("payload", { "stripe-signature": "sig" }),
-    );
+    const response = await POST(makePostContext("payload", { "stripe-signature": "sig" }));
 
     expect(mockConstructEvent).toHaveBeenCalledWith("payload", "sig", "whsec_test");
-    expect(mockUpsertUserSubscription).toHaveBeenCalledWith(
-      "user-1",
-      subscription,
-      "cus_1",
-    );
+    expect(mockUpsertUserSubscription).toHaveBeenCalledWith("user-1", subscription, "cus_1");
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ received: true });
   });
 
   it("stores the subscription as Stripe has it now, not the event's (possibly older) copy", async () => {
-    const stale = { id: "sub_9", status: "active", metadata: { supabase_user_id: "user-9" }, customer: "cus_9" };
+    const stale = {
+      id: "sub_9",
+      status: "active",
+      metadata: { supabase_user_id: "user-9" },
+      customer: "cus_9",
+    };
     const current = { ...stale, status: "canceled" };
     mockSubscriptionsRetrieve.mockResolvedValue(current);
-    mockConstructEvent.mockReturnValue({ id: "evt_9", type: "customer.subscription.updated", data: { object: stale } });
+    mockConstructEvent.mockReturnValue({
+      id: "evt_9",
+      type: "customer.subscription.updated",
+      data: { object: stale },
+    });
     const { POST } = await import("./webhook");
 
     const response = await POST(makePostContext("payload", { "stripe-signature": "sig" }));
@@ -182,11 +176,15 @@ describe("POST /api/stripe/webhook", () => {
   });
 
   it("returns 500 and releases the event when Stripe can't be read, so Stripe retries", async () => {
-    mockSubscriptionsRetrieve.mockRejectedValue(Object.assign(new Error("Stripe unreachable"), { statusCode: 503 }));
+    mockSubscriptionsRetrieve.mockRejectedValue(
+      Object.assign(new Error("Stripe unreachable"), { statusCode: 503 }),
+    );
     mockConstructEvent.mockReturnValue({
       id: "evt_10",
       type: "customer.subscription.deleted",
-      data: { object: { id: "sub_10", metadata: { supabase_user_id: "user-10" }, customer: "cus_10" } },
+      data: {
+        object: { id: "sub_10", metadata: { supabase_user_id: "user-10" }, customer: "cus_10" },
+      },
     });
     const { POST } = await import("./webhook");
 
@@ -198,9 +196,23 @@ describe("POST /api/stripe/webhook", () => {
   });
 
   it("falls back to the event's copy for a subscription Stripe no longer has", async () => {
-    const gone = { id: "sub_11", status: "canceled", metadata: { supabase_user_id: "user-11" }, customer: "cus_11" };
-    mockSubscriptionsRetrieve.mockRejectedValue(Object.assign(new Error("No such subscription"), { statusCode: 404, code: "resource_missing" }));
-    mockConstructEvent.mockReturnValue({ id: "evt_11", type: "customer.subscription.deleted", data: { object: gone } });
+    const gone = {
+      id: "sub_11",
+      status: "canceled",
+      metadata: { supabase_user_id: "user-11" },
+      customer: "cus_11",
+    };
+    mockSubscriptionsRetrieve.mockRejectedValue(
+      Object.assign(new Error("No such subscription"), {
+        statusCode: 404,
+        code: "resource_missing",
+      }),
+    );
+    mockConstructEvent.mockReturnValue({
+      id: "evt_11",
+      type: "customer.subscription.deleted",
+      data: { object: gone },
+    });
     const { POST } = await import("./webhook");
 
     const response = await POST(makePostContext("payload", { "stripe-signature": "sig" }));
@@ -229,9 +241,7 @@ describe("POST /api/stripe/webhook", () => {
     mockUpsertUserSubscription.mockRejectedValue(new Error("db down"));
     const { POST } = await import("./webhook");
 
-    const response = await POST(
-      makePostContext("{}", { "stripe-signature": "sig" }),
-    );
+    const response = await POST(makePostContext("{}", { "stripe-signature": "sig" }));
 
     expect(mockReleaseStripeWebhookEvent).toHaveBeenCalledWith("evt_3");
     expect(response.status).toBe(500);

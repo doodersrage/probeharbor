@@ -18,5 +18,8 @@ export function getLocalizedExpandedAboutContent(
 ): AboutContentBlock[] | undefined {
   const base = getExpandedAboutContent(slug);
   if (!base || locale === "en") return base;
-  return mergeTranslation(base, overlays()[locale]?.[slug] as DeepPartial<AboutContentBlock[]> | undefined);
+  return mergeTranslation(
+    base,
+    overlays()[locale]?.[slug] as DeepPartial<AboutContentBlock[]> | undefined,
+  );
 }

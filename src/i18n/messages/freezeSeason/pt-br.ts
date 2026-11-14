@@ -25,7 +25,8 @@ const ptBr: FreezeSeasonMessages = {
     'Opcional: inclua sua cidade no <a class="text-link" href="/freeze-map">mapa público de congelamento</a>.',
   sampleColdest: "Cidades mais frias (exemplo)",
   liveColdest: "Cidades participantes mais frias",
-  sampleNote: "Prévia ilustrativa até que domicílios suficientes participem do mapa de congelamento.",
+  sampleNote:
+    "Prévia ilustrativa até que domicílios suficientes participem do mapa de congelamento.",
   liveNote: "Do retrato mais recente do mapa de congelamento do ProbeHarbor.",
   minTemp: "mín. {temp}",
   viewMap: "Ver o mapa completo",

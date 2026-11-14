@@ -1,21 +1,23 @@
-
 /** Body copy for /about/avr-asm-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
 const de: Messages = {
   introHtml:
     'Kaum eine Ethernet-Frostsonde <strong>erfordert</strong> Assembler. PADAUK, PIC10F und ATtiny10 werden vorrangig (oder praktisch nur) in Assembler programmiert, haben aber weder einen TCP-Stack noch genug RAM, um JSON per POST zu senden. Was wir tatsächlich unterstützen können, ist <strong>GNU-AVR-Assembler</strong> auf einem Arduino <strong>Uno / ATmega328P</strong> mit einem <strong>W5100</strong>-Ethernet-Shield: dieselbe Garagenhardware wie bei <a class="text-link" href="/about/arduino-sketches">Uno Ethernet</a>, nur ohne Arduino-C.',
-  relay: "Der W5100 beherrscht kein TLS. Dieses Beispiel nutzt dasselbe HTTP→HTTPS-Relay im LAN wie Uno in C, STM32 Zephyr und CH32V WCHNET.",
+  relay:
+    "Der W5100 beherrscht kein TLS. Dieses Beispiel nutzt dasselbe HTTP→HTTPS-Relay im LAN wie Uno in C, STM32 Zephyr und CH32V WCHNET.",
   partsTitle: "Teile",
   partsCaption: "Teile für eine Frostsonde in AVR-Assembler",
   colPart: "Teil",
   colWhy: "Wozu",
   colBuy: "Kaufen",
-  unoWhyHtml: "AVR mit 16 MHz. Programmiert mit <code>avr-gcc</code> / <code>avrdude</code>, nicht mit der Arduino IDE.",
+  unoWhyHtml:
+    "AVR mit 16 MHz. Programmiert mit <code>avr-gcc</code> / <code>avrdude</code>, nicht mit der Arduino IDE.",
   shieldPart: "W5100-Ethernet-Shield",
   shieldWhy: "Socket-Chip über SPI. Dasselbe Shield wie im Beispiel Arduino Ethernet DHT22.",
   probePart: "Wasserdichter DS18B20",
-  probeWhyHtml: "Daten an <strong>D7</strong>. Nicht D4 verwenden: Das Shield nutzt D4 als Chip-Select für die SD-Karte.",
+  probeWhyHtml:
+    "Daten an <strong>D7</strong>. Nicht D4 verwenden: Das Shield nutzt D4 als Chip-Select für die SD-Karte.",
   resistorPart: "4.7kΩ-Widerstand",
   resistorWhy: "Pull-up von der DS18B20-Datenleitung auf 5V (der Uno ist ein 5V-Board).",
   wiringTitle: "Verdrahtung",

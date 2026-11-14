@@ -46,10 +46,13 @@ describe("every raw email sender checks the recipient", () => {
     walk(join(process.cwd(), "src"));
     const unchecked = files.filter((f) => {
       const src = readFileSync(f, "utf8");
-      if (!/sendMailerRaw\s*\(/.test(src) || /export async function sendMailerRaw/.test(src)) return false;
+      if (!/sendMailerRaw\s*\(/.test(src) || /export async function sendMailerRaw/.test(src))
+        return false;
       return !/assertRecipientSendable\s*\(/.test(src);
     });
     // The contact form sends to the site's own inbox (SMTP_MAIL_TO), not a user address.
-    expect(unchecked.map((f) => f.replace(`${process.cwd()}/`, ""))).toEqual(["src/pages/api/contact.ts"]);
+    expect(unchecked.map((f) => f.replace(`${process.cwd()}/`, ""))).toEqual([
+      "src/pages/api/contact.ts",
+    ]);
   });
 });

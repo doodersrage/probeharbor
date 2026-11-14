@@ -8,15 +8,20 @@ const de: LibTextMessages = {
     averageTitle: "{days}-Tage-Durchschnitt",
     tempOn: "{temp} {unit} am {time} ({probe})",
     humidityOn: "{humidity} % am {time} ({probe})",
-    averageDetail: { one: "{temp} {unit} aus {count} Messwert", other: "{temp} {unit} aus {count} Messwerten" },
+    averageDetail: {
+      one: "{temp} {unit} aus {count} Messwert",
+      other: "{temp} {unit} aus {count} Messwerten",
+    },
     warmerThan: "{warmer} ist in diesem Zeitraum im Schnitt {delta} {unit} wärmer als {cooler}.",
     yoyTitle: "Vorjahresvergleich",
-    yoyDetail: "Dieser Zeitraum liegt im Schnitt bei {current} {unit}, im Vorjahr bei {prior} {unit} ({delta} {unit}).",
+    yoyDetail:
+      "Dieser Zeitraum liegt im Schnitt bei {current} {unit}, im Vorjahr bei {prior} {unit} ({delta} {unit}).",
     outdoorEstimate: "{detail} (Außenschätzung).",
     outdoorEstimateAt: "{detail} (Außenschätzung für {location}).",
   },
   coldSnap: {
-    reached: "{probe} erreichte {temp} {unit} und lag damit auf oder unter der {threshold}-{unit}-Grenze.",
+    reached:
+      "{probe} erreichte {temp} {unit} und lag damit auf oder unter der {threshold}-{unit}-Grenze.",
     lowest: "Tiefstwert: {temp} {unit}.",
     backAbove: "Wieder über {threshold} {unit}.",
     alertSent: "Alarm gesendet: {title} ({channels}).",
@@ -30,7 +35,8 @@ const de: LibTextMessages = {
   anomaly: {
     drop: {
       one: "{probe} fiel innerhalb von {count} Minute um {drop} {unit} ({from} {unit} → {to} {unit}).",
-      other: "{probe} fiel innerhalb von {count} Minuten um {drop} {unit} ({from} {unit} → {to} {unit}).",
+      other:
+        "{probe} fiel innerhalb von {count} Minuten um {drop} {unit} ({from} {unit} → {to} {unit}).",
     },
     dropDoor: {
       one: "{probe} fiel innerhalb von {count} Minute um {drop} {unit} ({from} {unit} → {to} {unit}). Ein Türsensor war zu dieser Zeit offen.",
@@ -117,7 +123,8 @@ const de: LibTextMessages = {
     partUnknown: "{count} unbekannt",
   },
   lowBattery: {
-    single: "Akku von {name} bei {pct} %: aufladen oder ersetzen, bevor er keine Daten mehr sendet.",
+    single:
+      "Akku von {name} bei {pct} %: aufladen oder ersetzen, bevor er keine Daten mehr sendet.",
     item: "{name} ({pct} %)",
     list: "Niedriger Akkustand bei {count} Geräten: {names}.",
     listMore: "Niedriger Akkustand bei {count} Geräten: {names} und {more} weiteren.",

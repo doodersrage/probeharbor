@@ -1,10 +1,7 @@
 import { updateSessionUserMetadata } from "./sessionMetadata";
 import type { User } from "./appUser";
 import type { TempFeedConfig, TempProbeConfig } from "./tempFeedConfig";
-import {
-  getDefaultTempFeeds,
-  getDefaultTempProbes,
-} from "./tempFeedConfig";
+import { getDefaultTempFeeds, getDefaultTempProbes } from "./tempFeedConfig";
 import { getUserTempConfig } from "./userTempConfig";
 import {
   normalizeAmbientMac,
@@ -79,12 +76,10 @@ export function getDisplayPreferencesFromMetadata(
 
   const metadata = user.user_metadata;
   const themeRaw = metadata.theme;
-  const theme: ThemePreference =
-    themeRaw === "light" || themeRaw === "system" ? themeRaw : "dark";
+  const theme: ThemePreference = themeRaw === "light" || themeRaw === "system" ? themeRaw : "dark";
 
   const weatherCityId =
-    typeof metadata.weather_city_id === "string" &&
-    /^\d+$/.test(metadata.weather_city_id.trim())
+    typeof metadata.weather_city_id === "string" && /^\d+$/.test(metadata.weather_city_id.trim())
       ? metadata.weather_city_id.trim()
       : null;
 
@@ -165,13 +160,13 @@ export async function updateUserDisplayPreferences(
   );
 
   return updateSessionUserMetadata(accessToken, refreshToken, {
-      show_garage_temps: preferences.showGarageTemps,
-      show_weather: preferences.showWeather,
-      weather_city_id: preferences.weatherCityId,
-      use_celsius: preferences.useCelsius,
-      theme: preferences.theme,
-      ...personalPatch,
-    });
+    show_garage_temps: preferences.showGarageTemps,
+    show_weather: preferences.showWeather,
+    weather_city_id: preferences.weatherCityId,
+    use_celsius: preferences.useCelsius,
+    theme: preferences.theme,
+    ...personalPatch,
+  });
 }
 
 export function resolveTheme(
@@ -211,8 +206,7 @@ export function parseDisplayPreferencesInput(input: {
   const weatherCityIdRaw = input.weather_city_id?.trim() ?? "";
   const weatherCityId = /^\d+$/.test(weatherCityIdRaw) ? weatherCityIdRaw : null;
   const themeRaw = input.theme;
-  const theme: ThemePreference =
-    themeRaw === "light" || themeRaw === "system" ? themeRaw : "dark";
+  const theme: ThemePreference = themeRaw === "light" || themeRaw === "system" ? themeRaw : "dark";
   const sourceRaw = (input.weather_source ?? "openweather").trim().toLowerCase();
   const weatherSource: WeatherSource =
     sourceRaw === "ambient" || sourceRaw === "weatherflow" ? sourceRaw : "openweather";

@@ -45,9 +45,13 @@ const DISCORD_S = "https://discord.com/api/webhooks/2/shared-s";
 const fetchMock = vi.fn();
 
 beforeEach(() => {
-  fetchMock.mockReset().mockImplementation(async (url: string) =>
-    url.startsWith("https://discord.com/") ? new Response(null, { status: 204 }) : new Response("no", { status: 404 }),
-  );
+  fetchMock
+    .mockReset()
+    .mockImplementation(async (url: string) =>
+      url.startsWith("https://discord.com/")
+        ? new Response(null, { status: 204 })
+        : new Response("no", { status: 404 }),
+    );
   vi.stubGlobal("fetch", fetchMock);
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -59,10 +63,12 @@ afterEach(() => {
 });
 
 const householdOf = async (userId: string) =>
-  (await sql<{ household_id: string }>(
-    "select household_id from public.household_members where user_id = $1 and role = 'owner'",
-    [userId],
-  ))[0]!.household_id;
+  (
+    await sql<{ household_id: string }>(
+      "select household_id from public.household_members where user_id = $1 and role = 'owner'",
+      [userId],
+    )
+  )[0]!.household_id;
 
 /** A push device reporting now; battery as given, one temperature probe at `tempF`. */
 async function device(householdId: string, name: string, batteryPct: number, tempF: number) {
@@ -83,7 +89,9 @@ async function device(householdId: string, name: string, batteryPct: number, tem
   );
 }
 
-async function setup(options: { aBattery?: number; aTemp?: number; bBattery?: number; bTemp?: number } = {}) {
+async function setup(
+  options: { aBattery?: number; aTemp?: number; bBattery?: number; bTemp?: number } = {},
+) {
   const a = await insertTestUser(db.client(), "owner-a@example.com");
   const s = await insertTestUser(db.client(), "shared-s@example.com");
   const ha = await householdOf(a);
@@ -143,10 +151,12 @@ const eventsOf = (userId: string, kind: string) =>
     [userId, kind],
   );
 const ownHolds = async (userId: string) =>
-  (await sql<{ snooze_until: unknown; vacation_until: unknown }>(
-    "select snooze_until, vacation_until from public.alert_settings where user_id = $1",
-    [userId],
-  ))[0];
+  (
+    await sql<{ snooze_until: unknown; vacation_until: unknown }>(
+      "select snooze_until, vacation_until from public.alert_settings where user_id = $1",
+      [userId],
+    )
+  )[0];
 
 describe("inbound webhook: household snooze / vacation", () => {
   it("snooze sets only this household's hold, never a member's own settings", async () => {
@@ -197,7 +207,9 @@ describe("inbound webhook: household snooze / vacation", () => {
       expect(freeze[0]!.channels_sent).toEqual(["discord"]);
     }
     // The evaluation never wrote the household hold into anyone's settings.
-    expect(await ownHolds(s)).toEqual(expect.objectContaining({ snooze_until: null, vacation_until: null }));
+    expect(await ownHolds(s)).toEqual(
+      expect.objectContaining({ snooze_until: null, vacation_until: null }),
+    );
     expect((await getAlertSettingsForUser(s, {})).snoozeUntil).toBeNull();
   });
 
@@ -239,7 +251,10 @@ describe("inbound webhook: household snooze / vacation", () => {
   it("a member's own snooze still holds their alerts for every household", async () => {
     const { s } = await setup({ bBattery: 5 });
     const own = await getAlertSettingsForUser(s, {});
-    await saveAlertSettingsForUser(s, { ...own, snoozeUntil: new Date(Date.now() + 3600_000).toISOString() });
+    await saveAlertSettingsForUser(s, {
+      ...own,
+      snoozeUntil: new Date(Date.now() + 3600_000).toISOString(),
+    });
 
     await collectHistoryForAllUsers();
 
@@ -265,8 +280,12 @@ async function resume(userId: string, fields: Record<string, string>) {
   signedIn.userId = userId;
   const form = new FormData();
   for (const [k, v] of Object.entries(fields)) form.set(k, v);
-  const request = new Request("https://example.com/api/user/household-alert-hold", { method: "POST", body: form });
-  const redirect = (path: string) => new Response(null, { status: 302, headers: { Location: path } });
+  const request = new Request("https://example.com/api/user/household-alert-hold", {
+    method: "POST",
+    body: form,
+  });
+  const redirect = (path: string) =>
+    new Response(null, { status: 302, headers: { Location: path } });
   const response = await resumePost({ request, cookies: {}, redirect } as unknown as APIContext);
   return response.headers.get("Location");
 }
@@ -280,16 +299,21 @@ describe("dashboard resume of the household hold", () => {
     await setHouseholdSnoozeUntil(hb, hbUntil);
 
     // A household id in the form is ignored: the session's household (HA) is used.
-    expect(await resume(a, { action: "clear_snooze", redirect: "/dashboard", household_id: hb })).toBe(
-      "/dashboard?snooze_cleared=1",
+    expect(
+      await resume(a, { action: "clear_snooze", redirect: "/dashboard", household_id: hb }),
+    ).toBe("/dashboard?snooze_cleared=1");
+    expect(await resume(a, { action: "clear_vacation", redirect: "/dashboard" })).toBe(
+      "/dashboard?vacation_cleared=1",
     );
-    expect(await resume(a, { action: "clear_vacation", redirect: "/dashboard" })).toBe("/dashboard?vacation_cleared=1");
 
     expect(await getHouseholdAlertHold(ha)).toEqual({ snoozeUntil: null, vacationUntil: null });
     expect(Date.parse((await getHouseholdAlertHold(hb)).snoozeUntil!)).toBe(Date.parse(hbUntil));
     expect(await ownHolds(a)).toEqual({ snooze_until: null, vacation_until: null });
     expect(
-      await sql("select user_id, action from public.household_activity where household_id = $1 and action like 'household_%' order by action", [ha]),
+      await sql(
+        "select user_id, action from public.household_activity where household_id = $1 and action like 'household_%' order by action",
+        [ha],
+      ),
     ).toEqual([
       { user_id: a, action: "household_snooze_cleared" },
       { user_id: a, action: "household_vacation_cleared" },
@@ -301,19 +325,26 @@ describe("dashboard resume of the household hold", () => {
     expect(battery[0]!.channels_sent).toEqual(["discord"]);
   });
 
-  it.each(["viewer", "alert_only"] as const)("a %s member is refused and the hold stays", async (role) => {
-    const { ha, token, secret } = await setup();
-    const v = await insertTestUser(db.client(), `${role}@example.com`);
-    await addHouseholdMemberByUserId(ha, v, role);
-    await mergeUserMetadata(v, { active_household_id: ha });
-    await inbound(token, secret, { action: "snooze", hours: 3 });
+  it.each(["viewer", "alert_only"] as const)(
+    "a %s member is refused and the hold stays",
+    async (role) => {
+      const { ha, token, secret } = await setup();
+      const v = await insertTestUser(db.client(), `${role}@example.com`);
+      await addHouseholdMemberByUserId(ha, v, role);
+      await mergeUserMetadata(v, { active_household_id: ha });
+      await inbound(token, secret, { action: "snooze", hours: 3 });
 
-    expect(await resume(v, { action: "clear_snooze", redirect: "/dashboard" })).toBe("/dashboard?error=viewer");
+      expect(await resume(v, { action: "clear_snooze", redirect: "/dashboard" })).toBe(
+        "/dashboard?error=viewer",
+      );
 
-    expect((await getHouseholdAlertHold(ha)).snoozeUntil).not.toBeNull();
-    expect(
-      await sql("select action from public.household_activity where household_id = $1 and action = 'household_snooze_cleared'", [ha]),
-    ).toEqual([]);
-  });
+      expect((await getHouseholdAlertHold(ha)).snoozeUntil).not.toBeNull();
+      expect(
+        await sql(
+          "select action from public.household_activity where household_id = $1 and action = 'household_snooze_cleared'",
+          [ha],
+        ),
+      ).toEqual([]);
+    },
+  );
 });
-

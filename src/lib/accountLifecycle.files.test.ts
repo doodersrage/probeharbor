@@ -12,7 +12,11 @@ const fakeBucket = {
     const start = cursor ? Number(cursor) : 0;
     const page = all.slice(start, start + 2);
     const truncated = start + 2 < all.length;
-    return { objects: page.map((key) => ({ key })), truncated, cursor: truncated ? String(start + 2) : undefined };
+    return {
+      objects: page.map((key) => ({ key })),
+      truncated,
+      cursor: truncated ? String(start + 2) : undefined,
+    };
   }),
   delete: deleteSpy,
 };
@@ -47,7 +51,8 @@ describe("deleteUserAccount stored files", () => {
       "archives/h2/2026-10-01.json",
       "chart-shares/tok1.png",
       "chart-shares/other.png",
-    ]) objects.add(key);
+    ])
+      objects.add(key);
 
     const { deleteUserAccount } = await import("./accountLifecycle");
     const result = await deleteUserAccount("user-1");

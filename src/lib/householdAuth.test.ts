@@ -21,7 +21,9 @@ beforeEach(() => {
   mockGetUserHouseholdId.mockReset();
   mockGetUserHouseholdRole.mockReset();
   mockGetOwnedHouseholdId.mockReset().mockResolvedValue(null);
-  mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({ householdId: "active-1", error: null });
+  mockGetOrCreateHouseholdForUser
+    .mockReset()
+    .mockResolvedValue({ householdId: "active-1", error: null });
 });
 
 function setup(householdId: string | null, role: HouseholdRole | null) {
@@ -131,7 +133,11 @@ describe("redirectUnlessManager", () => {
   it("redirects with manager_required for that specific failure", async () => {
     const { redirectUnlessManager } = await import("./householdAuth");
     const redirect = makeRedirect();
-    redirectUnlessManager({ ok: false, error: "manager_required" }, "/dashboard/household", redirect);
+    redirectUnlessManager(
+      { ok: false, error: "manager_required" },
+      "/dashboard/household",
+      redirect,
+    );
     expect(redirect).toHaveBeenCalledWith("/dashboard/household?error=manager_required");
   });
 
@@ -145,18 +151,25 @@ describe("redirectUnlessManager", () => {
   it("falls back to /dashboard when redirectTo is an open-redirect attempt", async () => {
     const { redirectUnlessManager } = await import("./householdAuth");
     const redirect = makeRedirect();
-    redirectUnlessManager({ ok: false, error: "No household" }, "https://evil.example/phish", redirect);
+    redirectUnlessManager(
+      { ok: false, error: "No household" },
+      "https://evil.example/phish",
+      redirect,
+    );
     expect(redirect).toHaveBeenCalledWith("/dashboard?error=1");
   });
 });
 
 describe("redirectUnlessEditor", () => {
-  it.each(["viewer", "alert_only"] as const)("redirects with ?error=viewer for %s", async (error) => {
-    const { redirectUnlessEditor } = await import("./householdAuth");
-    const redirect = makeRedirect();
-    redirectUnlessEditor({ ok: false, error }, "/dashboard/devices", redirect);
-    expect(redirect).toHaveBeenCalledWith("/dashboard/devices?error=viewer");
-  });
+  it.each(["viewer", "alert_only"] as const)(
+    "redirects with ?error=viewer for %s",
+    async (error) => {
+      const { redirectUnlessEditor } = await import("./householdAuth");
+      const redirect = makeRedirect();
+      redirectUnlessEditor({ ok: false, error }, "/dashboard/devices", redirect);
+      expect(redirect).toHaveBeenCalledWith("/dashboard/devices?error=viewer");
+    },
+  );
 
   it("redirects with ?error=manager_required for that failure", async () => {
     const { redirectUnlessEditor } = await import("./householdAuth");
@@ -168,7 +181,11 @@ describe("redirectUnlessEditor", () => {
   it("merges the error flag into a redirect that already has a query", async () => {
     const { redirectUnlessEditor } = await import("./householdAuth");
     const redirect = makeRedirect();
-    redirectUnlessEditor({ ok: false, error: "viewer" }, "/dashboard/devices?tab=pull#feeds", redirect);
+    redirectUnlessEditor(
+      { ok: false, error: "viewer" },
+      "/dashboard/devices?tab=pull#feeds",
+      redirect,
+    );
     expect(redirect).toHaveBeenCalledWith("/dashboard/devices?tab=pull&error=viewer#feeds");
   });
 
@@ -214,7 +231,9 @@ describe("householdManagerCtx / householdEditorCtx", () => {
 describe("getHouseholdPeopleAccess", () => {
   it("targets the owned household and checks the role there, not in the active one", async () => {
     mockGetOwnedHouseholdId.mockResolvedValue("own-1");
-    mockGetUserHouseholdRole.mockImplementation(async (_u: string, h: string) => (h === "own-1" ? "owner" : "viewer"));
+    mockGetUserHouseholdRole.mockImplementation(async (_u: string, h: string) =>
+      h === "own-1" ? "owner" : "viewer",
+    );
     const { getHouseholdPeopleAccess } = await import("./householdAuth");
 
     expect(await getHouseholdPeopleAccess("user-1", "a@b.com")).toEqual({
@@ -232,15 +251,24 @@ describe("getHouseholdPeopleAccess", () => {
     ["viewer", false],
     ["alert_only", false],
     ["property_manager", false],
-  ])("falls back to the active household; a %s may invite: %s, never remove or change roles", async (role, invite) => {
-    mockGetUserHouseholdRole.mockResolvedValue(role);
-    const { getHouseholdPeopleAccess } = await import("./householdAuth");
+  ])(
+    "falls back to the active household; a %s may invite: %s, never remove or change roles",
+    async (role, invite) => {
+      mockGetUserHouseholdRole.mockResolvedValue(role);
+      const { getHouseholdPeopleAccess } = await import("./householdAuth");
 
-    const access = await getHouseholdPeopleAccess("user-1", "a@b.com");
+      const access = await getHouseholdPeopleAccess("user-1", "a@b.com");
 
-    expect(access).toEqual({ householdId: "active-1", ownedId: null, role, canInvite: invite, canManageMembers: false });
-    expect(mockGetUserHouseholdRole).toHaveBeenCalledWith("user-1", "active-1");
-  });
+      expect(access).toEqual({
+        householdId: "active-1",
+        ownedId: null,
+        role,
+        canInvite: invite,
+        canManageMembers: false,
+      });
+      expect(mockGetUserHouseholdRole).toHaveBeenCalledWith("user-1", "active-1");
+    },
+  );
 
   it("denies everything without a household", async () => {
     mockGetOrCreateHouseholdForUser.mockResolvedValue({ householdId: "", error: "db down" });
@@ -248,7 +276,12 @@ describe("getHouseholdPeopleAccess", () => {
 
     const access = await getHouseholdPeopleAccess("user-1");
 
-    expect(access).toMatchObject({ householdId: null, role: null, canInvite: false, canManageMembers: false });
+    expect(access).toMatchObject({
+      householdId: null,
+      role: null,
+      canInvite: false,
+      canManageMembers: false,
+    });
     expect(mockGetUserHouseholdRole).not.toHaveBeenCalled();
   });
 });

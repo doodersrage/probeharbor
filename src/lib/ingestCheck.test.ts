@@ -3,7 +3,13 @@ import { checkIngestPayload } from "./ingestCheck";
 
 describe("checkIngestPayload", () => {
   it("reads flat keys the way the endpoint does", () => {
-    const result = checkIngestPayload({ temp1: 42.5, door1: false, battery: 87, rssi: -62, fw: "1.2.0" });
+    const result = checkIngestPayload({
+      temp1: 42.5,
+      door1: false,
+      battery: 87,
+      rssi: -62,
+      fw: "1.2.0",
+    });
     expect(result.accepted).toBe(true);
     expect(result.readings.map((r) => [r.key, r.kind])).toEqual([
       ["temp1", "temperature"],
@@ -69,7 +75,14 @@ describe("checkIngestPayload with batches and times", () => {
 
   it("accepts a batch the endpoint accepts, counting every item's readings", () => {
     const result = checkIngestPayload(
-      { fw: "1.3.0", rssi: -60, readings: [{ temp1: 40, recorded_at: S - 120 }, { temp1: 41, recorded_at: S - 60 }] },
+      {
+        fw: "1.3.0",
+        rssi: -60,
+        readings: [
+          { temp1: 40, recorded_at: S - 120 },
+          { temp1: 41, recorded_at: S - 60 },
+        ],
+      },
       NOW,
     );
     expect(result.accepted).toBe(true);
@@ -81,7 +94,15 @@ describe("checkIngestPayload with batches and times", () => {
 
   it("names the batch items the endpoint would skip, and why", () => {
     const result = checkIngestPayload(
-      { readings: [{ temp1: 40 }, { temp1: 41, recorded_at: S - 4 * 86400 }, { temp1: 42, recorded_at: NOW }, 7, { temp1: 43, recorded_at: S }] },
+      {
+        readings: [
+          { temp1: 40 },
+          { temp1: 41, recorded_at: S - 4 * 86400 },
+          { temp1: 42, recorded_at: NOW },
+          7,
+          { temp1: 43, recorded_at: S },
+        ],
+      },
       NOW,
     );
     expect(result.accepted).toBe(true);
@@ -101,7 +122,12 @@ describe("checkIngestPayload with batches and times", () => {
 
   it("repeats a per-item warning once, not per item", () => {
     const result = checkIngestPayload(
-      { readings: [{ widget: 1, recorded_at: S - 60 }, { widget: 2, recorded_at: S }] },
+      {
+        readings: [
+          { widget: 1, recorded_at: S - 60 },
+          { widget: 2, recorded_at: S },
+        ],
+      },
       NOW,
     );
     expect(result.warnings.filter((w) => w.includes('"widget"'))).toHaveLength(1);

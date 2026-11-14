@@ -35,7 +35,8 @@ const es: AuthPasswordMessages = {
   },
   resend: {
     title: "Reenviar confirmación",
-    description: "Solicita un nuevo enlace de confirmación de correo para tu cuenta de ProbeHarbor.",
+    description:
+      "Solicita un nuevo enlace de confirmación de correo para tu cuenta de ProbeHarbor.",
     heading: "Reenviar el correo de confirmación",
     lede: "Los enlaces de confirmación caducan. Introduce el correo con el que te registraste y te enviaremos uno nuevo.",
     sentHtml:

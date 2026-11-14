@@ -20,10 +20,12 @@ vi.mock("../../../lib/pucks", () => ({
   registerPuck: (...a: unknown[]) => mockRegisterPuck(...a),
 }));
 
-function makeContext(body: unknown | string = {
-  device_id: "puck-1",
-  secret_hex: "aabbcc",
-}): APIContext {
+function makeContext(
+  body: unknown | string = {
+    device_id: "puck-1",
+    secret_hex: "aabbcc",
+  },
+): APIContext {
   const payload = typeof body === "string" ? body : JSON.stringify(body);
   return {
     request: new Request("https://example.com/api/pucks/register", {

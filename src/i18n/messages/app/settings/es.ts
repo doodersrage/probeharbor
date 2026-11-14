@@ -16,7 +16,8 @@ const es: SettingsMessages = {
     tipsHidden: "Consejos de apps complementarias ocultos en Resumen.",
     tipsReset: "Los consejos de apps complementarias vuelven a mostrarse en Resumen.",
     retentionSaved: "Preferencia de conservación guardada.",
-    retentionError: "No se pudo guardar la preferencia de conservación. Se mantiene el ajuste anterior; inténtalo de nuevo.",
+    retentionError:
+      "No se pudo guardar la preferencia de conservación. Se mantiene el ajuste anterior; inténtalo de nuevo.",
     tenantSaved: "Contacto del inquilino guardado.",
     tenantError: "No se pudo guardar el contacto del inquilino.",
   },
@@ -134,20 +135,28 @@ const es: SettingsMessages = {
   mfa: {
     checking: "Comprobando el estado de MFA…",
     loadError: "No se pudo cargar el estado de MFA",
-    noneWithYubikey: "Aún no hay factores MFA registrados: añade una app de autenticación o una YubiKey abajo.",
+    noneWithYubikey:
+      "Aún no hay factores MFA registrados: añade una app de autenticación o una YubiKey abajo.",
     none: "No hay factores MFA registrados: añade una app de autenticación abajo.",
     allVerified: "{factors}{breakdown}.",
-    factorsEnrolled: { one: "{count} factor MFA registrado", other: "{count} factores MFA registrados" },
+    factorsEnrolled: {
+      one: "{count} factor MFA registrado",
+      other: "{count} factores MFA registrados",
+    },
     breakdown: " ({apps} app · {keys})",
     keyCount: { one: "{count} llave", other: "{count} llaves" },
     someUnfinished: "{verified} registrados · {unfinished} (elimínalo si se quedó atascado).",
     onlyUnfinished: "{unfinished}: verifica o elimina para continuar.",
-    unfinishedCount: { one: "{count} registro sin terminar", other: "{count} registros sin terminar" },
+    unfinishedCount: {
+      one: "{count} registro sin terminar",
+      other: "{count} registros sin terminar",
+    },
     enrollFailed: "No se pudo completar el registro",
     scanQr:
       "Escanea el código QR con tu app de autenticación (o Yubico Authenticator en una YubiKey) y luego escribe abajo un código de verificación.",
     verifyFailed: "No se pudo verificar",
-    totpEnrolled: "App de autenticación registrada. La próxima vez que inicies sesión se te pedirá un código.",
+    totpEnrolled:
+      "App de autenticación registrada. La próxima vez que inicies sesión se te pedirá un código.",
     keyEnrollFailed: "No se pudo registrar la llave de seguridad",
     keyStartFailed: "No se pudo iniciar el registro de la llave de seguridad",
     keyVerifyFailed: "No se pudo verificar la llave de seguridad",
@@ -182,7 +191,8 @@ const es: SettingsMessages = {
     passwordLabel: "Contraseña de la cuenta",
     passwordHint: "Necesaria para activar o desactivar la app de autenticación.",
     passkeysHeading: "Llaves de acceso (passkeys)",
-    passkeysHint: "Inicia sesión con tu huella, tu cara o el PIN del dispositivo en lugar de contraseña y código. Una passkey evita el paso de la app de autenticación.",
+    passkeysHint:
+      "Inicia sesión con tu huella, tu cara o el PIN del dispositivo en lugar de contraseña y código. Una passkey evita el paso de la app de autenticación.",
     addPasskey: "Añadir una passkey",
     passkeyDefaultName: "Passkey",
     passkeyAdded: "Passkey añadida.",
@@ -220,7 +230,8 @@ const es: SettingsMessages = {
     upgradeHtml:
       'Pasa a Member para tener 90 días de historial, o a Pro para 1 año o más, y conservar un periodo más largo. <a class="text-link" href="/pricing#data-retention">Comparar conservación</a>.',
     deleteHeading: "Eliminar cuenta",
-    deleteBody: "Elimina para siempre {email}, los ajustes de alertas y los hogares de los que eres el único propietario.",
+    deleteBody:
+      "Elimina para siempre {email}, los ajustes de alertas y los hogares de los que eres el único propietario.",
     deleteConfirmPassword: " Vuelve a escribir tu contraseña y escribe DELETE para confirmar.",
     deleteConfirmEmail: " Confirma tu correo y escribe DELETE para confirmar.",
     errorConfirm: "Escribe DELETE exactamente para confirmar.",

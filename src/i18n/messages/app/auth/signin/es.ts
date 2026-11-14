@@ -11,14 +11,16 @@ const es: AuthSigninMessages = {
       "Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión. Siguiente paso después de iniciar sesión: <strong>Dispositivos</strong>: conecta tu primer sensor y espera su primera lectura.",
     confirmedHtml:
       "Correo confirmado. Inicia sesión para terminar la configuración: la siguiente parada es <strong>Dispositivos</strong>, donde conectas tu primer sensor.",
-    signedOutAll: "Sesión cerrada en todos los dispositivos. Vuelve a iniciar sesión aquí cuando quieras.",
+    signedOutAll:
+      "Sesión cerrada en todos los dispositivos. Vuelve a iniciar sesión aquí cuando quieras.",
     resendConfirmation: "Reenviar el correo de confirmación",
     email: "Correo electrónico",
     password: "Contraseña",
     submit: "Iniciar sesión con correo",
     forgotPassword: "¿Olvidaste tu contraseña?",
     passkeySignIn: "Iniciar sesión con una passkey",
-    passkeyFailed: "El inicio de sesión con passkey no funcionó. Inténtalo de nuevo o usa tu correo y contraseña.",
+    passkeyFailed:
+      "El inicio de sesión con passkey no funcionó. Inténtalo de nuevo o usa tu correo y contraseña.",
     newHere: "¿Eres nuevo?",
     createAccount: "Crea una cuenta gratis",
     privacy: "Privacidad",
@@ -32,8 +34,7 @@ const es: AuthSigninMessages = {
     lede: "Gratis para siempre, sin tarjeta de crédito. Después del registro llegarás a Dispositivos para conectar tu primera sonda o tu ruta de alerta por contacto de humedad.",
     preferLook: "¿Prefieres echar un vistazo antes?",
     liveDemo: "Demo en vivo (sin cuenta)",
-    referral:
-      "Código de referido {code} aplicado. La prueba de Pro incluye 7 días extra.",
+    referral: "Código de referido {code} aplicado. La prueba de Pro incluye 7 días extra.",
     email: "Correo electrónico",
     password: "Contraseña",
     passwordHint: "Usa al menos 8 caracteres.",
@@ -48,7 +49,8 @@ const es: AuthSigninMessages = {
       weak_password: "La contraseña debe tener al menos 8 caracteres.",
       generic: "Algo salió mal al crear tu cuenta. Inténtalo de nuevo.",
       signup_failed: "Algo salió mal al crear tu cuenta. Inténtalo de nuevo.",
-      email_taken: "Puede que este correo ya tenga una cuenta. Inicia sesión o restablece tu contraseña si la olvidaste.",
+      email_taken:
+        "Puede que este correo ya tenga una cuenta. Inicia sesión o restablece tu contraseña si la olvidaste.",
     },
   },
   oauth: {
@@ -60,7 +62,8 @@ const es: AuthSigninMessages = {
   },
   errors: {
     missing_fields: "Introduce tu correo electrónico y tu contraseña.",
-    invalid_credentials: "No pudimos iniciar tu sesión. Revisa tu correo y contraseña e inténtalo de nuevo.",
+    invalid_credentials:
+      "No pudimos iniciar tu sesión. Revisa tu correo y contraseña e inténtalo de nuevo.",
     email_not_confirmed:
       "Confirma tu dirección de correo antes de iniciar sesión. Busca el enlace de confirmación en tu bandeja de entrada.",
     oauth_failed:
@@ -92,7 +95,8 @@ const es: AuthSigninMessages = {
         "Ese código era incorrecto o caducó. Introduce un código nuevo de tu app de autenticación.",
       invalid_yubikey:
         "No se aceptó ese OTP de YubiKey. Haz clic en el campo YubiKey OTP, toca tu llave (pulsación larga) y espera a que se escriba el código completo antes de enviarlo.",
-      replayed_otp: "Ese OTP de YubiKey ya se usó. Toca tu llave de nuevo para generar un código nuevo.",
+      replayed_otp:
+        "Ese OTP de YubiKey ya se usó. Toca tu llave de nuevo para generar un código nuevo.",
       yubikey_not_enrolled:
         "Esa YubiKey no está registrada en esta cuenta. Añádela en Ajustes → Seguridad o usa tu código de autenticador.",
       no_factor:
@@ -105,7 +109,8 @@ const es: AuthSigninMessages = {
       lede: "Completa el inicio de sesión de {email} con un código de autenticador o un OTP de YubiKey.",
       codeLabel: "Código del autenticador",
       verifyCode: "Verificar código",
-      totpHint: "¿Usas Yubico Authenticator en tu YubiKey? Introduce arriba el código de 6 dígitos.",
+      totpHint:
+        "¿Usas Yubico Authenticator en tu YubiKey? Introduce arriba el código de 6 dígitos.",
       yubikeyLabel: "YubiKey OTP",
       verifyYubikey: "Verificar con YubiKey",
       otpHint:

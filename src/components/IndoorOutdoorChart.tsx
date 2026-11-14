@@ -8,10 +8,7 @@ import {
   timestampToX,
   xToTimestamp,
 } from "../lib/historyChartInteraction";
-import {
-  readDeltaChartPrefs,
-  writeDeltaChartPrefs,
-} from "../lib/chartPrefs";
+import { readDeltaChartPrefs, writeDeltaChartPrefs } from "../lib/chartPrefs";
 import { useHistoryChartInteraction } from "../lib/useHistoryChartInteraction";
 import type { IndoorOutdoorPoint } from "../lib/indoorOutdoorDelta";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
@@ -82,7 +79,8 @@ function fixed(value: number, digits: number, locale?: string): string {
 const hoverTime = (iso: string, locale?: string): string => formatHoverTime(iso, locale);
 
 /** `formatAxisTime`, in `locale` when a non-English one is given. */
-const axisTime = (ts: number, spanMs: number, locale?: string): string => formatAxisTime(ts, spanMs, locale);
+const axisTime = (ts: number, spanMs: number, locale?: string): string =>
+  formatAxisTime(ts, spanMs, locale);
 
 export default function IndoorOutdoorChart({
   points: pointsF,
@@ -96,7 +94,12 @@ export default function IndoorOutdoorChart({
   const points = useMemo(
     () =>
       useCelsius
-        ? pointsF.map((p) => ({ ...p, indoorF: toC(p.indoorF), outdoorF: toC(p.outdoorF), deltaF: diffToC(p.deltaF) }))
+        ? pointsF.map((p) => ({
+            ...p,
+            indoorF: toC(p.indoorF),
+            outdoorF: toC(p.outdoorF),
+            deltaF: diffToC(p.deltaF),
+          }))
         : pointsF,
     [pointsF, useCelsius],
   );
@@ -111,9 +114,7 @@ export default function IndoorOutdoorChart({
   const title = titleProp ?? text.title;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const plotBoundsRef = useRef<import("../lib/historyChartInteraction").PlotBounds | null>(
-    null,
-  );
+  const plotBoundsRef = useRef<import("../lib/historyChartInteraction").PlotBounds | null>(null);
   const dragActiveRef = useRef(false);
 
   const [hover, setHover] = useState<{
@@ -121,12 +122,8 @@ export default function IndoorOutdoorChart({
     x: number;
     y: number;
   } | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(
-    null,
-  );
-  const [initialPresetId, setInitialPresetId] = useState<
-    "24h" | "7d" | "30d" | "all" | null
-  >(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+  const [initialPresetId, setInitialPresetId] = useState<"24h" | "7d" | "30d" | "all" | null>(null);
   const [prefsReady, setPrefsReady] = useState(false);
 
   useEffect(() => {
@@ -280,8 +277,7 @@ export default function IndoorOutdoorChart({
       };
 
       const xFor = (ts: number) => pad.left + ((ts - minTs) / tsRange) * innerW;
-      const yFor = (delta: number) =>
-        pad.top + innerH - ((delta - min) / range) * innerH;
+      const yFor = (delta: number) => pad.top + innerH - ((delta - min) / range) * innerH;
 
       g.clearRect(0, 0, width, height);
       g.fillStyle = "#0f1f2c";
@@ -347,10 +343,7 @@ export default function IndoorOutdoorChart({
 
       if (brushRange) {
         const left = Math.max(Math.min(brushRange.startX, brushRange.endX), pad.left);
-        const right = Math.min(
-          Math.max(brushRange.startX, brushRange.endX),
-          width - pad.right,
-        );
+        const right = Math.min(Math.max(brushRange.startX, brushRange.endX), width - pad.right);
         if (right > left) {
           g.fillStyle = "rgba(96, 165, 250, 0.18)";
           g.fillRect(left, pad.top, right - left, innerH);
@@ -482,9 +475,7 @@ export default function IndoorOutdoorChart({
           </button>
         </div>
 
-        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          {text.hint}
-        </p>
+        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">{text.hint}</p>
 
         <div
           class="history-chart-canvas-wrap"
@@ -511,33 +502,31 @@ export default function IndoorOutdoorChart({
               style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
               role="status"
             >
-              <p class="history-chart-tooltip-time">
-                {hoverTime(hover.point.timestamp, locale)}
-              </p>
+              <p class="history-chart-tooltip-time">{hoverTime(hover.point.timestamp, locale)}</p>
               <ul class="history-chart-tooltip-list">
                 <li>
-                  <span
-                    class="history-chart-tooltip-swatch"
-                    style={{ background: LINE_COLOR }}
-                  />
+                  <span class="history-chart-tooltip-swatch" style={{ background: LINE_COLOR }} />
                   <span class="history-chart-tooltip-label">{text.delta}</span>
                   <span class="history-chart-tooltip-value">
                     {hover.point.deltaF > 0 ? "+" : ""}
-                    {fixed(hover.point.deltaF, 1, locale)}{unit}
+                    {fixed(hover.point.deltaF, 1, locale)}
+                    {unit}
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#94a3b8" }} />
                   <span class="history-chart-tooltip-label">{text.indoor}</span>
                   <span class="history-chart-tooltip-value">
-                    {fixed(hover.point.indoorF, 1, locale)}{unit}
+                    {fixed(hover.point.indoorF, 1, locale)}
+                    {unit}
                   </span>
                 </li>
                 <li>
                   <span class="history-chart-tooltip-swatch" style={{ background: "#fbbf24" }} />
                   <span class="history-chart-tooltip-label">{text.outdoor}</span>
                   <span class="history-chart-tooltip-value">
-                    {fixed(hover.point.outdoorF, 1, locale)}{unit}
+                    {fixed(hover.point.outdoorF, 1, locale)}
+                    {unit}
                   </span>
                 </li>
               </ul>

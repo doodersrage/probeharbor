@@ -28,10 +28,10 @@ export function trailingHistoryWindowDays(
 }
 
 /** Floor/ceil a chart time window to History `from`/`to` day params. */
-export function timeWindowToHistoryDates(window: {
-  minTs: number;
-  maxTs: number;
-}): { from: string; to: string } {
+export function timeWindowToHistoryDates(window: { minTs: number; maxTs: number }): {
+  from: string;
+  to: string;
+} {
   return {
     from: isoDayUtc(new Date(window.minTs)),
     to: isoDayUtc(new Date(window.maxTs)),

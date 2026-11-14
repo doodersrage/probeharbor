@@ -32,57 +32,51 @@ export default function HistoryChartOptions({
 }) {
   return (
     <details class="history-chart-tips m-0 mt-2 text-xs text-[var(--color-text-muted)]">
-    <summary>{t.optionsSummary}{humidityOption ? t.optionsSummaryHumidity : ""}</summary>
-    <form
-      class="chart-threshold-controls"
-      onSubmit={(e) => e.preventDefault()}
-    >
-      <label class="chart-threshold-field">
-        <span>{fill(t.targetAmbient, { unit })}</span>
-        <input
-          type="number"
-          step="0.5"
-          class="form-input"
-          value={targetAmbientF ?? ""}
-          placeholder={t.optional}
-          onInput={(e) => {
-            const v = (e.target as HTMLInputElement).value;
-            onTargetAmbientF(v === "" ? null : Number(v));
-          }}
-        />
-      </label>
-      <label class="chart-threshold-field">
-        <span>{fill(t.highWarning, { unit })}</span>
-        <input
-          type="number"
-          step="0.5"
-          class="form-input"
-          value={highTempF ?? ""}
-          placeholder={t.optional}
-          onInput={(e) => {
-            const v = (e.target as HTMLInputElement).value;
-            onHighTempF(v === "" ? null : Number(v));
-          }}
-        />
-      </label>
-      {humidityOption && (
-        <label class="chart-threshold-field chart-threshold-check">
-          <span>{t.humidityDew}</span>
+      <summary>
+        {t.optionsSummary}
+        {humidityOption ? t.optionsSummaryHumidity : ""}
+      </summary>
+      <form class="chart-threshold-controls" onSubmit={(e) => e.preventDefault()}>
+        <label class="chart-threshold-field">
+          <span>{fill(t.targetAmbient, { unit })}</span>
           <input
-            type="checkbox"
-            checked={humidityOn}
-            onChange={(e) =>
-              onHumidityOn((e.target as HTMLInputElement).checked)
-            }
+            type="number"
+            step="0.5"
+            class="form-input"
+            value={targetAmbientF ?? ""}
+            placeholder={t.optional}
+            onInput={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              onTargetAmbientF(v === "" ? null : Number(v));
+            }}
           />
         </label>
-      )}
-      {freezeNote != null && (
-        <p class="chart-threshold-note mb-0">
-          {freezeNote}
-        </p>
-      )}
-    </form>
+        <label class="chart-threshold-field">
+          <span>{fill(t.highWarning, { unit })}</span>
+          <input
+            type="number"
+            step="0.5"
+            class="form-input"
+            value={highTempF ?? ""}
+            placeholder={t.optional}
+            onInput={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              onHighTempF(v === "" ? null : Number(v));
+            }}
+          />
+        </label>
+        {humidityOption && (
+          <label class="chart-threshold-field chart-threshold-check">
+            <span>{t.humidityDew}</span>
+            <input
+              type="checkbox"
+              checked={humidityOn}
+              onChange={(e) => onHumidityOn((e.target as HTMLInputElement).checked)}
+            />
+          </label>
+        )}
+        {freezeNote != null && <p class="chart-threshold-note mb-0">{freezeNote}</p>}
+      </form>
     </details>
   );
 }

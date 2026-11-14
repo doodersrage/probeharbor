@@ -3,7 +3,8 @@ import type { DevicesSetupMessages } from "./en";
 const fr: DevicesSetupMessages = {
   firstRun: {
     title: "Connectez votre premier capteur",
-    subtitle: "Choisissez ce que vous avez aujourd’hui. Chaque parcours se termine par une mesure en direct ; les alertes de gel et de fuite suivent juste après.",
+    subtitle:
+      "Choisissez ce que vous avez aujourd’hui. Chaque parcours se termine par une mesure en direct ; les alertes de gel et de fuite suivent juste après.",
     viewOnly: "Lecture seule : demandez à un propriétaire d’ajouter un appareil.",
     limitReached: "Limite d’appareils atteinte.",
     limitUpgrade: "Changez d’offre pour plus d’appareils",
@@ -51,7 +52,8 @@ const fr: DevicesSetupMessages = {
     title: "Configurez votre première alerte froid + eau",
     subtitle:
       "Un seuil et un e-mail, sans quitter Appareils. Les contacts d’inondation/fuite mouillés déclenchent une alerte automatique dès que les alertes sont activées (et ignorent la mise en pause et le mode vacances). Ajoutez Telegram, Discord et d’autres canaux plus tard.",
-    savedAndTested: "Alerte froid + eau enregistrée et test envoyé, vérifiez votre boîte de réception.",
+    savedAndTested:
+      "Alerte froid + eau enregistrée et test envoyé, vérifiez votre boîte de réception.",
     saved: "Alerte froid + eau enregistrée.",
     /** ?alert_error=1 from /api/user/alert-essentials. */
     saveFailed: "Impossible d’enregistrer les paramètres d’alerte. Veuillez réessayer.",

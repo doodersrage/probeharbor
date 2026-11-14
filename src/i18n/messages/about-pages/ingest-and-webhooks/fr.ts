@@ -1,4 +1,3 @@
-
 /**
  * /about/ingest-and-webhooks body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Code samples stay in the page.
@@ -42,14 +41,16 @@ const fr: IngestAndWebhooksMessages = {
   },
   webhooks: {
     title: "Webhooks d’alerte sortants",
-    introHtml: "Les comptes Pro peuvent activer un webhook sortant dans les réglages des alertes. Chaque alerte envoie ce JSON en POST :",
+    introHtml:
+      "Les comptes Pro peuvent activer un webhook sortant dans les réglages des alertes. Chaque alerte envoie ce JSON en POST :",
     kindsHtml: `<code>kind</code> peut valoir ${webhookKinds} ou <code>generic</code>. Quand un secret de webhook est défini, la requête inclut <code>X-Signature</code>, un HMAC-SHA256 hexadécimal du corps brut. Utilisez-le dans Home Assistant ou IFTTT Webhooks pour vérifier l’authenticité.`,
   },
   homeAssistant: {
     title: "Home Assistant",
     bodyHtml:
       'Installez l’<a class="text-link" href="/integrations/home-assistant">intégration HACS officielle</a> pour disposer de capteurs issus des liens de partage et des services de mise en sourdine/vacances. Pour <strong>recevoir les alertes dans HA</strong>, utilisez le webhook HTTPS sortant (Pro) ou importez le blueprint. Pour <strong>envoyer des mesures MQTT vers ProbeHarbor</strong>, voir la <a class="text-link" href="/about/mqtt-bridge">recette du pont MQTT</a>.',
-    blueprintHtml: '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Télécharger le blueprint HA (YAML)</a>',
+    blueprintHtml:
+      '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Télécharger le blueprint HA (YAML)</a>',
     pointHtml:
       "Faites pointer l’URL du webhook sortant ProbeHarbor vers <code>https://&lt;your-ha-host&gt;/api/webhook/probeharbor_alerts</code> (ou une URL Cloudflare Tunnel / Nabu Casa). Vérifiez <code>X-Signature</code> dans une condition de modèle si vous avez défini un secret.",
     mqttHtml:
@@ -57,7 +58,8 @@ const fr: IngestAndWebhooksMessages = {
   },
   metrics: {
     title: "Métriques Grafana / Prometheus",
-    introHtml: "Les comptes Pro peuvent créer des clés d’API du tableau de bord (Dashboard → Share) et collecter :",
+    introHtml:
+      "Les comptes Pro peuvent créer des clés d’API du tableau de bord (Dashboard → Share) et collecter :",
     shareHtml: "Ou utiliser un lien de partage Pro avec la portée <strong>Metrics</strong> :",
     grafanaHtml:
       "Ou <code>?format=grafana</code> pour un simple tableau JSON de points de données. La portée de partage Historique affiche un graphique sur 7 jours sur la page publique.",

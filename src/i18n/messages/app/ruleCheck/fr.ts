@@ -9,8 +9,10 @@ const fr: RuleCheckMessages = {
     noneTrue: "Ne se déclencherait pas : aucune de ses conditions n’est remplie.",
     notAllTrue: "Ne se déclencherait pas : au moins une condition n’est pas remplie.",
     alertsOff: "Remplie, mais les alertes sont désactivées : rien ne serait envoyé.",
-    cooldown: "Remplie, mais une alerte de règle est partie récemment ; la suivante pourra partir après {time}.",
-    fires: "Remplie : la prochaine vérification des alertes (toutes les quelques minutes) l’enverrait, sauf si les alertes sont en pause ou pendant les heures calmes.",
+    cooldown:
+      "Remplie, mais une alerte de règle est partie récemment ; la suivante pourra partir après {time}.",
+    fires:
+      "Remplie : la prochaine vérification des alertes (toutes les quelques minutes) l’enverrait, sauf si les alertes sont en pause ou pendant les heures calmes.",
     checking: "Vérification…",
     noRules: "Aucune règle enregistrée pour l’instant. Ajoutez-en une ci-dessus et enregistrez.",
     checkedAt: "Vérifié à {time}.",

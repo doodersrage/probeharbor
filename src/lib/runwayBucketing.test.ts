@@ -19,17 +19,24 @@ function outdoor(): { past: OutdoorHourlyPoint[]; forecast: OutdoorHourlyPoint[]
     past.push({ atMs: NOW + h * HOUR, tempF: 38 + 8 * Math.sin((2 * Math.PI * h) / 24) });
   }
   const forecast: OutdoorHourlyPoint[] = [];
-  for (let h = 1; h <= 48; h += 1) forecast.push({ atMs: NOW + h * HOUR, tempF: Math.max(18, 38 - h) });
+  for (let h = 1; h <= 48; h += 1)
+    forecast.push({ atMs: NOW + h * HOUR, tempF: Math.max(18, 38 - h) });
   return { past, forecast };
 }
 
 /** An unheated space: Newton cooling toward outdoor + 9°F, one reading a minute. */
-function indoorWeek(past: OutdoorHourlyPoint[], gap?: { fromH: number; toH: number }): TempSample[] {
+function indoorWeek(
+  past: OutdoorHourlyPoint[],
+  gap?: { fromH: number; toH: number },
+): TempSample[] {
   const samples: TempSample[] = [];
   let temp = 47;
   for (let m = -7 * 24 * 60; m <= 0; m += 1) {
     const atMs = NOW + m * 60_000;
-    const hourIdx = Math.min(past.length - 1, Math.max(0, Math.floor((atMs - past[0]!.atMs) / HOUR)));
+    const hourIdx = Math.min(
+      past.length - 1,
+      Math.max(0, Math.floor((atMs - past[0]!.atMs) / HOUR)),
+    );
     temp += (past[hourIdx]!.tempF + 9 - temp) * (1 - Math.exp(-0.3 / 60));
     if (gap && m / 60 >= gap.fromH && m / 60 < gap.toH) continue; // probe offline
     samples.push({ at: new Date(atMs).toISOString(), tempF: Math.round(temp * 100) / 100 });
@@ -94,7 +101,9 @@ describe("runway projection: every reading vs 10-minute buckets", () => {
     expect(b.source).toBe(a.source);
     expect(b.confidence).toBe(a.confidence);
     expect(b.params?.fittedCoupling).toBe(a.params?.fittedCoupling);
-    expect(Math.abs((b.params?.couplingPerHour ?? 0) - (a.params?.couplingPerHour ?? 0))).toBeLessThan(0.02);
+    expect(
+      Math.abs((b.params?.couplingPerHour ?? 0) - (a.params?.couplingPerHour ?? 0)),
+    ).toBeLessThan(0.02);
     expect(Math.abs((b.hours ?? 0) - (a.hours ?? 0))).toBeLessThan(0.25);
   });
 });

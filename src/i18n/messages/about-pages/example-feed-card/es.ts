@@ -1,4 +1,3 @@
-
 /** ExampleFeedCard copy (also rendered on the English-only dashboard). */
 import type { ExampleFeedCardMessages } from "./en";
 

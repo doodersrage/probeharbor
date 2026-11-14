@@ -18,8 +18,7 @@ vi.mock("../../../../lib/userPreferences", () => ({
 
 const mockGetUserDevicesAsTempConfig = vi.fn();
 vi.mock("../../../../lib/devices", () => ({
-  getUserDevicesAsTempConfig: (...a: unknown[]) =>
-    mockGetUserDevicesAsTempConfig(...a),
+  getUserDevicesAsTempConfig: (...a: unknown[]) => mockGetUserDevicesAsTempConfig(...a),
 }));
 
 const mockFetchLatestSensorValues = vi.fn();

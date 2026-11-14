@@ -64,8 +64,7 @@ export function pathRequiresAuth(pathname: string): boolean {
   }
 
   return (
-    protectedPaths.some(
-      (path) => pathname === path || pathname.startsWith(`${path}/`),
-    ) || protectedApiPrefixes.some((prefix) => pathname.startsWith(prefix))
+    protectedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`)) ||
+    protectedApiPrefixes.some((prefix) => pathname.startsWith(prefix))
   );
 }

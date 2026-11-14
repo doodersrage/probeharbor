@@ -37,7 +37,9 @@ beforeEach(() => {
     canUseClaimsPack: true,
     historyDays: 365,
   });
-  mockClampIsoToHistoryWindow.mockReset().mockImplementation((from: string | undefined) => from ?? "clamped-from");
+  mockClampIsoToHistoryWindow
+    .mockReset()
+    .mockImplementation((from: string | undefined) => from ?? "clamped-from");
   mockListAlertEventsInRange.mockReset().mockResolvedValue([]);
   mockBuildAlertEventsCsv.mockReset().mockReturnValue("created_at,kind\n");
   vi.useFakeTimers();
@@ -74,10 +76,7 @@ describe("GET /api/alerts/export.csv", () => {
 
     await GET(makeContext("?from=2020-01-01"));
 
-    expect(mockClampIsoToHistoryWindow).toHaveBeenCalledWith(
-      expect.any(String),
-      365,
-    );
+    expect(mockClampIsoToHistoryWindow).toHaveBeenCalledWith(expect.any(String), 365);
   });
 
   it("ignores an unparseable from/to date", async () => {

@@ -25,7 +25,8 @@ const de: ContactMessages = {
     "Fragen zu Datenanbindung oder Fühlern, nachdem du die Anleitungen geprüft hast",
   ],
   issuesTitle: "GitHub-Issues",
-  issuesHtml: 'Fehler, Firmware-Patches und Feature-Ideen gehören in die <a class="text-link" href="{url}" target="_blank" rel="noreferrer">GitHub-Issues</a>, damit andere Bastler mitlesen können. Du möchtest kein Webformular nutzen? Dann ist das der beste öffentliche Weg.',
+  issuesHtml:
+    'Fehler, Firmware-Patches und Feature-Ideen gehören in die <a class="text-link" href="{url}" target="_blank" rel="noreferrer">GitHub-Issues</a>, damit andere Bastler mitlesen können. Du möchtest kein Webformular nutzen? Dann ist das der beste öffentliche Weg.',
   beforeTitle: "Bevor du schreibst",
   beforeHtml:
     'Viele Antworten findest du bereits im <a class="text-link" href="/guides">Anleitungs-Hub</a>, in der <a class="text-link" href="/about">Wissensbibliothek</a>, in der <a class="text-link" href="/about/probe-demo">Fühler-Demo</a> und bei den <a class="text-link" href="/about/arduino-sketches">Arduino-Sketches</a>. Hilfreich für eine Antwort: Board, Sensoren, erwartete und tatsächliche Messwerte sowie alle Feed-URLs.',
@@ -41,7 +42,8 @@ const de: ContactMessages = {
     turnstileHint: "Geschützt durch Cloudflare Turnstile.",
     sending: "Wird gesendet…",
     send: "Nachricht senden",
-    success: "Danke, deine Nachricht ist angekommen. Wir antworten meist innerhalb von 1–2 Werktagen.",
+    success:
+      "Danke, deine Nachricht ist angekommen. Wir antworten meist innerhalb von 1–2 Werktagen.",
     genericError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     androidTopicMessage:
       "Bitte benachrichtigt mich, sobald die ProbeHarbor-App für Android bei Google Play verfügbar ist.",

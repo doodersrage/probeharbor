@@ -17,14 +17,8 @@ function parseFeeds(body: unknown): TempFeedConfig[] | null {
     const url = typeof row.url === "string" ? row.url.trim() : "";
     if (!url) continue;
     parsed.push({
-      id:
-        typeof row.id === "string" && row.id.trim()
-          ? row.id.trim()
-          : `feed-${index}`,
-      name:
-        typeof row.name === "string" && row.name.trim()
-          ? row.name.trim()
-          : `Feed ${index + 1}`,
+      id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `feed-${index}`,
+      name: typeof row.name === "string" && row.name.trim() ? row.name.trim() : `Feed ${index + 1}`,
       url,
       enabled: row.enabled !== false,
       jsonRoot: typeof row.jsonRoot === "string" ? row.jsonRoot : "temp",
@@ -46,16 +40,10 @@ function parseProbes(body: unknown, feedIds: Set<string>): TempProbeConfig[] {
     const feedId = typeof row.feedId === "string" ? row.feedId.trim() : "";
     if (!key || !feedId || !feedIds.has(feedId)) continue;
     parsed.push({
-      id:
-        typeof row.id === "string" && row.id.trim()
-          ? row.id.trim()
-          : `${feedId}-${key}-${index}`,
+      id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `${feedId}-${key}-${index}`,
       feedId,
       key,
-      label:
-        typeof row.label === "string" && row.label.trim()
-          ? row.label.trim()
-          : `Probe ${key}`,
+      label: typeof row.label === "string" && row.label.trim() ? row.label.trim() : `Probe ${key}`,
       visible: row.visible !== false,
     });
   }
@@ -133,8 +121,8 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  return new Response(
-    JSON.stringify({ ok: true, discoveredProbes: discoveredProbes ?? 0 }),
-    { status: 200, headers: { "Content-Type": "application/json" } },
-  );
+  return new Response(JSON.stringify({ ok: true, discoveredProbes: discoveredProbes ?? 0 }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 };

@@ -17,8 +17,7 @@ const mockFindInvalidAlertWebhookUrl = vi.fn();
 const mockIsWeakTelegramSecret = vi.fn();
 vi.mock("../../../lib/alertSettingsForm", () => ({
   alertChannelsIncomplete: (...a: unknown[]) => mockAlertChannelsIncomplete(...a),
-  buildAlertSettingsFromFormData: (...a: unknown[]) =>
-    mockBuildAlertSettingsFromFormData(...a),
+  buildAlertSettingsFromFormData: (...a: unknown[]) => mockBuildAlertSettingsFromFormData(...a),
   findInvalidAlertWebhookUrl: (...a: unknown[]) => mockFindInvalidAlertWebhookUrl(...a),
   isWeakTelegramSecret: (...a: unknown[]) => mockIsWeakTelegramSecret(...a),
 }));
@@ -142,12 +141,7 @@ describe("POST /api/user/alert-settings", () => {
 
     const response = await POST(context);
 
-    expect(mockUpdateUserAlertSettings).toHaveBeenCalledWith(
-      "at",
-      "rt",
-      "user-1",
-      settings,
-    );
+    expect(mockUpdateUserAlertSettings).toHaveBeenCalledWith("at", "rt", "user-1", settings);
     expect(mockRecordAlertSettingsChange).toHaveBeenCalledTimes(1);
     expect(mockRecordHouseholdActivity).toHaveBeenCalledWith({
       householdId: "house-1",
@@ -160,14 +154,22 @@ describe("POST /api/user/alert-settings", () => {
   });
 
   it("removing the Telegram secret saves null and doesn't trip the weak-secret check (real parser)", async () => {
-    const real = await vi.importActual<typeof import("../../../lib/alertSettingsForm")>("../../../lib/alertSettingsForm");
+    const real = await vi.importActual<typeof import("../../../lib/alertSettingsForm")>(
+      "../../../lib/alertSettingsForm",
+    );
     const { DEFAULT_ALERT_SETTINGS } = await import("../../../lib/alerts");
     mockBuildAlertSettingsFromFormData.mockImplementation(real.buildAlertSettingsFromFormData);
     mockIsWeakTelegramSecret.mockImplementation(real.isWeakTelegramSecret);
-    const existing = { ...DEFAULT_ALERT_SETTINGS, telegramCommandSecret: `sha256:${"b".repeat(64)}` };
+    const existing = {
+      ...DEFAULT_ALERT_SETTINGS,
+      telegramCommandSecret: `sha256:${"b".repeat(64)}`,
+    };
     mockGetAlertSettingsForUser.mockResolvedValue(existing);
     const { POST } = await import("./alert-settings");
-    const context = makeContext({ telegram_command_secret: "", telegram_command_secret_clear: "true" });
+    const context = makeContext({
+      telegram_command_secret: "",
+      telegram_command_secret_clear: "true",
+    });
 
     await POST(context);
 
@@ -179,6 +181,8 @@ describe("POST /api/user/alert-settings", () => {
       expect.objectContaining({ telegramCommandSecret: null }),
       expect.anything(),
     );
-    expect(context.redirect).not.toHaveBeenCalledWith(expect.stringContaining("weak_telegram_secret"));
+    expect(context.redirect).not.toHaveBeenCalledWith(
+      expect.stringContaining("weak_telegram_secret"),
+    );
   });
 });

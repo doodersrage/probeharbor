@@ -28,7 +28,8 @@ const ptBr: AboutMediaMessages = {
     },
     "overview-status": {
       alt: "Faixa de status da Overview do ProbeHarbor com a última leitura, sensores atualizados, feeds on-line, alertas e a menor margem acima do alerta de congelamento",
-      caption: "Status da visão geral: última leitura, sensores, feeds, alertas e margem até o congelamento.",
+      caption:
+        "Status da visão geral: última leitura, sensores, feeds, alertas e margem até o congelamento.",
     },
     portfolio: {
       alt: "Painel Portfolio ilustrativo do ProbeHarbor listando vários imóveis de exemplo com faixa de risco de congelamento, temperaturas mínimas, número de dispositivos e papéis de administrador de imóveis",
@@ -36,7 +37,8 @@ const ptBr: AboutMediaMessages = {
     },
     "claims-pack": {
       alt: "PDF do pacote para sinistro do ProbeHarbor com estatísticas de exposição ao congelamento, limite de congelamento, alertas críticos e dispositivos incluídos",
-      caption: "Pacote para sinistro: estatísticas de exposição ao congelamento e dispositivos para o perito.",
+      caption:
+        "Pacote para sinistro: estatísticas de exposição ao congelamento e dispositivos para o perito.",
     },
     "claims-verification": {
       alt: "Seção de verificação do pacote para sinistro do ProbeHarbor com código SHA-256, link permanente de verificação e aviso legal",
@@ -44,7 +46,8 @@ const ptBr: AboutMediaMessages = {
     },
     "monitoring-certificate": {
       alt: "Certificado de monitoramento do ProbeHarbor mostrando alertas ativados, limite de congelamento, retenção e cobertura de dispositivos",
-      caption: "Certificado de monitoramento: comprovação da configuração para seguradoras e locadores.",
+      caption:
+        "Certificado de monitoramento: comprovação da configuração para seguradoras e locadores.",
     },
   },
 };

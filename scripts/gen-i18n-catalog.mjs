@@ -29,7 +29,11 @@ export function listTranslationFiles() {
     .filter((f) => LOCALES.some((l) => f.endsWith(`/${l}.ts`)) && !f.endsWith(".test.ts"));
   const content = walk(path.join(i18n, "content"))
     .map(rel)
-    .filter((f) => /^src\/i18n\/content\/[^/]+\/(es|fr|de|pt-br)\/[^/]+\.ts$/.test(f) && !f.endsWith(".test.ts"));
+    .filter(
+      (f) =>
+        /^src\/i18n\/content\/[^/]+\/(es|fr|de|pt-br)\/[^/]+\.ts$/.test(f) &&
+        !f.endsWith(".test.ts"),
+    );
   return [...messages, ...content].sort();
 }
 
@@ -53,7 +57,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       current = readFileSync(out, "utf8");
     } catch {}
     if (current !== next) {
-      console.error("workers/i18n/src/modules.generated.ts is stale: run node scripts/gen-i18n-catalog.mjs");
+      console.error(
+        "workers/i18n/src/modules.generated.ts is stale: run node scripts/gen-i18n-catalog.mjs",
+      );
       process.exit(1);
     }
   } else {

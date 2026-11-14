@@ -14,8 +14,7 @@ const fr: ProbeDemoMessages = {
   reset: "Réinitialiser la démo",
   updated: "Actualisation simulée toutes les 2 secondes · Dernière mise à jour {time}",
   statusEyebrow: "État de l’espace (simulé)",
-  coldestLine:
-    "Sonde la plus froide {coldest} · seuil {threshold} · extérieur {outdoor}",
+  coldestLine: "Sonde la plus froide {coldest} · seuil {threshold} · extérieur {outdoor}",
   riskNote:
     "Dans l’application réelle, cela déclencherait vos alertes gel essentielles (par e-mail par défaut), avec la même logique que la carte d’état de l’espace d’Overview.",
   readingsTitle: "Relevés des sondes en direct",
@@ -61,7 +60,10 @@ const fr: ProbeDemoMessages = {
       label: "Courant d’air",
       hint: "La porte ouverte fait entrer l’air extérieur dans une zone : regardez la barre porte/entrée baisser par rapport aux autres",
     },
-    sunny: { label: "Charge solaire", hint: "Le toit / l’exposition ouest réchauffe la zone la plus chaude" },
+    sunny: {
+      label: "Charge solaire",
+      hint: "Le toit / l’exposition ouest réchauffe la zone la plus chaude",
+    },
   },
   spaces: {
     garage: {
@@ -95,8 +97,7 @@ const fr: ProbeDemoMessages = {
   },
   status: {
     freezeRiskTitle: "Risque de gel en ce moment",
-    freezeRiskDetail:
-      "La sonde la plus froide indique {coldest}\u00a0; seuil\u00a0: {threshold}.",
+    freezeRiskDetail: "La sonde la plus froide indique {coldest}\u00a0; seuil\u00a0: {threshold}.",
     coldSnapTitle: "Vague de froid en approche",
     nightsTitleOne: "{n} nuit à risque de gel",
     nightsTitleOther: "{n} nuits à risque de gel",
@@ -105,11 +106,9 @@ const fr: ProbeDemoMessages = {
     nightsDetail:
       "Les conditions extérieures sont froides : vérifiez les sondes dans Live et que les alertes de prévision sont activées.",
     nearTitle: "Proche du seuil de gel",
-    nearDetail:
-      "Sonde la plus froide à {coldest}, à moins de 2,8 °C (5 °F) de {threshold}.",
+    nearDetail: "Sonde la plus froide à {coldest}, à moins de 2,8 °C (5 °F) de {threshold}.",
     okTitle: "Tout va bien",
-    okDetail:
-      "Les sondes transmettent : rien au seuil de gel, aucun contact d’inondation mouillé.",
+    okDetail: "Les sondes transmettent : rien au seuil de gel, aucun contact d’inondation mouillé.",
   },
 };
 

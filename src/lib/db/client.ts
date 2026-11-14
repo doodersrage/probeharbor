@@ -13,7 +13,10 @@ import { neon, types as neonTypes } from "@neondatabase/serverless";
 import { getRuntimeEnv } from "../runtimeEnv";
 import { makeGetTypeParser } from "./types";
 
-export type QueryRunner = <Row = Record<string, unknown>>(text: string, params?: readonly unknown[]) => Promise<Row[]>;
+export type QueryRunner = <Row = Record<string, unknown>>(
+  text: string,
+  params?: readonly unknown[],
+) => Promise<Row[]>;
 
 let testRunner: QueryRunner | null = null;
 let cached: { url: string; run: QueryRunner } | null = null;
@@ -68,7 +71,9 @@ export async function query<Row = Record<string, unknown>>(
     const url = getRuntimeEnv("DATABASE_URL")?.trim();
     if (!url) {
       // Unit tests set this hook (src/test/unitSetup.ts) so a query nobody mocked fails the test.
-      (globalThis as { __unconfiguredQuery?: (statement: string) => void }).__unconfiguredQuery?.(describeStatement(text));
+      (globalThis as { __unconfiguredQuery?: (statement: string) => void }).__unconfiguredQuery?.(
+        describeStatement(text),
+      );
       throw new DbQueryError(describeStatement(text), new Error("DATABASE_URL is not set"));
     }
     if (cached?.url !== url) cached = { url, run: neonRunner(url) };

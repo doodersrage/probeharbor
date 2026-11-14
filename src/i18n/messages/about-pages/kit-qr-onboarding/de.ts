@@ -1,4 +1,3 @@
-
 /**
  * /about/kit-qr-onboarding body copy. Dashboard screen names stay English
  * (the dashboard is English). `*Html` keys are trusted inline HTML.

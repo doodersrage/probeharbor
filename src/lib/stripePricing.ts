@@ -34,8 +34,7 @@ function buildPriceDisplay(monthlyRaw?: string, annualRaw?: string): PlanPriceDi
     };
   }
 
-  const annualMonthlyEquivalent =
-    annual != null ? formatUsd(annual / 12) : null;
+  const annualMonthlyEquivalent = annual != null ? formatUsd(annual / 12) : null;
   const annualSavingsPct =
     monthly != null && annual != null && monthly * 12 > 0
       ? Math.round((1 - annual / (monthly * 12)) * 100)

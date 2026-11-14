@@ -31,8 +31,11 @@ export const POST: APIRoute = async ({ request }) => {
 
   // The token is a signed Better Auth session; apps send it as this cookie
   // (Android) or as a Bearer header.
-  return new Response(JSON.stringify({ ok: true, ...tokens, session_cookie_name: appSessionCookieName() }), {
-    status: 200,
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
-  });
+  return new Response(
+    JSON.stringify({ ok: true, ...tokens, session_cookie_name: appSessionCookieName() }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    },
+  );
 };

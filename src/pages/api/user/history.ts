@@ -23,9 +23,7 @@ export const GET: APIRoute = async ({ request, cookies, url, locals }) => {
   }
 
   const daysRaw = Number(url.searchParams.get("days") ?? "7");
-  const days = Number.isFinite(daysRaw)
-    ? Math.min(Math.max(Math.floor(daysRaw), 1), 90)
-    : 7;
+  const days = Number.isFinite(daysRaw) ? Math.min(Math.max(Math.floor(daysRaw), 1), 90) : 7;
   const pageRaw = Number(url.searchParams.get("page") ?? "1");
   const page = Number.isFinite(pageRaw) ? Math.max(Math.floor(pageRaw), 1) : 1;
   const pageSizeRaw = Number(url.searchParams.get("page_size") ?? "20");
@@ -51,15 +49,11 @@ export const GET: APIRoute = async ({ request, cookies, url, locals }) => {
   };
 
   const [chart, readings, filterOptions, houseOverlay] = await Promise.all([
-    include.has("chart")
-      ? fetchGarageTempChartData(user.id, days, filters)
-      : Promise.resolve(null),
+    include.has("chart") ? fetchGarageTempChartData(user.id, days, filters) : Promise.resolve(null),
     include.has("readings")
       ? fetchGarageTempHistory(user.id, page, pageSize, filters)
       : Promise.resolve(null),
-    include.has("filters")
-      ? fetchHistoryFilterOptions(user.id)
-      : Promise.resolve(null),
+    include.has("filters") ? fetchHistoryFilterOptions(user.id) : Promise.resolve(null),
     include.has("house_overlay")
       ? (async () => {
           const householdId = await getUserHouseholdId(user.id);
@@ -68,13 +62,16 @@ export const GET: APIRoute = async ({ request, cookies, url, locals }) => {
             listConnectionsForHousehold(householdId),
             getIndoorReferenceSensorId(householdId),
           ]);
-          return fetchHouseChartOverlay({
-            householdId,
-            days,
-            hasThermostatConnection: connections.length > 0,
-            referenceSensorId,
-            filters: { from: filters.from, to: filters.to },
-          }, locale);
+          return fetchHouseChartOverlay(
+            {
+              householdId,
+              days,
+              hasThermostatConnection: connections.length > 0,
+              referenceSensorId,
+              filters: { from: filters.from, to: filters.to },
+            },
+            locale,
+          );
         })()
       : Promise.resolve(null),
   ]);
@@ -82,9 +79,7 @@ export const GET: APIRoute = async ({ request, cookies, url, locals }) => {
   return new Response(
     JSON.stringify({
       days,
-      chart: chart
-        ? { points: chart.points, error: chart.error }
-        : undefined,
+      chart: chart ? { points: chart.points, error: chart.error } : undefined,
       house_overlay: houseOverlay
         ? {
             source: houseOverlay.source,

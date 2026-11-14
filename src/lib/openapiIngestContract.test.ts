@@ -15,7 +15,8 @@ const ingestSection = spec.slice(
 const route = readFileSync("src/pages/api/ingest/[deviceKey].ts", "utf8");
 const limits = readFileSync("src/lib/ingestLimits.ts", "utf8");
 
-const codesIn = (source: string) => new Set([...source.matchAll(/status: (\d{3})/g)].map((m) => m[1]!));
+const codesIn = (source: string) =>
+  new Set([...source.matchAll(/status: (\d{3})/g)].map((m) => m[1]!));
 
 describe("OpenAPI push ingest contract", () => {
   it("documents every status code the route and its body reader return", () => {
@@ -38,7 +39,12 @@ describe("OpenAPI push ingest contract", () => {
     expect(ingestSection).toContain("duplicates:");
     expect(ingestSection).toContain("rejected_entries:");
     const timeSource = readFileSync("src/lib/ingestTime.ts", "utf8");
-    for (const reason of ["invalid_recorded_at", "recorded_at_too_old", "recorded_at_in_future", "invalid_entry"]) {
+    for (const reason of [
+      "invalid_recorded_at",
+      "recorded_at_too_old",
+      "recorded_at_in_future",
+      "invalid_entry",
+    ]) {
       expect(timeSource).toContain(`"${reason}"`);
       expect(spec).toContain(reason);
     }
@@ -62,7 +68,10 @@ describe("OpenAPI: other externally called routes", () => {
   it.each([
     ["/api/ingest/mqtt", ["src/pages/api/ingest/mqtt.ts", "src/lib/ingestLimits.ts"]],
     ["/api/inbound/{token}", ["src/pages/api/inbound/[token].ts"]],
-    ["/api/share/{token}/readings", ["src/pages/api/share/[token]/readings.ts", "src/lib/shareReadingsAccess.ts"]],
+    [
+      "/api/share/{token}/readings",
+      ["src/pages/api/share/[token]/readings.ts", "src/lib/shareReadingsAccess.ts"],
+    ],
     ["/api/v1/devices:", ["src/pages/api/v1/devices/index.ts"]],
     ["/api/v1/devices/sensors-batch", ["src/pages/api/v1/devices/sensors-batch.ts"]],
     ["/api/v1/pull-setup", ["src/pages/api/v1/pull-setup.ts"]],
@@ -87,11 +96,19 @@ describe("openapi.yaml", () => {
   it("parses as YAML with the documented paths", () => {
     // No direct YAML dependency: use the copy Astro already depends on. If
     // Astro ever drops it, this fails loudly (add `yaml` as a devDependency).
-    const astroRequire = createRequire(createRequire(import.meta.url).resolve("astro/package.json"));
-    const { parse } = astroRequire("yaml") as { parse: (text: string) => { paths?: Record<string, unknown> } };
+    const astroRequire = createRequire(
+      createRequire(import.meta.url).resolve("astro/package.json"),
+    );
+    const { parse } = astroRequire("yaml") as {
+      parse: (text: string) => { paths?: Record<string, unknown> };
+    };
     const doc = parse(spec);
     expect(Object.keys(doc.paths ?? {})).toEqual(
-      expect.arrayContaining(["/api/ingest/{deviceKey}", "/api/inbound/{token}", "/api/v1/devices"]),
+      expect.arrayContaining([
+        "/api/ingest/{deviceKey}",
+        "/api/inbound/{token}",
+        "/api/v1/devices",
+      ]),
     );
   });
 });
@@ -99,7 +116,10 @@ describe("openapi.yaml", () => {
 describe("OpenAPI: status subscribe is a form endpoint", () => {
   it("documents the redirect results the route sends", () => {
     const route = readFileSync("src/pages/api/status/subscribe.ts", "utf8");
-    const section = spec.slice(spec.indexOf("  /api/status/subscribe:"), spec.indexOf("  /api/push/fcm:"));
+    const section = spec.slice(
+      spec.indexOf("  /api/status/subscribe:"),
+      spec.indexOf("  /api/push/fcm:"),
+    );
     expect(route).toContain("request.formData()");
     expect(section).toContain("application/x-www-form-urlencoded");
     for (const code of [...route.matchAll(/status_error: "(\w+)"/g)].map((m) => m[1]!)) {

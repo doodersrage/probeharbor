@@ -34,7 +34,13 @@ const mockVerifyTOTP = vi.fn();
 const mockDisableTwoFactor = vi.fn();
 vi.mock("../../../lib/betterAuthRuntime", () => ({
   withBetterAuth: (_req: unknown, fn: (auth: unknown) => unknown) =>
-    fn({ api: { enableTwoFactor: mockEnableTwoFactor, verifyTOTP: mockVerifyTOTP, disableTwoFactor: mockDisableTwoFactor } }),
+    fn({
+      api: {
+        enableTwoFactor: mockEnableTwoFactor,
+        verifyTOTP: mockVerifyTOTP,
+        disableTwoFactor: mockDisableTwoFactor,
+      },
+    }),
 }));
 
 const mockGetTotpState = vi.fn();
@@ -64,7 +70,9 @@ function makeContext(body?: Record<string, unknown> | string): APIContext {
   return { request, cookies: {}, locals: { locale: "en" } } as unknown as APIContext;
 }
 
-async function post(body: Record<string, unknown> | string): Promise<{ status: number; json: Record<string, unknown>; res: Response }> {
+async function post(
+  body: Record<string, unknown> | string,
+): Promise<{ status: number; json: Record<string, unknown>; res: Response }> {
   const { POST } = await import("./mfa-manage");
   const res = (await POST(makeContext(body))) as Response;
   return { status: res.status, json: (await res.clone().json()) as Record<string, unknown>, res };
@@ -77,15 +85,21 @@ function withCookie(body: unknown): Response {
 }
 
 beforeEach(() => {
-  mockGetAuthFromCookies.mockReset().mockResolvedValue({ session: { token: "s" }, user: { id: "user-1" } });
+  mockGetAuthFromCookies
+    .mockReset()
+    .mockResolvedValue({ session: { token: "s" }, user: { id: "user-1" } });
   mockIsYubiKeyOtpConfigured.mockReset().mockReturnValue(true);
   mockVerifyYubiKeyOtpWithYubiCloud.mockReset().mockResolvedValue({ ok: true, publicId: KEY });
   mockGetUserMetadata.mockReset().mockResolvedValue({});
   mockMergeUserMetadata.mockReset().mockResolvedValue(undefined);
-  mockEnableTwoFactor.mockReset().mockImplementation(async () => withCookie({ totpURI: "otpauth://totp/x" }));
+  mockEnableTwoFactor
+    .mockReset()
+    .mockImplementation(async () => withCookie({ totpURI: "otpauth://totp/x" }));
   mockVerifyTOTP.mockReset().mockImplementation(async () => withCookie({ status: true }));
   mockDisableTwoFactor.mockReset().mockImplementation(async () => withCookie({ status: true }));
-  mockGetTotpState.mockReset().mockResolvedValue({ enabled: false, pending: false, hasPassword: true });
+  mockGetTotpState
+    .mockReset()
+    .mockResolvedValue({ enabled: false, pending: false, hasPassword: true });
   mockIsElevated.mockReset().mockResolvedValue(false);
 });
 
@@ -145,7 +159,9 @@ describe("POST /api/auth/mfa-manage — basics", () => {
 describe("POST /api/auth/mfa-manage — TOTP", () => {
   it("refuses a second authenticator app", async () => {
     mockGetTotpState.mockResolvedValue({ enabled: true, pending: false, hasPassword: true });
-    expect((await post({ action: "enroll", password: "pw" })).json).toEqual({ error: t.totpAlreadyEnabled });
+    expect((await post({ action: "enroll", password: "pw" })).json).toEqual({
+      error: t.totpAlreadyEnabled,
+    });
   });
 
   it("blocks enroll when the user has a YubiKey and isn't verified this session", async () => {
@@ -163,7 +179,9 @@ describe("POST /api/auth/mfa-manage — TOTP", () => {
 
   it("returns the QR code and passes on Better Auth's cookies", async () => {
     const { status, json, res } = await post({ action: "enroll", password: "pw" });
-    expect(mockEnableTwoFactor).toHaveBeenCalledWith(expect.objectContaining({ body: { password: "pw" }, asResponse: true }));
+    expect(mockEnableTwoFactor).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { password: "pw" }, asResponse: true }),
+    );
     expect(status).toBe(200);
     expect(json).toEqual({ factorId: "totp", qrCode: "data:qr,otpauth://totp/x" });
     expect(res.headers.getSetCookie().join(";")).toContain("session_token=rotated");
@@ -176,25 +194,37 @@ describe("POST /api/auth/mfa-manage — TOTP", () => {
   });
 
   it("says the password is wrong when Better Auth does", async () => {
-    mockEnableTwoFactor.mockResolvedValue(Response.json({ code: "INVALID_PASSWORD" }, { status: 400 }));
-    expect((await post({ action: "enroll", password: "bad" })).json).toEqual({ error: t.passwordIncorrect });
+    mockEnableTwoFactor.mockResolvedValue(
+      Response.json({ code: "INVALID_PASSWORD" }, { status: 400 }),
+    );
+    expect((await post({ action: "enroll", password: "bad" })).json).toEqual({
+      error: t.passwordIncorrect,
+    });
     mockEnableTwoFactor.mockResolvedValue(Response.json({ code: "OTHER" }, { status: 400 }));
-    expect((await post({ action: "enroll", password: "pw" })).json).toEqual({ error: t.verificationFailed });
+    expect((await post({ action: "enroll", password: "pw" })).json).toEqual({
+      error: t.verificationFailed,
+    });
   });
 
   it("verify: refuses a malformed code, reports a wrong one, confirms a right one", async () => {
     expect((await post({ action: "verify", code: "12" })).json).toEqual({ error: t.invalidCode });
     expect(mockVerifyTOTP).not.toHaveBeenCalled();
     mockVerifyTOTP.mockResolvedValueOnce(Response.json({ code: "INVALID_CODE" }, { status: 401 }));
-    expect((await post({ action: "verify", code: "123456" })).json).toEqual({ error: t.verificationFailed });
+    expect((await post({ action: "verify", code: "123456" })).json).toEqual({
+      error: t.verificationFailed,
+    });
     const ok = await post({ action: "verify", code: " 123456 " });
-    expect(mockVerifyTOTP).toHaveBeenLastCalledWith(expect.objectContaining({ body: { code: "123456" } }));
+    expect(mockVerifyTOTP).toHaveBeenLastCalledWith(
+      expect.objectContaining({ body: { code: "123456" } }),
+    );
     expect(ok.json).toEqual({ ok: true });
     expect(ok.res.headers.getSetCookie().join(";")).toContain("session_token=rotated");
   });
 
   it("unenroll: nothing to remove, needs a verified session, then the password", async () => {
-    expect((await post({ action: "unenroll", password: "pw" })).json).toEqual({ error: "Missing factorId" });
+    expect((await post({ action: "unenroll", password: "pw" })).json).toEqual({
+      error: "Missing factorId",
+    });
     mockGetTotpState.mockResolvedValue({ enabled: false, pending: true, hasPassword: true });
     const blocked = await post({ action: "unenroll", password: "pw" });
     expect(blocked.status).toBe(401);
@@ -203,7 +233,9 @@ describe("POST /api/auth/mfa-manage — TOTP", () => {
     expect((await post({ action: "unenroll" })).json).toEqual({ error: t.passwordIncorrect });
     expect(mockDisableTwoFactor).not.toHaveBeenCalled();
     expect((await post({ action: "unenroll", password: "pw" })).json).toEqual({ ok: true });
-    expect(mockDisableTwoFactor).toHaveBeenCalledWith(expect.objectContaining({ body: { password: "pw" } }));
+    expect(mockDisableTwoFactor).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { password: "pw" } }),
+    );
   });
 });
 
@@ -224,16 +256,30 @@ describe("POST /api/auth/mfa-manage — YubiKey", () => {
   it("asks for a tap when the OTP is missing, and passes on YubiCloud's refusal", async () => {
     expect((await post({ action: "yubikey_enroll" })).json).toEqual({ error: t.tapYubikey });
     mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValue({ ok: false, error: "BAD_OTP" });
-    expect((await post({ action: "yubikey_enroll", otp: "otp" })).json).toEqual({ error: "BAD_OTP" });
+    expect((await post({ action: "yubikey_enroll", otp: "otp" })).json).toEqual({
+      error: "BAD_OTP",
+    });
     expect(mockMergeUserMetadata).not.toHaveBeenCalled();
   });
 
   it("refuses a key already enrolled, and a sixth key", async () => {
     mockIsElevated.mockResolvedValue(true);
     mockGetUserMetadata.mockResolvedValue({ yubikey_otp_public_ids: [KEY] });
-    expect((await post({ action: "yubikey_enroll", otp: "otp" })).json).toEqual({ error: t.yubikeyAlreadyEnrolled });
-    mockGetUserMetadata.mockResolvedValue({ yubikey_otp_public_ids: ["ccccccbbbbbb", "ccccccdddddd", "cccccceeeeee", "ccccccffffff", "ccccccgggggg"] });
-    expect((await post({ action: "yubikey_enroll", otp: "otp" })).json).toEqual({ error: t.yubikeyLimit });
+    expect((await post({ action: "yubikey_enroll", otp: "otp" })).json).toEqual({
+      error: t.yubikeyAlreadyEnrolled,
+    });
+    mockGetUserMetadata.mockResolvedValue({
+      yubikey_otp_public_ids: [
+        "ccccccbbbbbb",
+        "ccccccdddddd",
+        "cccccceeeeee",
+        "ccccccffffff",
+        "ccccccgggggg",
+      ],
+    });
+    expect((await post({ action: "yubikey_enroll", otp: "otp" })).json).toEqual({
+      error: t.yubikeyLimit,
+    });
     expect(mockMergeUserMetadata).not.toHaveBeenCalled();
   });
 
@@ -245,25 +291,39 @@ describe("POST /api/auth/mfa-manage — YubiKey", () => {
   });
 
   it("unenroll: needs a publicId that is enrolled", async () => {
-    expect((await post({ action: "yubikey_unenroll" })).json).toEqual({ error: "Missing publicId" });
-    expect((await post({ action: "yubikey_unenroll", publicId: KEY })).json).toEqual({ error: t.yubikeyNotFound });
+    expect((await post({ action: "yubikey_unenroll" })).json).toEqual({
+      error: "Missing publicId",
+    });
+    expect((await post({ action: "yubikey_unenroll", publicId: KEY })).json).toEqual({
+      error: t.yubikeyNotFound,
+    });
   });
 
   it("unenroll: removes without a tap from a verified session", async () => {
     mockIsElevated.mockResolvedValue(true);
     mockGetUserMetadata.mockResolvedValue({ yubikey_otp_public_ids: [KEY, "cccccctttttt"] });
-    expect((await post({ action: "yubikey_unenroll", publicId: KEY.toUpperCase() })).json).toEqual({ ok: true });
+    expect((await post({ action: "yubikey_unenroll", publicId: KEY.toUpperCase() })).json).toEqual({
+      ok: true,
+    });
     expect(mockVerifyYubiKeyOtpWithYubiCloud).not.toHaveBeenCalled();
-    expect(mockMergeUserMetadata).toHaveBeenCalledWith("user-1", { yubikey_otp_public_ids: ["cccccctttttt"] });
+    expect(mockMergeUserMetadata).toHaveBeenCalledWith("user-1", {
+      yubikey_otp_public_ids: ["cccccctttttt"],
+    });
   });
 
   it("unenroll: otherwise needs that key's own OTP", async () => {
     mockGetUserMetadata.mockResolvedValue({ yubikey_otp_public_ids: [KEY] });
-    expect((await post({ action: "yubikey_unenroll", publicId: KEY })).json).toEqual({ error: t.tapYubikeyToRemove });
+    expect((await post({ action: "yubikey_unenroll", publicId: KEY })).json).toEqual({
+      error: t.tapYubikeyToRemove,
+    });
     mockVerifyYubiKeyOtpWithYubiCloud.mockResolvedValueOnce({ ok: true, publicId: "cccccctttttt" });
-    expect((await post({ action: "yubikey_unenroll", publicId: KEY, otp: "otp" })).json).toEqual({ error: t.yubikeyConfirmFailed });
+    expect((await post({ action: "yubikey_unenroll", publicId: KEY, otp: "otp" })).json).toEqual({
+      error: t.yubikeyConfirmFailed,
+    });
     expect(mockMergeUserMetadata).not.toHaveBeenCalled();
-    expect((await post({ action: "yubikey_unenroll", publicId: KEY, otp: "otp" })).json).toEqual({ ok: true });
+    expect((await post({ action: "yubikey_unenroll", publicId: KEY, otp: "otp" })).json).toEqual({
+      ok: true,
+    });
     expect(mockMergeUserMetadata).toHaveBeenCalledWith("user-1", { yubikey_otp_public_ids: [] });
   });
 

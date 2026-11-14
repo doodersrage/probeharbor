@@ -27,9 +27,10 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function home(email: string) {
   const userId = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [
-    userId,
-  ]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [userId],
+  );
   const [d] = await sql<{ id: string }>(
     "insert into public.devices (household_id, name, source) values ($1, 'Garage', 'push') returning id",
     [m!.household_id],
@@ -38,7 +39,13 @@ async function home(email: string) {
 }
 
 /** One reading every `stepMin` minutes over the last `hours`, value from `valueAt(i)`. */
-async function series(sensorId: string, householdId: string, hours: number, stepMin: number, valueAt: (i: number) => number) {
+async function series(
+  sensorId: string,
+  householdId: string,
+  hours: number,
+  stepMin: number,
+  valueAt: (i: number) => number,
+) {
   await sql(
     `insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num)
      select $1, $2, now() - (g * $4 || ' minutes')::interval, $5::float8 + (case when $6 then g % 3 else 0 end)
@@ -91,7 +98,9 @@ describe("housekeeping (Neon)", () => {
       "select floor(extract(epoch from now() - started_at) / 86400)::int as days from public.job_runs order by started_at",
     );
     expect(ages.map((r) => r.days)).toEqual([29, 0]);
-    const tokens = await sql<{ token: string }>("select token from public.alert_snooze_tokens order by token");
+    const tokens = await sql<{ token: string }>(
+      "select token from public.alert_snooze_tokens order by token",
+    );
     expect(tokens.map((r) => r.token)).toEqual(["recently-expired", "still-valid"]);
 
     // A second run finds nothing more to delete.
@@ -113,7 +122,8 @@ describe("housekeeping (Neon)", () => {
 describe("raw reading retention (Neon)", () => {
   it("rolls old readings into hourly rows, deletes only those, keeps recent ones", async () => {
     const h = await home("a@example.com");
-    const t = (await upsertDeviceSensor(h.householdId, h.deviceId, "t", "Bay", "temperature", "F")).sensor!.id;
+    const t = (await upsertDeviceSensor(h.householdId, h.deviceId, "t", "Bay", "temperature", "F"))
+      .sensor!.id;
     await sql(
       `insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values
        ($1, $2, date_trunc('hour', now() - interval '100 days') + interval '5 minutes', 30),
@@ -123,7 +133,9 @@ describe("raw reading retention (Neon)", () => {
     );
     const result = await runSensorReadingRetention(90);
     expect(result).toMatchObject({ error: null, deleted: 2 });
-    expect(await sql("select value_num from public.sensor_readings where sensor_id = $1", [t])).toEqual([{ value_num: 50 }]);
+    expect(
+      await sql("select value_num from public.sensor_readings where sensor_id = $1", [t]),
+    ).toEqual([{ value_num: 50 }]);
     const [rollup] = await sql<{ avg_num: number; sample_count: number; household_id: string }>(
       "select avg_num, sample_count, household_id from public.sensor_reading_rollups where sensor_id = $1",
       [t],
@@ -135,9 +147,15 @@ describe("raw reading retention (Neon)", () => {
 describe("stuck sensors (Neon)", () => {
   it("flags a probe repeating one value for a day, not one that varies or one with too few samples", async () => {
     const h = await home("a@example.com");
-    const stuck = (await upsertDeviceSensor(h.householdId, h.deviceId, "stuck", "Stuck", "temperature", "F")).sensor!.id;
-    const live = (await upsertDeviceSensor(h.householdId, h.deviceId, "live", "Live", "temperature", "F")).sensor!.id;
-    const sparse = (await upsertDeviceSensor(h.householdId, h.deviceId, "sparse", "Sparse", "temperature", "F")).sensor!.id;
+    const stuck = (
+      await upsertDeviceSensor(h.householdId, h.deviceId, "stuck", "Stuck", "temperature", "F")
+    ).sensor!.id;
+    const live = (
+      await upsertDeviceSensor(h.householdId, h.deviceId, "live", "Live", "temperature", "F")
+    ).sensor!.id;
+    const sparse = (
+      await upsertDeviceSensor(h.householdId, h.deviceId, "sparse", "Sparse", "temperature", "F")
+    ).sensor!.id;
     await series(stuck, h.householdId, 30, 30, () => 41);
     await series(live, h.householdId, 30, 30, (i) => 41 + i);
     await sql(
@@ -156,10 +174,26 @@ describe("feed uptime (Neon)", () => {
   it("stores each check for its user", async () => {
     const a = await home("a@example.com");
     await storeFeedUptimeChecks(a.userId, [
-      { feedId: "f1", feedName: "Feed", url: "https://x/feed", ok: false, message: "timeout", checkedAt: new Date().toISOString() } as never,
-      { feedId: "f1", feedName: "Feed", url: "https://x/feed", ok: true, message: null, checkedAt: new Date().toISOString() } as never,
+      {
+        feedId: "f1",
+        feedName: "Feed",
+        url: "https://x/feed",
+        ok: false,
+        message: "timeout",
+        checkedAt: new Date().toISOString(),
+      } as never,
+      {
+        feedId: "f1",
+        feedName: "Feed",
+        url: "https://x/feed",
+        ok: true,
+        message: null,
+        checkedAt: new Date().toISOString(),
+      } as never,
     ]);
-    const rows = await sql<{ ok: boolean; user_id: string }>("select ok, user_id from public.feed_uptime_checks order by id");
+    const rows = await sql<{ ok: boolean; user_id: string }>(
+      "select ok, user_id from public.feed_uptime_checks order by id",
+    );
     expect(rows).toEqual([
       { ok: false, user_id: a.userId },
       { ok: true, user_id: a.userId },

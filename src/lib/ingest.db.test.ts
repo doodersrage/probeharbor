@@ -21,7 +21,11 @@ vi.mock("./backgroundWork", () => ({
 
 import { POST } from "../pages/api/ingest/[deviceKey]";
 import { findDeviceByIngestKeyHash, updateDeviceMeta, upsertDeviceSensor } from "./devices";
-import { listIngestStatsForHousehold, listRecentIngestStatsAdmin, recordIngestStat } from "./ingestStats";
+import {
+  listIngestStatsForHousehold,
+  listRecentIngestStatsAdmin,
+  recordIngestStat,
+} from "./ingestStats";
 import { insertSensorReadings } from "./sensorReadings";
 
 const db = useTestDatabase();
@@ -59,7 +63,13 @@ function ingest(key: string, body: unknown, userAgent = "ProbeHarbor-ESP32/1.2.5
 }
 
 const readingsOf = (deviceId: string) =>
-  sql<{ key: string; kind: string; value_num: number | null; value_bool: boolean | null; household_id: string }>(
+  sql<{
+    key: string;
+    kind: string;
+    value_num: number | null;
+    value_bool: boolean | null;
+    household_id: string;
+  }>(
     `select s.key, s.kind, r.value_num, r.value_bool, r.household_id
      from public.sensor_readings r join public.device_sensors s on s.id = r.sensor_id
      where s.device_id = $1 order by s.key, s.kind`,
@@ -78,12 +88,25 @@ describe("POST /api/ingest on Neon", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ ok: true, readings: 2 });
     expect(await readingsOf(dev.deviceId)).toEqual([
-      { key: "0", kind: "humidity", value_num: 40, value_bool: null, household_id: dev.householdId },
-      { key: "0", kind: "temperature", value_num: 41, value_bool: null, household_id: dev.householdId },
+      {
+        key: "0",
+        kind: "humidity",
+        value_num: 40,
+        value_bool: null,
+        household_id: dev.householdId,
+      },
+      {
+        key: "0",
+        kind: "temperature",
+        value_num: 41,
+        value_bool: null,
+        household_id: dev.householdId,
+      },
     ]);
-    const [device] = await sql<{ last_seen_at: string | null }>("select last_seen_at from public.devices where id = $1", [
-      dev.deviceId,
-    ]);
+    const [device] = await sql<{ last_seen_at: string | null }>(
+      "select last_seen_at from public.devices where id = $1",
+      [dev.deviceId],
+    );
     expect(device?.last_seen_at).not.toBeNull();
     expect(background.labels).toContain("Ingest webhooks/alerts");
   });
@@ -111,7 +134,9 @@ describe("POST /api/ingest on Neon", () => {
   it("rejects an unknown or disabled key without touching any household", async () => {
     const dev = await pushDevice("a@example.com", { enabled: false });
     expect((await ingest(dev.key, { temp: { "0": { c: 5, f: 41, h: 40 } } })).status).toBe(401);
-    expect((await ingest("not-a-real-key", { temp: { "0": { c: 5, f: 41, h: 40 } } })).status).toBe(401);
+    expect((await ingest("not-a-real-key", { temp: { "0": { c: 5, f: 41, h: 40 } } })).status).toBe(
+      401,
+    );
     const [n] = await sql<{ n: number }>("select count(*) as n from public.sensor_readings");
     expect(n?.n).toBe(0);
   });
@@ -151,12 +176,15 @@ describe("POST /api/ingest on Neon", () => {
   });
 
   it("merges device meta: firmware and client recorded, earlier keys kept", async () => {
-    const dev = await pushDevice("a@example.com", { meta: { space_note: "keep me", firmware_version: "1.0.0" } });
+    const dev = await pushDevice("a@example.com", {
+      meta: { space_note: "keep me", firmware_version: "1.0.0" },
+    });
     await ingest(dev.key, { temp: { "0": { c: 5, f: 41, h: 40 } }, fw: "1.2.5", rssi: -61 });
 
-    const [device] = await sql<{ meta: Record<string, unknown> }>("select meta from public.devices where id = $1", [
-      dev.deviceId,
-    ]);
+    const [device] = await sql<{ meta: Record<string, unknown> }>(
+      "select meta from public.devices where id = $1",
+      [dev.deviceId],
+    );
     expect(device?.meta.space_note).toBe("keep me");
     expect(device?.meta.rssi).toBe(-61);
   });
@@ -166,7 +194,11 @@ describe("ingest helpers on Neon", () => {
   it("parallel ingest counts are not lost", async () => {
     const dev = await pushDevice("a@example.com");
     const day = new Date().toISOString().slice(0, 10);
-    await Promise.all(Array.from({ length: 20 }, (_, i) => recordIngestStat(dev.householdId, dev.deviceId, i % 4 !== 0)));
+    await Promise.all(
+      Array.from({ length: 20 }, (_, i) =>
+        recordIngestStat(dev.householdId, dev.deviceId, i % 4 !== 0),
+      ),
+    );
     const [row] = await sql<{ success_count: number; error_count: number }>(
       "select success_count, error_count from public.ingest_stats where device_id = $1 and day = $2",
       [dev.deviceId, day],
@@ -178,9 +210,10 @@ describe("ingest helpers on Neon", () => {
     const dev = await pushDevice("a@example.com");
     await upsertDeviceSensor(dev.householdId, dev.deviceId, "b", "B", "humidity");
     await upsertDeviceSensor(dev.householdId, dev.deviceId, "a", "A", "temperature", "F");
-    await sql("update public.device_sensors set sort_order = case key when 'a' then 1 else 2 end where device_id = $1", [
-      dev.deviceId,
-    ]);
+    await sql(
+      "update public.device_sensors set sort_order = case key when 'a' then 1 else 2 end where device_id = $1",
+      [dev.deviceId],
+    );
 
     const found = await findDeviceByIngestKeyHash(sha256(dev.key));
     expect(found).toMatchObject({ id: dev.deviceId, household_id: dev.householdId, enabled: true });
@@ -201,26 +234,56 @@ describe("ingest helpers on Neon", () => {
   it("corrects a temperature sensor first saved as °C to °F", async () => {
     const dev = await pushDevice("a@example.com");
     await upsertDeviceSensor(dev.householdId, dev.deviceId, "t", "T", "temperature", "C");
-    const result = await upsertDeviceSensor(dev.householdId, dev.deviceId, "t", "T", "temperature", "F");
+    const result = await upsertDeviceSensor(
+      dev.householdId,
+      dev.deviceId,
+      "t",
+      "T",
+      "temperature",
+      "F",
+    );
     expect(result.sensor?.unit).toBe("F");
-    const [row] = await sql<{ unit: string }>("select unit from public.device_sensors where device_id = $1", [dev.deviceId]);
+    const [row] = await sql<{ unit: string }>(
+      "select unit from public.device_sensors where device_id = $1",
+      [dev.deviceId],
+    );
     expect(row?.unit).toBe("F");
   });
 
   it("a non-temperature sensor keeps the unit it was saved with", async () => {
     const dev = await pushDevice("a@example.com");
     await upsertDeviceSensor(dev.householdId, dev.deviceId, "h", "H", "humidity", "%");
-    const result = await upsertDeviceSensor(dev.householdId, dev.deviceId, "h", "H", "humidity", "F");
+    const result = await upsertDeviceSensor(
+      dev.householdId,
+      dev.deviceId,
+      "h",
+      "H",
+      "humidity",
+      "F",
+    );
     expect(result.sensor?.unit).toBe("%");
-    const [row] = await sql<{ unit: string }>("select unit from public.device_sensors where device_id = $1", [dev.deviceId]);
+    const [row] = await sql<{ unit: string }>(
+      "select unit from public.device_sensors where device_id = $1",
+      [dev.deviceId],
+    );
     expect(row?.unit).toBe("%");
   });
 
   it("device meta that isn't an object yet (column is not null) is replaced, not merged into", async () => {
     const dev = await pushDevice("a@example.com");
-    await sql(`update public.devices set meta = '[]'::jsonb, last_seen_at = null where id = $1`, [dev.deviceId]);
-    await updateDeviceMeta(dev.householdId, dev.deviceId, { firmware: "1.2.0" }, { touchLastSeen: false });
-    const [row] = await sql<{ meta: unknown; last_seen_at: unknown }>("select meta, last_seen_at from public.devices where id = $1", [dev.deviceId]);
+    await sql(`update public.devices set meta = '[]'::jsonb, last_seen_at = null where id = $1`, [
+      dev.deviceId,
+    ]);
+    await updateDeviceMeta(
+      dev.householdId,
+      dev.deviceId,
+      { firmware: "1.2.0" },
+      { touchLastSeen: false },
+    );
+    const [row] = await sql<{ meta: unknown; last_seen_at: unknown }>(
+      "select meta, last_seen_at from public.devices where id = $1",
+      [dev.deviceId],
+    );
     expect(row?.meta).toEqual({ firmware: "1.2.0" });
     expect(row?.last_seen_at).toBeNull();
   });
@@ -228,10 +291,21 @@ describe("ingest helpers on Neon", () => {
   it("a failing batch stores nothing", async () => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     const dev = await pushDevice("a@example.com");
-    const { sensor } = await upsertDeviceSensor(dev.householdId, dev.deviceId, "t", "T", "temperature", "F");
+    const { sensor } = await upsertDeviceSensor(
+      dev.householdId,
+      dev.deviceId,
+      "t",
+      "T",
+      "temperature",
+      "F",
+    );
     const result = await insertSensorReadings([
       { sensor_id: sensor!.id, household_id: dev.householdId, value_num: 40 },
-      { sensor_id: "00000000-0000-4000-8000-000000000000", household_id: dev.householdId, value_num: 41 },
+      {
+        sensor_id: "00000000-0000-4000-8000-000000000000",
+        household_id: dev.householdId,
+        value_num: 41,
+      },
     ]);
     // An unknown sensor is not a sensor of this household: the batch is refused before the insert.
     expect(result.error).toMatch(/outside its household/);
@@ -336,7 +410,10 @@ describe("POST /api/ingest with device times (recorded_at)", () => {
     const dev = await pushDevice("a@example.com");
     await ingest(dev.key, { temp_c: 4.5, recorded_at: minutesAgo(1) });
 
-    const keys = await sql<{ key: string }>("select key from public.device_sensors where device_id = $1", [dev.deviceId]);
+    const keys = await sql<{ key: string }>(
+      "select key from public.device_sensors where device_id = $1",
+      [dev.deviceId],
+    );
     expect(keys.map((k) => k.key)).not.toContain("recorded_at");
   });
 
@@ -420,7 +497,12 @@ describe("POST /api/ingest with device times (recorded_at)", () => {
 
 describe("POST /api/ingest: certificate status from probe firmware 1.5.0+", () => {
   const metaOf = async (deviceId: string) =>
-    (await sql<{ meta: Record<string, unknown> }>("select meta from public.devices where id = $1", [deviceId]))[0]!.meta;
+    (
+      await sql<{ meta: Record<string, unknown> }>(
+        "select meta from public.devices where id = $1",
+        [deviceId],
+      )
+    )[0]!.meta;
 
   it("records tls unverified, keeps it while it lasts, and clears it once the probe verifies again", async () => {
     const dev = await pushDevice("a@example.com");
@@ -428,7 +510,11 @@ describe("POST /api/ingest: certificate status from probe firmware 1.5.0+", () =
     expect((await metaOf(dev.deviceId)).tls).toBe("unverified");
 
     const now = Math.floor(Date.now() / 1000);
-    await ingest(dev.key, { fw: "1.5.0", tls: "unverified", readings: [{ temp1: 41, recorded_at: now }] });
+    await ingest(dev.key, {
+      fw: "1.5.0",
+      tls: "unverified",
+      readings: [{ temp1: 41, recorded_at: now }],
+    });
     expect((await metaOf(dev.deviceId)).tls).toBe("unverified");
 
     await ingest(dev.key, { temp1: 42, fw: "1.5.0" });

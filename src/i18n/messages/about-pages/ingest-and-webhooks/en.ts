@@ -1,4 +1,3 @@
-
 /**
  * /about/ingest-and-webhooks body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Code samples stay in the page.
@@ -41,14 +40,16 @@ const en = {
   },
   webhooks: {
     title: "Outbound alert webhooks",
-    introHtml: "Pro accounts can enable an outbound webhook in alert settings. Each alert POSTs JSON:",
+    introHtml:
+      "Pro accounts can enable an outbound webhook in alert settings. Each alert POSTs JSON:",
     kindsHtml: `<code>kind</code> may be ${webhookKinds}, or <code>generic</code>. When a webhook secret is set, the request includes <code>X-Signature</code> as a hex HMAC-SHA256 of the raw body. Use that in Home Assistant or IFTTT Webhooks to verify authenticity.`,
   },
   homeAssistant: {
     title: "Home Assistant",
     bodyHtml:
       'Install the official <a class="text-link" href="/integrations/home-assistant">HACS integration</a> for share-link sensors and snooze/vacation services. For <strong>alerts into HA</strong>, use the outbound HTTPS webhook (Pro) or import the blueprint. For <strong>MQTT readings into ProbeHarbor</strong>, see the <a class="text-link" href="/about/mqtt-bridge">MQTT bridge recipe</a>.',
-    blueprintHtml: '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Download HA blueprint (YAML)</a>',
+    blueprintHtml:
+      '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Download HA blueprint (YAML)</a>',
     pointHtml:
       "Point your ProbeHarbor outbound webhook URL at <code>https://&lt;your-ha-host&gt;/api/webhook/probeharbor_alerts</code> (or a Cloudflare Tunnel / Nabu Casa URL). Verify <code>X-Signature</code> in a template condition if you set a secret.",
     mqttHtml:

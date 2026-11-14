@@ -3,9 +3,7 @@ import type { User } from "./appUser";
 
 export type DashboardOverviewMode = "simple" | "insights";
 
-export function getDashboardOverviewMode(
-  user: User | null | undefined,
-): DashboardOverviewMode {
+export function getDashboardOverviewMode(user: User | null | undefined): DashboardOverviewMode {
   const raw = user?.user_metadata?.dashboard_overview_mode;
   return raw === "insights" ? "insights" : "simple";
 }

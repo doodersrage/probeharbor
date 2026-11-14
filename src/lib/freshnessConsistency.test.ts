@@ -86,8 +86,13 @@ function judgments(d: DeviceWithSensors, msAgo: number) {
     newest: newestRowFreshness([r], [d], NOW).freshness,
     staleSummaryCount: summarizeStaleSensors([r], [d], NOW).total,
     healthLabel: scoreDeviceHealth({ ...d, last_seen_at: r.recorded_at }, [r], NOW).label,
-    coverage: buildProtectionCoverage([{ ...d, last_seen_at: r.recorded_at }], [r], NOW)[0]!.risks.freeze,
-    listRow: buildDeviceListRows({ devices: [{ ...d, last_seen_at: r.recorded_at }], latest: [r], now: NOW })[0]!,
+    coverage: buildProtectionCoverage([{ ...d, last_seen_at: r.recorded_at }], [r], NOW)[0]!.risks
+      .freeze,
+    listRow: buildDeviceListRows({
+      devices: [{ ...d, last_seen_at: r.recorded_at }],
+      latest: [r],
+      now: NOW,
+    })[0]!,
   };
 }
 
@@ -136,21 +141,41 @@ describe("one freshness rule across surfaces", () => {
   });
 
   it("falls back to 30 min / 2 h when the interval isn't known", () => {
-    expect(judgments(device("new", null, 29 * MIN), 29 * MIN).rule).toMatchObject({ lagging: false, stale: false });
-    expect(judgments(device("new", null, 31 * MIN), 31 * MIN).rule).toMatchObject({ lagging: true, stale: false });
-    expect(judgments(device("new", null, 121 * MIN), 121 * MIN).rule).toMatchObject({ lagging: true, stale: true });
+    expect(judgments(device("new", null, 29 * MIN), 29 * MIN).rule).toMatchObject({
+      lagging: false,
+      stale: false,
+    });
+    expect(judgments(device("new", null, 31 * MIN), 31 * MIN).rule).toMatchObject({
+      lagging: true,
+      stale: false,
+    });
+    expect(judgments(device("new", null, 121 * MIN), 121 * MIN).rule).toMatchObject({
+      lagging: true,
+      stale: true,
+    });
   });
 
   it("treats a missing timestamp as stale and a future one as fresh", () => {
-    expect(readingFreshness(null, 3600_000, NOW)).toEqual({ ageMs: null, lagging: true, stale: true });
+    expect(readingFreshness(null, 3600_000, NOW)).toEqual({
+      ageMs: null,
+      lagging: true,
+      stale: true,
+    });
     expect(readingFreshness("not a date", null, NOW).stale).toBe(true);
-    expect(readingFreshness(ago(-5 * MIN), null, NOW)).toMatchObject({ lagging: false, stale: false });
+    expect(readingFreshness(ago(-5 * MIN), null, NOW)).toMatchObject({
+      lagging: false,
+      stale: false,
+    });
   });
 
   it("judges the newest reading by its own device's interval", () => {
     const slow = device("slow", 3600, 45 * MIN);
     const fast = device("fast", 30, 50 * MIN);
-    const newest = newestRowFreshness([row(fast, 50 * MIN), row(slow, 45 * MIN)], [slow, fast], NOW);
+    const newest = newestRowFreshness(
+      [row(fast, 50 * MIN), row(slow, 45 * MIN)],
+      [slow, fast],
+      NOW,
+    );
     expect(newest.row?.sensor.device_id).toBe("slow");
     expect(newest.reportIntervalMs).toBe(3600_000);
     expect(newest.freshness.lagging).toBe(false);

@@ -1,6 +1,9 @@
 import { fmt as fill, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
-import { alertRulesMessages, type AlertRulesMessages } from "../i18n/messages/app/alertSettings/rules";
+import {
+  alertRulesMessages,
+  type AlertRulesMessages,
+} from "../i18n/messages/app/alertSettings/rules";
 import { tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
 
 export type AlertConditionType =
@@ -96,12 +99,18 @@ function num(value: number, unit: string, locale: Locale): string {
   if (locale === "en") return `${Number.isInteger(value) ? value : value.toFixed(1)}${unit}`;
   const shown = Number.isInteger(value)
     ? formatNumber(value, locale, { useGrouping: false })
-    : formatNumber(value, locale, { useGrouping: false, minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    : formatNumber(value, locale, {
+        useGrouping: false,
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      });
   return `${shown}${unit}`;
 }
 
 function scopeNote(t: Text, noun: Noun, includes?: string): string {
-  return includes ? fill(t.noneNamed, { noun: noun.name, includes }) : fill(t.noneReporting, { noun: noun.name });
+  return includes
+    ? fill(t.noneNamed, { noun: noun.name, includes })
+    : fill(t.noneReporting, { noun: noun.name });
 }
 
 /** Threshold check over matching candidates; reports the hit or the closest miss. */
@@ -122,13 +131,25 @@ function compareCheck(
   const passes = (v: number) => (op === "<=" ? v <= threshold : v >= threshold);
   const want = `${op === "<=" ? "≤" : "≥"} ${num(display(threshold), unit, locale)}`;
   const hit = scoped.find((item) => passes(item.value));
-  if (hit) return { matched: true, detail: fill(t.compareHit, { label: hit.label, value: num(display(hit.value), unit, locale), want }) };
+  if (hit)
+    return {
+      matched: true,
+      detail: fill(t.compareHit, {
+        label: hit.label,
+        value: num(display(hit.value), unit, locale),
+        want,
+      }),
+    };
   const closest = scoped.reduce((best, item) =>
     Math.abs(item.value - threshold) < Math.abs(best.value - threshold) ? item : best,
   );
   return {
     matched: false,
-    detail: fill(t.compareClosest, { label: closest.label, value: num(display(closest.value), unit, locale), want }),
+    detail: fill(t.compareClosest, {
+      label: closest.label,
+      value: num(display(closest.value), unit, locale),
+      want,
+    }),
   };
 }
 
@@ -175,13 +196,35 @@ export function explainCondition(
   const showTemp = (f: number) => toDisplayTemp(f, useCelsius);
   switch (condition.type) {
     case "temp_below":
-      return compareCheck(temps, "<=", condition.value ?? ctx.freezeThresholdF, deg, n.temperatureProbe, t, locale, inc, showTemp);
+      return compareCheck(
+        temps,
+        "<=",
+        condition.value ?? ctx.freezeThresholdF,
+        deg,
+        n.temperatureProbe,
+        t,
+        locale,
+        inc,
+        showTemp,
+      );
     case "temp_above":
-      return compareCheck(temps, ">=", condition.value ?? HEAT_THRESHOLD_F, deg, n.temperatureProbe, t, locale, inc, showTemp);
+      return compareCheck(
+        temps,
+        ">=",
+        condition.value ?? HEAT_THRESHOLD_F,
+        deg,
+        n.temperatureProbe,
+        t,
+        locale,
+        inc,
+        showTemp,
+      );
     case "humidity_above":
       return compareCheck(
         // Probes without humidity aren't candidates (never a 0% reading).
-        ctx.readings.flatMap((r) => (r.humidity == null ? [] : [{ label: r.label, value: r.humidity }])),
+        ctx.readings.flatMap((r) =>
+          r.humidity == null ? [] : [{ label: r.label, value: r.humidity }],
+        ),
         ">=",
         condition.value ?? ctx.humidityThreshold,
         "%",
@@ -204,22 +247,36 @@ export function explainCondition(
         .filter((session) => session.stillOpen && matchesLabel(session.label, inc))
         .map((session) => {
           const start = session.openedAt ? Date.parse(session.openedAt) : Number.NaN;
-          return { label: session.label, minutes: Number.isFinite(start) ? (now - start) / 60000 : null };
+          return {
+            label: session.label,
+            minutes: Number.isFinite(start) ? (now - start) / 60000 : null,
+          };
         });
       if (open.length === 0) {
-        return { matched: false, detail: inc ? fill(t.noOpenDoorFor, { includes: inc }) : t.noOpenDoor };
+        return {
+          matched: false,
+          detail: inc ? fill(t.noOpenDoorFor, { includes: inc }) : t.noOpenDoor,
+        };
       }
       const hit = open.find((door) => door.minutes != null && door.minutes >= minMinutes);
       if (hit) {
         return {
           matched: true,
-          detail: fill(t.doorOpenFor, { label: hit.label, minutes: Math.floor(hit.minutes ?? 0), min: minMinutes }),
+          detail: fill(t.doorOpenFor, {
+            label: hit.label,
+            minutes: Math.floor(hit.minutes ?? 0),
+            min: minMinutes,
+          }),
         };
       }
       const longest = open.reduce((a, b) => ((b.minutes ?? -1) > (a.minutes ?? -1) ? b : a));
       return {
         matched: false,
-        detail: fill(t.doorOpenShort, { label: longest.label, minutes: Math.floor(Math.max(0, longest.minutes ?? 0)), min: minMinutes }),
+        detail: fill(t.doorOpenShort, {
+          label: longest.label,
+          minutes: Math.floor(Math.max(0, longest.minutes ?? 0)),
+          min: minMinutes,
+        }),
       };
     }
     case "flood":
@@ -227,17 +284,71 @@ export function explainCondition(
     case "power_off":
       return boolCheck(ctx, "power", false, n.powerSensor, t.states.off, t, locale, inc);
     case "co2_above":
-      return compareCheck(numericKind(ctx, "co2"), ">=", condition.value ?? 1000, " ppm", n.co2Sensor, t, locale, inc);
+      return compareCheck(
+        numericKind(ctx, "co2"),
+        ">=",
+        condition.value ?? 1000,
+        " ppm",
+        n.co2Sensor,
+        t,
+        locale,
+        inc,
+      );
     case "pressure_below":
-      return compareCheck(numericKind(ctx, "pressure"), "<=", condition.value ?? 980, " hPa", n.pressureSensor, t, locale, inc);
+      return compareCheck(
+        numericKind(ctx, "pressure"),
+        "<=",
+        condition.value ?? 980,
+        " hPa",
+        n.pressureSensor,
+        t,
+        locale,
+        inc,
+      );
     case "pm25_above":
-      return compareCheck(numericKind(ctx, "pm25"), ">=", condition.value ?? 35, " µg/m³", n.pm25Sensor, t, locale, inc);
+      return compareCheck(
+        numericKind(ctx, "pm25"),
+        ">=",
+        condition.value ?? 35,
+        " µg/m³",
+        n.pm25Sensor,
+        t,
+        locale,
+        inc,
+      );
     case "voc_above":
-      return compareCheck(numericKind(ctx, "voc"), ">=", condition.value ?? 400, " ppb", n.vocSensor, t, locale, inc);
+      return compareCheck(
+        numericKind(ctx, "voc"),
+        ">=",
+        condition.value ?? 400,
+        " ppb",
+        n.vocSensor,
+        t,
+        locale,
+        inc,
+      );
     case "level_above":
-      return compareCheck(numericKind(ctx, "level"), ">=", condition.value ?? 80, "%", n.levelSensor, t, locale, inc);
+      return compareCheck(
+        numericKind(ctx, "level"),
+        ">=",
+        condition.value ?? 80,
+        "%",
+        n.levelSensor,
+        t,
+        locale,
+        inc,
+      );
     case "energy_below":
-      return compareCheck(numericKind(ctx, "energy"), "<=", condition.value ?? 10, " W", n.energySensor, t, locale, inc);
+      return compareCheck(
+        numericKind(ctx, "energy"),
+        "<=",
+        condition.value ?? 10,
+        " W",
+        n.energySensor,
+        t,
+        locale,
+        inc,
+      );
     case "motion_detected":
       return boolCheck(ctx, "motion", true, n.motionSensor, t.states.motion, t, locale, inc);
     case "rate_drop": {
@@ -252,7 +363,11 @@ export function explainCondition(
         matched,
         detail: matched
           ? fill(t.rateDropped, { label: biggest.label, drop })
-          : fill(t.rateBiggest, { label: biggest.label, drop, threshold: num(toDisplayDelta(threshold, useCelsius), deg, locale) }),
+          : fill(t.rateBiggest, {
+              label: biggest.label,
+              drop,
+              threshold: num(toDisplayDelta(threshold, useCelsius), deg, locale),
+            }),
       };
     }
     case "outdoor_below": {
@@ -363,9 +478,7 @@ export function parseAlertRulesFromForm(raw: string | null | undefined): AlertRu
         if (!item || typeof item !== "object") return false;
         const rule = item as Partial<AlertRule>;
         return (
-          typeof rule.id === "string" &&
-          typeof rule.name === "string" &&
-          Array.isArray(rule.all)
+          typeof rule.id === "string" && typeof rule.name === "string" && Array.isArray(rule.all)
         );
       })
       .map((rule) => ({
@@ -376,8 +489,7 @@ export function parseAlertRulesFromForm(raw: string | null | undefined): AlertRu
         all: rule.all.slice(0, 8).map((c) => ({
           type: c.type,
           value: typeof c.value === "number" ? c.value : undefined,
-          labelIncludes:
-            typeof c.labelIncludes === "string" ? c.labelIncludes : undefined,
+          labelIncludes: typeof c.labelIncludes === "string" ? c.labelIncludes : undefined,
         })),
       }));
   } catch {
@@ -415,8 +527,13 @@ export function conditionOptions(
   useCelsius = false,
 ): Array<{ value: AlertConditionType; label: string }> {
   const labels = alertRulesMessages(locale).conditions;
-  const outdoorDefault = useCelsius ? Math.round((((OUTDOOR_COLD_F - 32) * 5) / 9) * 10) / 10 : OUTDOOR_COLD_F;
-  const shownDefault = locale === "en" ? String(outdoorDefault) : formatNumber(outdoorDefault, locale, { useGrouping: false });
+  const outdoorDefault = useCelsius
+    ? Math.round((((OUTDOOR_COLD_F - 32) * 5) / 9) * 10) / 10
+    : OUTDOOR_COLD_F;
+  const shownDefault =
+    locale === "en"
+      ? String(outdoorDefault)
+      : formatNumber(outdoorDefault, locale, { useGrouping: false });
   return CONDITION_OPTIONS.map(({ value }) => ({
     value,
     label: fill(labels[value], { default: shownDefault, unit: useCelsius ? "°C" : "°F" }),

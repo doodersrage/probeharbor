@@ -37,7 +37,8 @@ const de: SystemStatusMessages = {
     lede: "Schriftliche Berichte zu Ausfällen oder Beeinträchtigungen, die Kunden betreffen. Die Cron-Fehler oben steuern auch das Live-Banner und die Status-E-Mails an Abonnenten.",
     none: "Bisher sind keine Vorfälle erfasst. Sobald wir einen behobenen Vorfall veröffentlichen (Datum, Auswirkung, Behebung), erscheint er hier. Bis dahin gelten das Live-Banner und die Tabelle der letzten Cron-Läufe.",
     open: "Offen: Dienst beeinträchtigt",
-    started: "Begonnen etwa zum Zeitpunkt dieses Seitenaufrufs ({when}). Status-Abonnenten werden bei Beeinträchtigung und Wiederherstellung benachrichtigt.",
+    started:
+      "Begonnen etwa zum Zeitpunkt dieses Seitenaufrufs ({when}). Status-Abonnenten werden bei Beeinträchtigung und Wiederherstellung benachrichtigt.",
   },
   runs: {
     title: "Letzte Cron-Läufe",
@@ -69,7 +70,8 @@ const de: SystemStatusMessages = {
   notify: {
     title: "Benachrichtigt werden",
     lede: "Erhalte eine einmalige E-Mail, wenn sich dieser Status ändert (beeinträchtigt oder wieder normal). Keine Routine-E-Mails. Das Formular ist durch Cloudflare Turnstile geschützt.",
-    subscribed: "Sieh in deinem Posteingang nach: Erst wenn du auf den Bestätigungslink klickst, bist du angemeldet.",
+    subscribed:
+      "Sieh in deinem Posteingang nach: Erst wenn du auf den Bestätigungslink klickst, bist du angemeldet.",
     confirmed: "Du hast die Status-Updates abonniert.",
     unsubscribed: "Du hast die Status-Updates abbestellt.",
     errors: {

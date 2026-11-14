@@ -32,8 +32,7 @@ export function estimateTimeToFreeze(
 
   const oldest = sorted[0]!;
   const newest = sorted[sorted.length - 1]!;
-  const elapsedHours =
-    (Date.parse(newest.at) - Date.parse(oldest.at)) / (60 * 60 * 1000);
+  const elapsedHours = (Date.parse(newest.at) - Date.parse(oldest.at)) / (60 * 60 * 1000);
 
   if (elapsedHours < 0.25) {
     return {

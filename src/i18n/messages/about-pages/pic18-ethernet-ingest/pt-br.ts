@@ -1,4 +1,3 @@
-
 /** Body copy for /about/pic18-ethernet-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -15,9 +14,11 @@ const ptBr: Messages = {
   boardPart: "Placa PIC18F67J60",
   boardWhy: "MAC + PHY + RJ45 integrados. PICkit / ICD para gravação.",
   probePart: "DS18B20 à prova d’água",
-  probeWhyHtml: "Pino padrão do exemplo: <strong>RD0</strong> (troque se a sua demo usar esse pino).",
+  probeWhyHtml:
+    "Pino padrão do exemplo: <strong>RD0</strong> (troque se a sua demo usar esse pino).",
   resistorPart: "Resistor de 4.7kΩ",
-  resistorWhy: "Pull-up para o VDD de 1-Wire da placa (use conversor de nível se as E/S forem só de 5V).",
+  resistorWhy:
+    "Pull-up para o VDD de 1-Wire da placa (use conversor de nível se as E/S forem só de 5V).",
   ethernetPart: "Ponto de rede",
   ethernetWhy: "DHCP ou IP estático na demo da MLA. Máquina do relay na mesma LAN.",
   ethernetBuy: "Cabo Cat5e até o seu switch.",

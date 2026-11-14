@@ -1,4 +1,3 @@
-
 /**
  * /about/pico-w-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Pin names, part numbers,
@@ -26,10 +25,12 @@ const fr: PicoWIngestMessages = {
     boardPart: "Pico W ou Pico 2 W",
     boardWhy: "Wi‑Fi CYW43439 et TLS intégrés. Le Pico 2 W (RP2350) est la mise à niveau directe.",
     probePart: "DS18B20 étanche",
-    probeWhyHtml: "Sonde pour tuyau ou vide sanitaire ; fonctionne sous zéro. Donnée sur <strong>GP4</strong>.",
+    probeWhyHtml:
+      "Sonde pour tuyau ou vide sanitaire ; fonctionne sous zéro. Donnée sur <strong>GP4</strong>.",
     amazon: "Amazon",
     resistorPart: "Résistance de 4,7 kΩ",
-    resistorWhy: "Pull-up entre la donnée du DS18B20 et le 3,3 V. N’alimentez pas la sonde en 5 V sur un Pico.",
+    resistorWhy:
+      "Pull-up entre la donnée du DS18B20 et le 3,3 V. N’alimentez pas la sonde en 5 V sur un Pico.",
     amazonResistor: "4,7k sur Amazon",
   },
   wiringTitle: "Câblage",

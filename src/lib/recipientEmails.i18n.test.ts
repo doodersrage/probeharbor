@@ -30,7 +30,11 @@ describe("recipient-language emails", () => {
       { points, freezeThresholdF: 34, siteUrl: "https://probeharbor.dev" },
       "de",
     );
-    const en = buildWeeklyDigestParts({ points, freezeThresholdF: 34, siteUrl: "https://probeharbor.dev" });
+    const en = buildWeeklyDigestParts({
+      points,
+      freezeThresholdF: 34,
+      siteUrl: "https://probeharbor.dev",
+    });
 
     expect(digest.subject).not.toBe(en.subject);
     expect(digest.subject).toContain("30,3°F");
@@ -66,8 +70,19 @@ describe("recipient-language emails", () => {
     const { sendInviteEmail } = await import("./householdInvites");
     mockSendEmail.mockReset().mockResolvedValue(undefined);
 
-    await sendInviteEmail("guest@example.com", "https://probeharbor.dev/invite/t", "Ferienhaus", "owner@example.com", "de");
-    const [to, subject, text, options] = mockSendEmail.mock.calls[0] as [string, string, string, { html: string }];
+    await sendInviteEmail(
+      "guest@example.com",
+      "https://probeharbor.dev/invite/t",
+      "Ferienhaus",
+      "owner@example.com",
+      "de",
+    );
+    const [to, subject, text, options] = mockSendEmail.mock.calls[0] as [
+      string,
+      string,
+      string,
+      { html: string },
+    ];
     expect(to).toBe("guest@example.com");
     expect(subject).toContain("Ferienhaus");
     expect(subject).not.toContain("You're invited");
@@ -75,7 +90,13 @@ describe("recipient-language emails", () => {
     expect(options.html).toContain('<html lang="de">');
 
     mockSendEmail.mockReset().mockResolvedValue(undefined);
-    await sendInviteEmail("guest@example.com", "https://probeharbor.dev/invite/t", "Casa", null, "es");
+    await sendInviteEmail(
+      "guest@example.com",
+      "https://probeharbor.dev/invite/t",
+      "Casa",
+      null,
+      "es",
+    );
     const [, esSubject, esText] = mockSendEmail.mock.calls[0] as [string, string, string];
     expect(esSubject).toContain("Casa");
     expect(esSubject).not.toContain("You're invited");
@@ -104,7 +125,13 @@ describe("recipient-language emails", () => {
         freezeThresholdF: 34,
         nightsAtRisk: 1,
         nights: [{ date: "2026-10-22", dateLabel: "Thu, Oct 22", minTempF: 31, atRisk: true }],
-        freezeHours: { hoursBelow34: 12.5, degreeHoursBelow: 40, readingsBelow34: 8, totalReadings: 42, coldestF: 28.5 },
+        freezeHours: {
+          hoursBelow34: 12.5,
+          degreeHoursBelow: 40,
+          readingsBelow34: 8,
+          totalReadings: 42,
+          coldestF: 28.5,
+        },
         probes: [],
         alertsUrl: "https://probeharbor.dev/dashboard/alerts",
         historyUrl: "https://probeharbor.dev/dashboard/history",

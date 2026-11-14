@@ -6,7 +6,11 @@ import { shouldSuppressForSnoozeOrVacation } from "./alertSnooze";
 import { hasConfiguredAlertChannel } from "./freezeReadiness";
 import { listHouseholdIdsForCron, listHouseholdMembers } from "./households";
 import { getAlertSettingsForUser } from "./notify";
-import { fetchLatestSensorValues, getFreezeDwellSamples, type LatestSensorRow } from "./sensorReadings";
+import {
+  fetchLatestSensorValues,
+  getFreezeDwellSamples,
+  type LatestSensorRow,
+} from "./sensorReadings";
 import { excludeDemoRows } from "./demoFeed";
 import { freezeThresholdForReading } from "./thresholdSensorScope";
 
@@ -65,7 +69,13 @@ async function overdueFreezeMessages(
   );
   if (cold.length === 0) return [];
   const pairs = await Promise.all(
-    cold.map(async (reading) => [reading.sensorId!, await getFreezeDwellSamples(householdId, reading.sensorId!, cutoffIso)] as const),
+    cold.map(
+      async (reading) =>
+        [
+          reading.sensorId!,
+          await getFreezeDwellSamples(householdId, reading.sensorId!, cutoffIso),
+        ] as const,
+    ),
   );
 
   return evaluateAlerts({ ...settings, freezeDwellMinutes: dwellMinutes }, cold, {
@@ -119,7 +129,10 @@ export async function runAlertDeliveryWatchdog(nowMs = Date.now()): Promise<{
           const overdue = await overdueFreezeMessages(householdId, settings, latest, nowMs);
           if (overdue.length === 0) continue;
 
-          const verdict = classifyAlertDelivery(await listRecentAlertEvents(member.user_id, 50), nowMs);
+          const verdict = classifyAlertDelivery(
+            await listRecentAlertEvents(member.user_id, 50),
+            nowMs,
+          );
           if (verdict !== "ok") {
             findings.push({
               userId: member.user_id,
@@ -129,7 +142,9 @@ export async function runAlertDeliveryWatchdog(nowMs = Date.now()): Promise<{
             });
           }
         } catch (error) {
-          errors.push(`${member.user_id}: ${error instanceof Error ? error.message : String(error)}`);
+          errors.push(
+            `${member.user_id}: ${error instanceof Error ? error.message : String(error)}`,
+          );
         }
       }
     } catch (error) {

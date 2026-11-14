@@ -26,11 +26,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}status=error`);
   }
 
-  const { error } = await setUserAdminMembership(
-    user.id,
-    targetUserId,
-    makeAdmin,
-  );
+  const { error } = await setUserAdminMembership(user.id, targetUserId, makeAdmin);
 
   if (error) {
     return redirect(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}status=error`);

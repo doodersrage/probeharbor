@@ -1,4 +1,3 @@
-
 /** Body copy for /about/teensy41-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -10,7 +9,8 @@ const de: Messages = {
   colPart: "Teil",
   colWhy: "Wozu",
   colBuy: "Kaufen",
-  teensyWhy: "M7 mit 600 MHz, Flashen per USB, integrierter Ethernet-MAC (braucht das Magnetics-Kit).",
+  teensyWhy:
+    "M7 mit 600 MHz, Flashen per USB, integrierter Ethernet-MAC (braucht das Magnetics-Kit).",
   kitPart: "Ethernet-Kit / MagJack",
   kitWhy: "Übertrager + RJ45, verdrahtet nach der Ethernet-Doku von PJRC für den Teensy 4.1.",
   probePart: "Wasserdichter DS18B20",

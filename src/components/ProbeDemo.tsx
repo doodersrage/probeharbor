@@ -81,7 +81,10 @@ export type ProbeDemoText = {
   essentials: string;
   presets?: Partial<Record<DemoPresetId, { label: string; hint: string }>>;
   spaces?: Partial<
-    Record<DemoSpaceKind, { label: string; doorLabel: string; modelHint: string; probeLabels: string[] }>
+    Record<
+      DemoSpaceKind,
+      { label: string; doorLabel: string; modelHint: string; probeLabels: string[] }
+    >
   >;
   /** Space-status copy; placeholders {coldest} {coldestC} {threshold} {thresholdC} {n}. */
   status?: {
@@ -227,12 +230,8 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
     if (!preset) return defaultDemoControls;
     return { ...defaultDemoControls, ...DEMO_PRESETS[preset].controls };
   });
-  const [probes, setProbes] = useState<DemoProbe[]>(() =>
-    computeDemoProbes(controls),
-  );
-  const [average, setAverage] = useState(() =>
-    computeAverageReading(computeDemoProbes(controls)),
-  );
+  const [probes, setProbes] = useState<DemoProbe[]>(() => computeDemoProbes(controls));
+  const [average, setAverage] = useState(() => computeAverageReading(computeDemoProbes(controls)));
   const [lastUpdated, setLastUpdated] = useState(() => new Date());
   const [jsonTab, setJsonTab] = useState<JsonTab>("push");
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
@@ -249,8 +248,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
     const interval = window.setInterval(() => {
       if (document.visibilityState === "hidden") return;
       const baseProbes = computeDemoProbes(controls);
-      const { probes: nextProbes, average: nextAverage } =
-        applyProbeNoise(baseProbes);
+      const { probes: nextProbes, average: nextAverage } = applyProbeNoise(baseProbes);
       setProbes(nextProbes);
       setAverage(nextAverage);
       setLastUpdated(new Date());
@@ -266,19 +264,10 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
     };
   }, []);
 
-  const pullJson = useMemo(
-    () => buildDemoFeedJson(probes, average),
-    [probes, average],
-  );
-  const pushJson = useMemo(
-    () => buildDemoIngestJson(probes, average),
-    [probes, average],
-  );
+  const pullJson = useMemo(() => buildDemoFeedJson(probes, average), [probes, average]);
+  const pushJson = useMemo(() => buildDemoIngestJson(probes, average), [probes, average]);
   const activeJson = jsonTab === "push" ? pushJson : pullJson;
-  const spaceStatus = useMemo(
-    () => buildDemoSpaceStatus(probes, controls),
-    [probes, controls],
-  );
+  const spaceStatus = useMemo(() => buildDemoSpaceStatus(probes, controls), [probes, controls]);
   const coldest = coldestProbeTempF(probes);
   const space = DEMO_SPACES[controls.space];
   const spaceText = t.spaces?.[controls.space];
@@ -321,10 +310,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
   );
   const freezeBarPct = Math.min(100, (controls.freezeThresholdF / maxBarTemp) * 100);
 
-  function updateControl<K extends keyof DemoControls>(
-    key: K,
-    value: DemoControls[K],
-  ) {
+  function updateControl<K extends keyof DemoControls>(key: K, value: DemoControls[K]) {
     setControls((current) => ({ ...current, [key]: value }));
   }
 
@@ -395,7 +381,9 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
 
           <label class="probe-demo-control">
             <span class="form-label">
-              {fill(t.outdoorLabel, { temp: temp(nRaw(controls.outdoorF), cRaw(controls.outdoorF), true) })}
+              {fill(t.outdoorLabel, {
+                temp: temp(nRaw(controls.outdoorF), cRaw(controls.outdoorF), true),
+              })}
             </span>
             <input
               class="probe-demo-range"
@@ -405,10 +393,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
               step={1}
               value={controls.outdoorF}
               onInput={(event) =>
-                updateControl(
-                  "outdoorF",
-                  Number((event.currentTarget as HTMLInputElement).value),
-                )
+                updateControl("outdoorF", Number((event.currentTarget as HTMLInputElement).value))
               }
             />
           </label>
@@ -458,10 +443,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
               type="checkbox"
               checked={controls.doorOpen}
               onChange={(event) =>
-                updateControl(
-                  "doorOpen",
-                  (event.currentTarget as HTMLInputElement).checked,
-                )
+                updateControl("doorOpen", (event.currentTarget as HTMLInputElement).checked)
               }
             />
             <span>{spaceText?.doorLabel ?? space.doorLabel}</span>
@@ -516,8 +498,7 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
         <div class="stat-grid">
           {probes.map((probe, index) => {
             const atRisk = probe.reading.f <= controls.freezeThresholdF;
-            const near =
-              !atRisk && probe.reading.f <= controls.freezeThresholdF + 5;
+            const near = !atRisk && probe.reading.f <= controls.freezeThresholdF + 5;
             const isDoorZone = probe.key === "1";
             return (
               <article
@@ -583,7 +564,10 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
                   class="probe-demo-bar-threshold"
                   style={{ left: `${freezeBarPct}%` }}
                   title={fill(t.barThresholdTitle, {
-                    threshold: temp(nRaw(controls.freezeThresholdF), cRaw(controls.freezeThresholdF)),
+                    threshold: temp(
+                      nRaw(controls.freezeThresholdF),
+                      cRaw(controls.freezeThresholdF),
+                    ),
                   })}
                 />
               </div>
@@ -607,7 +591,9 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
           <button
             type="button"
             role="tab"
-            class={jsonTab === "push" ? "btn-secondary ring-2 ring-[var(--color-accent)]" : "btn-ghost"}
+            class={
+              jsonTab === "push" ? "btn-secondary ring-2 ring-[var(--color-accent)]" : "btn-ghost"
+            }
             aria-selected={jsonTab === "push"}
             onClick={() => setJsonTab("push")}
           >
@@ -616,7 +602,9 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
           <button
             type="button"
             role="tab"
-            class={jsonTab === "pull" ? "btn-secondary ring-2 ring-[var(--color-accent)]" : "btn-ghost"}
+            class={
+              jsonTab === "pull" ? "btn-secondary ring-2 ring-[var(--color-accent)]" : "btn-ghost"
+            }
             aria-selected={jsonTab === "pull"}
             onClick={() => setJsonTab("pull")}
           >
@@ -626,7 +614,9 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
             {copyStatus ?? t.copy}
           </button>
         </div>
-        <pre class="probe-demo-json"><code>{activeJson}</code></pre>
+        <pre class="probe-demo-json">
+          <code>{activeJson}</code>
+        </pre>
       </section>
 
       <section class="card probe-demo-convert" id="try-real">
@@ -644,9 +634,10 @@ export default function ProbeDemo({ text = PROBE_DEMO_TEXT_EN, locale }: ProbeDe
           </a>
         </div>
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          {t.signedIn}
-          {" "}
-          <a class="text-link" href="/dashboard/devices">{t.addPush}</a>
+          {t.signedIn}{" "}
+          <a class="text-link" href="/dashboard/devices">
+            {t.addPush}
+          </a>
           {" · "}
           <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">
             {t.essentials}

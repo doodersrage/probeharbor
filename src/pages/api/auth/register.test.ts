@@ -47,13 +47,16 @@ function makeContext(form: Record<string, string>): APIContext {
   const formData = new FormData();
   for (const [k, v] of Object.entries(form)) formData.set(k, v);
   const request = { formData: async () => formData } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   const cookies = { set: vi.fn() };
   return { request, redirect, clientAddress: "127.0.0.1", cookies } as unknown as APIContext;
 }
 
 function redirectedTo(context: APIContext): URL {
-  const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock.calls[0][0];
+  const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock
+    .calls[0][0];
   return new URL(location, "https://example.com");
 }
 
@@ -96,7 +99,9 @@ describe("POST /api/auth/register", () => {
     expect(url.searchParams.get("error")).toBe("missing_fields");
     // The email comes back in a /register-only cookie, never in the URL.
     expect(url.search).not.toContain("example.com");
-    expect((context.cookies as unknown as { set: ReturnType<typeof vi.fn> }).set).toHaveBeenCalledWith(
+    expect(
+      (context.cookies as unknown as { set: ReturnType<typeof vi.fn> }).set,
+    ).toHaveBeenCalledWith(
       "ph_register_email",
       "a@example.com",
       expect.objectContaining({ path: "/register", httpOnly: true, secure: true }),
@@ -156,13 +161,16 @@ describe("POST /api/auth/register", () => {
 
     await POST(context);
 
-    const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock.calls[0][0];
+    const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock
+      .calls[0][0];
     expect(location).not.toContain("password1");
     const url = redirectedTo(context);
     expect(url.pathname).toBe("/register");
     expect(url.searchParams.get("error")).toBe("signup_failed");
     expect(url.searchParams.has("email")).toBe(false);
-    expect((context.cookies as unknown as { set: ReturnType<typeof vi.fn> }).set).toHaveBeenCalledWith(
+    expect(
+      (context.cookies as unknown as { set: ReturnType<typeof vi.fn> }).set,
+    ).toHaveBeenCalledWith(
       "ph_register_email",
       "a@example.com",
       expect.objectContaining({ path: "/register" }),
@@ -175,7 +183,11 @@ describe("POST /api/auth/register", () => {
   it("drops an off-site next on an error redirect", async () => {
     mockVerifyTurnstileToken.mockResolvedValue({ success: false });
     const { POST } = await import("./register");
-    const context = makeContext({ email: "a@example.com", password: "password1", next: "//evil.example" });
+    const context = makeContext({
+      email: "a@example.com",
+      password: "password1",
+      next: "//evil.example",
+    });
 
     await POST(context);
 
@@ -215,11 +227,16 @@ describe("POST /api/auth/register", () => {
   it("redirects to signin with the sanitized next path and registered=1", async () => {
     mockSanitizeRegisterNext.mockReturnValue("/dashboard/devices?intro=1");
     const { POST } = await import("./register");
-    const context = makeContext({ email: "a@example.com", password: "password1", next: "/dashboard/devices?intro=1" });
+    const context = makeContext({
+      email: "a@example.com",
+      password: "password1",
+      next: "/dashboard/devices?intro=1",
+    });
 
     await POST(context);
 
-    const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock.calls[0][0];
+    const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock
+      .calls[0][0];
     const url = new URL(location, "https://example.com");
     expect(url.pathname).toBe("/signin");
     expect(url.searchParams.get("registered")).toBe("1");
@@ -233,7 +250,8 @@ describe("POST /api/auth/register", () => {
 
     await POST(context);
 
-    const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock.calls[0][0];
+    const location = (context.redirect as unknown as { mock: { calls: string[][] } }).mock
+      .calls[0][0];
     const url = new URL(location, "https://example.com");
     expect(url.searchParams.get("next")).toBe("/dashboard/devices");
   });
@@ -249,7 +267,9 @@ describe("POST /api/auth/register", () => {
       body: { email: "a@example.com", password: "password1", name: "a@example.com" },
       asResponse: true,
     });
-    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), { emailLocale: "es" });
+    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), {
+      emailLocale: "es",
+    });
     expect(mockMergeUserMetadata).toHaveBeenCalledWith("user-1", { locale: "es" });
   });
 

@@ -1,4 +1,3 @@
-
 /** Body copy for /about/ch32v-riscv-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -12,13 +11,16 @@ const fr: Messages = {
   colPart: "Composant",
   colWhy: "Rôle",
   colBuy: "Acheter",
-  boardWhy: "QingKe RISC-V, PHY 10M + RJ45 intégrés, WCH-Link. La MAC Gigabit n’est pas utilisée ici.",
+  boardWhy:
+    "QingKe RISC-V, PHY 10M + RJ45 intégrés, WCH-Link. La MAC Gigabit n’est pas utilisée ici.",
   probePart: "DS18B20 étanche",
   probeWhyHtml: "Sonde pour tuyau ou vide sanitaire. Données sur <strong>PB12</strong>.",
   resistorPart: "Résistance 4.7kΩ",
-  resistorWhy: "Pull-up de la ligne de données du DS18B20 vers 3.3V. N’alimentez pas la sonde en 5V.",
+  resistorWhy:
+    "Pull-up de la ligne de données du DS18B20 vers 3.3V. N’alimentez pas la sonde en 5V.",
   ethernetPart: "Prise Ethernet",
-  ethernetWhy: "DHCP sur votre LAN. Un Raspberry Pi, un NAS ou un ordinateur portable fait tourner le relais TLS.",
+  ethernetWhy:
+    "DHCP sur votre LAN. Un Raspberry Pi, un NAS ou un ordinateur portable fait tourner le relais TLS.",
   ethernetBuy: "N’importe quel câble réseau Cat5e jusqu’à votre switch.",
   wiringTitle: "Câblage",
   wiringHtml: [

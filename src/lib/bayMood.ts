@@ -1,24 +1,10 @@
 /** Bay Buddy mood vocabulary shared with claim-puck firmware. */
 
-export const BAY_MOODS = [
-  "cozy",
-  "drafty",
-  "shiver",
-  "panic",
-  "offline",
-  "hero",
-] as const;
+export const BAY_MOODS = ["cozy", "drafty", "shiver", "panic", "offline", "hero"] as const;
 
 export type BayMood = (typeof BAY_MOODS)[number];
 
-const MOOD_PRIORITY: BayMood[] = [
-  "panic",
-  "offline",
-  "shiver",
-  "drafty",
-  "hero",
-  "cozy",
-];
+const MOOD_PRIORITY: BayMood[] = ["panic", "offline", "shiver", "drafty", "hero", "cozy"];
 
 export function isBayMood(value: string): value is BayMood {
   return (BAY_MOODS as readonly string[]).includes(value);

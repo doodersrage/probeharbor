@@ -15,10 +15,17 @@ const SECRET = "test-secret-for-database-tests-only-0123456789";
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
   (await db.client().query(text, params)).rows as T[];
-const pool = new pg.Pool({ connectionString: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!), max: 3 });
+const pool = new pg.Pool({
+  connectionString: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!),
+  max: 3,
+});
 afterAll(() => pool.end());
 
-const oauth = (p: string) => ({ clientId: `${p}-id`, clientSecret: `${p}-secret`, redirectURI: `${BASE}/api/auth/${p}/callback` });
+const oauth = (p: string) => ({
+  clientId: `${p}-id`,
+  clientSecret: `${p}-secret`,
+  redirectURI: `${BASE}/api/auth/${p}/callback`,
+});
 const auth = createBetterAuth({
   database: pool,
   secret: SECRET,
@@ -35,18 +42,46 @@ const realFetch = globalThis.fetch;
 beforeEach(() => {
   vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input instanceof Request ? input.url : input);
-    const json = (body: unknown) => new Response(JSON.stringify(body), { headers: { "content-type": "application/json" } });
-    if (url.startsWith("https://github.com/login/oauth/access_token") || url.startsWith("https://discord.com/api/oauth2/token")) {
-      return json({ access_token: "provider-token", token_type: "Bearer", scope: "identify email", expires_in: 3600 });
+    const json = (body: unknown) =>
+      new Response(JSON.stringify(body), { headers: { "content-type": "application/json" } });
+    if (
+      url.startsWith("https://github.com/login/oauth/access_token") ||
+      url.startsWith("https://discord.com/api/oauth2/token")
+    ) {
+      return json({
+        access_token: "provider-token",
+        token_type: "Bearer",
+        scope: "identify email",
+        expires_in: 3600,
+      });
     }
     if (url === "https://api.github.com/user") {
-      return json({ id: profile.id, login: "octo", name: "Octo", email: profile.email, avatar_url: null });
+      return json({
+        id: profile.id,
+        login: "octo",
+        name: "Octo",
+        email: profile.email,
+        avatar_url: null,
+      });
     }
     if (url === "https://api.github.com/user/emails") {
-      return json([{ email: profile.email, primary: true, verified: profile.verified, visibility: "public" }]);
+      return json([
+        { email: profile.email, primary: true, verified: profile.verified, visibility: "public" },
+      ]);
     }
-    if (url === "https://discord.com/api/users/@me" || url === "https://discord.com/api/users/%40me") {
-      return json({ id: String(profile.id), username: "disc", discriminator: "0", global_name: "Disc", email: profile.email, verified: profile.verified, avatar: null });
+    if (
+      url === "https://discord.com/api/users/@me" ||
+      url === "https://discord.com/api/users/%40me"
+    ) {
+      return json({
+        id: String(profile.id),
+        username: "disc",
+        discriminator: "0",
+        global_name: "Disc",
+        email: profile.email,
+        verified: profile.verified,
+        avatar: null,
+      });
     }
     return realFetch(input, init);
   });
@@ -63,7 +98,12 @@ const cookiesOf = (res: Response) =>
 /** Start sign-in, then come back from the provider. Returns Better Auth's final response. */
 async function oauthSignIn(provider: "github" | "discord") {
   const start = await auth.api.signInSocial({
-    body: { provider, callbackURL: "/done", newUserCallbackURL: "/welcome", errorCallbackURL: "/failed" },
+    body: {
+      provider,
+      callbackURL: "/done",
+      newUserCallbackURL: "/welcome",
+      errorCallbackURL: "/failed",
+    },
     asResponse: true,
   });
   const { url } = (await start.json()) as { url: string };
@@ -89,7 +129,12 @@ async function passwordUser(email: string, verified = true) {
 
 const loc = (res: Response) => res.headers.get("location") ?? "";
 const providersOf = async (userId: string) =>
-  (await sql<{ p: string }>(`select "providerId" as p from public.auth_accounts where "userId" = $1 order by 1`, [userId])).map((r) => r.p);
+  (
+    await sql<{ p: string }>(
+      `select "providerId" as p from public.auth_accounts where "userId" = $1 order by 1`,
+      [userId],
+    )
+  ).map((r) => r.p);
 
 describe("OAuth on Better Auth", () => {
   it("a new GitHub user is created and signed in", async () => {
@@ -97,10 +142,14 @@ describe("OAuth on Better Auth", () => {
     const res = await oauthSignIn("github");
     expect(loc(res)).toContain("/welcome");
     expect(cookiesOf(res)).toMatch(/session_token=/);
-    const [u] = await sql<{ id: string; emailVerified: boolean }>(`select id, "emailVerified" from public.auth_users`);
+    const [u] = await sql<{ id: string; emailVerified: boolean }>(
+      `select id, "emailVerified" from public.auth_users`,
+    );
     expect(await providersOf(u!.id)).toEqual(["github"]);
     // The signup trigger made the household, as for email sign-up.
-    expect(await sql("select role from public.household_members where user_id = $1", [u!.id])).toEqual([{ role: "owner" }]);
+    expect(
+      await sql("select role from public.household_members where user_id = $1", [u!.id]),
+    ).toEqual([{ role: "owner" }]);
   });
 
   it("GitHub does not join an existing account that isn't linked to GitHub", async () => {
@@ -114,7 +163,10 @@ describe("OAuth on Better Auth", () => {
 
   it("GitHub signs in to an account already linked to that GitHub user", async () => {
     const id = await passwordUser("linked@example.com");
-    await sql(`insert into public.auth_accounts ("accountId", "providerId", "userId", "updatedAt") values ('777', 'github', $1, now())`, [id]);
+    await sql(
+      `insert into public.auth_accounts ("accountId", "providerId", "userId", "updatedAt") values ('777', 'github', $1, now())`,
+      [id],
+    );
     profile = { id: 777, email: "linked@example.com", verified: true };
     const res = await oauthSignIn("github");
     expect(loc(res)).toContain("/done");
@@ -140,9 +192,14 @@ describe("OAuth on Better Auth", () => {
 
   it("two-factor users get the TOTP challenge after OAuth, not a session; the code finishes it", async () => {
     const id = await passwordUser("mfa@example.com");
-    await sql(`insert into public.auth_accounts ("accountId", "providerId", "userId", "updatedAt") values ('1009', 'discord', $1, now())`, [id]);
+    await sql(
+      `insert into public.auth_accounts ("accountId", "providerId", "userId", "updatedAt") values ('1009', 'discord', $1, now())`,
+      [id],
+    );
     // A real TOTP secret, enabled the normal way.
-    const signedIn = await auth.api.signInEmail({ body: { email: "mfa@example.com", password: "pw-123456" } });
+    const signedIn = await auth.api.signInEmail({
+      body: { email: "mfa@example.com", password: "pw-123456" },
+    });
     const headers = new Headers({ authorization: `Bearer ${signedIn.token}` });
     const enabled = await auth.api.enableTwoFactor({ body: { password: "pw-123456" }, headers });
     if (enabled.method !== "totp") throw new Error("expected TOTP");
@@ -171,7 +228,8 @@ describe("OAuth on Better Auth", () => {
 function totp(base32Secret: string, now = Date.now()): string {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
   let bits = "";
-  for (const ch of base32Secret.replace(/=+$/, "").toUpperCase()) bits += alphabet.indexOf(ch).toString(2).padStart(5, "0");
+  for (const ch of base32Secret.replace(/=+$/, "").toUpperCase())
+    bits += alphabet.indexOf(ch).toString(2).padStart(5, "0");
   const key = Buffer.from(bits.match(/.{8}/g)!.map((b) => parseInt(b, 2)));
   const counter = Buffer.alloc(8);
   counter.writeBigUInt64BE(BigInt(Math.floor(now / 30000)));

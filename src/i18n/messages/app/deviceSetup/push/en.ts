@@ -17,15 +17,7 @@ const en = {
   createDevice: "Create device",
   commonSpacesLabel: "Common spaces",
   /** Suggestions shown as chips and in the space datalist; saved as typed. */
-  commonSpaces: [
-    "Garage",
-    "Attic",
-    "Crawlspace",
-    "Basement",
-    "Workshop",
-    "Utility room",
-    "Shed",
-  ],
+  commonSpaces: ["Garage", "Attic", "Crawlspace", "Basement", "Workshop", "Utility room", "Shed"],
   firstRunHtml:
     'Use <a class="text-link" href="#devices-first-run">Connect your first sensor</a> above to pick a path.',
   viewOnly: "View-only access: device creation is disabled.",
@@ -53,8 +45,7 @@ const en = {
   rename: "Rename",
   spaceExamplePlaceholder: "garage, attic, crawlspace…",
   saveSpace: "Save space",
-  rotateConfirm:
-    "Rotate this ingest key? The old key stops working immediately.",
+  rotateConfirm: "Rotate this ingest key? The old key stops working immediately.",
   rotateKey: "Rotate key",
   moveTo: "Move to",
   transferDevice: "Transfer device",
@@ -65,8 +56,7 @@ const en = {
   sensorsList: "Sensors: {list}.",
   editSensors: "Edit sensors, types, and calibration →",
   advancedSummary: "Advanced: map JSON keys manually",
-  advancedHint:
-    "Optional: skip this if you already POST JSON and let auto-import handle keys.",
+  advancedHint: "Optional: skip this if you already POST JSON and let auto-import handle keys.",
   quickPairTitle: "Quick add: temperature + humidity pair",
   quickPairHintHtml:
     "Same JSON key for both (e.g. <code>0</code> or <code>temp1</code>): the usual DHT-style probe.",

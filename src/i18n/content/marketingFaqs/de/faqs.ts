@@ -307,7 +307,7 @@ export default {
     {
       question: "Was sendet der Türkontakt-Puck?",
       answer:
-        "JSON wie {\"door1\":true}, wenn die Tür offen ist. Sketch: sketches/arduino/door_contact_ingest. Anleitung: probeharbor.dev/door-puck.",
+        'JSON wie {"door1":true}, wenn die Tür offen ist. Sketch: sketches/arduino/door_contact_ingest. Anleitung: probeharbor.dev/door-puck.',
     },
     {
       question: "Löst eine offene Tür allein schon eine Frost-SMS aus?",
@@ -324,7 +324,7 @@ export default {
     {
       question: "Was sendet der Wasserkontakt-Puck?",
       answer:
-        "JSON wie {\"leak1\":true} bei Nässe. Wasser-Schlüssel lösen bei Nässe automatisch einen Alarm aus, sobald Alarme aktiviert sind. Anleitung: probeharbor.dev/leak-puck.",
+        'JSON wie {"leak1":true} bei Nässe. Wasser-Schlüssel lösen bei Nässe automatisch einen Alarm aus, sobald Alarme aktiviert sind. Anleitung: probeharbor.dev/leak-puck.',
     },
     {
       question: "Können Wasser- und Temperaturwerte einen Geräteschlüssel teilen?",
@@ -341,7 +341,7 @@ export default {
     {
       question: "Was sendet der Stromausfall-Melder?",
       answer:
-        "JSON wie {\"power1\":false}, wenn die erfasste Netz- oder USB-Stromversorgung wegfällt. Der meldende ESP32 sollte an einer USV hängen. Anleitung: probeharbor.dev/power-nudge.",
+        'JSON wie {"power1":false}, wenn die erfasste Netz- oder USB-Stromversorgung wegfällt. Der meldende ESP32 sollte an einer USV hängen. Anleitung: probeharbor.dev/power-nudge.',
     },
     {
       question: "Was ist, wenn auch der Frostfühler keinen Strom mehr hat?",

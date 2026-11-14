@@ -44,9 +44,7 @@ export function trackProductEvent(
   }
 }
 
-export function shouldTrackProductAnalytics(
-  metadata?: Record<string, unknown>,
-): boolean {
+export function shouldTrackProductAnalytics(metadata?: Record<string, unknown>): boolean {
   if (metadata?.product_analytics_opt_out === true) return false;
   return import.meta.env.PROD;
 }
@@ -58,8 +56,6 @@ export function isDashboardConversionPath(
 ): boolean {
   if (!pathname.startsWith("/dashboard")) return false;
   const params =
-    typeof searchParams === "string"
-      ? new URLSearchParams(searchParams)
-      : searchParams;
+    typeof searchParams === "string" ? new URLSearchParams(searchParams) : searchParams;
   return params?.get("subscription") === "success";
 }

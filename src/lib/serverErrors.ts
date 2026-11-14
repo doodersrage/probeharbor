@@ -23,9 +23,8 @@ export async function recordServerError(input: {
   error: unknown;
   userId?: string | null;
 }): Promise<void> {
-  const message =
-    input.error instanceof Error ? input.error.message : String(input.error);
-  const stack = input.error instanceof Error ? input.error.stack ?? null : null;
+  const message = input.error instanceof Error ? input.error.message : String(input.error);
+  const stack = input.error instanceof Error ? (input.error.stack ?? null) : null;
 
   try {
     const Sentry = await import("@sentry/cloudflare");
@@ -57,7 +56,11 @@ export async function recordServerError(input: {
     lastNotifiedByPath.set(key, Date.now());
     await notifyOps(
       `ProbeHarbor page error: ${input.path}`,
-      [`Method: ${input.method ?? "GET"}`, `Message: ${message}`, stack ? `Stack: ${stack.slice(0, 500)}` : ""]
+      [
+        `Method: ${input.method ?? "GET"}`,
+        `Message: ${message}`,
+        stack ? `Stack: ${stack.slice(0, 500)}` : "",
+      ]
         .filter(Boolean)
         .join("\n"),
     );

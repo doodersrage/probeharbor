@@ -107,7 +107,8 @@ export default function Form({ text = DEFAULT_TEXT, localSuccessMessage = false 
     <form class="form-panel animate-blurred-fade-in" onSubmit={submit}>
       <div class="form-field">
         <label class="form-label" for="name">
-          {text.nameLabel}<sup>*</sup>
+          {text.nameLabel}
+          <sup>*</sup>
         </label>
         <input
           class="form-input"
@@ -122,7 +123,8 @@ export default function Form({ text = DEFAULT_TEXT, localSuccessMessage = false 
       </div>
       <div class="form-field">
         <label class="form-label" for="email">
-          {text.emailLabel}<sup>*</sup>
+          {text.emailLabel}
+          <sup>*</sup>
         </label>
         <input
           class="form-input"
@@ -137,7 +139,8 @@ export default function Form({ text = DEFAULT_TEXT, localSuccessMessage = false 
       </div>
       <div class="form-field">
         <label class="form-label" for="message">
-          {text.messageLabel}<sup>*</sup>
+          {text.messageLabel}
+          <sup>*</sup>
         </label>
         <textarea
           class="form-textarea"

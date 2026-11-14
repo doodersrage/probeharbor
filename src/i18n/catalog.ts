@@ -85,7 +85,9 @@ export async function ensureLocale(
 }
 
 /** Load every translated locale (cron jobs that email users in many languages). */
-export async function ensureAllLocales(groups: readonly CatalogGroup[] = CATALOG_GROUPS): Promise<void> {
+export async function ensureAllLocales(
+  groups: readonly CatalogGroup[] = CATALOG_GROUPS,
+): Promise<void> {
   await Promise.all(TRANSLATED_LOCALES.map((locale) => ensureLocale(locale, groups)));
 }
 

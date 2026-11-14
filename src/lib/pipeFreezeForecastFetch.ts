@@ -31,7 +31,10 @@ export function pipeFreezeCacheKey(lat: number, lon: number): string {
   return `${lat.toFixed(2)},${lon.toFixed(2)}`;
 }
 
-export function getCachedPipeFreezeForecast(lat: number, lon: number): PipeFreezeForecastBody | null {
+export function getCachedPipeFreezeForecast(
+  lat: number,
+  lon: number,
+): PipeFreezeForecastBody | null {
   const hit = cache.get(pipeFreezeCacheKey(lat, lon));
   return hit && Date.now() - hit.at < CACHE_TTL_MS ? hit.body : null;
 }
@@ -50,24 +53,35 @@ export async function fetchPipeFreezeForecast(
   maxNights = 5,
 ): Promise<PipeFreezeForecastResult> {
   const cached = getCachedPipeFreezeForecast(lat, lon);
-  if (cached) return { ok: true, body: { ...cached, nights: cached.nights.slice(0, maxNights) }, cached: true };
+  if (cached)
+    return {
+      ok: true,
+      body: { ...cached, nights: cached.nights.slice(0, maxNights) },
+      cached: true,
+    };
 
   try {
-    const point = await nwsJson(`https://api.weather.gov/points/${lat.toFixed(4)},${lon.toFixed(4)}`);
+    const point = await nwsJson(
+      `https://api.weather.gov/points/${lat.toFixed(4)},${lon.toFixed(4)}`,
+    );
     // NWS answers 404 for points outside the US and its territories.
     if (point.status === 404) return { ok: false, error: "us_only" };
-    const props = (point.data as {
-      properties?: {
-        forecastHourly?: string;
-        relativeLocation?: { properties?: { city?: string; state?: string } };
-      };
-    } | null)?.properties;
+    const props = (
+      point.data as {
+        properties?: {
+          forecastHourly?: string;
+          relativeLocation?: { properties?: { city?: string; state?: string } };
+        };
+      } | null
+    )?.properties;
     if (!point.ok || !props?.forecastHourly) return { ok: false, error: "forecast_unavailable" };
 
     const hourly = await nwsJson(props.forecastHourly);
-    const hourlyProps = (hourly.data as {
-      properties?: { periods?: NwsHourlyPeriod[]; updateTime?: string; generatedAt?: string };
-    } | null)?.properties;
+    const hourlyProps = (
+      hourly.data as {
+        properties?: { periods?: NwsHourlyPeriod[]; updateTime?: string; generatedAt?: string };
+      } | null
+    )?.properties;
     const periods = hourlyProps?.periods ?? [];
     if (!hourly.ok || periods.length === 0) return { ok: false, error: "forecast_unavailable" };
 

@@ -65,9 +65,7 @@
   --color-warning-text: #fcd34d;
 
   --shadow-card:
-    0 0 0 1px rgb(255 255 255 / 0.06),
-    0 2px 4px rgb(0 0 0 / 0.18),
-    0 12px 32px rgb(0 0 0 / 0.28);
+    0 0 0 1px rgb(255 255 255 / 0.06), 0 2px 4px rgb(0 0 0 / 0.18), 0 12px 32px rgb(0 0 0 / 0.28);
   --radius-sm: 0.375rem;
   --radius-md: 0.625rem;
   --radius-lg: 1rem;
@@ -83,9 +81,7 @@
   :root {
     --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
     --motion-duration: 220ms;
-    --focus-ring-glow:
-      0 0 0 3px rgb(34 184 212 / 0.28),
-      0 0 18px rgb(34 184 212 / 0.18);
+    --focus-ring-glow: 0 0 0 3px rgb(34 184 212 / 0.28), 0 0 18px rgb(34 184 212 / 0.18);
     --hover-wash: rgb(255 255 255 / 0.06);
     --hover-wash-strong: rgb(255 255 255 / 0.1);
     --inset-highlight: rgb(255 255 255 / 0.03);
@@ -128,9 +124,7 @@
     --color-danger: #c94a45;
     --color-danger-bg: rgb(201 74 69 / 0.1);
     --color-danger-border: rgb(201 74 69 / 0.4);
-    --shadow-card:
-      0 0 0 1px rgb(11 36 51 / 0.04),
-      0 8px 24px rgb(11 36 51 / 0.06);
+    --shadow-card: 0 0 0 1px rgb(11 36 51 / 0.04), 0 8px 24px rgb(11 36 51 / 0.06);
     --hover-wash: rgb(11 36 51 / 0.04);
     --hover-wash-strong: rgb(11 36 51 / 0.07);
     --inset-highlight: rgb(255 255 255 / 0.7);
@@ -182,8 +176,12 @@
       #000 calc(50% + 40rem),
       #000 100%
     );
-    -webkit-mask-size: 720px 480px, 100% 100%;
-    mask-size: 720px 480px, 100% 100%;
+    -webkit-mask-size:
+      720px 480px,
+      100% 100%;
+    mask-size:
+      720px 480px,
+      100% 100%;
     -webkit-mask-repeat: repeat, no-repeat;
     mask-repeat: repeat, no-repeat;
     -webkit-mask-composite: source-in;
@@ -208,8 +206,12 @@
     background-color: var(--bg-trace-accent);
     -webkit-mask-image: url("/bg-traces-accent.svg"), var(--trace-gutter);
     mask-image: url("/bg-traces-accent.svg"), var(--trace-gutter);
-    -webkit-mask-position: 80px 40px, 0 0;
-    mask-position: 80px 40px, 0 0;
+    -webkit-mask-position:
+      80px 40px,
+      0 0;
+    mask-position:
+      80px 40px,
+      0 0;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -550,7 +552,6 @@
   html[data-theme="light"] .home-need {
     background: var(--color-bg-elevated);
   }
-
 
   html[data-theme="light"] .text-link:hover {
     color: var(--color-accent-hover);
@@ -3283,7 +3284,9 @@
     font-weight: 550;
     color: var(--color-text-muted);
     text-decoration: none;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
   }
 
   .dashboard-tab-nav-link:hover {
@@ -4287,10 +4290,8 @@
   .history-chart-wrap.is-lightbox {
     position: fixed;
     z-index: 460;
-    inset: max(0.75rem, env(safe-area-inset-top))
-      max(0.75rem, env(safe-area-inset-right))
-      max(0.75rem, env(safe-area-inset-bottom))
-      max(0.75rem, env(safe-area-inset-left));
+    inset: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+      max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
     margin: 0;
     max-width: none;
     width: auto;
@@ -4842,7 +4843,6 @@
     max-width: 100%;
   }
 }
-
 
 /* Bright OSM tiles otherwise outshine the readings on a dark page. */
 html:not([data-theme="light"]) .leaflet-tile-pane {

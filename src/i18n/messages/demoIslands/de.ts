@@ -4,7 +4,8 @@ const de: DemoIslandMessages = {
   temps: {
     loading: "Fühlertemperaturen werden geladen…",
     title: "Simulierte Demo-Werkstatt",
-    subtitle: "Fühlertemperaturen, berechnet aus dem echten Wetter vor Ort. Mit einem kostenlosen Konto (ohne Karte) verbindest du deine eigenen Sensoren.",
+    subtitle:
+      "Fühlertemperaturen, berechnet aus dem echten Wetter vor Ort. Mit einem kostenlosen Konto (ohne Karte) verbindest du deine eigenen Sensoren.",
     loadError: "Fühlertemperaturen konnten nicht geladen werden",
     rateLimited: "Zu viele Anfragen. Versuch es gleich noch einmal.",
     retry: "Erneut versuchen",
@@ -43,7 +44,8 @@ const de: DemoIslandMessages = {
     mapAttribution: "· © OpenStreetMap · Wetter © OpenWeather",
   },
   history: {
-    unavailable: "Das 7-Tage-Diagramm ist gerade nicht verfügbar. Die Live-Werte oben werden weiter aktualisiert.",
+    unavailable:
+      "Das 7-Tage-Diagramm ist gerade nicht verfügbar. Die Live-Werte oben werden weiter aktualisiert.",
     loading: "Die letzten 7 Tage werden geladen…",
     outdoor: "Außen",
     outdoorAt: "Außen ({location})",
@@ -55,12 +57,14 @@ const de: DemoIslandMessages = {
     house: "Haus",
     comparisonOverlay: "Grau = Vergleichsüberlagerung",
     notEnough: "Noch nicht genug Messwerte für ein Diagramm.",
-    emptySteps: "{addDevice} → prüfen, ob Daten ankommen → {openLive}, damit sich Messwerte sammeln.",
+    emptySteps:
+      "{addDevice} → prüfen, ob Daten ankommen → {openLive}, damit sich Messwerte sammeln.",
     emptyAddDevice: "Gerät hinzufügen",
     emptyOpenLive: "Live öffnen",
     summaryLatest: "Letzter Messwert: {temp} {unit}.",
     summaryRange: "Bereich in diesem Zeitraum: {min} {unit} bis {max} {unit}.",
-    summaryBelow: "In {below} von {total} Messwerten auf oder unter die Frostlinie von {freeze} {unit} gefallen.",
+    summaryBelow:
+      "In {below} von {total} Messwerten auf oder unter die Frostlinie von {freeze} {unit} gefallen.",
     summaryAbove: "Im gesamten Zeitraum über der Frostlinie von {freeze} {unit} geblieben.",
     hoverAlert: "Alarm: {title}",
     guideFreeze: "Frost",
@@ -94,7 +98,8 @@ const de: DemoIslandMessages = {
     presetLabels: { "24h": "24 Std.", "7d": "7 T.", "30d": "30 T." },
     presetShowLast: "Letzte {label} anzeigen",
     presetAlreadyShowing: "Zeigt bereits etwa {label} der geladenen Daten",
-    presetOnlyLoaded: "Hier sind nur {hours} Std. geladen. Für einen längeren Zeitraum History öffnen",
+    presetOnlyLoaded:
+      "Hier sind nur {hours} Std. geladen. Für einen längeren Zeitraum History öffnen",
     presetAll: "Alle",
     loadedWindow: "Der geladene Zeitraum umfasst etwa {hours} Std.",
     seriesAria: "Sichtbarkeit der Datenreihen",
@@ -106,16 +111,23 @@ const de: DemoIslandMessages = {
     humidityFromLabel: "Luftfeuchte von",
     humidityAuto: "Neuester Messwert",
     humidityAll: "Alle Fühler",
-    humidityAllLegend: "Luftfeuchte (dünne Linie) und Taupunkt (gestrichelt) in der Farbe des jeweiligen Fühlers",
+    humidityAllLegend:
+      "Luftfeuchte (dünne Linie) und Taupunkt (gestrichelt) in der Farbe des jeweiligen Fühlers",
     chartTips: "Tipps zum Diagramm",
-    tipsExpanded: "Vergrößerte Ansicht: Ziehen wählt einen Bereich, Scrollen zoomt, Esc oder Schließen beendet die Ansicht.",
-    tipsDefault: "Ziehen wählt einen Bereich (gezoomt: Umschalt + Ziehen), Scrollen zoomt, Link kopiert diesen Ausschnitt, PNG speichert ihn.",
-    tipsAlerts: " Farbige Markierungen zeigen Alarme: Fahr mit der Maus in die Nähe, um Details zu sehen.",
-    tipsTrace: "Die Kurve wird {cool}, wenn sie die Frostlinie erreicht oder unterschreitet, und {warm}, wenn sie die Hoch-Linie erreicht oder überschreitet.",
-    tipsDew: " Die gestrichelte Taupunktlinie wird aus Temperatur und Luftfeuchtigkeit berechnet: Oberflächen, die kälter sind, werden feucht.",
+    tipsExpanded:
+      "Vergrößerte Ansicht: Ziehen wählt einen Bereich, Scrollen zoomt, Esc oder Schließen beendet die Ansicht.",
+    tipsDefault:
+      "Ziehen wählt einen Bereich (gezoomt: Umschalt + Ziehen), Scrollen zoomt, Link kopiert diesen Ausschnitt, PNG speichert ihn.",
+    tipsAlerts:
+      " Farbige Markierungen zeigen Alarme: Fahr mit der Maus in die Nähe, um Details zu sehen.",
+    tipsTrace:
+      "Die Kurve wird {cool}, wenn sie die Frostlinie erreicht oder unterschreitet, und {warm}, wenn sie die Hoch-Linie erreicht oder überschreitet.",
+    tipsDew:
+      " Die gestrichelte Taupunktlinie wird aus Temperatur und Luftfeuchtigkeit berechnet: Oberflächen, die kälter sind, werden feucht.",
     tipsCool: "kühl",
     tipsWarm: "warm",
-    canvasAria: "Interaktives Liniendiagramm: {title}. Ziehen wählt einen Bereich, Scrollen zoomt, Vergrößern zeigt eine größere Ansicht.",
+    canvasAria:
+      "Interaktives Liniendiagramm: {title}. Ziehen wählt einen Bereich, Scrollen zoomt, Vergrößern zeigt eine größere Ansicht.",
     tooltipAlert: "Alarm",
     tooltipDew: "Taupunkt",
     optionsSummary: "Diagrammoptionen: Hilfslinien",
@@ -133,9 +145,12 @@ const de: DemoIslandMessages = {
     summaryDoors: "Im Diagramm hinterlegte Zeiten mit offener Tür: {list}.",
     summaryDoorItem: "{door}: {count}",
     doorLegendTitle: "Ein- oder ausblenden, wann {door} offen war",
-    tipsDoors: " Hinterlegte Bereiche zeigen, wann ein Türsensor in deinem Haushalt „offen“ gemeldet hat; bei mehreren Türen hat jede Tür eine eigene Zeile über dem Diagramm.",
-    doorLanesMore: " Die Zeilen zeigen bis zu {max} Türen; die übrigen bleiben hinterlegt und erscheinen beim Darüberfahren.",
-    doorsUnavailable: "Der Türverlauf konnte nicht geladen werden, daher sind offene Türen nicht markiert.",
+    tipsDoors:
+      " Hinterlegte Bereiche zeigen, wann ein Türsensor in deinem Haushalt „offen“ gemeldet hat; bei mehreren Türen hat jede Tür eine eigene Zeile über dem Diagramm.",
+    doorLanesMore:
+      " Die Zeilen zeigen bis zu {max} Türen; die übrigen bleiben hinterlegt und erscheinen beim Darüberfahren.",
+    doorsUnavailable:
+      "Der Türverlauf konnte nicht geladen werden, daher sind offene Türen nicht markiert.",
   },
 };
 

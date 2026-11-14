@@ -15,7 +15,11 @@ type FetchResult = {
   feeds?: Array<{ feedId: string; name: string; ok: boolean; message: string }>;
 };
 
-export default function PullFetchButton({ feedIds = [], autoFetch = false, text = en.fetch }: Props) {
+export default function PullFetchButton({
+  feedIds = [],
+  autoFetch = false,
+  text = en.fetch,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -54,7 +58,11 @@ export default function PullFetchButton({ feedIds = [], autoFetch = false, text 
       for (const feedId of feedIds) {
         const row = byId.get(feedId);
         if (row) {
-          setFeedStatus(feedId, row.ok ? row.message : fmt(text.errorPrefix, { message: row.message }), row.ok);
+          setFeedStatus(
+            feedId,
+            row.ok ? row.message : fmt(text.errorPrefix, { message: row.message }),
+            row.ok,
+          );
         } else {
           setFeedStatus(feedId, text.notFetched, false);
         }
@@ -77,12 +85,15 @@ export default function PullFetchButton({ feedIds = [], autoFetch = false, text 
 
   return (
     <div class="flex flex-wrap items-center gap-3">
-      <button type="button" class="btn-secondary" disabled={loading} onClick={() => void fetchNow()}>
+      <button
+        type="button"
+        class="btn-secondary"
+        disabled={loading}
+        onClick={() => void fetchNow()}
+      >
         {loading ? text.fetching : text.fetchNow}
       </button>
-      <span class="text-sm text-[var(--color-text-muted)]">
-        {text.hint}
-      </span>
+      <span class="text-sm text-[var(--color-text-muted)]">{text.hint}</span>
       {status ? <span class="text-sm text-[var(--color-text-muted)]">{status}</span> : null}
     </div>
   );

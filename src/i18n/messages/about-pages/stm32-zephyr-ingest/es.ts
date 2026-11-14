@@ -1,4 +1,3 @@
-
 /**
  * /about/stm32-zephyr-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Commands, pin names and
@@ -23,10 +22,12 @@ const es: Stm32ZephyrIngestMessages = {
     colBuy: "Comprar",
     boardWhy: "Cortex-M7, MAC + PHY Ethernet integrados, depurador ST-LINK. Sin módulo Wi‑Fi.",
     probePart: "DS18B20 impermeable",
-    probeWhyHtml: "Sonda para tuberías o sótano ventilado. Datos en el pin Arduino <strong>D4</strong> (PF14).",
+    probeWhyHtml:
+      "Sonda para tuberías o sótano ventilado. Datos en el pin Arduino <strong>D4</strong> (PF14).",
     amazon: "Amazon",
     resistorPart: "Resistencia de 4,7 kΩ",
-    resistorWhy: "Pull-up desde los datos del DS18B20 a 3,3 V. No alimentes la sonda desde el pin de 5 V de Arduino.",
+    resistorWhy:
+      "Pull-up desde los datos del DS18B20 a 3,3 V. No alimentes la sonda desde el pin de 5 V de Arduino.",
     amazonResistor: "4,7k en Amazon",
     ethernetPart: "Toma Ethernet",
     ethernetWhy: "DHCP en tu LAN. Una Pi, un NAS o un portátil ejecuta el relé TLS.",

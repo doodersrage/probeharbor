@@ -1,4 +1,3 @@
-
 /**
  * /about/pico-w-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Pin names, part numbers,
@@ -26,10 +25,12 @@ const ptBr: PicoWIngestMessages = {
     boardPart: "Pico W ou Pico 2 W",
     boardWhy: "Wi‑Fi CYW43439 e TLS na placa. A Pico 2 W (RP2350) é o upgrade direto e compatível.",
     probePart: "DS18B20 à prova d’água",
-    probeWhyHtml: "Sonda para cano ou porão; funciona abaixo de zero. Dados no <strong>GP4</strong>.",
+    probeWhyHtml:
+      "Sonda para cano ou porão; funciona abaixo de zero. Dados no <strong>GP4</strong>.",
     amazon: "Amazon",
     resistorPart: "Resistor de 4,7 kΩ",
-    resistorWhy: "Pull-up dos dados do DS18B20 para 3,3 V. Numa Pico, não alimente a sonda com 5 V.",
+    resistorWhy:
+      "Pull-up dos dados do DS18B20 para 3,3 V. Numa Pico, não alimente a sonda com 5 V.",
     amazonResistor: "4,7k na Amazon",
   },
   wiringTitle: "Ligação",

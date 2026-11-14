@@ -60,44 +60,49 @@ export default function WeatherPanel({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    try {
-      const params = new URLSearchParams();
-      if (cityId) params.set("cityId", cityId);
-      const query = params.toString();
-      const response = await fetch(`/api/home/weather${query ? `?${query}` : ""}`, {
-        credentials: "same-origin",
-        signal,
-      });
-      const payload = (await response.json()) as {
-        error?: string;
-        weather?: WeatherSnapshot;
-      };
-      if (signal?.aborted) return;
-      if (!response.ok) {
-        throw new Error(
-          response.status === 429
-            ? text.rateLimited
-            : response.status === 502
-              ? text.locationUnavailable
-              : localized
-                ? text.loadError
-                : (payload.error ?? text.loadError),
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const params = new URLSearchParams();
+        if (cityId) params.set("cityId", cityId);
+        const query = params.toString();
+        const response = await fetch(`/api/home/weather${query ? `?${query}` : ""}`, {
+          credentials: "same-origin",
+          signal,
+        });
+        const payload = (await response.json()) as {
+          error?: string;
+          weather?: WeatherSnapshot;
+        };
+        if (signal?.aborted) return;
+        if (!response.ok) {
+          throw new Error(
+            response.status === 429
+              ? text.rateLimited
+              : response.status === 502
+                ? text.locationUnavailable
+                : localized
+                  ? text.loadError
+                  : (payload.error ?? text.loadError),
+          );
+        }
+        setWeather(payload.weather ?? null);
+        setError(null);
+      } catch (e) {
+        if (signal?.aborted || (e instanceof DOMException && e.name === "AbortError")) {
+          return;
+        }
+        setError(
+          e instanceof Error && (!localized || !(e instanceof TypeError))
+            ? e.message
+            : text.loadError,
         );
+      } finally {
+        if (!signal?.aborted) setLoading(false);
       }
-      setWeather(payload.weather ?? null);
-      setError(null);
-    } catch (e) {
-      if (signal?.aborted || (e instanceof DOMException && e.name === "AbortError")) {
-        return;
-      }
-      setError(
-        e instanceof Error && (!localized || !(e instanceof TypeError)) ? e.message : text.loadError,
-      );
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, [cityId, localized, text]);
+    },
+    [cityId, localized, text],
+  );
 
   useEffect(() => {
     const ac = new AbortController();
@@ -135,10 +140,14 @@ export default function WeatherPanel({
           <h2 class="card-title">{text.title}</h2>
           <p class="mb-4">{error}</p>
           <div class="flex flex-wrap justify-center gap-3">
-            <button type="button" class="btn-secondary" onClick={() => {
-              setLoading(true);
-              void load();
-            }}>
+            <button
+              type="button"
+              class="btn-secondary"
+              onClick={() => {
+                setLoading(true);
+                void load();
+              }}
+            >
               {text.retry}
             </button>
             {guest ? (
@@ -171,10 +180,14 @@ export default function WeatherPanel({
     Number.isFinite(weather.lon);
   // Providers return hundredths; whole units match what a forecast shows.
   const whole = (n: number) =>
-    localized ? new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.round(n)) : String(Math.round(n));
+    localized
+      ? new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.round(n))
+      : String(Math.round(n));
   const pct = (n: number) =>
     localized
-      ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(Math.round(n) / 100)
+      ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(
+          Math.round(n) / 100,
+        )
       : `${whole(n)}%`;
   const temp = (f: number) =>
     localized
@@ -182,7 +195,8 @@ export default function WeatherPanel({
       : useCelsius
         ? `${whole(fToC(f))}°C (${whole(f)}°F)`
         : `${whole(f)}°F`;
-  const wind = (mph: number) => (localized ? `${whole(mph * 1.609344)} km/h (${whole(mph)} mph)` : `${whole(mph)} mph`);
+  const wind = (mph: number) =>
+    localized ? `${whole(mph * 1.609344)} km/h (${whole(mph)} mph)` : `${whole(mph)} mph`;
   const stats: Array<{ key: string; label: string; value: string; detail?: boolean }> = [
     { key: "temperature", label: text.temperature, value: temp(weather.temp) },
     { key: "humidity", label: text.humidity, value: pct(weather.humidity) },
@@ -220,7 +234,11 @@ export default function WeatherPanel({
           lat={weather.lat!}
           lon={weather.lon!}
           label={locationLabel}
-          text={{ mapLabel: text.mapLabel, openLarger: text.mapOpenLarger, attribution: text.mapAttribution }}
+          text={{
+            mapLabel: text.mapLabel,
+            openLarger: text.mapOpenLarger,
+            attribution: text.mapAttribution,
+          }}
         />
       )}
       <div class="stat-grid">
@@ -236,8 +254,7 @@ export default function WeatherPanel({
         ))}
       </div>
       <p class="live-refresh-note">
-        {text.refreshNote}
-        {" "}
+        {text.refreshNote}{" "}
         <button
           type="button"
           class="text-link bg-transparent border-0 p-0 cursor-pointer text-sm"

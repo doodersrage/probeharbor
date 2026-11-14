@@ -8,10 +8,14 @@ const ptBr: LibTextMessages = {
     averageTitle: "Média de {days} dias",
     tempOn: "{temp} {unit} em {time} ({probe})",
     humidityOn: "{humidity}% em {time} ({probe})",
-    averageDetail: { one: "{temp} {unit} em {count} leitura", other: "{temp} {unit} em {count} leituras" },
+    averageDetail: {
+      one: "{temp} {unit} em {count} leitura",
+      other: "{temp} {unit} em {count} leituras",
+    },
     warmerThan: "{warmer} fica em média {delta} {unit} mais quente que {cooler} neste período.",
     yoyTitle: "Ano a ano",
-    yoyDetail: "Este período tem média de {current} {unit} contra {prior} {unit} no ano passado ({delta} {unit}).",
+    yoyDetail:
+      "Este período tem média de {current} {unit} contra {prior} {unit} no ano passado ({delta} {unit}).",
     outdoorEstimate: "{detail} (estimativa externa).",
     outdoorEstimateAt: "{detail} (estimativa externa em {location}).",
   },
@@ -48,7 +52,10 @@ const ptBr: LibTextMessages = {
     },
     stale: "Dados da sonda desatualizados, verifique a energia e o Wi‑Fi",
     batteryLow: "Bateria em {pct}% — troque em breve",
-    batteryDays: { one: "Bateria: ~{count} dia restante", other: "Bateria: ~{count} dias restantes" },
+    batteryDays: {
+      one: "Bateria: ~{count} dia restante",
+      other: "Bateria: ~{count} dias restantes",
+    },
     weakRssi: "RSSI fraco ({rssi} dBm)",
     healthy: "Enviando normalmente, contatos de alagamento secos",
     etaReplaceSoon: "Troque em breve",
@@ -117,14 +124,16 @@ const ptBr: LibTextMessages = {
     partUnknown: "{count} desconhecidas",
   },
   lowBattery: {
-    single: "A bateria de {name} está em {pct}%: carregue ou troque antes que pare de enviar dados.",
+    single:
+      "A bateria de {name} está em {pct}%: carregue ou troque antes que pare de enviar dados.",
     item: "{name} ({pct}%)",
     list: "Bateria fraca em {count} dispositivos: {names}.",
     listMore: "Bateria fraca em {count} dispositivos: {names} e mais {more}.",
   },
   runway: {
     prefix: "Margem térmica: {message}",
-    doorOpen: "Um sensor de porta está aberto: o calor vai se perder mais rápido até ele ser fechado.",
+    doorOpen:
+      "Um sensor de porta está aberto: o calor vai se perder mais rápido até ele ser fechado.",
     forecastLow:
       "Mínima prevista de ~{temp} °F nas próximas {hours} h: o frio externo pode acelerar o resfriamento interno.",
   },

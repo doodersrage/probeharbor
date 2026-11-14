@@ -4,7 +4,10 @@ import { type DeepPartial, translateList } from "../../translate";
 import { keyedOverlays } from "../collect";
 
 /** Translation file shape: `{ [aboutSlug]: { title, description, summary } }`. */
-export type AboutPageOverlay = Record<string, DeepPartial<Pick<AboutPage, "title" | "description" | "summary">>>;
+export type AboutPageOverlay = Record<
+  string,
+  DeepPartial<Pick<AboutPage, "title" | "description" | "summary">>
+>;
 
 const overlays = () => keyedOverlays<DeepPartial<AboutPage>>("aboutPages");
 

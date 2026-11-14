@@ -21,7 +21,9 @@ function makeContext(query: string): APIContext {
 beforeEach(() => {
   mockApplySnoozeToken.mockReset();
   mockTokenRow.mockReset().mockResolvedValue({ user_id: "user-1" });
-  mockGetUserRecord.mockReset().mockResolvedValue({ id: "user-1", email: "a@example.com", user_metadata: {} });
+  mockGetUserRecord
+    .mockReset()
+    .mockResolvedValue({ id: "user-1", email: "a@example.com", user_metadata: {} });
 });
 
 describe("POST /api/alerts/snooze", () => {
@@ -94,7 +96,11 @@ describe("snooze links in the alert owner's language", () => {
   it("renders the confirm page and the result in Spanish", async () => {
     const { ensureLocale } = await import("../../../i18n/catalog");
     await ensureLocale("es", ["app"]);
-    mockGetUserRecord.mockResolvedValue({ id: "user-1", email: "a@example.com", user_metadata: { locale: "es" } });
+    mockGetUserRecord.mockResolvedValue({
+      id: "user-1",
+      email: "a@example.com",
+      user_metadata: { locale: "es" },
+    });
     const { GET, POST } = await import("./snooze");
 
     const html = await (await GET(makeContext("?token=tok-1"))).text();

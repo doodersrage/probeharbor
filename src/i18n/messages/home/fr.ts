@@ -66,7 +66,8 @@ const fr: HomeMessages = {
     title: "1 °C (34 °F). C’est là que l’alerte compte.",
     copyHtml:
       'Imaginez un garage attenant dont un coin descend sous 1 °C (34 °F) chaque nuit claire. L’alerte signale un problème ; l’historique montre où, en pointant un joint de porte qui laisse passer l’air avant que les canalisations ne gèlent. C’est exactement le type de chronologie qu’un <a class="text-link" href="/claims-pack">dossier de preuves pour sinistre</a> documenterait si des dégâts du gel devaient un jour être discutés avec l’assureur.',
-    shotCaption: "La même ligne de gel que chaque foyer règle dans Alertes, visible sur les courbes de l’historique.",
+    shotCaption:
+      "La même ligne de gel que chaque foyer règle dans Alertes, visible sur les courbes de l’historique.",
     read: "Lire le scénario",
     more: "Plus de scénarios",
   },

@@ -6,9 +6,7 @@ export function buildSiteUrl(request?: Request, site?: URL | string | null): str
   }
 
   if (request) {
-    const fromEnv =
-      import.meta.env.SITE_URL?.trim() ||
-      import.meta.env.ORIGIN?.trim();
+    const fromEnv = import.meta.env.SITE_URL?.trim() || import.meta.env.ORIGIN?.trim();
     if (fromEnv) {
       return fromEnv.replace(/\/+$/, "");
     }
@@ -24,10 +22,7 @@ export function buildOAuthCallbackUrl(request: Request, site?: URL | string | nu
   return `${buildSiteUrl(request, site)}/api/auth/callback`;
 }
 
-export function buildGitHubOAuthCallbackUrl(
-  request: Request,
-  site?: URL | string | null,
-): string {
+export function buildGitHubOAuthCallbackUrl(request: Request, site?: URL | string | null): string {
   return `${buildSiteUrl(request, site)}/api/auth/github/callback`;
 }
 
@@ -45,15 +40,9 @@ export function sanitizeNextPath(next: string | null | undefined): string | null
  * Read a form `redirect` field safely. Absolute URLs and protocol-relative
  * paths fall back so open redirects cannot exfiltrate secrets via Location.
  */
-export function formRedirectPath(
-  formData: FormData,
-  fallback: string,
-  field = "redirect",
-): string {
+export function formRedirectPath(formData: FormData, fallback: string, field = "redirect"): string {
   return (
-    sanitizeNextPath(formData.get(field)?.toString()) ??
-    sanitizeNextPath(fallback) ??
-    "/dashboard"
+    sanitizeNextPath(formData.get(field)?.toString()) ?? sanitizeNextPath(fallback) ?? "/dashboard"
   );
 }
 

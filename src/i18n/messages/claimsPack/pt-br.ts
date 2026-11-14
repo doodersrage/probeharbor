@@ -89,7 +89,8 @@ const ptBr: ClaimsPackMessages = {
     title: "Como gerar um",
     step1:
       "Conecte pelo menos uma sonda e deixe o ProbeHarbor juntar um pouco de histórico (os alertas de congelamento funcionam desde o primeiro dia; o pacote para sinistros cobre o período que você monitorou).",
-    step2: "Mude para o Pro se ainda não mudou: o pacote para sinistros é um recurso do Pro. Já está no Free ou no Member e teve um congelamento recente? As leituras que ainda estão dentro da sua janela de {free} / {member} continuam armazenadas; o Pro libera o pacote sobre esse histórico guardado (e amplia até onde você pode voltar daqui para a frente).",
+    step2:
+      "Mude para o Pro se ainda não mudou: o pacote para sinistros é um recurso do Pro. Já está no Free ou no Member e teve um congelamento recente? As leituras que ainda estão dentro da sua janela de {free} / {member} continuam armazenadas; o Pro libera o pacote sobre esse histórico guardado (e amplia até onde você pode voltar daqui para a frente).",
     step3Html:
       'Em <a class="text-link" href="/dashboard/history?tab=exports#claims-pack">History → claims pack</a>, escolha um período e baixe o pacote, ou envie direto para o e-mail de um perito.',
     samplePdf: "PDF de exemplo",
@@ -103,8 +104,10 @@ const ptBr: ClaimsPackMessages = {
         "O pacote para sinistros é um recurso do Pro (e do Portfolio). Nos planos Free e Member você ainda vê leituras ao vivo e o histórico, mas gerar e enviar por e-mail um pacote para sinistros exige o Pro.",
     },
     {
-      question: "Se estou no Free ou no Member e algo acabou de congelar, posso fazer upgrade e ainda montar um pacote?",
-      answer: "Sim, desde que as leituras ainda estejam dentro da janela de histórico do seu plano. O Free guarda cerca de {free}; o Member, cerca de {member}; o Pro, cerca de {pro} ou mais. O upgrade não apaga as leituras armazenadas: tudo o que ainda estiver dentro da janela mais longa do Pro fica disponível para gráficos, CSV e o pacote para sinistros. Faça o upgrade logo se precisar de um pacote que vá mais para trás do que o seu plano atual mostra.",
+      question:
+        "Se estou no Free ou no Member e algo acabou de congelar, posso fazer upgrade e ainda montar um pacote?",
+      answer:
+        "Sim, desde que as leituras ainda estejam dentro da janela de histórico do seu plano. O Free guarda cerca de {free}; o Member, cerca de {member}; o Pro, cerca de {pro} ou mais. O upgrade não apaga as leituras armazenadas: tudo o que ainda estiver dentro da janela mais longa do Pro fica disponível para gráficos, CSV e o pacote para sinistros. Faça o upgrade logo se precisar de um pacote que vá mais para trás do que o seu plano atual mostra.",
     },
     {
       question: "Posso enviar isso direto ao perito do meu seguro?",

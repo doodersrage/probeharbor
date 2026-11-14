@@ -16,7 +16,8 @@ const fr: SettingsMessages = {
     tipsHidden: "Conseils sur les applis compagnons masqués dans la vue d’ensemble.",
     tipsReset: "Conseils sur les applis compagnons de nouveau affichés dans la vue d’ensemble.",
     retentionSaved: "Préférence de conservation enregistrée.",
-    retentionError: "Impossible d’enregistrer la préférence de conservation. Le réglage précédent reste en place ; réessayez.",
+    retentionError:
+      "Impossible d’enregistrer la préférence de conservation. Le réglage précédent reste en place ; réessayez.",
     tenantSaved: "Contact du locataire enregistré.",
     tenantError: "Impossible d’enregistrer le contact du locataire.",
   },
@@ -134,15 +135,22 @@ const fr: SettingsMessages = {
   mfa: {
     checking: "Vérification de l’état MFA…",
     loadError: "Impossible de charger l’état MFA",
-    noneWithYubikey: "Aucun facteur MFA enregistré pour l’instant : ajoutez une application d’authentification ou une YubiKey ci-dessous.",
+    noneWithYubikey:
+      "Aucun facteur MFA enregistré pour l’instant : ajoutez une application d’authentification ou une YubiKey ci-dessous.",
     none: "Aucun facteur MFA enregistré : ajoutez une application d’authentification ci-dessous.",
     allVerified: "{factors}{breakdown}.",
-    factorsEnrolled: { one: "{count} facteur MFA enregistré", other: "{count} facteurs MFA enregistrés" },
+    factorsEnrolled: {
+      one: "{count} facteur MFA enregistré",
+      other: "{count} facteurs MFA enregistrés",
+    },
     breakdown: " ({apps} appli · {keys})",
     keyCount: { one: "{count} clé", other: "{count} clés" },
     someUnfinished: "{verified} enregistré(s) · {unfinished} (supprimez-le si bloqué).",
     onlyUnfinished: "{unfinished} : vérifiez ou supprimez pour continuer.",
-    unfinishedCount: { one: "{count} enregistrement inachevé", other: "{count} enregistrements inachevés" },
+    unfinishedCount: {
+      one: "{count} enregistrement inachevé",
+      other: "{count} enregistrements inachevés",
+    },
     enrollFailed: "Échec de l’enregistrement",
     scanQr:
       "Scannez le QR code avec votre application d’authentification (ou Yubico Authenticator sur une YubiKey), puis saisissez un code de vérification ci-dessous.",
@@ -183,7 +191,8 @@ const fr: SettingsMessages = {
     passwordLabel: "Mot de passe du compte",
     passwordHint: "Nécessaire pour activer ou désactiver l’application d’authentification.",
     passkeysHeading: "Clés d’accès (passkeys)",
-    passkeysHint: "Connectez-vous avec votre empreinte, votre visage ou le code de l’appareil au lieu d’un mot de passe et d’un code. Une passkey évite l’étape de l’application d’authentification.",
+    passkeysHint:
+      "Connectez-vous avec votre empreinte, votre visage ou le code de l’appareil au lieu d’un mot de passe et d’un code. Une passkey évite l’étape de l’application d’authentification.",
     addPasskey: "Ajouter une passkey",
     passkeyDefaultName: "Passkey",
     passkeyAdded: "Passkey ajoutée.",
@@ -221,8 +230,10 @@ const fr: SettingsMessages = {
     upgradeHtml:
       'Passez à Member pour 90 jours d’historique, ou à Pro pour 1 an et plus, afin de conserver une période plus longue. <a class="text-link" href="/pricing#data-retention">Comparer la conservation</a>.',
     deleteHeading: "Supprimer le compte",
-    deleteBody: "Supprime définitivement {email}, les réglages d’alerte et les foyers dont vous êtes le seul propriétaire.",
-    deleteConfirmPassword: " Saisissez à nouveau votre mot de passe et tapez DELETE pour confirmer.",
+    deleteBody:
+      "Supprime définitivement {email}, les réglages d’alerte et les foyers dont vous êtes le seul propriétaire.",
+    deleteConfirmPassword:
+      " Saisissez à nouveau votre mot de passe et tapez DELETE pour confirmer.",
     deleteConfirmEmail: " Confirmez votre e-mail et tapez DELETE pour confirmer.",
     errorConfirm: "Tapez exactement DELETE pour confirmer.",
     errorPassword: "Mot de passe requis (ou incorrect).",

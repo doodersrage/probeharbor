@@ -13,7 +13,8 @@ const fr: OverviewInsightsMessages = {
     actions: "Actions",
     calmSummary: " · aucune alerte en attente · marquer l’espace comme vérifié",
     title: "Actions rapides",
-    subtitle: "Accusez réception, mettez les alertes en pause ou indiquez que vous avez vérifié un espace.",
+    subtitle:
+      "Accusez réception, mettez les alertes en pause ou indiquez que vous avez vérifié un espace.",
     snooze: "Mettre en pause",
     hoursShort: "{hours} h",
     spaceChecked: "Espace vérifié",
@@ -69,7 +70,8 @@ const fr: OverviewInsightsMessages = {
     title: "Qualité de l’air",
     subtitle: "Dernières mesures de CO₂, particules, COV et pression.",
     pressureTitle: "Pression atmosphérique",
-    pressureSubtitle: "Dernière mesure et variation mesurée sur les 3 dernières heures. Ce n’est pas une prévision.",
+    pressureSubtitle:
+      "Dernière mesure et variation mesurée sur les 3 dernières heures. Ce n’est pas une prévision.",
     trend: {
       steady: "stable sur 3 h",
       rising: "en hausse de {delta} hPa en 3 h",
@@ -91,7 +93,8 @@ const fr: OverviewInsightsMessages = {
   },
   battery: {
     title: "Tendance de la batterie",
-    subtitle: "Baisse d’après les derniers relevés de batterie des appareils. Les jours restants supposent que le rythme de décharge des 7 derniers jours continue.",
+    subtitle:
+      "Baisse d’après les derniers relevés de batterie des appareils. Les jours restants supposent que le rythme de décharge des 7 derniers jours continue.",
     daysRemaining: {
       one: "~{count} jour restant à ce rythme",
       other: "~{count} jours restants à ce rythme",
@@ -104,7 +107,8 @@ const fr: OverviewInsightsMessages = {
   },
   rssi: {
     title: "Force du signal",
-    subtitle: "Signal Wi-Fi indiqué en dernier par chaque appareil, en dBm (plus près de 0 = plus fort). Les liaisons faibles perdent des mesures en premier.",
+    subtitle:
+      "Signal Wi-Fi indiqué en dernier par chaque appareil, en dBm (plus près de 0 = plus fort). Les liaisons faibles perdent des mesures en premier.",
     quality: {
       strong: "fort",
       good: "bon",
@@ -195,7 +199,8 @@ const fr: OverviewInsightsMessages = {
         "Activez la Smart Device Management API dans Google Cloud, puis actualisez : {url}",
       sdmDisabled:
         "Activez la Smart Device Management API dans le projet Google Cloud qui possède votre client OAuth Nest.",
-      nestAuth: "L’autorisation Nest a peut-être expiré : essayez Déconnecter, puis Connecter à nouveau.",
+      nestAuth:
+        "L’autorisation Nest a peut-être expiré : essayez Déconnecter, puis Connecter à nouveau.",
       nestError: "Nest a renvoyé une erreur, réessayez ou reconnectez-vous.",
       noToken: "Reconnectez votre thermostat pour rétablir l’accès.",
       ecobeeNetwork: "Impossible de joindre Ecobee, réessayez dans une minute.",

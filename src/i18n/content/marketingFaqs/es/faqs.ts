@@ -307,7 +307,7 @@ export default {
     {
       question: "¿Qué envía el puck de contacto de puerta?",
       answer:
-        "JSON como {\"door1\":true} cuando está abierta. Sketch: sketches/arduino/door_contact_ingest. Guía: probeharbor.dev/door-puck.",
+        'JSON como {"door1":true} cuando está abierta. Sketch: sketches/arduino/door_contact_ingest. Guía: probeharbor.dev/door-puck.',
     },
     {
       question: "¿Una puerta abierta dispara por sí sola un SMS de congelación?",
@@ -324,7 +324,7 @@ export default {
     {
       question: "¿Qué envía el puck de contacto de fugas?",
       answer:
-        "JSON como {\"leak1\":true} cuando detecta agua. Las claves de inundación/fuga avisan automáticamente cuando están mojadas una vez activadas las alertas. Guía: probeharbor.dev/leak-puck.",
+        'JSON como {"leak1":true} cuando detecta agua. Las claves de inundación/fuga avisan automáticamente cuando están mojadas una vez activadas las alertas. Guía: probeharbor.dev/leak-puck.',
     },
     {
       question: "¿La fuga y la temperatura pueden compartir una clave de dispositivo?",
@@ -341,7 +341,7 @@ export default {
     {
       question: "¿Qué envía el aviso de corte de luz?",
       answer:
-        "JSON como {\"power1\":false} cuando se pierde la alimentación de red/USB detectada. El ESP32 que informa debería estar conectado a un SAI. Guía: probeharbor.dev/power-nudge.",
+        'JSON como {"power1":false} cuando se pierde la alimentación de red/USB detectada. El ESP32 que informa debería estar conectado a un SAI. Guía: probeharbor.dev/power-nudge.',
     },
     {
       question: "¿Y si la sonda de congelación también se queda sin alimentación?",

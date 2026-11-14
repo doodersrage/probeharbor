@@ -11,7 +11,11 @@ vi.mock("./runtimeEnv", () => ({
   getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
-const mail = vi.hoisted(() => ({ to: [] as string[], suppressed: new Set<string>(), failing: new Set<string>() }));
+const mail = vi.hoisted(() => ({
+  to: [] as string[],
+  suppressed: new Set<string>(),
+  failing: new Set<string>(),
+}));
 vi.mock("./mailer", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./mailer")>()),
   sendEmail: async (to: string) => {
@@ -29,8 +33,14 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function ownerWithReadings(email: string) {
   const id = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [id]);
-  await sql("insert into public.alert_settings (user_id, enabled, digest_enabled) values ($1, true, true)", [id]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [id],
+  );
+  await sql(
+    "insert into public.alert_settings (user_id, enabled, digest_enabled) values ($1, true, true)",
+    [id],
+  );
   const [d] = await sql<{ id: string }>(
     "insert into public.devices (household_id, name, source, last_seen_at) values ($1, 'Garage', 'push', now()) returning id",
     [m!.household_id],

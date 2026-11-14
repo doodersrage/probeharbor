@@ -1,9 +1,5 @@
 import type { DeviceWithSensors } from "./devices";
-import {
-  computeDoorOpenSessions,
-  formatDurationMs,
-  type DoorOpenSession,
-} from "./doorDuration";
+import { computeDoorOpenSessions, formatDurationMs, type DoorOpenSession } from "./doorDuration";
 import {
   detectBatteryTrendDrop,
   estimateBatteryDaysRemaining,
@@ -197,9 +193,7 @@ export async function loadDoorSessions24h(
   devices: DeviceWithSensors[],
 ): Promise<DoorOpenSession[]> {
   const doorSensors = devices.flatMap((device) =>
-    device.sensors
-      .filter((sensor) => sensor.kind === "door")
-      .map((sensor) => ({ device, sensor })),
+    device.sensors.filter((sensor) => sensor.kind === "door").map((sensor) => ({ device, sensor })),
   );
   if (doorSensors.length === 0) return [];
 
@@ -264,7 +258,11 @@ export function buildDoorTempSummary(
       title: t.doorOpenNow,
       detail:
         rate != null && rate < 0
-          ? fmt(t.doorOpenFalling, { labels, rate: fixed(toDisplayDelta(Math.abs(rate), useCelsius), 1, locale), unit })
+          ? fmt(t.doorOpenFalling, {
+              labels,
+              rate: fixed(toDisplayDelta(Math.abs(rate), useCelsius), 1, locale),
+              unit,
+            })
           : fmt(t.doorStillOpen, {
               labels,
               duration: formatDurationMs(Date.now() - Date.parse(openNow[0]!.openedAt), locale),
@@ -284,11 +282,7 @@ export function buildDoorTempSummary(
       tone: "warning",
     };
   }
-  if (
-    minutes >= 15 &&
-    outdoorTempF != null &&
-    outdoorTempF < 32
-  ) {
+  if (minutes >= 15 && outdoorTempF != null && outdoorTempF < 32) {
     const coldAirIndex = Math.round(minutes * Math.max(0, 32 - outdoorTempF));
     return {
       kind: "coldAir",
@@ -342,10 +336,14 @@ export async function loadFloodLevelOverview(
 ): Promise<FloodLevelOverview> {
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
   const floodSensors = devices.flatMap((d) =>
-    d.sensors.filter((s) => s.kind === "flood").map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
+    d.sensors
+      .filter((s) => s.kind === "flood")
+      .map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
   );
   const levelSensors = devices.flatMap((d) =>
-    d.sensors.filter((s) => s.kind === "level").map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
+    d.sensors
+      .filter((s) => s.kind === "level")
+      .map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
   );
 
   const [floodBatches, levelBatches] = await Promise.all([
@@ -390,8 +388,7 @@ export async function loadFloodLevelOverview(
     let risingPerHour: number | null = null;
     if (samples.length >= 2) {
       const first = samples[0]!;
-      const hours =
-        (Date.parse(last.at) - Date.parse(first.at)) / (60 * 60 * 1000);
+      const hours = (Date.parse(last.at) - Date.parse(first.at)) / (60 * 60 * 1000);
       if (hours > 0) {
         risingPerHour = (last.tempF - first.tempF) / hours;
       }
@@ -415,7 +412,9 @@ export async function loadEnergyOverview(
   devices: DeviceWithSensors[],
 ): Promise<EnergyOverview | null> {
   const energySensors = devices.flatMap((d) =>
-    d.sensors.filter((s) => s.kind === "energy").map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
+    d.sensors
+      .filter((s) => s.kind === "energy")
+      .map((s) => ({ label: s.label, id: s.id, householdId: d.household_id })),
   );
   if (energySensors.length === 0) return null;
 
@@ -436,10 +435,7 @@ export async function loadEnergyOverview(
   const latest = best.samples[best.samples.length - 1]!;
   const first = best.samples[0]!;
   const avgW = values.reduce((sum, v) => sum + v, 0) / values.length;
-  const hours = Math.max(
-    1 / 60,
-    (Date.parse(latest.at) - Date.parse(first.at)) / (60 * 60 * 1000),
-  );
+  const hours = Math.max(1 / 60, (Date.parse(latest.at) - Date.parse(first.at)) / (60 * 60 * 1000));
   return {
     label: best.sensor.label,
     latestW: latest.tempF,
@@ -490,13 +486,16 @@ export function computeCondensationHours(
     const dew = last && last.humidity != null ? dewPointF(last.tempf, last.humidity) : null;
     return {
       hours: 0,
-      latestMarginF:
-        last && dew != null ? last.tempf - dew : null,
+      latestMarginF: last && dew != null ? last.tempf - dew : null,
     };
   }
 
   const sorted = [...points]
-    .flatMap((p) => (p.humidity != null && Number.isFinite(p.humidity) && p.humidity > 0 ? [{ ...p, humidity: p.humidity }] : []))
+    .flatMap((p) =>
+      p.humidity != null && Number.isFinite(p.humidity) && p.humidity > 0
+        ? [{ ...p, humidity: p.humidity }]
+        : [],
+    )
     .sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
   if (sorted.length < 2) {
     return { hours: 0, latestMarginF: null };
@@ -509,8 +508,7 @@ export function computeCondensationHours(
     const dewPrev = dewPointF(prev.tempf, prev.humidity);
     const dewCur = dewPointF(cur.tempf, cur.humidity);
     if (dewPrev == null || dewCur == null) continue;
-    const atRisk =
-      prev.tempf - dewPrev <= marginF || cur.tempf - dewCur <= marginF;
+    const atRisk = prev.tempf - dewPrev <= marginF || cur.tempf - dewCur <= marginF;
     if (atRisk) {
       ms += Math.max(0, Date.parse(cur.timestamp) - Date.parse(prev.timestamp));
     }
@@ -546,10 +544,7 @@ export function feedHealthFromDevices(
   const t = msgs(locale).summaries;
   const checkedAt = new Date().toISOString();
   return devices
-    .filter(
-      (device) =>
-        device.enabled && device.source === "pull_url" && Boolean(device.pull_url),
-    )
+    .filter((device) => device.enabled && device.source === "pull_url" && Boolean(device.pull_url))
     .map((device) => {
       const age = formatRelativeAge(device.last_seen_at);
       return {
@@ -704,7 +699,11 @@ export function buildPowerTempSummary(
       title: t.powerOffNow,
       detail:
         rate != null && rate < 0
-          ? fmt(t.powerOffFalling, { labels, rate: fixed(toDisplayDelta(Math.abs(rate), useCelsius), 1, locale), unit })
+          ? fmt(t.powerOffFalling, {
+              labels,
+              rate: fixed(toDisplayDelta(Math.abs(rate), useCelsius), 1, locale),
+              unit,
+            })
           : fmt(t.powerOffCurrently, { labels }),
       tone: "warning",
     };

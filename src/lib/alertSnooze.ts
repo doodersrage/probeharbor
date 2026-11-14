@@ -26,22 +26,21 @@ const SNOOZE_BLOCKED: NotifyKind[] = [
  * Vacation mutes routine noise while nobody is home. Freeze threshold alerts
  * are not muted: an empty house is exactly when a freeze matters.
  */
-const VACATION_BLOCKED: NotifyKind[] = [
-  "rate",
-  "digest",
-  "generic",
-  "rule",
-  "battery",
-  "rssi",
-];
+const VACATION_BLOCKED: NotifyKind[] = ["rate", "digest", "generic", "rule", "battery", "rssi"];
 
-export function isSnoozeActive(settings: Pick<AlertSettings, "snoozeUntil">, now = Date.now()): boolean {
+export function isSnoozeActive(
+  settings: Pick<AlertSettings, "snoozeUntil">,
+  now = Date.now(),
+): boolean {
   if (!settings.snoozeUntil) return false;
   const until = Date.parse(settings.snoozeUntil);
   return Number.isFinite(until) && now < until;
 }
 
-export function isVacationActive(settings: Pick<AlertSettings, "vacationUntil">, now = Date.now()): boolean {
+export function isVacationActive(
+  settings: Pick<AlertSettings, "vacationUntil">,
+  now = Date.now(),
+): boolean {
   if (!settings.vacationUntil) return false;
   const until = Date.parse(settings.vacationUntil);
   return Number.isFinite(until) && now < until;
@@ -79,7 +78,11 @@ export function getAlertPauseState(
 }
 
 /** "Nov 5, 4:00 PM" in the alert-settings time zone (UTC if that zone is invalid). */
-export function formatAlertPauseUntil(iso: string, locale: Locale, timeZone: string | null | undefined): string {
+export function formatAlertPauseUntil(
+  iso: string,
+  locale: Locale,
+  timeZone: string | null | undefined,
+): string {
   const options: Intl.DateTimeFormatOptions = {
     month: "short",
     day: "numeric",
@@ -104,7 +107,10 @@ export type HouseholdAlertHold = {
 
 function laterActiveEnd(own: string | null, household: string | null, now: number): string | null {
   if (!isSnoozeActive({ snoozeUntil: household }, now)) return own;
-  if (isSnoozeActive({ snoozeUntil: own }, now) && Date.parse(own as string) >= Date.parse(household as string)) {
+  if (
+    isSnoozeActive({ snoozeUntil: own }, now) &&
+    Date.parse(own as string) >= Date.parse(household as string)
+  ) {
     return own;
   }
   return household;
@@ -129,7 +135,8 @@ export function withHouseholdHold<T extends Pick<AlertSettings, "snoozeUntil" | 
   if (!hold) return settings;
   const snoozeUntil = laterActiveEnd(settings.snoozeUntil, hold.snoozeUntil, now);
   const vacationUntil = laterActiveEnd(settings.vacationUntil, hold.vacationUntil, now);
-  if (snoozeUntil === settings.snoozeUntil && vacationUntil === settings.vacationUntil) return settings;
+  if (snoozeUntil === settings.snoozeUntil && vacationUntil === settings.vacationUntil)
+    return settings;
   return { ...settings, snoozeUntil, vacationUntil };
 }
 
@@ -154,10 +161,7 @@ export function vacationUntilFromDays(days: number, now = Date.now()): string {
 }
 
 /** End-of-day ISO for a YYYY-MM-DD vacation return date (local calendar day). */
-export function vacationUntilFromDate(
-  dateYmd: string,
-  now = Date.now(),
-): string | null {
+export function vacationUntilFromDate(dateYmd: string, now = Date.now()): string | null {
   const trimmed = dateYmd.trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return null;
   const end = new Date(`${trimmed}T23:59:59`);
@@ -168,10 +172,7 @@ export function vacationUntilFromDate(
 }
 
 /** Persist snooze on alert_settings for a user (used by ack playbook). */
-export async function snoozeAlertsForUser(
-  userId: string,
-  hours: number,
-): Promise<void> {
+export async function snoozeAlertsForUser(userId: string, hours: number): Promise<void> {
   const { getAlertSettingsForUser, saveAlertSettingsForUser } = await import("./notify");
   const settings = await getAlertSettingsForUser(userId, {});
   await saveAlertSettingsForUser(userId, {

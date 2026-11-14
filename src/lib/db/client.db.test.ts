@@ -21,7 +21,10 @@ describe("query() result shapes match what Supabase returned", () => {
 
   it("jsonb comes back as objects and parameters are bound, not spliced", async () => {
     const tricky = "x'); drop table public.groups; --";
-    const [row] = await query<{ j: unknown; t: string }>("select $1::jsonb as j, $2::text as t", ['{"a":1}', tricky]);
+    const [row] = await query<{ j: unknown; t: string }>("select $1::jsonb as j, $2::text as t", [
+      '{"a":1}',
+      tricky,
+    ]);
     expect(row).toEqual({ j: { a: 1 }, t: tricky });
     const [groups] = await query<{ n: number }>("select count(*) as n from public.groups");
     expect(groups?.n).toBe(5);
@@ -31,7 +34,9 @@ describe("query() result shapes match what Supabase returned", () => {
 describe("query() errors", () => {
   it("name the statement and table but never the values", async () => {
     const secret = "very-secret-value";
-    const error = await query("select * from public.no_such_table where x = $1", [secret]).catch((e) => e);
+    const error = await query("select * from public.no_such_table where x = $1", [secret]).catch(
+      (e) => e,
+    );
     expect(error).toBeInstanceOf(DbQueryError);
     expect(error.message).toMatch(/select public\.no_such_table/);
     expect(error.message).not.toContain(secret);

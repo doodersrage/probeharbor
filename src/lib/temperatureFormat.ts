@@ -77,16 +77,14 @@ export function parseDisplayTempInput(
   if (!Number.isFinite(value)) return fallbackF;
   if (unit !== "C") return value;
   const shown =
-    kind === "delta" ? displayDeltaInputValue(fallbackF, true) : displayTempInputValue(fallbackF, true);
+    kind === "delta"
+      ? displayDeltaInputValue(fallbackF, true)
+      : displayTempInputValue(fallbackF, true);
   if (Number.isFinite(fallbackF) && value === shown) return fallbackF;
   return kind === "delta" ? fromDisplayDelta(value, true) : fromDisplayTemp(value, true);
 }
 
-export function formatTemperature(
-  tempF: number,
-  useCelsius: boolean,
-  decimals = 0,
-): string {
+export function formatTemperature(tempF: number, useCelsius: boolean, decimals = 0): string {
   if (!Number.isFinite(tempF)) return "—";
   if (useCelsius) {
     return `${fToC(tempF).toFixed(decimals)}°C`;

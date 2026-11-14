@@ -43,7 +43,9 @@ describe("groupAlertEvents", () => {
 
   it("breaks runs on a different title, channel, or handled state, keeping order", () => {
     const events = [
-      ev(), ev(), ev(),
+      ev(),
+      ev(),
+      ev(),
       ev({ title: "Flood alert" }),
       ev({ channels_sent: ["sms"] }),
       ev({ acknowledged_at: "2026-10-12T01:00:00Z" }),
@@ -59,7 +61,13 @@ describe("groupAlertEvents", () => {
   });
 
   it("never folds alerts that carry a suggested fix or false-alarm feedback", () => {
-    const events = [ev({ meta: { suggestedTipId: "placement" } }), ev({ meta: { suggestedTipId: "placement" } }), ev({ meta: { suggestedTipId: "placement" } })];
-    expect(groupAlertEvents(events as AlertEventRow[]).every((g) => g.rest.length === 0)).toBe(true);
+    const events = [
+      ev({ meta: { suggestedTipId: "placement" } }),
+      ev({ meta: { suggestedTipId: "placement" } }),
+      ev({ meta: { suggestedTipId: "placement" } }),
+    ];
+    expect(groupAlertEvents(events as AlertEventRow[]).every((g) => g.rest.length === 0)).toBe(
+      true,
+    );
   });
 });

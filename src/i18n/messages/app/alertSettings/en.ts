@@ -20,17 +20,20 @@ const en = {
     dwellHint:
       "How long a probe must stay at or below freeze first. 5–15 ignores a door left open for a moment; 0 alerts on the first cold reading.",
     leakHint: "Leak sensors alert automatically the moment they read wet.",
-    powerAlerts: "Alert when a power sensor reads off (heaters, heat tape, and sump pumps may be off too)",
+    powerAlerts:
+      "Alert when a power sensor reads off (heaters, heat tape, and sump pumps may be off too)",
     outageToggle: "Alert if a sensor stops reporting",
     outageHours: "After this many silent hours",
-    outageHint: "A silent probe can't warn you about a freeze, so this is often the most useful alert.",
+    outageHint:
+      "A silent probe can't warn you about a freeze, so this is often the most useful alert.",
     earlyWarnings: "Early warnings",
     runwayToggle: "Warn before a probe reaches freeze, while there's still time to act",
     runwayHint:
       "Estimates when each space will hit your freeze line from its cooling rate (and the outdoor forecast when a weather location is set), then warns inside the window above so you can drip faucets or add heat.",
     forecastToggle: "Warn when the outdoor forecast drops below freezing",
     forecastHours: "How far ahead (hours)",
-    forecastHoursHint: "Used by both early warnings: the forecast warning and the time-to-freeze warning.",
+    forecastHoursHint:
+      "Used by both early warnings: the forecast warning and the time-to-freeze warning.",
     nwsSummary: "Humidity, fast drops, and official freeze warnings",
     humidityAbove: "Humidity above (%)",
     rateDrop: "Rate drop ({unit} / hour)",
@@ -52,7 +55,8 @@ const en = {
 
   channels: {
     title: "How you're told",
-    subtitle: "Email plus any chat app, SMS, push, or webhook. Every checked channel gets every alert.",
+    subtitle:
+      "Email plus any chat app, SMS, push, or webhook. Every checked channel gets every alert.",
     alertEmail: "Alert email",
     sendByEmail: "Send alerts by email",
     otherChannels: "Other channels",
@@ -60,7 +64,8 @@ const en = {
     outboundWebhook: "Outbound webhook",
     twilioMissing:
       "SMS is on your plan but Twilio is not configured on this server. Messages will be skipped until `TWILIO_*` secrets are set.",
-    unlockProHtml: 'Unlock SMS and webhooks with <a class="text-link" href="/dashboard/plans">Pro</a>.',
+    unlockProHtml:
+      'Unlock SMS and webhooks with <a class="text-link" href="/dashboard/plans">Pro</a>.',
     webhookUrl: "Webhook URL",
     botToken: "Bot token",
     chatId: "Chat ID (required for commands)",
@@ -124,15 +129,18 @@ const en = {
 
   automation: {
     title: "Rules & escalation",
-    subtitle: "Your own conditions (e.g. pipe below 38°F while a door is open), follow-up steps, and SMS re-sends.",
+    subtitle:
+      "Your own conditions (e.g. pipe below 38°F while a door is open), follow-up steps, and SMS re-sends.",
     compositeRules: "Composite rules",
     compositeHintHtml:
       'Fire when all (or any) of a rule\'s conditions are true, e.g. pipe below 38°F AND outdoor below 20°F. Flood already alerts when wet; add a flood condition here only to combine it with other checks. Door + cold example: <a class="text-link" href="/about/garage-door-cold-playbook">garage door playbook</a>.',
-    doorDurationHint: "“Door open longer than N minutes” fires once a door has been open N minutes and clears when it closes, so quick openings don't alert. Use “Door open” to hear about every opening.",
+    doorDurationHint:
+      "“Door open longer than N minutes” fires once a door has been open N minutes and clears when it closes, so quick openings don't alert. Use “Door open” to hear about every opening.",
     addRule: "Add rule",
     addHeatRule: "Add heat rule ({threshold}{unit})",
     playbooks: "Alert playbooks",
-    playbooksHint: "Follow-up steps after the initial alert: e.g. SMS 15 minutes later if still unacknowledged.",
+    playbooksHint:
+      "Follow-up steps after the initial alert: e.g. SMS 15 minutes later if still unacknowledged.",
     addStep: "Add step",
     smsEscalation: "SMS escalation",
     escalationToggle: "Re-send threshold alerts via SMS",
@@ -143,10 +151,13 @@ const en = {
     title: "Advanced",
     subtitle: "Per-kind and per-space channel routing, custom message text, and reading webhooks.",
     severitySummary: "Severity routing (optional)",
-    severityHint: "Leave empty to use global channel checkboxes. Otherwise only selected channels fire for that kind.",
+    severityHint:
+      "Leave empty to use global channel checkboxes. Otherwise only selected channels fire for that kind.",
     spaceSummary: "Per-space channel routing",
-    spaceEmpty: "Assign a space label on devices (Dashboard → Devices) to route alerts by location.",
-    spaceHint: "Pick channels per space and alert kind. Unchecked kinds use global / severity routing.",
+    spaceEmpty:
+      "Assign a space label on devices (Dashboard → Devices) to route alerts by location.",
+    spaceHint:
+      "Pick channels per space and alert kind. Unchecked kinds use global / severity routing.",
     templatesSummary: "Custom alert messages",
     /** `{vars}` is the list of `<code>{{…}}</code>` variables. */
     templatesHintHtml: "Override title/body per alert kind. Variables: {vars}.",
@@ -161,7 +172,8 @@ const en = {
   save: {
     button: "Save alert settings",
     saveAndTest: "Save and send test",
-    incompleteHint: "A checked channel needs its destination filled in, or it will be skipped when alerts fire.",
+    incompleteHint:
+      "A checked channel needs its destination filled in, or it will be skipped when alerts fire.",
     notApplied: "Changes are not applied until you save.",
   },
 
@@ -218,7 +230,8 @@ const en = {
   /** Save / snooze / per-channel test script. */
   clientSubmit: {
     saving: "Saving…",
-    saveBeforeTest: "You have unsaved alert changes. Save them and send the test with the new settings?",
+    saveBeforeTest:
+      "You have unsaved alert changes. Save them and send the test with the new settings?",
     saveButton: "Save alert settings",
     saveFailed: "Could not save alert settings.",
     pickVacationDate: "Pick a vacation return date.",
@@ -266,7 +279,8 @@ const en = {
     permissionDenied: "Notification permission was not granted",
     serverRejected: "Server rejected subscription",
     subscribed: "Subscribed on this browser. Save alert settings, then send a test.",
-    subscribedHint: 'The "Push (browser + Android)" channel was checked: click Save alert settings before testing.',
+    subscribedHint:
+      'The "Push (browser + Android)" channel was checked: click Save alert settings before testing.',
     refresh: "Re-enable / refresh push",
     unsupported: "Push is not supported in this browser.",
     blocked: "Notifications are blocked for this site. Allow them in browser settings, then retry.",
@@ -277,7 +291,8 @@ const en = {
       other: "Also {count} Android device(s) registered.",
     },
     channelOnHint: "Push channel is on: test from below (browser + Android).",
-    channelOffHint: 'Check "Push (browser + Android)" under channels above, save settings, then send a test.',
+    channelOffHint:
+      'Check "Push (browser + Android)" under channels above, save settings, then send a test.',
     finishing: "Permission granted — finishing browser subscribe…",
     subscribeFailed: "Permission granted, but subscribe failed: {error}",
     subscribe: "Subscribe this browser",
@@ -285,7 +300,8 @@ const en = {
     notEnabled: "Not enabled on this browser yet.",
     enable: "Enable browser push on this device",
     vapidMissing: "Server VAPID keys are missing: browser push cannot send until configured.",
-    androidRegistered: 'Android app is registered: check "Push (browser + Android)", save, then test.',
+    androidRegistered:
+      'Android app is registered: check "Push (browser + Android)", save, then test.',
     statusFailed: "Could not read push status.",
     enableFailed: "Could not enable push: {error}",
   },

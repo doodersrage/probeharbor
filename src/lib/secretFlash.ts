@@ -35,8 +35,7 @@ export function setSecretFlash(
   maxAgeSec?: number,
 ): void {
   const ttl =
-    maxAgeSec ??
-    (name === FLASH_INGEST_KEY ? FLASH_INGEST_TTL_SEC : FLASH_DEFAULT_TTL_SEC);
+    maxAgeSec ?? (name === FLASH_INGEST_KEY ? FLASH_INGEST_TTL_SEC : FLASH_DEFAULT_TTL_SEC);
   cookies.set(name, value, flashOptions(ttl));
 }
 
@@ -46,10 +45,7 @@ export function peekSecretFlash(cookies: AstroCookies, name: string): string | n
 }
 
 /** Read and clear a one-time secret cookie. */
-export function consumeSecretFlash(
-  cookies: AstroCookies,
-  name: string,
-): string | null {
+export function consumeSecretFlash(cookies: AstroCookies, name: string): string | null {
   const value = peekSecretFlash(cookies, name);
   if (value) {
     cookies.delete(name, { path: "/" });

@@ -14,7 +14,8 @@ const de: FreezeMapMessages = {
   embed: "Einbetten",
   freezeSeason: "Frostsaison",
   shareKit: "Share-Kit",
-  seedIntroHtml: "<strong>Beispieldaten</strong>: Echte Stadtwerte erscheinen, sobald genug Haushalte mitmachen ({floor}+ Sonden pro Stadt).",
+  seedIntroHtml:
+    "<strong>Beispieldaten</strong>: Echte Stadtwerte erscheinen, sobald genug Haushalte mitmachen ({floor}+ Sonden pro Stadt).",
   optInNone: "Noch macht kein Haushalt mit: Sei der Erste in deiner Region.",
   optInCount: {
     one: "Bisher macht {count} Haushalt mit.",
@@ -24,13 +25,16 @@ const de: FreezeMapMessages = {
   linkCreate: "Erstelle ein Konto, um beizutragen",
   liveNotice: {
     one: "Live-Daten der Teilnehmer · {count} Haushalt trägt bei · Städte brauchen {floor}+ Haushalte, bevor Messwerte angezeigt werden",
-    other: "Live-Daten der Teilnehmer · {count} Haushalte tragen bei · Städte brauchen {floor}+ Haushalte, bevor Messwerte angezeigt werden",
+    other:
+      "Live-Daten der Teilnehmer · {count} Haushalte tragen bei · Städte brauchen {floor}+ Haushalte, bevor Messwerte angezeigt werden",
   },
   lastSnapshot: " · Letzter Stand {label}",
   liveOptOut: ". Abmelden jederzeit unter Household.",
   momentumTitle: "Fortschritt",
-  momentumApproaching: "Städte, die am nächsten an echten Daten sind (je {floor} Haushalte). Deine Teilnahme bringt den Zähler voran.",
-  momentumWaiting: "Sobald eine Stadt {floor} teilnehmende Haushalte mit aktiver Sonde hat, ersetzen echte Messwerte die Beispielvorschau für diese Region.",
+  momentumApproaching:
+    "Städte, die am nächsten an echten Daten sind (je {floor} Haushalte). Deine Teilnahme bringt den Zähler voran.",
+  momentumWaiting:
+    "Sobald eine Stadt {floor} teilnehmende Haushalte mit aktiver Sonde hat, ersetzen echte Messwerte die Beispielvorschau für diese Region.",
   householdsProgress: "{count}/{floor} Haushalte",
   moreToGo: {
     one: " · noch {count} bis zu echten Daten",
@@ -47,7 +51,8 @@ const de: FreezeMapMessages = {
   },
   sparsePrivate: {
     one: "{count} Stadt hat weniger als {floor} Haushalte, daher bleiben ihre Messwerte privat, bis mehr Haushalte mitmachen. Sie steht unter Fortschritt nur mit ihrer Haushaltszahl.",
-    other: "{count} Städte haben weniger als {floor} Haushalte, daher bleiben ihre Messwerte privat, bis mehr Haushalte mitmachen. Sie stehen unter Fortschritt nur mit ihrer Haushaltszahl.",
+    other:
+      "{count} Städte haben weniger als {floor} Haushalte, daher bleiben ihre Messwerte privat, bis mehr Haushalte mitmachen. Sie stehen unter Fortschritt nur mit ihrer Haushaltszahl.",
   },
   mapTitle: "Karte",
   mapSubtitle:
@@ -56,7 +61,8 @@ const de: FreezeMapMessages = {
   noSamples: "Noch keine Stadtwerte",
   noSamplesFloor: ", die die Mindestzahl erreichen",
   noSamplesUser: " Mach als Erster in deinen Haushaltseinstellungen mit.",
-  noSamplesGuest: " Erstelle ein Konto und mach in den Household-Einstellungen mit, um beizutragen.",
+  noSamplesGuest:
+    " Erstelle ein Konto und mach in den Household-Einstellungen mit, um beizutragen.",
   thCity: "Stadt",
   thTrend: "Trend",
   thTrendUnit: "(Ø °F)",

@@ -33,7 +33,8 @@ const de: ShareKitMessages = {
     "Fass dich kurz und steig mit dem Frostrisiko ein. Optional eine Folgeantwort mit dem Simulator oder der Karte.",
   hnTitle: "Hacker News / Show HN",
   hnTitleHint: "Vorgeschlagener Titel (ins Titelfeld von Show HN einfügen):",
-  hnBodyHint: "Kommentartext: zuerst die Geschichte, dann die Links. Auf HN kommen konkrete Details besser an als ein allgemeiner Slogan.",
+  hnBodyHint:
+    "Kommentartext: zuerst die Geschichte, dann die Links. Auf HN kommen konkrete Details besser an als ein allgemeiner Slogan.",
   discordTitle: "Discord / Chat",
   discordCopy:
     "Passt in Showcase-Kanäle von ESPHome-, DIY- und Maker-Discords und in „Woran arbeitest du gerade?“-Kanäle, nicht in ungefragte DMs. Am besten ein Thread, in dem schon über Frostrisiko, Heizung/Lüftung oder Fühler-Hardware gesprochen wird.",

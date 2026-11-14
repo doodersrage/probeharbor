@@ -116,7 +116,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect(withQuery(redirectTo, { checked_error: "1" }));
   }
 
-
   if (wantsJson) {
     return new Response(
       JSON.stringify({

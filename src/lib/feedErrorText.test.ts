@@ -2,12 +2,19 @@ import { describe, expect, it } from "vitest";
 import { ensureLocale } from "../i18n/catalog";
 import { feedHealthMessage, localizeFeedError } from "./feedErrorText";
 import { resolveShareReadingsFormat } from "./shareReadingsAccess";
-import { checkStatusSubscribeRateLimit, resetStatusSubscribeRateLimitStateForTests } from "./statusSubscribeLimits";
+import {
+  checkStatusSubscribeRateLimit,
+  resetStatusSubscribeRateLimitStateForTests,
+} from "./statusSubscribeLimits";
 
 describe("localizeFeedError", () => {
   it("returns English unchanged", () => {
-    expect(localizeFeedError("Temperature feed request failed (503)")).toBe("Temperature feed request failed (503)");
-    expect(feedHealthMessage({ ok: true, message: "3 probe(s) responding", probeCount: 3 })).toBe("3 probe(s) responding");
+    expect(localizeFeedError("Temperature feed request failed (503)")).toBe(
+      "Temperature feed request failed (503)",
+    );
+    expect(feedHealthMessage({ ok: true, message: "3 probe(s) responding", probeCount: 3 })).toBe(
+      "3 probe(s) responding",
+    );
   });
 
   it("translates known feed errors and keeps the status code", async () => {
@@ -22,7 +29,9 @@ describe("localizeFeedError", () => {
       "Der Feed hat nicht rechtzeitig geantwortet.",
     );
     expect(localizeFeedError("fetch failed", "de")).toBe("Feed nicht erreichbar (fetch failed)");
-    expect(feedHealthMessage({ ok: true, message: "", probeCount: 2 }, "de")).toBe("2 Fühler antworten");
+    expect(feedHealthMessage({ ok: true, message: "", probeCount: 2 }, "de")).toBe(
+      "2 Fühler antworten",
+    );
     expect(feedHealthMessage({ ok: false, message: "Feed unreachable", probeCount: 0 }, "de")).toBe(
       "Feed nicht erreichbar",
     );

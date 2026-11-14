@@ -8,8 +8,7 @@ vi.mock("../../../../../../../lib/FetchWeather", () => ({
 
 const mockCheckWeatherTileRateLimit = vi.fn();
 vi.mock("../../../../../../../lib/weatherTileLimits", () => ({
-  checkWeatherTileRateLimit: (...a: unknown[]) =>
-    mockCheckWeatherTileRateLimit(...a),
+  checkWeatherTileRateLimit: (...a: unknown[]) => mockCheckWeatherTileRateLimit(...a),
 }));
 
 function makeContext(

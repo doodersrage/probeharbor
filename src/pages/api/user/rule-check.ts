@@ -30,5 +30,14 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     listHouseholdDevices(household.householdId),
   ]);
   const { useCelsius } = getDisplayPreferencesFromMetadata(user);
-  return json(await explainRulesForUser(user.id, settings, household.householdId, devices, locale, useCelsius));
+  return json(
+    await explainRulesForUser(
+      user.id,
+      settings,
+      household.householdId,
+      devices,
+      locale,
+      useCelsius,
+    ),
+  );
 };

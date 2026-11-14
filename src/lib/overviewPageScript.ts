@@ -17,7 +17,8 @@ import {
 
 (() => {
   var text = readI18nJson("overview-i18n", overviewEn.client);
-  var rawLocale = document.querySelector<HTMLElement>("[data-overview-locale]")?.dataset.overviewLocale;
+  var rawLocale =
+    document.querySelector<HTMLElement>("[data-overview-locale]")?.dataset.overviewLocale;
   var pageLocale: Locale = rawLocale && isLocale(rawLocale) ? rawLocale : "en";
   var useCelsius = document.querySelector<HTMLElement>("[data-overview-celsius]") != null;
   var tempUnit = tempUnitLabel(useCelsius);
@@ -70,14 +71,18 @@ import {
     var boxes = Array.from(form.querySelectorAll<HTMLInputElement>('input[name="metrics"]'));
     function sync() {
       var picked = boxes.filter((box) => box.checked).length;
-      boxes.forEach((box) => { box.disabled = !box.checked && picked >= max; });
+      boxes.forEach((box) => {
+        box.disabled = !box.checked && picked >= max;
+      });
       if (count) {
         count.textContent =
           fmt(text.pinCount, { count: plainNum(picked), max: plainNum(max) }) +
           (picked >= max ? ` ${text.pinRoomHint}` : "");
       }
     }
-    boxes.forEach((box) => { box.addEventListener("change", sync); });
+    boxes.forEach((box) => {
+      box.addEventListener("change", sync);
+    });
     sync();
   });
 
@@ -196,15 +201,16 @@ import {
         esc(text.snooze) +
         ' ▾</summary><div class="qa-menu-pop">' +
         [1, 4, 24]
-          .map((hours) => (
+          .map(
+            (hours) =>
               '<button type="button" class="btn-ghost btn-sm"' +
               (hours === 24 ? ' id="overview-snooze-action"' : "") +
               ' data-qa-snooze="snooze" data-qa-hours="' +
               hours +
               '">' +
               esc(plural(text.snoozeHours, hours, pageLocale)) +
-              "</button>"
-            ))
+              "</button>",
+          )
           .join("") +
         "</div></details>";
     }
@@ -349,14 +355,14 @@ import {
         data.coldestProbeTempF != null
           ? fmt(text.marginDetail, {
               temp: num(toDisplayTemp(data.coldestProbeTempF, useCelsius), 1),
-              threshold: typeof data.freezeThresholdF === "number"
-                ? plainNum(displayTempInputValue(data.freezeThresholdF, useCelsius))
-                : String(data.freezeThresholdF),
+              threshold:
+                typeof data.freezeThresholdF === "number"
+                  ? plainNum(displayTempInputValue(data.freezeThresholdF, useCelsius))
+                  : String(data.freezeThresholdF),
               unit: tempUnit,
             })
           : null;
-      var marginTone =
-        margin <= 0 ? "danger" : margin <= 5 ? "warning" : "success";
+      var marginTone = margin <= 0 ? "danger" : margin <= 5 ? "warning" : "success";
       setMetric("coldest_margin", marginLabel, marginDetail, marginTone);
     }
 
@@ -413,9 +419,7 @@ import {
   }, 60000);
 
   function setPinUi(metric: string, pinned: boolean) {
-    document
-      .querySelectorAll<HTMLElement>(`[data-pin-metric="${metric}"]`)
-      .forEach((btnEl) => {
+    document.querySelectorAll<HTMLElement>(`[data-pin-metric="${metric}"]`).forEach((btnEl) => {
       btnEl.setAttribute("data-pinned", pinned ? "1" : "0");
       btnEl.textContent = pinned ? "★" : "☆";
       var cardLabel = btnEl
@@ -473,16 +477,15 @@ import {
       },
       body: JSON.stringify({ action: "toggle", metric: metric }),
     })
-      .then((res) => res.json().then((raw: unknown) => {
+      .then((res) =>
+        res.json().then((raw: unknown) => {
           const data = raw as { error?: string; metrics?: string[] } | null;
           return { ok: res.ok, status: res.status, data: data };
-        }))
+        }),
+      )
       .then((result) => {
         if (!result.ok) {
-          showLiveFlash(
-            (result.data?.error) || text.pinFailed,
-            true,
-          );
+          showLiveFlash(result.data?.error || text.pinFailed, true);
           return;
         }
         var metrics = result.data?.metrics;

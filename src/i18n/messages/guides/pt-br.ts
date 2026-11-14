@@ -25,7 +25,8 @@ const ptBr: GuidesMessages = {
   },
   alsoRelevant: "Também relevante para:",
   alsoUsefulTitle: "Também útil",
-  alsoUsefulSubtitle: "Cenários, comparações e integrações ficam ao lado da biblioteca de guias práticos.",
+  alsoUsefulSubtitle:
+    "Cenários, comparações e integrações ficam ao lado da biblioteca de guias práticos.",
   alsoUseful: {
     "/stories": {
       label: "Cenários",
@@ -41,11 +42,13 @@ const ptBr: GuidesMessages = {
     },
     "/accessories": {
       label: "Acessórios",
-      summary: "Claim puck, sinalizador de alerta, contatos de porta/vazamento/energia, etiquetas do kit e suportes.",
+      summary:
+        "Claim puck, sinalizador de alerta, contatos de porta/vazamento/energia, etiquetas do kit e suportes.",
     },
     "/gift": {
       label: "Presente / indicação",
-      summary: "Compartilhe um link de convite: a pessoa ganha dias extras de teste do Pro, e você também quando ela assinar.",
+      summary:
+        "Compartilhe um link de convite: a pessoa ganha dias extras de teste do Pro, e você também quando ela assinar.",
     },
   },
   itemListName: "Guias do ProbeHarbor por tarefa",

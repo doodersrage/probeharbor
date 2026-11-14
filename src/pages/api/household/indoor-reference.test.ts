@@ -75,9 +75,7 @@ describe("POST /api/household/indoor-reference", () => {
 
     expect(mockGetUserHouseholdRole).toHaveBeenCalledWith("user-1", "house-1");
     expect(mockUpdateIndoorReferenceSensor).not.toHaveBeenCalled();
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?indoor_ref_error=forbidden",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?indoor_ref_error=forbidden");
   });
 
   it("clears the sensor when sensor_id is blank and redirects with indoor_ref_saved", async () => {

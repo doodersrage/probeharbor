@@ -169,7 +169,9 @@ export async function collectHistoryForAllUsers(): Promise<{
       const alertHouseholdId = householdId;
       // This household's own snooze / vacation (inbound webhook), read once
       // for all its members. It holds alerts for this household only.
-      const householdHold = alertHouseholdId ? await loadHouseholdAlertHold(alertHouseholdId) : null;
+      const householdHold = alertHouseholdId
+        ? await loadHouseholdAlertHold(alertHouseholdId)
+        : null;
 
       const members = await listHouseholdMembers(alertHouseholdId);
       for (const member of members.members) {
@@ -213,7 +215,12 @@ export async function collectHistoryForAllUsers(): Promise<{
           // One recap of what quiet hours held, right after they end. It covers
           // the member's alerts from every household, so only their own
           // snooze / vacation applies to it, not this household's hold.
-          await maybeSendQuietHoursSummary(member.user_id, memberUser?.email, settings, memberLocale);
+          await maybeSendQuietHoursSummary(
+            member.user_id,
+            memberUser?.email,
+            settings,
+            memberLocale,
+          );
           await maybeSendDeviceHealthAlerts(
             member.user_id,
             memberUser?.email,
@@ -233,9 +240,7 @@ export async function collectHistoryForAllUsers(): Promise<{
 
       householdsProcessed += 1;
     } catch (e) {
-      errors.push(
-        `${ownerUserId}: ${e instanceof Error ? e.message : "Unknown error"}`,
-      );
+      errors.push(`${ownerUserId}: ${e instanceof Error ? e.message : "Unknown error"}`);
     }
   }
 

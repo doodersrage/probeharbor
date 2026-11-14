@@ -26,15 +26,18 @@ const ptBr: DeviceDetailMessages = {
     title: "Status",
     health: "Saúde",
     healthHowSummary: "Como a pontuação é calculada",
-    healthHow: "A pontuação mostra o problema mais grave encontrado, verificado nesta ordem: desativado (25) ou nunca visto (30); um sensor de vazamento molhado (10–20); sem envio há um dia (20) ou há 2 horas (45); leituras travadas (40); bateria em 15% ou menos (55) ou com previsão de 14 dias ou menos (60); Wi‑Fi no seu limite de sinal ou abaixo (65). Sem nada disso, está saudável (95).",
-    batteryHow: "Os dias restantes supõem que a bateria continua caindo no ritmo dos últimos 7 dias. Só aparecem se ela caiu mais de 0,5% por dia em pelo menos meio dia.",
+    healthHow:
+      "A pontuação mostra o problema mais grave encontrado, verificado nesta ordem: desativado (25) ou nunca visto (30); um sensor de vazamento molhado (10–20); sem envio há um dia (20) ou há 2 horas (45); leituras travadas (40); bateria em 15% ou menos (55) ou com previsão de 14 dias ou menos (60); Wi‑Fi no seu limite de sinal ou abaixo (65). Sem nada disso, está saudável (95).",
+    batteryHow:
+      "Os dias restantes supõem que a bateria continua caindo no ritmo dos últimos 7 dias. Só aparecem se ela caiu mais de 0,5% por dia em pelo menos meio dia.",
     lastSeen: "Visto por último",
     never: "Nunca",
     battery: "Bateria",
     wifiSignal: "Sinal do Wi-Fi",
     firmware: "Firmware",
     updateTo: "Atualizar para {version}",
-    tlsUnverified: "Esta sonda não consegue verificar o certificado do ProbeHarbor, então a conexão dela não está protegida contra adulteração. As leituras continuam chegando. Normalmente a autoridade certificadora do site mudou; uma atualização de firmware resolve.",
+    tlsUnverified:
+      "Esta sonda não consegue verificar o certificado do ProbeHarbor, então a conexão dela não está protegida contra adulteração. As leituras continuam chegando. Normalmente a autoridade certificadora do site mudou; uma atualização de firmware resolve.",
     state: "Estado",
     disabled: "Desativado: as leituras são ignoradas",
     noReadingsYet:
@@ -67,7 +70,8 @@ const ptBr: DeviceDetailMessages = {
   },
   sensors: {
     title: "Sensores ({count})",
-    noneYetPush: "Nenhum ainda: eles são adicionados automaticamente a partir das chaves JSON do primeiro envio.",
+    noneYetPush:
+      "Nenhum ainda: eles são adicionados automaticamente a partir das chaves JSON do primeiro envio.",
     noneYetPull: "Nenhum ainda: eles aparecem depois da próxima consulta do feed.",
     intro: "Dê a eles o nome do que medem. Um único Salvar vale para todos os sensores.",
     name: "Nome",
@@ -82,11 +86,12 @@ const ptBr: DeviceDetailMessages = {
     offset: "Ajuste de calibração",
     offsetHint: "Somado a cada leitura. As leituras brutas não mudam.",
     offsetHintFahrenheit: "Os ajustes de temperatura são em °F: 1 °C equivale a 1,8 °F.",
-    deleteConfirm: "Excluir o sensor \"{name}\" e o histórico dele?",
+    deleteConfirm: 'Excluir o sensor "{name}" e o histórico dele?',
     deleteSensor: "Excluir sensor",
     saveSensors: "Salvar sensores",
     addByHand: "Adicionar um sensor manualmente",
-    addHint: "Só é necessário para definir um nome antes do primeiro envio; caso contrário, as chaves são adicionadas automaticamente.",
+    addHint:
+      "Só é necessário para definir um nome antes do primeiro envio; caso contrário, as chaves são adicionadas automaticamente.",
     addLabelPlaceholder: "Cano da garagem",
     addSensor: "Adicionar sensor",
   },
@@ -128,7 +133,8 @@ const ptBr: DeviceDetailMessages = {
   },
   connection: {
     title: "Conexão",
-    sendsJsonHtml: "O dispositivo envia JSON para <code>{url}</code>. A chave dele começa com <code>{prefix}</code>.",
+    sendsJsonHtml:
+      "O dispositivo envia JSON para <code>{url}</code>. A chave dele começa com <code>{prefix}</code>.",
     checkPayload: "Verificar um payload",
     browserFlasher: "Gravador no navegador",
     ingestDocs: "Documentação de ingestão",
@@ -143,19 +149,23 @@ const ptBr: DeviceDetailMessages = {
     title: "Manutenção",
     downloadDiagnostics: "Baixar diagnóstico",
     historyChart: "Gráfico do histórico",
-    diagnosticsHint: "O diagnóstico é um arquivo JSON com dados sensíveis removidos, que você pode anexar a um relatório de bug ou a um e-mail para o suporte.",
+    diagnosticsHint:
+      "O diagnóstico é um arquivo JSON com dados sensíveis removidos, que você pode anexar a um relatório de bug ou a um e-mail para o suporte.",
     moveTo: "Mover para outro imóvel",
     moveDevice: "Mover dispositivo",
   },
   danger: {
     title: "Chave e remoção",
     rotateTitle: "Renovar a chave de ingestão",
-    rotateBody: "Gera uma chave nova. A antiga para de funcionar na hora; grave o firmware de novo ou atualize o dispositivo.",
-    rotateConfirm: "Renovar esta chave de ingestão? A chave antiga para de funcionar imediatamente.",
+    rotateBody:
+      "Gera uma chave nova. A antiga para de funcionar na hora; grave o firmware de novo ou atualize o dispositivo.",
+    rotateConfirm:
+      "Renovar esta chave de ingestão? A chave antiga para de funcionar imediatamente.",
     rotateButton: "Renovar chave",
     deleteTitle: "Excluir dispositivo",
-    deleteBody: "Remove o dispositivo, os sensores dele e o histórico deles. Não pode ser desfeito.",
-    deleteConfirm: "Excluir \"{name}\", os sensores e o histórico deles?",
+    deleteBody:
+      "Remove o dispositivo, os sensores dele e o histórico deles. Não pode ser desfeito.",
+    deleteConfirm: 'Excluir "{name}", os sensores e o histórico deles?',
     deleteButton: "Excluir dispositivo",
   },
   replace: {
@@ -163,7 +173,8 @@ const ptBr: DeviceDetailMessages = {
     title: "Substituir um sensor",
     intro:
       "Trocou uma sonda com defeito ou uma placa inteira? Assim que o sensor novo enviar uma leitura, passe para ele o histórico do antigo, para que gráficos, relatórios e alertas continuem como um único sensor.",
-    confirm: "Mover todo o histórico do sensor antigo para o novo e excluir o antigo? Isso não pode ser desfeito.",
+    confirm:
+      "Mover todo o histórico do sensor antigo para o novo e excluir o antigo? Isso não pode ser desfeito.",
     oldSensor: "Sensor antigo (aposentado)",
     newSensor: "Sensor novo",
     choose: "Escolha…",

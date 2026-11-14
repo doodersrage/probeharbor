@@ -58,7 +58,9 @@ beforeEach(() => {
     fromQ: "2024-01-01",
     toQ: "2024-01-31",
   });
-  mockCreateClaimsPackExport.mockReset().mockResolvedValue({ token: "tok-1", contentHash: "hash-1" });
+  mockCreateClaimsPackExport
+    .mockReset()
+    .mockResolvedValue({ token: "tok-1", contentHash: "hash-1" });
   mockRenderDocumentPdf.mockReset().mockResolvedValue({
     bytes: new Uint8Array([1, 2, 3]),
     source: "browser",

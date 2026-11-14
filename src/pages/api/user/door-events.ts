@@ -79,7 +79,9 @@ export const GET: APIRoute = async ({ cookies, url, locals }) => {
   const [{ devices }, history, ranged] = await Promise.all([
     listHouseholdDevices(household.householdId),
     range ? Promise.resolve([]) : listDoorEvents(household.householdId, limit),
-    range ? listDoorEventsForReport(household.householdId, range.from, range.to, limit) : Promise.resolve(null),
+    range
+      ? listDoorEventsForReport(household.householdId, range.from, range.to, limit)
+      : Promise.resolve(null),
   ]);
   if (ranged?.error) {
     console.error("door-events range query failed:", ranged.error);

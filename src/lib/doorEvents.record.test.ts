@@ -45,7 +45,11 @@ describe("recordDoorSessions", () => {
 
     await recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW);
 
-    expect(mockFetchRecentBoolReadings).toHaveBeenCalledWith("hh-1", "door-1", "2026-10-28T12:00:00.000Z");
+    expect(mockFetchRecentBoolReadings).toHaveBeenCalledWith(
+      "hh-1",
+      "door-1",
+      "2026-10-28T12:00:00.000Z",
+    );
     expect(mockInsertDoorSessions).toHaveBeenCalledWith([
       {
         household_id: "hh-1",
@@ -63,7 +67,9 @@ describe("recordDoorSessions", () => {
       { value: true, recordedAt: "2026-10-29T10:00:00Z" },
       { value: false, recordedAt: "2026-10-29T10:20:00Z" },
     ]);
-    mockSavedSessionKeysSince.mockResolvedValue([{ label: "Garage door", opened_at: "2026-10-29T10:00:00Z" }]);
+    mockSavedSessionKeysSince.mockResolvedValue([
+      { label: "Garage door", opened_at: "2026-10-29T10:00:00Z" },
+    ]);
     const { recordDoorSessions } = await import("./doorEvents");
 
     await recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW);
@@ -143,7 +149,9 @@ describe("recordDoorSessions", () => {
       { value: false, recordedAt: "2026-10-29T11:01:00Z" },
     ]);
     mockFindOpenStartBefore.mockResolvedValue("2026-10-26T08:00:00+00:00");
-    mockSavedSessionKeysSince.mockResolvedValue([{ label: "Garage door", opened_at: "2026-10-26T08:00:00+00:00" }]);
+    mockSavedSessionKeysSince.mockResolvedValue([
+      { label: "Garage door", opened_at: "2026-10-26T08:00:00+00:00" },
+    ]);
     const { recordDoorSessions } = await import("./doorEvents");
 
     await recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW);
@@ -162,7 +170,9 @@ describe("recordDoorSessions", () => {
     await recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW);
 
     expect(mockFindOpenStartBefore).not.toHaveBeenCalled();
-    expect(mockInsertDoorSessions).toHaveBeenCalledWith([expect.objectContaining({ opened_at: "2026-10-29T10:00:00Z" })]);
+    expect(mockInsertDoorSessions).toHaveBeenCalledWith([
+      expect.objectContaining({ opened_at: "2026-10-29T10:00:00Z" }),
+    ]);
   });
 
   describe("recordDoorSessionsIfJustClosed", () => {
@@ -176,9 +186,17 @@ describe("recordDoorSessions", () => {
       mockFetchRecentBoolReadings.mockResolvedValue(session);
       const { recordDoorSessionsIfJustClosed } = await import("./doorEvents");
 
-      await recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:20:00Z");
+      await recordDoorSessionsIfJustClosed(
+        "hh-1",
+        [{ id: "door-1", label: "Garage door" }],
+        "2026-10-29T10:20:00Z",
+      );
 
-      expect(mockLastDoorStateBefore).toHaveBeenCalledWith("hh-1", "door-1", "2026-10-29T10:20:00Z");
+      expect(mockLastDoorStateBefore).toHaveBeenCalledWith(
+        "hh-1",
+        "door-1",
+        "2026-10-29T10:20:00Z",
+      );
       expect(savedRows()).toHaveLength(1);
     });
 
@@ -186,7 +204,11 @@ describe("recordDoorSessions", () => {
       mockLastDoorStateBefore.mockResolvedValue(false);
       const { recordDoorSessionsIfJustClosed } = await import("./doorEvents");
 
-      await recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:21:00Z");
+      await recordDoorSessionsIfJustClosed(
+        "hh-1",
+        [{ id: "door-1", label: "Garage door" }],
+        "2026-10-29T10:21:00Z",
+      );
 
       expect(mockFetchRecentBoolReadings).not.toHaveBeenCalled();
       expect(savedRows()).toEqual([]);
@@ -196,7 +218,11 @@ describe("recordDoorSessions", () => {
       mockFetchRecentBoolReadings.mockResolvedValue(session);
       const { recordDoorSessionsIfJustClosed } = await import("./doorEvents");
 
-      await recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:20:00Z");
+      await recordDoorSessionsIfJustClosed(
+        "hh-1",
+        [{ id: "door-1", label: "Garage door" }],
+        "2026-10-29T10:20:00Z",
+      );
 
       expect(mockFetchRecentBoolReadings).toHaveBeenCalledTimes(1);
     });
@@ -212,26 +238,32 @@ describe("recordDoorSessions", () => {
       mockFetchRecentBoolReadings.mockResolvedValue(session);
       mockSavedSessionKeysSince.mockRejectedValue(new Error("timeout"));
       const { recordDoorSessions } = await import("./doorEvents");
-      await expect(recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW)).rejects.toThrow(
-        "door_open_events fetch failed: timeout",
-      );
+      await expect(
+        recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW),
+      ).rejects.toThrow("door_open_events fetch failed: timeout");
       expect(mockInsertDoorSessions).not.toHaveBeenCalled();
     });
 
     it("reports a failed open-start lookup", async () => {
-      mockFetchRecentBoolReadings.mockResolvedValue([{ value: true, recordedAt: "2026-10-28T12:00:00Z" }]);
+      mockFetchRecentBoolReadings.mockResolvedValue([
+        { value: true, recordedAt: "2026-10-28T12:00:00Z" },
+      ]);
       mockFindOpenStartBefore.mockRejectedValue(new Error("timeout"));
       const { recordDoorSessions } = await import("./doorEvents");
-      await expect(recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW)).rejects.toThrow(
-        "door open-start lookup failed: timeout",
-      );
+      await expect(
+        recordDoorSessions("hh-1", [{ id: "door-1", label: "Garage door" }], NOW),
+      ).rejects.toThrow("door open-start lookup failed: timeout");
     });
 
     it("reports a failed last-state lookup", async () => {
       mockLastDoorStateBefore.mockRejectedValue(new Error("timeout"));
       const { recordDoorSessionsIfJustClosed } = await import("./doorEvents");
       await expect(
-        recordDoorSessionsIfJustClosed("hh-1", [{ id: "door-1", label: "Garage door" }], "2026-10-29T10:20:00Z"),
+        recordDoorSessionsIfJustClosed(
+          "hh-1",
+          [{ id: "door-1", label: "Garage door" }],
+          "2026-10-29T10:20:00Z",
+        ),
       ).rejects.toThrow("last door state lookup failed: timeout");
     });
   });

@@ -57,8 +57,7 @@ export const GET: APIRoute = async ({ params }) => {
   const temps = snapshot.sensors.filter(
     (s) => s.kind === "temperature" && s.value_num != null && Number.isFinite(s.value_num),
   );
-  const minTemp =
-    temps.length > 0 ? Math.min(...temps.map((s) => s.value_num as number)) : null;
+  const minTemp = temps.length > 0 ? Math.min(...temps.map((s) => s.value_num as number)) : null;
   const wetCount = snapshot.sensors.filter(
     (s) => s.kind === "flood" && s.value_bool === true,
   ).length;

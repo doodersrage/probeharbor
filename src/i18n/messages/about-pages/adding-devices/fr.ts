@@ -1,4 +1,3 @@
-
 /**
  * /about/adding-devices body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Dashboard UI labels
@@ -25,8 +24,16 @@ const fr: AddingDevicesMessages = {
     colPull: "Flux pull",
     rowsHtml: [
       ["Qui initie", "Votre appareil", "ProbeHarbor"],
-      ["Réseau", "L’appareil a besoin de HTTPS sortant (Uno Ethernet : HTTP vers un relais TLS sur le LAN)", "L’URL du flux doit être accessible publiquement"],
-      ["Authentification", "Clé par appareil dans l’URL ; encadré de flashage + Reveal ingest key", "URL HTTPS publique (TLS)"],
+      [
+        "Réseau",
+        "L’appareil a besoin de HTTPS sortant (Uno Ethernet : HTTP vers un relais TLS sur le LAN)",
+        "L’URL du flux doit être accessible publiquement",
+      ],
+      [
+        "Authentification",
+        "Clé par appareil dans l’URL ; encadré de flashage + Reveal ingest key",
+        "URL HTTPS publique (TLS)",
+      ],
       [
         "Forme du JSON",
         "Clés plates, objet <code>temp</code>, <code>sensors[]</code>, SenML ou HA REST",
@@ -58,7 +65,8 @@ const fr: AddingDevicesMessages = {
   },
   pull: {
     title: "Flux pull",
-    step1Html: "Vérifiez que votre flux renvoie du JSON en HTTPS. Forme classique (clé racine par défaut <code>temp</code>) :",
+    step1Html:
+      "Vérifiez que votre flux renvoie du JSON en HTTPS. Forme classique (clé racine par défaut <code>temp</code>) :",
     stepsHtml: [
       'Ouvrez <a class="text-link" href="/dashboard/devices?tab=pull">Devices → Pull feeds</a>.',
       "Ajoutez un flux : nom, URL HTTPS et <strong>JSON root key</strong> (par défaut <code>temp</code>). Utilisez <strong>Test feed URL</strong> avant d’enregistrer.",

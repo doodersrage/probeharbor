@@ -23,16 +23,13 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress, locals }
 
   const rate = checkFeedTestRateLimit(user.id || clientAddress || "unknown");
   if (!rate.ok) {
-    return new Response(
-      JSON.stringify({ ok: false, message: t.tooMany }),
-      {
-        status: 429,
-        headers: {
-          "Content-Type": "application/json",
-          ...(rate.retryAfterSec ? { "Retry-After": String(rate.retryAfterSec) } : {}),
-        },
+    return new Response(JSON.stringify({ ok: false, message: t.tooMany }), {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        ...(rate.retryAfterSec ? { "Retry-After": String(rate.retryAfterSec) } : {}),
       },
-    );
+    });
   }
 
   const editor = await requireHouseholdEditor(user.id);
@@ -47,10 +44,10 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress, locals }
   const url = body.url?.trim();
 
   if (!url || !isValidFeedUrl(url)) {
-    return new Response(
-      JSON.stringify({ ok: false, message: t.invalidUrl }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ ok: false, message: t.invalidUrl }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -77,7 +74,10 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress, locals }
           avg?.tempF != null
             ? plural(t.foundWithAverage, probeCount, locale, {
                 format: discovery.format,
-                average: formatNumber(avg.tempF, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+                average: formatNumber(avg.tempF, locale, {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                }),
               })
             : plural(t.found, probeCount, locale, { format: discovery.format }),
         format: discovery.format,

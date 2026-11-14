@@ -24,11 +24,9 @@ const ptBr: DeviceSetupThermostatMessages = {
     errors: {
       state_mismatch: "Essa tentativa de conexão expirou: tente de novo.",
       denied: "A conexão foi cancelada.",
-      not_configured:
-        "Este provedor ainda não está configurado nesta instalação.",
+      not_configured: "Este provedor ainda não está configurado nesta instalação.",
       exchange_failed: "Não foi possível concluir a conexão: tente de novo.",
-      save_failed:
-        "Conectado, mas não foi possível salvar a conexão: tente de novo.",
+      save_failed: "Conectado, mas não foi possível salvar a conexão: tente de novo.",
       generic: "Algo deu errado ao conectar seu termostato.",
     },
     sdmDisabledHtml:
@@ -44,8 +42,7 @@ const ptBr: DeviceSetupThermostatMessages = {
       auto: "Automático",
       auxheatonly: "Só aquecimento auxiliar",
     },
-    noLiveReading:
-      "Conectado, mas não foi possível obter uma leitura ao vivo agora.",
+    noLiveReading: "Conectado, mas não foi possível obter uma leitura ao vivo agora.",
     notConnected: "Não conectado",
     ecobeeClosedHtml:
       'O cadastro de desenvolvedores da Ecobee está fechado: use o <a class="text-link" href="/integrations/home-assistant#indoor-temperature">Home Assistant</a> para enviar a temperatura interna e depois escolha em <a class="text-link" href="#indoor-reference">Referência interna</a> acima.',

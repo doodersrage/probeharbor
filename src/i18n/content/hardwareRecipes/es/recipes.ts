@@ -62,7 +62,8 @@ export default {
   },
   "esp32-battery": {
     title: "Sonda a batería",
-    hardware: "ESP32 con una LiPo a través de un divisor de tensión 1:1 (GPIO 35 en un ESP32 clásico)",
+    hardware:
+      "ESP32 con una LiPo a través de un divisor de tensión 1:1 (GPIO 35 en un ESP32 clásico)",
     path: "Instalador web, opción de extras",
     notes:
       "Informa del porcentaje de batería para que Devices avise antes de que se agote. Con Wi-Fi, cuenta con semanas, no meses.",

@@ -10,13 +10,16 @@ const es: ShareMessages = {
   notices: {
     created: "Enlace creado. Cópialo abajo para enviárselo a tu familia.",
     revoked: "Enlace revocado.",
-    regenerated: "Nuevo enlace creado, cópialo abajo. El enlace anterior, y cualquier inserción o consulta que lo use, ya no funciona.",
+    regenerated:
+      "Nuevo enlace creado, cópialo abajo. El enlace anterior, y cualquier inserción o consulta que lo use, ya no funciona.",
     apiKeyCreated: "Clave de API creada. Cópiala ahora: no se volverá a mostrar.",
     apiKeyRevoked: "Clave de API revocada.",
     statusCreated: "Página de estado creada. Copia el enlace de abajo.",
     statusRevoked: "Página de estado revocada.",
-    statusRegenerated: "Nuevo enlace de estado creado, cópialo abajo. El enlace y la insignia anteriores ya no funcionan.",
-    familyLimit: "Ya tienes un enlace familiar en vivo. Revócalo primero o pásate a Pro para tener más.",
+    statusRegenerated:
+      "Nuevo enlace de estado creado, cópialo abajo. El enlace y la insignia anteriores ya no funcionan.",
+    familyLimit:
+      "Ya tienes un enlace familiar en vivo. Revócalo primero o pásate a Pro para tener más.",
     proRequired: "Esa opción requiere Pro. Con Free puedes crear un enlace familiar en vivo.",
     error: "No se pudieron actualizar los enlaces.",
   },
@@ -24,7 +27,8 @@ const es: ShareMessages = {
     subtitle: "Vista en vivo con un clic. Cualquiera con el enlace puede ver los sensores en vivo.",
     viewOnly: "Solo lectura: no puedes crear ni revocar enlaces para compartir.",
     newTitle: "Nuevo enlace para compartir",
-    newSubtitle: "Copia y envía este enlace. Cualquiera que lo tenga puede ver los sensores en vivo.",
+    newSubtitle:
+      "Copia y envía este enlace. Cualquiera que lo tenga puede ver los sensores en vivo.",
     copyLink: "Copiar enlace",
     haTitle: "Usa este enlace en Home Assistant o Apple Home",
     haBodyHtml:
@@ -35,7 +39,8 @@ const es: ShareMessages = {
     familyDefaultLabel: "Vista familiar en vivo",
     familyTitle: "Crear enlace familiar",
     familyBody: "Sensores en vivo, caduca en 7 días. Revócalo cuando quieras.",
-    familyFreeNote: "Free incluye un enlace familiar en vivo. Pro añade historial, métricas y enlaces sin caducidad.",
+    familyFreeNote:
+      "Free incluye un enlace familiar en vivo. Pro añade historial, métricas y enlaces sin caducidad.",
     familySubmit: "Crear enlace familiar en vivo",
     moreOptions: "Más opciones para compartir (Pro)",
     label: "Nombre",
@@ -61,9 +66,11 @@ const es: ShareMessages = {
     embed: "Insertar: {url}",
     scrape: "Scrape: {url}",
     confirmRevoke: "¿Revocar este enlace para compartir?",
-    linkHidden: "Por seguridad, el enlace completo solo se muestra al crearlo. Regenéralo si lo necesitas de nuevo.",
+    linkHidden:
+      "Por seguridad, el enlace completo solo se muestra al crearlo. Regenéralo si lo necesitas de nuevo.",
     regenerate: "Regenerar enlace",
-    confirmRegenerate: "¿Crear un enlace nuevo? El enlace actual, y cualquier inserción o consulta que lo use, dejará de funcionar.",
+    confirmRegenerate:
+      "¿Crear un enlace nuevo? El enlace actual, y cualquier inserción o consulta que lo use, dejará de funcionar.",
     revoke: "Revocar",
     remove: "Quitar",
     statusTitle: "Páginas de estado públicas",
@@ -73,9 +80,11 @@ const es: ShareMessages = {
     statusDefaultLabel: "Estado del hogar",
     createStatus: "Crear página de estado",
     noStatusPages: "Todavía no hay páginas de estado.",
-    statusUrlHidden: "Por seguridad, el enlace solo se muestra al crearlo. Regenéralo si lo necesitas de nuevo.",
+    statusUrlHidden:
+      "Por seguridad, el enlace solo se muestra al crearlo. Regenéralo si lo necesitas de nuevo.",
     regenerateStatus: "Regenerar enlace",
-    confirmRegenerateStatus: "¿Crear un enlace nuevo? El enlace y la insignia actuales dejarán de funcionar.",
+    confirmRegenerateStatus:
+      "¿Crear un enlace nuevo? El enlace y la insignia actuales dejarán de funcionar.",
     badgeLabel: "Insignia:",
     preview: "vista previa",
   },
@@ -94,8 +103,10 @@ const es: ShareMessages = {
     name: "Nombre",
     keyDefaultName: "Clave de métricas",
     scopeLabel: "Acceso",
-    scopeRead: "Solo lectura: métricas y lista de dispositivos (recomendado para Prometheus/Grafana)",
-    scopeWrite: "Lectura y escritura: también crear dispositivos, renombrar u ocultar sensores, reemplazar la configuración pull",
+    scopeRead:
+      "Solo lectura: métricas y lista de dispositivos (recomendado para Prometheus/Grafana)",
+    scopeWrite:
+      "Lectura y escritura: también crear dispositivos, renombrar u ocultar sensores, reemplazar la configuración pull",
     scopeReadBadge: "Solo lectura",
     scopeWriteBadge: "Lectura y escritura",
     createKey: "Crear clave de API",
@@ -114,7 +125,8 @@ const es: ShareMessages = {
     noInbound: "Todavía no hay webhooks entrantes.",
     statsTitle: "Estadísticas de ingesta (7 días)",
     statsBody: "Envíos POST correctos y con error por día y por dispositivo push.",
-    statsEmpty: "Todavía no hay actividad de ingesta. Envía un POST desde un dispositivo push para verla aquí.",
+    statsEmpty:
+      "Todavía no hay actividad de ingesta. Envía un POST desde un dispositivo push para verla aquí.",
     colDevice: "Dispositivo",
     colDay: "Día",
     colOk: "OK",
@@ -126,7 +138,8 @@ const es: ShareMessages = {
     activityEmpty:
       "Aquí aparecerán las acciones del hogar (enlaces compartidos, cambios en alertas, transferencias de dispositivos, claves de ingesta mostradas).",
     exportTitle: "Exporta tus datos",
-    exportBody: "Descarga en JSON tus preferencias, ajustes de alertas, una muestra del historial y tus dispositivos.",
+    exportBody:
+      "Descarga en JSON tus preferencias, ajustes de alertas, una muestra del historial y tus dispositivos.",
     exportButton: "Descargar export.json",
   },
   grafana: {
@@ -164,7 +177,8 @@ const es: ShareMessages = {
       'Instala la <a class="text-link" href="{integrationHref}">integración oficial de HACS</a> para tener sensores automáticos, o importa los blueprints YAML y las recetas de webhooks de abajo.',
     recommended: "Recomendado:",
     hacsCustom: "Integración personalizada de HACS",
-    hacsCustomTail: "pega un token de enlace compartido; webhook entrante y clave de ingesta opcionales para los servicios",
+    hacsCustomTail:
+      "pega un token de enlace compartido; webhook entrante y clave de ingesta opcionales para los servicios",
     guide: "Guía de la integración con Home Assistant",
     devDocs: "Documentación para desarrolladores",
     downloadEntities: "Descargar YAML de nombres de entidades",
@@ -173,7 +187,8 @@ const es: ShareMessages = {
     blueprintTail: "en HA → Ajustes → Automatizaciones → Crear → Importar desde YAML.",
     inboundHtml:
       'Crea un webhook entrante en Compartir y luego envía <code>{"action":"status"}</code> por POST desde un rest_command.',
-    scrapeHtml: "Obtén métricas de Prometheus en <code>/api/v1/metrics</code> con una clave de API Pro.",
+    scrapeHtml:
+      "Obtén métricas de Prometheus en <code>/api/v1/metrics</code> con una clave de API Pro.",
     prefillRest: "Plantilla: rest_command",
     prefillPrometheus: "Plantilla: scrape de Prometheus",
     seeAlsoHtml:
@@ -183,7 +198,8 @@ const es: ShareMessages = {
     title: "Diagnóstico de Home Assistant",
     emptyHtml:
       'Ningún dispositivo ha recibido lecturas de Home Assistant todavía. Después de instalar la <a class="text-link" href="{hacsHref}" target="_blank" rel="noreferrer">integración de HACS</a>, añade la clave de ingesta de un dispositivo en las opciones de la integración y llama al servicio <code>thermaltrace.push</code> desde una automatización; el dispositivo aparecerá aquí tras su primer envío. (La lectura de datos en Home Assistant mediante un enlace compartido no se registra aquí).',
-    subtitle: "Dispositivos alimentados por Home Assistant, del más reciente al más antiguo. «Inactivo» significa sin envíos en más de 2 horas.",
+    subtitle:
+      "Dispositivos alimentados por Home Assistant, del más reciente al más antiguo. «Inactivo» significa sin envíos en más de 2 horas.",
     caption: "Dispositivos que reciben lecturas de Home Assistant",
     colDevice: "Dispositivo",
     colSensors: "Sensores",
@@ -222,8 +238,10 @@ const es: ShareMessages = {
     step1Html:
       'Crea un dispositivo push en <a class="text-link" href="/dashboard/devices">Dispositivos</a> y copia la clave de ingesta.',
     step2: "En Node-RED: Menú → Import → pega la URL o sube el JSON.",
-    step3Html: 'Define la variable de entorno <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (o edita el nodo de función).',
-    step4: "Apunta los nodos MQTT a tu broker; haz deploy y comprueba que el nodo debug muestra HTTP 200.",
+    step3Html:
+      'Define la variable de entorno <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (o edita el nodo de función).',
+    step4:
+      "Apunta los nodos MQTT a tu broker; haz deploy y comprueba que el nodo debug muestra HTTP 200.",
     downloadFlow: "Descargar JSON del flujo",
     devDocs: "Documentación para desarrolladores",
     fullGuide: "Guía completa de Node-RED",

@@ -66,9 +66,7 @@ describe("POST /api/stripe/portal", () => {
 
     const response = await POST(makeContext());
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/history?subscription=missing",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/history?subscription=missing");
   });
 
   it("creates a portal session and redirects to it", async () => {
@@ -81,9 +79,7 @@ describe("POST /api/stripe/portal", () => {
       return_url: "https://example.com/dashboard/history",
     });
     expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toBe(
-      "https://billing.stripe.com/session/xyz",
-    );
+    expect(response.headers.get("Location")).toBe("https://billing.stripe.com/session/xyz");
   });
 
   it("returns 500 when Stripe throws", async () => {

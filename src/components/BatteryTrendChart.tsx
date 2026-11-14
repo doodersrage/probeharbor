@@ -22,7 +22,11 @@ export type BatteryTrendChartText = {
 };
 
 /** "Garage: now 82%, lowest 80%; Attic: …" for the canvas label. */
-export function metaTrendSummary(series: MetaTrendSeries[], template: string, unit: string): string {
+export function metaTrendSummary(
+  series: MetaTrendSeries[],
+  template: string,
+  unit: string,
+): string {
   return series
     .filter((s) => s.samples.length > 0)
     .map((s) => {
@@ -91,10 +95,7 @@ export default function BatteryTrendChart({
   } | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
-  const usable = useMemo(
-    () => series.filter((s) => s.samples.length >= 2).slice(0, 6),
-    [series],
-  );
+  const usable = useMemo(() => series.filter((s) => s.samples.length >= 2).slice(0, 6), [series]);
 
   const allPoints = useMemo(
     () =>
@@ -157,7 +158,12 @@ export default function BatteryTrendChart({
       g.font = "10px system-ui, sans-serif";
       // Fit the widest axis label (e.g. "-80 dBm") so nothing is clipped.
       const labelWidth = Math.max(...tickLabels.map((label) => g.measureText(label).width));
-      const pad = { top: 16, right: 16, bottom: 28, left: Math.max(44, Math.ceil(labelWidth) + 10) };
+      const pad = {
+        top: 16,
+        right: 16,
+        bottom: 28,
+        left: Math.max(44, Math.ceil(labelWidth) + 10),
+      };
       const innerW = width - pad.left - pad.right;
       const innerH = height - pad.top - pad.bottom;
 
@@ -175,8 +181,7 @@ export default function BatteryTrendChart({
       };
 
       const xFor = (ts: number) => pad.left + ((ts - minTs) / tsRange) * innerW;
-      const yFor = (value: number) =>
-        pad.top + innerH - ((value - min) / range) * innerH;
+      const yFor = (value: number) => pad.top + innerH - ((value - min) / range) * innerH;
 
       g.clearRect(0, 0, width, height);
       g.fillStyle = "#0f1f2c";
@@ -197,9 +202,7 @@ export default function BatteryTrendChart({
 
       usable.forEach((s, index) => {
         const color = s.color ?? COLORS[index % COLORS.length]!;
-        const ordered = [...s.samples].sort(
-          (a, b) => Date.parse(a.at) - Date.parse(b.at),
-        );
+        const ordered = [...s.samples].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
         g.strokeStyle = color;
         g.lineWidth = 2;
         g.beginPath();
@@ -296,7 +299,11 @@ export default function BatteryTrendChart({
         </div>
         <ul class="m-0 mb-2 p-0 list-none flex flex-wrap gap-x-3 gap-y-1 text-xs">
           {usable.map((s, i) => (
-            <li key={s.label} class="whitespace-nowrap" style={{ color: s.color ?? COLORS[i % COLORS.length] }}>
+            <li
+              key={s.label}
+              class="whitespace-nowrap"
+              style={{ color: s.color ?? COLORS[i % COLORS.length] }}
+            >
               {s.label}
             </li>
           ))}
@@ -364,10 +371,7 @@ export default function BatteryTrendChart({
               <p class="history-chart-tooltip-time">{formatHoverTime(hover.at)}</p>
               <ul class="history-chart-tooltip-list">
                 <li>
-                  <span
-                    class="history-chart-tooltip-swatch"
-                    style={{ background: hover.color }}
-                  />
+                  <span class="history-chart-tooltip-swatch" style={{ background: hover.color }} />
                   <span class="history-chart-tooltip-label">{hover.label}</span>
                   <span class="history-chart-tooltip-value">
                     {hover.value.toFixed(0)}

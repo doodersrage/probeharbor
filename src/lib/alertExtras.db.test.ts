@@ -39,9 +39,10 @@ describe("alert settings history (Neon)", () => {
         { ...DEFAULT_ALERT_SETTINGS, freezeThresholdF: 31 + i },
       );
     }
-    const [{ n }] = (await sql<{ n: number }>("select count(*) as n from public.alert_settings_history where user_id = $1", [
-      userId,
-    ])) as [{ n: number }];
+    const [{ n }] = (await sql<{ n: number }>(
+      "select count(*) as n from public.alert_settings_history where user_id = $1",
+      [userId],
+    )) as [{ n: number }];
     expect(n).toBe(HISTORY_KEEP);
 
     const list = await listAlertSettingsHistory(userId, 3);
@@ -50,14 +51,20 @@ describe("alert settings history (Neon)", () => {
 
     // The newest entry kept the version before it: threshold 30 + 24.
     await expect(restoreAlertSettings(userId, list[0]!.id)).resolves.toEqual({ error: null });
-    expect((await getAlertSettingsForUser(userId, {})).freezeThresholdF).toBe(30 + HISTORY_KEEP + 4);
+    expect((await getAlertSettingsForUser(userId, {})).freezeThresholdF).toBe(
+      30 + HISTORY_KEEP + 4,
+    );
   });
 
   it("a restore can't use another user's history", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     const b = await insertTestUser(db.client(), "b@example.com");
     await saveAlertSettingsForUser(b, DEFAULT_ALERT_SETTINGS);
-    await recordAlertSettingsChange(b, { ...DEFAULT_ALERT_SETTINGS, enabled: true }, DEFAULT_ALERT_SETTINGS);
+    await recordAlertSettingsChange(
+      b,
+      { ...DEFAULT_ALERT_SETTINGS, enabled: true },
+      DEFAULT_ALERT_SETTINGS,
+    );
     const [theirs] = await listAlertSettingsHistory(b, 1);
     await expect(restoreAlertSettings(a, theirs!.id)).resolves.toEqual({ error: "not_found" });
     expect(await listAlertSettingsHistory(a)).toEqual([]);
@@ -69,7 +76,10 @@ describe("snooze links (Neon)", () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await saveAlertSettingsForUser(userId, DEFAULT_ALERT_SETTINGS);
     const token = await createSnoozeToken(userId, 6);
-    const [stored] = await sql<{ token: string }>("select token from public.alert_snooze_tokens where user_id = $1", [userId]);
+    const [stored] = await sql<{ token: string }>(
+      "select token from public.alert_snooze_tokens where user_id = $1",
+      [userId],
+    );
     expect(stored?.token).toBe(await sha256Hex(token)); // only the hash is stored
 
     const first = await applySnoozeToken(token);
@@ -83,7 +93,11 @@ describe("snooze links (Neon)", () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await saveAlertSettingsForUser(userId, DEFAULT_ALERT_SETTINGS);
     const token = await createSnoozeToken(userId, 2);
-    const results = await Promise.all([applySnoozeToken(token), applySnoozeToken(token), applySnoozeToken(token)]);
+    const results = await Promise.all([
+      applySnoozeToken(token),
+      applySnoozeToken(token),
+      applySnoozeToken(token),
+    ]);
     expect(results.filter((r) => r.ok)).toHaveLength(1);
   });
 
@@ -91,7 +105,10 @@ describe("snooze links (Neon)", () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await saveAlertSettingsForUser(userId, DEFAULT_ALERT_SETTINGS);
     const token = await createSnoozeToken(userId, 2);
-    await sql("update public.alert_snooze_tokens set expires_at = now() - interval '1 minute' where user_id = $1", [userId]);
+    await sql(
+      "update public.alert_snooze_tokens set expires_at = now() - interval '1 minute' where user_id = $1",
+      [userId],
+    );
 
     const expired = await applySnoozeToken(token);
     const unknown = await applySnoozeToken("f".repeat(32));
@@ -110,7 +127,8 @@ describe("snooze links (Neon)", () => {
       [owner],
     );
     await addHouseholdMemberByUserId(h!.household_id, member, "member");
-    for (const u of [owner, member, outsider]) await saveAlertSettingsForUser(u, DEFAULT_ALERT_SETTINGS);
+    for (const u of [owner, member, outsider])
+      await saveAlertSettingsForUser(u, DEFAULT_ALERT_SETTINGS);
 
     await expect(applySnoozeForHouseholdMembers(h!.household_id, 3)).resolves.toBe(2);
     expect((await getAlertSettingsForUser(owner, {})).snoozeUntil).not.toBeNull();
@@ -135,14 +153,38 @@ describe("webhook delivery log (Neon)", () => {
       errorMessage: "Server error",
       durationMs: 120,
     });
-    await recordWebhookDelivery({ userId: a, webhookType: "reading", url: "https://n8n.example.org/x", statusCode: 200, success: true });
-    await recordWebhookDelivery({ userId: b, webhookType: "reading", url: "https://other.example/x", statusCode: 200, success: true });
-    await recordWebhookDelivery({ userId: null, webhookType: "reading", url: "https://x.example/", statusCode: 200, success: true });
+    await recordWebhookDelivery({
+      userId: a,
+      webhookType: "reading",
+      url: "https://n8n.example.org/x",
+      statusCode: 200,
+      success: true,
+    });
+    await recordWebhookDelivery({
+      userId: b,
+      webhookType: "reading",
+      url: "https://other.example/x",
+      statusCode: 200,
+      success: true,
+    });
+    await recordWebhookDelivery({
+      userId: null,
+      webhookType: "reading",
+      url: "https://x.example/",
+      statusCode: 200,
+      success: true,
+    });
 
     const rows = await listRecentWebhookDeliveries(a);
     expect(rows.map((r) => r.url_host).sort()).toEqual(["hooks.example.com", "n8n.example.org"]);
-    expect(rows.find((r) => r.url_host === "hooks.example.com")).toMatchObject({ status_code: 500, success: false, duration_ms: 120 });
-    const [{ n }] = (await sql<{ n: number }>("select count(*) as n from public.webhook_deliveries")) as [{ n: number }];
+    expect(rows.find((r) => r.url_host === "hooks.example.com")).toMatchObject({
+      status_code: 500,
+      success: false,
+      duration_ms: 120,
+    });
+    const [{ n }] = (await sql<{ n: number }>(
+      "select count(*) as n from public.webhook_deliveries",
+    )) as [{ n: number }];
     expect(n).toBe(3);
   });
 });

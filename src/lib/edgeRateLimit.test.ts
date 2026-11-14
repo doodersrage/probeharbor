@@ -14,7 +14,10 @@ describe("checkEdgeRateLimit", () => {
   });
 
   it("passes the key and returns the binding's verdict", async () => {
-    const limit = vi.fn().mockResolvedValueOnce({ success: true }).mockResolvedValueOnce({ success: false });
+    const limit = vi
+      .fn()
+      .mockResolvedValueOnce({ success: true })
+      .mockResolvedValueOnce({ success: false });
     bindings.INGEST_RATE_LIMITER = { limit };
 
     expect(await checkEdgeRateLimit("INGEST_RATE_LIMITER", "device-hash")).toBe(true);

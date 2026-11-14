@@ -14,20 +14,27 @@ const message = (error: unknown) => (error instanceof Error ? error.message : St
 
 // ---- household status pages -------------------------------------------------
 
-export async function insertStatusPage(householdId: string, tokenHash: string, label: string): Promise<{ error: string | null }> {
+export async function insertStatusPage(
+  householdId: string,
+  tokenHash: string,
+  label: string,
+): Promise<{ error: string | null }> {
   try {
-    await query("insert into public.status_page_tokens (household_id, token_hash, label) values ($1, $2, $3)", [
-      householdId,
-      tokenHash,
-      label,
-    ]);
+    await query(
+      "insert into public.status_page_tokens (household_id, token_hash, label) values ($1, $2, $3)",
+      [householdId, tokenHash, label],
+    );
     return { error: null };
   } catch (error) {
     return { error: message(error) };
   }
 }
 
-export async function regenerateStatusPage(householdId: string, id: string, tokenHash: string): Promise<{ error: string | null }> {
+export async function regenerateStatusPage(
+  householdId: string,
+  id: string,
+  tokenHash: string,
+): Promise<{ error: string | null }> {
   try {
     const rows = await query(
       `update public.status_page_tokens set token_hash = $3, token = null
@@ -54,14 +61,19 @@ export async function listStatusPages(householdId: string): Promise<StatusPageTo
 
 export async function revokeStatusPage(householdId: string, id: string): Promise<void> {
   try {
-    await query("update public.status_page_tokens set revoked_at = now() where id = $1 and household_id = $2", [id, householdId]);
+    await query(
+      "update public.status_page_tokens set revoked_at = now() where id = $1 and household_id = $2",
+      [id, householdId],
+    );
   } catch (error) {
     console.error("Failed to revoke status page:", message(error));
   }
 }
 
 /** Active (not revoked) page by token hash. */
-export async function resolveStatusPage(tokenHash: string): Promise<{ householdId: string } | null> {
+export async function resolveStatusPage(
+  tokenHash: string,
+): Promise<{ householdId: string } | null> {
   try {
     const [byHash] = await query<{ household_id: string }>(
       "select household_id from public.status_page_tokens where token_hash = $1 and revoked_at is null",
@@ -76,7 +88,9 @@ export async function resolveStatusPage(tokenHash: string): Promise<{ householdI
 // ---- public status email subscriptions -------------------------------------
 
 /** Throws on failure. */
-export async function findStatusSubscriber(email: string): Promise<{ id: string; confirmed_at: string | null } | null> {
+export async function findStatusSubscriber(
+  email: string,
+): Promise<{ id: string; confirmed_at: string | null } | null> {
   const [row] = await query<{ id: string; confirmed_at: string | null }>(
     "select id, confirmed_at from public.status_subscriptions where email = $1",
     [email],
@@ -101,7 +115,10 @@ export async function writeStatusSubscriberToken(email: string, tokenHash: strin
   );
 }
 
-export async function confirmStatusSubscriber(tokenHash: string, legacyRaw: string): Promise<boolean> {
+export async function confirmStatusSubscriber(
+  tokenHash: string,
+  legacyRaw: string,
+): Promise<boolean> {
   try {
     const rows = await query(
       `update public.status_subscriptions set confirmed_at = coalesce(confirmed_at, now())
@@ -114,7 +131,10 @@ export async function confirmStatusSubscriber(tokenHash: string, legacyRaw: stri
   }
 }
 
-export async function deleteStatusSubscriber(tokenHash: string, legacyRaw: string): Promise<boolean> {
+export async function deleteStatusSubscriber(
+  tokenHash: string,
+  legacyRaw: string,
+): Promise<boolean> {
   try {
     const rows = await query(
       "delete from public.status_subscriptions where token_hash = $1 or token = $2 returning id",
@@ -129,7 +149,9 @@ export async function deleteStatusSubscriber(tokenHash: string, legacyRaw: strin
 /** For a signed unsubscribe link (the signature is checked by the caller). */
 export async function deleteStatusSubscriberById(id: string): Promise<boolean> {
   try {
-    const rows = await query("delete from public.status_subscriptions where id = $1 returning id", [id]);
+    const rows = await query("delete from public.status_subscriptions where id = $1 returning id", [
+      id,
+    ]);
     return rows.length > 0;
   } catch {
     return false;
@@ -141,8 +163,14 @@ export async function deleteStatusSubscriberById(id: string): Promise<boolean> {
  * unsubscribe token (hash stored). Replaces the previous hashed token; a
  * legacy raw `token` is left for 0004. Throws on failure.
  */
-export async function rotateStatusSubscriberTokenHash(id: string, tokenHash: string): Promise<void> {
-  await query("update public.status_subscriptions set token_hash = $2 where id = $1", [id, tokenHash]);
+export async function rotateStatusSubscriberTokenHash(
+  id: string,
+  tokenHash: string,
+): Promise<void> {
+  await query("update public.status_subscriptions set token_hash = $2 where id = $1", [
+    id,
+    tokenHash,
+  ]);
 }
 
 /** Throws on failure. No tokens: unsubscribe links are signed per send. */

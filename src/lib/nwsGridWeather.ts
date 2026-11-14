@@ -9,8 +9,7 @@ export type NwsGridForecast = {
   shortForecast: string | null;
 };
 
-const NWS_USER_AGENT =
-  import.meta.env.SITE_URL?.trim() || "https://probeharbor.dev";
+const NWS_USER_AGENT = import.meta.env.SITE_URL?.trim() || "https://probeharbor.dev";
 
 /** Fetch NWS gridpoint forecast as a secondary weather source. */
 export async function fetchNwsGridForecast(
@@ -85,9 +84,7 @@ export async function fetchNwsGridForecast(
   }
 }
 
-export async function fetchNwsGridForCity(
-  cityId: string,
-): Promise<NwsGridForecast | null> {
+export async function fetchNwsGridForCity(cityId: string): Promise<NwsGridForecast | null> {
   const coords = getWeatherPresetCoords(cityId);
   if (!coords) return null;
   return fetchNwsGridForecast(coords.lat, coords.lon);

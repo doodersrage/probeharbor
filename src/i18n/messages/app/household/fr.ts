@@ -2,7 +2,8 @@ import type { HouseholdMessages } from "./en";
 
 const fr: HouseholdMessages = {
   title: "Foyer",
-  subtitle: "Partagez appareils et historique. Invitez par e-mail : les invités n’ont pas besoin d’avoir déjà un compte.",
+  subtitle:
+    "Partagez appareils et historique. Invitez par e-mail : les invités n’ont pas besoin d’avoir déjà un compte.",
   notices: {
     invited: "Invitation envoyée par e-mail.",
     removed: "Membre retiré.",
@@ -29,8 +30,10 @@ const fr: HouseholdMessages = {
     changeRole: "Changer le rôle",
     roleFor: "Rôle de {email}",
     confirmRemove: "Retirer ce membre du foyer ?",
-    confirmLeave: "Quitter ce foyer ? Vous perdrez l’accès à ses appareils partagés et à son historique.",
-    leaveBody: "Vous êtes membre de ce foyer. En le quittant, vous perdez l’accès à ses appareils et à son historique.",
+    confirmLeave:
+      "Quitter ce foyer ? Vous perdrez l’accès à ses appareils partagés et à son historique.",
+    leaveBody:
+      "Vous êtes membre de ce foyer. En le quittant, vous perdez l’accès à ses appareils et à son historique.",
     leave: "Quitter le foyer",
   },
   invite: {
@@ -45,7 +48,8 @@ const fr: HouseholdMessages = {
     roleAlertOnly: "Alertes uniquement (notifications, lecture seule)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> ajoute des accès gestionnaire du bien pour le personnel sur place (sans accès à la facturation).',
-    existingMemberHint: "Inviter quelqu’un qui est déjà membre ne change pas son rôle. Le propriétaire peut changer les rôles dans Membres.",
+    existingMemberHint:
+      "Inviter quelqu’un qui est déjà membre ne change pas son rôle. Le propriétaire peut changer les rôles dans Membres.",
     submit: "Envoyer le lien d’invitation",
     invitesHeading: "Invitations",
     managersOnly: "Seuls le propriétaire et les éditeurs du foyer peuvent envoyer des invitations.",
@@ -59,7 +63,8 @@ const fr: HouseholdMessages = {
     expires: "Expire le {time}",
     copyLink: "Copier le lien",
     confirmCancel: "Annuler cette invitation ?",
-    linkHidden: "Par sécurité, le lien n’est affiché qu’à l’envoi. Utilisez Renvoyer pour en envoyer un nouveau.",
+    linkHidden:
+      "Par sécurité, le lien n’est affiché qu’à l’envoi. Utilisez Renvoyer pour en envoyer un nouveau.",
     resend: "Renvoyer",
     confirmResend: "Envoyer un nouveau lien ? Le lien actuel ne fonctionnera plus.",
     cancel: "Annuler",
@@ -88,7 +93,8 @@ const fr: HouseholdMessages = {
     selected: "Sélectionnée : {label}",
     searchHint: "Si votre ville n’est pas dans la liste, recherchez-la et choisissez un résultat.",
     submit: "Enregistrer les paramètres de la carte du gel",
-    publicListHtml: 'Consultez la liste publique sur <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+    publicListHtml:
+      'Consultez la liste publique sur <a class="text-link" href="/freeze-map">/freeze-map</a>.',
   },
   property: {
     heading: "Ajouter un autre bien",
@@ -99,7 +105,8 @@ const fr: HouseholdMessages = {
     submit: "Créer le bien",
     limit: {
       one: "Votre offre permet {count} foyer en propre ({inUse} utilisé). Passez à Pro pour gérer plusieurs biens.",
-      other: "Votre offre permet {count} foyers en propre ({inUse} utilisés). Passez à Pro pour gérer plusieurs biens.",
+      other:
+        "Votre offre permet {count} foyers en propre ({inUse} utilisés). Passez à Pro pour gérer plusieurs biens.",
     },
   },
   activity: {
@@ -127,7 +134,8 @@ const fr: HouseholdMessages = {
   errors: {
     missing_email: "Saisissez une adresse e-mail pour envoyer une invitation.",
     "1": "Impossible d’effectuer cette action sur le foyer. Veuillez réessayer.",
-    email_mismatch: "Connectez-vous avec l’adresse e-mail à laquelle cette invitation a été envoyée.",
+    email_mismatch:
+      "Connectez-vous avec l’adresse e-mail à laquelle cette invitation a été envoyée.",
     already_member: "Vous êtes déjà membre de ce foyer.",
     expired: "Cette invitation a expiré. Demandez-en une nouvelle.",
     invalid: "Ce lien d’invitation n’est pas valide.",
@@ -139,7 +147,8 @@ const fr: HouseholdMessages = {
     property_limit:
       "Vous avez atteint la limite de biens en propre de votre offre. Passez à une offre supérieure pour ajouter des foyers.",
     portfolio_required: "Les invitations de gestionnaire du bien nécessitent l’offre Portfolio.",
-    owner_required: "Seul le propriétaire du foyer peut retirer des membres ou changer leurs rôles.",
+    owner_required:
+      "Seul le propriétaire du foyer peut retirer des membres ou changer leurs rôles.",
     cannot_change_owner: "Le rôle du propriétaire du foyer ne peut pas être modifié.",
     not_a_member: "Cette personne n’est pas membre de ce foyer.",
   },

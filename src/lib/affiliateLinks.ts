@@ -24,8 +24,7 @@ function cleanTag(value: string | undefined): string | null {
 
 export function getAmazonAssociateTag(): string | null {
   return cleanTag(
-    getRuntimeEnv("PUBLIC_AMAZON_ASSOCIATE_TAG") ??
-      getRuntimeEnv("AMAZON_ASSOCIATE_TAG"),
+    getRuntimeEnv("PUBLIC_AMAZON_ASSOCIATE_TAG") ?? getRuntimeEnv("AMAZON_ASSOCIATE_TAG"),
   );
 }
 

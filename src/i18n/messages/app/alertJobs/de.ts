@@ -5,8 +5,10 @@ const de: AlertJobsMessages = {
     confirm: {
       eyebrow: "Frostwarnungen",
       title: "Bestätige deine Frostwarnungen",
-      intro: "Klick unten, dann schicken wir dir am Nachmittag vor jeder Frostnacht in {place} eine E-Mail.",
-      ignore: "Wenn du das nicht angefordert hast, ignoriere diese Nachricht. Ohne Bestätigung bekommst du nichts.",
+      intro:
+        "Klick unten, dann schicken wir dir am Nachmittag vor jeder Frostnacht in {place} eine E-Mail.",
+      ignore:
+        "Wenn du das nicht angefordert hast, ignoriere diese Nachricht. Ohne Bestätigung bekommst du nichts.",
       cta: "Frostwarnungen bestätigen",
       footerNote:
         "Du erhältst diese E-Mail, weil jemand diese Adresse in der Rohrfrost-Vorhersage von ProbeHarbor eingegeben hat.",
@@ -15,9 +17,11 @@ const de: AlertJobsMessages = {
     move: {
       eyebrow: "Frostwarnungen",
       title: "Frostwarnungen auf {place} umstellen?",
-      intro: "Diese Adresse bekommt schon Frostwarnungen für {current}. Gerade hat jemand gebeten, sie stattdessen für {place} zu schicken.",
+      intro:
+        "Diese Adresse bekommt schon Frostwarnungen für {current}. Gerade hat jemand gebeten, sie stattdessen für {place} zu schicken.",
       keep: "Nichts ändert sich, bis du unten klickst. Deine Warnungen für {current} kommen weiter wie gewohnt.",
-      ignore: "Wenn du das nicht angefordert hast, ignoriere diese Nachricht. Der Link funktioniert nach 7 Tagen nicht mehr.",
+      ignore:
+        "Wenn du das nicht angefordert hast, ignoriere diese Nachricht. Der Link funktioniert nach 7 Tagen nicht mehr.",
       cta: "Frostwarnungen umstellen",
       footerNote:
         "Du erhältst diese E-Mail, weil jemand diese Adresse in der Rohrfrost-Vorhersage von ProbeHarbor eingegeben hat.",
@@ -58,12 +62,15 @@ const de: AlertJobsMessages = {
       },
       above: "Bleibt über dem Gefrierpunkt (Tiefstwert {low}).",
       wind: "Wind bis {wind} bei Frost entzieht ungeschützten Rohren schneller Wärme.",
-      nextDay: "Auch der nächste Tag bleibt unter dem Gefrierpunkt, unbeheizte Bereiche erwärmen sich also nicht wieder.",
+      nextDay:
+        "Auch der nächste Tag bleibt unter dem Gefrierpunkt, unbeheizte Bereiche erwärmen sich also nicht wieder.",
     },
   },
   stuck: {
-    faultReset: "der Wert, den ein DS18B20 nach einem Reset meldet (oft schwache Stromversorgung oder ein langes Kabel)",
-    faultDisconnected: "der Wert, den die DS18B20-Bibliothek meldet, wenn der Fühler nicht verbunden ist",
+    faultReset:
+      "der Wert, den ein DS18B20 nach einem Reset meldet (oft schwache Stromversorgung oder ein langes Kabel)",
+    faultDisconnected:
+      "der Wert, den die DS18B20-Bibliothek meldet, wenn der Fühler nicht verbunden ist",
     faultMessage:
       "{label} zeigt {value} °F, {why}. Prüfe die Verkabelung des Fühlers; das ist keine echte Temperatur.",
     faultDetail: "{label} zeigt {value} {unit} (Sensorfehler), Verkabelung prüfen",
@@ -84,7 +91,8 @@ const de: AlertJobsMessages = {
   tenant: {
     greetingName: "Hallo {name},",
     greeting: "Hallo,",
-    intro: "Die Hausverwaltung von {household} hat uns gebeten, dir eine Frostwarnung weiterzuleiten:",
+    intro:
+      "Die Hausverwaltung von {household} hat uns gebeten, dir eine Frostwarnung weiterzuleiten:",
     eyebrow: "Weitergeleiteter Alarm für Mieter",
     footerNote:
       "Du erhältst diese E-Mail, weil der Eigentümer dich als Ansprechpartner vor Ort eingetragen hat. Das ist kein vollständiger Dashboard-Zugang.",
@@ -108,13 +116,17 @@ const de: AlertJobsMessages = {
     relayFailed: "Weiterleitung an Mieter fehlgeschlagen.",
     noWebhook: "Kein ausgehender Webhook eingerichtet.",
     ackFailed: "Alarm konnte nicht bestätigt werden.",
-    raised: "Fehlalarm erledigt: Frost-Schwellenwert auf {value} °F erhöht und Alarme 24 h pausiert.",
+    raised:
+      "Fehlalarm erledigt: Frost-Schwellenwert auf {value} °F erhöht und Alarme 24 h pausiert.",
     falseAlarmTip: "Als Fehlalarm markiert: Alarme 24 h pausiert. Vorschlag: {tip}. Öffne {href}",
     results: {
       ack: "Alarm als erledigt markiert.",
-      snooze_1h: "Alarm erledigt: andere Alarme für 1 Stunde pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
-      snooze_4h: "Alarm erledigt: andere Alarme für 4 Stunden pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
-      snooze_24h: "Alarm erledigt: andere Alarme für 24 Stunden pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
+      snooze_1h:
+        "Alarm erledigt: andere Alarme für 1 Stunde pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
+      snooze_4h:
+        "Alarm erledigt: andere Alarme für 4 Stunden pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
+      snooze_24h:
+        "Alarm erledigt: andere Alarme für 24 Stunden pausiert. Frostalarme bleiben aktiv; dieser wiederholt sich nicht, solange er andauert.",
       false_alarm:
         "Als Fehlalarm markiert: Alarme 24 h pausiert. Prüfe die Position des Fühlers, wenn das öfter passiert.",
       raise_threshold: "Fehlalarm erledigt und Frost-Schwellenwert erhöht.",
@@ -124,7 +136,8 @@ const de: AlertJobsMessages = {
   },
   telegram: {
     help: "Befehle: /status [Name], /snooze [Stunden], /vacation [Tage], /help",
-    commandsDisabled: "Telegram-Befehle sind deaktiviert, bis du unter Alarme eine Chat-ID speicherst.",
+    commandsDisabled:
+      "Telegram-Befehle sind deaktiviert, bis du unter Alarme eine Chat-ID speicherst.",
     snoozed: {
       one: "Alarme für {count} Stunde pausiert. Frost- und Leckalarme kommen trotzdem.",
       other: "Alarme für {count} Stunden pausiert. Frost- und Leckalarme kommen trotzdem.",
@@ -162,7 +175,10 @@ const de: AlertJobsMessages = {
     missingToken: "Token fehlt",
     resultInvalid: "Pausier-Link ungültig oder bereits verwendet.",
     resultExpired: "Pausier-Link abgelaufen.",
-    resultSnoozed: { one: "Alarme für {count} Stunde pausiert.", other: "Alarme für {count} Stunden pausiert." },
+    resultSnoozed: {
+      one: "Alarme für {count} Stunde pausiert.",
+      other: "Alarme für {count} Stunden pausiert.",
+    },
   },
 };
 

@@ -22,9 +22,7 @@ export type HistorySavedView = {
   created_at: string;
 };
 
-export function paramsFromSearchParams(
-  search: URLSearchParams,
-): HistorySavedViewParams {
+export function paramsFromSearchParams(search: URLSearchParams): HistorySavedViewParams {
   const params: HistorySavedViewParams = {};
   const feed = search.get("feed")?.trim();
   const probe = search.get("probe")?.trim();
@@ -63,9 +61,7 @@ export function searchParamsFromView(params: HistorySavedViewParams): string {
   return sp.toString();
 }
 
-export async function listHistorySavedViews(
-  userId: string,
-): Promise<HistorySavedView[]> {
+export async function listHistorySavedViews(userId: string): Promise<HistorySavedView[]> {
   const data = await neonTools.listSavedViews(userId);
   return data.map((row) => ({
     id: row.id as string,

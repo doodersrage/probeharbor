@@ -70,8 +70,7 @@ export async function updateHouseholdFreezeMapSettings(
   householdId: string,
   settings: FreezeMapHouseholdSettings,
 ): Promise<{ error: string | null }> {
-  const cityId =
-    settings.cityId && /^\d+$/.test(settings.cityId) ? settings.cityId : null;
+  const cityId = settings.cityId && /^\d+$/.test(settings.cityId) ? settings.cityId : null;
   return neonPlaces.updateFreezeMapSettings(householdId, {
     optIn: settings.optIn,
     cityId,
@@ -154,9 +153,7 @@ export async function collectFreezeMapSnapshots(): Promise<{
     const min = Math.min(...temps);
     const label =
       household.freeze_map_label?.trim() ||
-      (household.freeze_map_city_id
-        ? cityLabelFromId(household.freeze_map_city_id)
-        : key);
+      (household.freeze_map_city_id ? cityLabelFromId(household.freeze_map_city_id) : key);
     const entry = byCity.get(key) ?? {
       city_id: key,
       city_label: label,
@@ -174,8 +171,7 @@ export async function collectFreezeMapSnapshots(): Promise<{
 
   const capturedAt = new Date().toISOString();
   const rows = [...byCity.values()].map((entry) => {
-    const avg =
-      entry.temps.reduce((a, b) => a + b, 0) / Math.max(entry.temps.length, 1);
+    const avg = entry.temps.reduce((a, b) => a + b, 0) / Math.max(entry.temps.length, 1);
     return {
       city_id: entry.city_id,
       city_label: entry.city_label,
@@ -193,7 +189,10 @@ export async function collectFreezeMapSnapshots(): Promise<{
     try {
       await neonPlaces.insertSnapshots(rows);
     } catch (insertError) {
-      return { cities: 0, error: insertError instanceof Error ? insertError.message : String(insertError) };
+      return {
+        cities: 0,
+        error: insertError instanceof Error ? insertError.message : String(insertError),
+      };
     }
   }
 
@@ -206,9 +205,7 @@ export async function collectFreezeMapSnapshots(): Promise<{
 export async function pruneFreezeMapSnapshots(
   retainDays = 90,
 ): Promise<{ deleted: number; error: string | null }> {
-  const cutoff = new Date(
-    Date.now() - Math.max(1, retainDays) * 24 * 60 * 60 * 1000,
-  ).toISOString();
+  const cutoff = new Date(Date.now() - Math.max(1, retainDays) * 24 * 60 * 60 * 1000).toISOString();
   return neonPlaces.pruneSnapshots(cutoff);
 }
 
@@ -226,16 +223,13 @@ export async function listLatestFreezeMapSnapshots(): Promise<FreezeMapSnapshot[
   }
 
   const latestCapture = data[0]?.captured_at;
-  const batch = latestCapture
-    ? data.filter((row) => row.captured_at === latestCapture)
-    : data;
+  const batch = latestCapture ? data.filter((row) => row.captured_at === latestCapture) : data;
 
   return batch
     .map((row) => redactBelowFloorSnapshot(row))
     .sort(
       (a, b) =>
-        (a.avg_temp_f ?? 999) - (b.avg_temp_f ?? 999) ||
-        a.city_label.localeCompare(b.city_label),
+        (a.avg_temp_f ?? 999) - (b.avg_temp_f ?? 999) || a.city_label.localeCompare(b.city_label),
     );
 }
 
@@ -244,9 +238,7 @@ export async function listLatestFreezeMapSnapshots(): Promise<FreezeMapSnapshot[
  * whose own household count met the sample floor are used: a point captured
  * while the city had one or two homes would expose those homes' readings.
  */
-export async function listFreezeMapSparklines(
-  limitPoints = 7,
-): Promise<Map<string, number[]>> {
+export async function listFreezeMapSparklines(limitPoints = 7): Promise<Map<string, number[]>> {
   const map = new Map<string, number[]>();
   let data: Awaited<ReturnType<typeof neonPlaces.recentSnapshots>>;
   try {

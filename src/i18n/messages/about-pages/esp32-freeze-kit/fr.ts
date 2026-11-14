@@ -1,4 +1,3 @@
-
 /**
  * /about/esp32-freeze-kit body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Dashboard UI paths such as
@@ -51,14 +50,16 @@ const fr: Esp32FreezeKitMessages = {
     pullupWhy: "Obligatoire sur la ligne de données 1-Wire si le lot de la sonde n’en contient pas",
     amazonResistor: "4,7k sur Amazon",
     powerPart: "Alimentation USB",
-    powerWhy: "Bloc secteur ou câble USB-C ; si possible, gardez la carte plus au chaud que l’emplacement de la sonde",
+    powerWhy:
+      "Bloc secteur ou câble USB-C ; si possible, gardez la carte plus au chaud que l’emplacement de la sonde",
     powerBuyHtml: "N’importe quelle alimentation USB 5&nbsp;V d’au moins 500&nbsp;mA",
   },
   bomNoteHtml:
     "Les fiches produit changent : considérez Adafruit comme la nomenclature de référence. Les liens Amazon <code>/dp/</code> de <code>bomLinks</code> sont des alternatives compatibles Partenaires tant que l’annonce existe. Les lots génériques « kit ESP32 + DS18B20 » livrent souvent un DHT11 au lieu d’une sonde étanche : évitez-les.",
   wire: {
     title: "Câblage",
-    diagramAlt: "Schéma de câblage : ESP32 DevKit vers un DS18B20 étanche avec pull-up de 4,7 kiloohms sur le GPIO 4",
+    diagramAlt:
+      "Schéma de câblage : ESP32 DevKit vers un DS18B20 étanche avec pull-up de 4,7 kiloohms sur le GPIO 4",
     captionHtml:
       "Rouge → 3,3&nbsp;V, noir → GND, donnée jaune/blanc → GPIO 4, avec une pull-up de 4,7&nbsp;kΩ entre la donnée et le 3,3&nbsp;V. Le sketch d’ingestion d’exemple utilise le GPIO 4 par défaut.",
     itemsHtml: [

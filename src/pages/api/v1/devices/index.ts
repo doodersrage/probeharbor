@@ -2,20 +2,12 @@ import type { APIRoute } from "astro";
 import { checkApiPlan } from "../../../../lib/apiPlan";
 import { resolveApiKey } from "../../../../lib/apiKeys";
 import { apiKeyScopeDenied } from "../../../../lib/apiKeyScope";
-import {
-  createPushDevice,
-  listHouseholdDevices,
-} from "../../../../lib/devices";
+import { createPushDevice, listHouseholdDevices } from "../../../../lib/devices";
 import { persistEncryptedIngestKey } from "../../../../lib/persistIngestKey";
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function randomKey(): string {

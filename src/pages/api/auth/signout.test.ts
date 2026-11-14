@@ -17,7 +17,8 @@ vi.mock("../../../lib/siteUrl", () => ({
 
 const mockSignOut = vi.fn();
 vi.mock("../../../lib/betterAuthRuntime", () => ({
-  withBetterAuth: (_req: unknown, fn: (auth: unknown) => unknown) => fn({ api: { signOut: mockSignOut } }),
+  withBetterAuth: (_req: unknown, fn: (auth: unknown) => unknown) =>
+    fn({ api: { signOut: mockSignOut } }),
 }));
 
 function makeCookies() {
@@ -27,7 +28,9 @@ function makeCookies() {
 function makeContext(search: Record<string, string> = {}): APIContext {
   const url = new URL("https://example.com/api/auth/signout");
   for (const [k, v] of Object.entries(search)) url.searchParams.set(k, v);
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   const request = new Request(url, { headers: { cookie: "better-auth.session_token=abc" } });
   return { cookies: makeCookies(), redirect, url, request } as unknown as APIContext;
 }
@@ -53,7 +56,9 @@ describe("signout", () => {
     expect(response.status).toBe(302);
     expect(response.headers.get("Location")).toBe("/signin");
     const expired = response.headers.getSetCookie();
-    expect(expired.some((c) => c.startsWith("better-auth.session_token=;") && c.includes("Max-Age=0"))).toBe(true);
+    expect(
+      expired.some((c) => c.startsWith("better-auth.session_token=;") && c.includes("Max-Age=0")),
+    ).toBe(true);
     expect(expired.some((c) => c.startsWith("__Secure-better-auth.session_token=;"))).toBe(true);
   });
 

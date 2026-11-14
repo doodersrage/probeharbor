@@ -1,6 +1,10 @@
 import type { FeedHealthStatus } from "./collectHistory";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
-import { scoreDeviceHealth, type DeviceHealthLabel, type DeviceHealthScore } from "./deviceHealthScore";
+import {
+  scoreDeviceHealth,
+  type DeviceHealthLabel,
+  type DeviceHealthScore,
+} from "./deviceHealthScore";
 import { firmwareUpdateAvailable } from "./firmwareVersion";
 import type { LatestSensorRow } from "./sensorReadings";
 import { formatBoolSensorValue } from "./sensorKinds";
@@ -35,7 +39,12 @@ export type DeviceListRow = {
   href: string;
 };
 
-const HEALTH_RANK: Record<DeviceHealthLabel, number> = { at_risk: 0, watch: 1, offline: 2, healthy: 3 };
+const HEALTH_RANK: Record<DeviceHealthLabel, number> = {
+  at_risk: 0,
+  watch: 1,
+  offline: 2,
+  healthy: 3,
+};
 
 export function deviceHref(deviceId: string): string {
   return `/dashboard/devices/${encodeURIComponent(deviceId)}`;
@@ -61,14 +70,18 @@ export function formatSensorValue(
   if (row.value_bool != null) return formatBoolSensorValue(row.sensor.kind, row.value_bool, locale);
   // fetchLatestSensorValues has already applied the calibration offset.
   if (row.value_num != null) {
-    if (useCelsius && isStoredFahrenheit(row)) return `${libFixed(fToC(row.value_num), 1, locale)} °C`;
+    if (useCelsius && isStoredFahrenheit(row))
+      return `${libFixed(fToC(row.value_num), 1, locale)} °C`;
     return `${libFixed(row.value_num, 1, locale)}${row.sensor.unit ? ` ${row.sensor.unit}` : ""}`;
   }
   return row.value_text ?? null;
 }
 
 /** Temperature first, then anything visible, then anything at all. */
-function headlineSensor(sensors: DeviceSensor[], latestBySensor: Map<string, LatestSensorRow>): LatestSensorRow | null {
+function headlineSensor(
+  sensors: DeviceSensor[],
+  latestBySensor: Map<string, LatestSensorRow>,
+): LatestSensorRow | null {
   const withReading = sensors.filter((s) => latestBySensor.has(s.id));
   const pick =
     withReading.find((s) => s.visible && s.kind === "temperature") ??
@@ -77,13 +90,17 @@ function headlineSensor(sensors: DeviceSensor[], latestBySensor: Map<string, Lat
   return pick ? (latestBySensor.get(pick.id) ?? null) : null;
 }
 
-export function buildDeviceListRows(input: {
-  devices: DeviceWithSensors[];
-  latest: LatestSensorRow[];
-  stuck?: StuckSensor[];
-  feedStatuses?: FeedHealthStatus[];
-  now?: number;
-}, locale: Locale = "en", useCelsius = false): DeviceListRow[] {
+export function buildDeviceListRows(
+  input: {
+    devices: DeviceWithSensors[];
+    latest: LatestSensorRow[];
+    stuck?: StuckSensor[];
+    feedStatuses?: FeedHealthStatus[];
+    now?: number;
+  },
+  locale: Locale = "en",
+  useCelsius = false,
+): DeviceListRow[] {
   const now = input.now ?? Date.now();
   const latestBySensor = new Map(input.latest.map((row) => [row.sensor.id, row]));
   const rows = input.devices.map((device) => {
@@ -125,7 +142,15 @@ export function countDevicesWithoutSpace(devices: DeviceWithSensors[]): number {
 }
 
 /** Space suggestions: what this property already uses, then common ones. */
-export const COMMON_SPACES = ["Garage", "Attic", "Crawlspace", "Basement", "Workshop", "Utility room", "Shed"];
+export const COMMON_SPACES = [
+  "Garage",
+  "Attic",
+  "Crawlspace",
+  "Basement",
+  "Workshop",
+  "Utility room",
+  "Shed",
+];
 
 export function spaceSuggestions(devices: DeviceWithSensors[]): string[] {
   const used = devices.map((d) => d.space?.trim()).filter((s): s is string => Boolean(s));

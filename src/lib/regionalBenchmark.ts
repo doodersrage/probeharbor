@@ -14,17 +14,26 @@ export type RegionalBenchmark = {
 };
 
 /** Compare household coldest probe to opt-in regional freeze-map aggregate. */
-export async function fetchRegionalBenchmark(input: {
-  householdId: string;
-  yourTempF: number;
-}, locale: Locale = "en"): Promise<RegionalBenchmark | null> {
+export async function fetchRegionalBenchmark(
+  input: {
+    householdId: string;
+    yourTempF: number;
+  },
+  locale: Locale = "en",
+): Promise<RegionalBenchmark | null> {
   if (!Number.isFinite(input.yourTempF)) return null;
 
   const { data: household } = (await getHouseholdFields(input.householdId, [
     "freeze_map_city_id",
     "freeze_map_label",
     "freeze_map_opt_in",
-  ])) as { data: { freeze_map_city_id: string | null; freeze_map_label: string | null; freeze_map_opt_in: boolean } | null };
+  ])) as {
+    data: {
+      freeze_map_city_id: string | null;
+      freeze_map_label: string | null;
+      freeze_map_opt_in: boolean;
+    } | null;
+  };
 
   if (!household?.freeze_map_opt_in || !household.freeze_map_city_id) {
     return null;

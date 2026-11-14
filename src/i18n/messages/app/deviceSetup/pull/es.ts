@@ -5,8 +5,7 @@ const es: DeviceSetupPullMessages = {
   subtitle:
     "JSON por HTTPS que consultamos de forma periódica. Las claves de las sondas se importan solas al guardar: cámbiales el nombre abajo si hace falta.",
   exampleSummary: "¿Aún no tienes un feed propio? Prueba el feed de ejemplo",
-  viewOnly:
-    "Acceso de solo lectura: los ajustes de feeds y sondas están ocultos.",
+  viewOnly: "Acceso de solo lectura: los ajustes de feeds y sondas están ocultos.",
   feeds: {
     heading: "URL de los feeds",
     introHtml:
@@ -20,8 +19,7 @@ const es: DeviceSetupPullMessages = {
     namePlaceholder: "Taller",
     url: "URL HTTPS",
     jsonRoot: "Clave raíz JSON",
-    jsonRootTitle:
-      "Una letra o guion bajo, seguido de letras, números o guiones bajos",
+    jsonRootTitle: "Una letra o guion bajo, seguido de letras, números o guiones bajos",
     jsonRootHintHtml:
       "Objeto que contiene las claves de las sondas (normalmente <code>temp</code>).",
     enabled: "Activado",
@@ -44,8 +42,7 @@ const es: DeviceSetupPullMessages = {
     test: "Probar URL del feed",
   },
   probeMapper: {
-    importedAuto:
-      "Claves de sonda importadas desde tu feed: cámbiales el nombre abajo y guarda.",
+    importedAuto: "Claves de sonda importadas desde tu feed: cámbiales el nombre abajo y guarda.",
     enterUrl: "Primero introduce la URL de un feed.",
     noProbes: "No se encontraron sondas en el feed.",
     imported: {
@@ -54,8 +51,7 @@ const es: DeviceSetupPullMessages = {
     },
     unableRead: "No se pudo leer el feed.",
     appliedSuggested: "Nombres sugeridos aplicados: edítalos abajo y guarda.",
-    hiddenAvg:
-      'Sondas "avg" ocultas en Inicio: guarda la configuración para conservarlo.',
+    hiddenAvg: 'Sondas "avg" ocultas en Inicio: guarda la configuración para conservarlo.',
     saveFailed: "No se pudo guardar la configuración de consulta.",
     unableSave: "No se pudo guardar la configuración de consulta.",
     saveFeedFirst:
@@ -92,8 +88,7 @@ const es: DeviceSetupPullMessages = {
     fetchFailed: "La consulta falló.",
     errorPrefix: "Error: {message}",
     notFetched: "Sin consultar",
-    complete:
-      "Consulta completada: actualiza Inicio para ver las nuevas lecturas.",
+    complete: "Consulta completada: actualiza Inicio para ver las nuevas lecturas.",
     couldNotFetch: "No se pudieron consultar los feeds.",
     rowFailed: "La consulta falló",
     fetchNow: "Consultar ahora",

@@ -18,7 +18,8 @@ const ptBr: AuthSigninMessages = {
     submit: "Entrar com e-mail",
     forgotPassword: "Esqueceu a senha?",
     passkeySignIn: "Entrar com uma passkey",
-    passkeyFailed: "O login com passkey não funcionou. Tente de novo ou entre com seu e-mail e senha.",
+    passkeyFailed:
+      "O login com passkey não funcionou. Tente de novo ou entre com seu e-mail e senha.",
     newHere: "Novo por aqui?",
     createAccount: "Crie uma conta grátis",
     privacy: "Privacidade",
@@ -32,8 +33,7 @@ const ptBr: AuthSigninMessages = {
     lede: "Grátis para sempre, sem cartão de crédito. Depois do cadastro você vai para Dispositivos para conectar sua primeira sonda ou seu alerta por contato de umidade.",
     preferLook: "Prefere dar uma olhada antes?",
     liveDemo: "Demo ao vivo (sem conta)",
-    referral:
-      "Código de indicação {code} aplicado. O teste do Pro inclui 7 dias extras.",
+    referral: "Código de indicação {code} aplicado. O teste do Pro inclui 7 dias extras.",
     email: "E-mail",
     password: "Senha",
     passwordHint: "Use pelo menos 8 caracteres.",
@@ -48,7 +48,8 @@ const ptBr: AuthSigninMessages = {
       weak_password: "A senha deve ter pelo menos 8 caracteres.",
       generic: "Algo deu errado ao criar sua conta. Tente novamente.",
       signup_failed: "Algo deu errado ao criar sua conta. Tente novamente.",
-      email_taken: "Este e-mail talvez já tenha uma conta. Entre ou redefina sua senha se você a esqueceu.",
+      email_taken:
+        "Este e-mail talvez já tenha uma conta. Entre ou redefina sua senha se você a esqueceu.",
     },
   },
   oauth: {
@@ -60,10 +61,12 @@ const ptBr: AuthSigninMessages = {
   },
   errors: {
     missing_fields: "Informe seu e-mail e sua senha.",
-    invalid_credentials: "Não conseguimos fazer seu login. Confira seu e-mail e senha e tente novamente.",
+    invalid_credentials:
+      "Não conseguimos fazer seu login. Confira seu e-mail e senha e tente novamente.",
     email_not_confirmed:
       "Confirme seu endereço de e-mail antes de entrar. Procure o link de confirmação na sua caixa de entrada.",
-    oauth_failed: "Não conseguimos iniciar o login social. Tente novamente ou entre com seu e-mail.",
+    oauth_failed:
+      "Não conseguimos iniciar o login social. Tente novamente ou entre com seu e-mail.",
     oauth_denied: "O login social foi cancelado. Tente novamente quando quiser.",
     oauth_provider_failed:
       "O login social falhou no provedor. Tente novamente ou entre com seu e-mail.",
@@ -90,7 +93,8 @@ const ptBr: AuthSigninMessages = {
         "Esse código estava incorreto ou expirou. Digite um código novo do seu app autenticador.",
       invalid_yubikey:
         "Esse OTP da YubiKey não foi aceito. Clique no campo YubiKey OTP, toque na sua chave (toque longo) e espere o código completo antes de enviar.",
-      replayed_otp: "Esse OTP da YubiKey já foi usado. Toque na sua chave de novo para gerar um código novo.",
+      replayed_otp:
+        "Esse OTP da YubiKey já foi usado. Toque na sua chave de novo para gerar um código novo.",
       yubikey_not_enrolled:
         "Essa YubiKey não está cadastrada nesta conta. Adicione-a em Configurações → Segurança ou use o código do autenticador.",
       no_factor:

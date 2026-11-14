@@ -74,14 +74,27 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "Will my pipes freeze tonight? (forecast)", href: "/pipe-freeze-forecast" },
-      { label: "What temperature should a freeze alarm be set to?", href: "/answers/freeze-alarm-temperature-setting" },
-      { label: "How long does it take for pipes to freeze?", href: "/answers/how-long-for-pipes-to-freeze" },
+      {
+        label: "What temperature should a freeze alarm be set to?",
+        href: "/answers/freeze-alarm-temperature-setting",
+      },
+      {
+        label: "How long does it take for pipes to freeze?",
+        href: "/answers/how-long-for-pipes-to-freeze",
+      },
       { label: "ESP32 freeze kit parts list", href: "/about/esp32-freeze-kit" },
       { label: "Garage heater failure scenario", href: "/stories/garage-freeze-alert" },
     ],
     sources: [
-      { label: "At what temperature do pipes freeze? (KXAN, citing University of Illinois research)", url: "https://www.kxan.com/weather/weather-blog/at-what-temperature-do-pipes-freeze/" },
-      { label: "How pipes freeze and burst (Farm Bureau Insurance)", url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst" },
+      {
+        label:
+          "At what temperature do pipes freeze? (KXAN, citing University of Illinois research)",
+        url: "https://www.kxan.com/weather/weather-blog/at-what-temperature-do-pipes-freeze/",
+      },
+      {
+        label: "How pipes freeze and burst (Farm Bureau Insurance)",
+        url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst",
+      },
     ],
   },
   {
@@ -128,8 +141,14 @@ export const answers: Answer[] = [
       },
     ],
     related: [
-      { label: "At what temperature do pipes freeze in a garage?", href: "/answers/garage-pipe-freeze-temperature" },
-      { label: "Where should a crawlspace freeze sensor go?", href: "/answers/crawlspace-freeze-sensor-placement" },
+      {
+        label: "At what temperature do pipes freeze in a garage?",
+        href: "/answers/garage-pipe-freeze-temperature",
+      },
+      {
+        label: "Where should a crawlspace freeze sensor go?",
+        href: "/answers/crawlspace-freeze-sensor-placement",
+      },
       { label: "Freeze season checklist", href: "/freeze-season" },
     ],
   },
@@ -178,8 +197,14 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "Crawlspace vent scenario", href: "/stories/crawlspace-pipe-watch" },
-      { label: "DS18B20 or DHT22: which sensor is better for freeze monitoring?", href: "/answers/ds18b20-vs-dht22-freeze-sensor" },
-      { label: "What temperature should a freeze alarm be set to?", href: "/answers/freeze-alarm-temperature-setting" },
+      {
+        label: "DS18B20 or DHT22: which sensor is better for freeze monitoring?",
+        href: "/answers/ds18b20-vs-dht22-freeze-sensor",
+      },
+      {
+        label: "What temperature should a freeze alarm be set to?",
+        href: "/answers/freeze-alarm-temperature-setting",
+      },
       { label: "ESP32 freeze kit parts list", href: "/about/esp32-freeze-kit" },
     ],
   },
@@ -233,9 +258,18 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "ProbeHarbor Home Assistant integration", href: "/integrations/home-assistant" },
-      { label: "How do I build a freeze alert with ESPHome?", href: "/answers/esphome-freeze-alert" },
-      { label: "Will a Wi-Fi freeze alarm work during a power outage?", href: "/answers/wifi-freeze-alarm-power-outage" },
-      { label: "What temperature should a freeze alarm be set to?", href: "/answers/freeze-alarm-temperature-setting" },
+      {
+        label: "How do I build a freeze alert with ESPHome?",
+        href: "/answers/esphome-freeze-alert",
+      },
+      {
+        label: "Will a Wi-Fi freeze alarm work during a power outage?",
+        href: "/answers/wifi-freeze-alarm-power-outage",
+      },
+      {
+        label: "What temperature should a freeze alarm be set to?",
+        href: "/answers/freeze-alarm-temperature-setting",
+      },
       { label: "MQTT bridge", href: "/about/mqtt-bridge" },
     ],
   },
@@ -284,7 +318,10 @@ export const answers: Answer[] = [
     ],
     sources: [
       { label: "Temp Stick common questions", url: "https://tempstick.com/common-questions/" },
-      { label: "GoveeLife Smart Thermometer R1", url: "https://us.govee.com/products/goveelife-smart-thermometer-r1" },
+      {
+        label: "GoveeLife Smart Thermometer R1",
+        url: "https://us.govee.com/products/goveelife-smart-thermometer-r1",
+      },
     ],
   },
   {
@@ -333,13 +370,23 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "Will my pipes freeze tonight? (forecast)", href: "/pipe-freeze-forecast" },
-      { label: "At what temperature do pipes freeze in a garage?", href: "/answers/garage-pipe-freeze-temperature" },
+      {
+        label: "At what temperature do pipes freeze in a garage?",
+        href: "/answers/garage-pipe-freeze-temperature",
+      },
       { label: "Pipe freeze time calculator", href: "/freeze-time-calculator" },
       { label: "Time-to-freeze explained", href: "/about/time-to-freeze" },
-      { label: "Should I let faucets drip to prevent frozen pipes?", href: "/answers/drip-faucets-to-prevent-frozen-pipes" },
+      {
+        label: "Should I let faucets drip to prevent frozen pipes?",
+        href: "/answers/drip-faucets-to-prevent-frozen-pipes",
+      },
     ],
     sources: [
-      { label: "How pipes freeze and burst (Farm Bureau Insurance, citing University of Illinois research)", url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst" },
+      {
+        label:
+          "How pipes freeze and burst (Farm Bureau Insurance, citing University of Illinois research)",
+        url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst",
+      },
     ],
   },
   {
@@ -386,12 +433,21 @@ export const answers: Answer[] = [
       },
     ],
     related: [
-      { label: "How can I monitor the temperature in a cabin remotely?", href: "/answers/remote-cabin-temperature-monitoring" },
-      { label: "What temperature should a freeze alarm be set to?", href: "/answers/freeze-alarm-temperature-setting" },
+      {
+        label: "How can I monitor the temperature in a cabin remotely?",
+        href: "/answers/remote-cabin-temperature-monitoring",
+      },
+      {
+        label: "What temperature should a freeze alarm be set to?",
+        href: "/answers/freeze-alarm-temperature-setting",
+      },
       { label: "Freeze season checklist", href: "/freeze-season" },
     ],
     sources: [
-      { label: "Frozen pipes: prevention and thawing (American Red Cross)", url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html" },
+      {
+        label: "Frozen pipes: prevention and thawing (American Red Cross)",
+        url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html",
+      },
     ],
   },
   {
@@ -439,13 +495,22 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "Will my pipes freeze tonight? (forecast)", href: "/pipe-freeze-forecast" },
-      { label: "How long does it take for pipes to freeze?", href: "/answers/how-long-for-pipes-to-freeze" },
+      {
+        label: "How long does it take for pipes to freeze?",
+        href: "/answers/how-long-for-pipes-to-freeze",
+      },
       { label: "How do I thaw a frozen pipe safely?", href: "/answers/how-to-thaw-frozen-pipes" },
       { label: "Cold-snap alert playbook", href: "/about/cold-snap-playbook" },
     ],
     sources: [
-      { label: "Frozen pipes: prevention and thawing (American Red Cross)", url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html" },
-      { label: "How pipes freeze and burst (Farm Bureau Insurance)", url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst" },
+      {
+        label: "Frozen pipes: prevention and thawing (American Red Cross)",
+        url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html",
+      },
+      {
+        label: "How pipes freeze and burst (Farm Bureau Insurance)",
+        url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst",
+      },
     ],
   },
   {
@@ -494,12 +559,24 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "Freeze then thaw flood playbook", href: "/about/freeze-thaw-flood-playbook" },
-      { label: "Where should water leak sensors be placed?", href: "/answers/water-leak-sensor-placement" },
-      { label: "Should I let faucets drip to prevent frozen pipes?", href: "/answers/drip-faucets-to-prevent-frozen-pipes" },
+      {
+        label: "Where should water leak sensors be placed?",
+        href: "/answers/water-leak-sensor-placement",
+      },
+      {
+        label: "Should I let faucets drip to prevent frozen pipes?",
+        href: "/answers/drip-faucets-to-prevent-frozen-pipes",
+      },
     ],
     sources: [
-      { label: "Frozen pipes: prevention and thawing (American Red Cross)", url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html" },
-      { label: "How pipes freeze and burst (Farm Bureau Insurance)", url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst" },
+      {
+        label: "Frozen pipes: prevention and thawing (American Red Cross)",
+        url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html",
+      },
+      {
+        label: "How pipes freeze and burst (Farm Bureau Insurance)",
+        url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst",
+      },
     ],
   },
   {
@@ -547,9 +624,15 @@ export const answers: Answer[] = [
       },
     ],
     related: [
-      { label: "How can I monitor the temperature in a cabin remotely?", href: "/answers/remote-cabin-temperature-monitoring" },
+      {
+        label: "How can I monitor the temperature in a cabin remotely?",
+        href: "/answers/remote-cabin-temperature-monitoring",
+      },
       { label: "Cellular ingest (Particle Boron)", href: "/about/cellular-ingest" },
-      { label: "How do I set up a freeze alert in Home Assistant?", href: "/answers/home-assistant-freeze-alert" },
+      {
+        label: "How do I set up a freeze alert in Home Assistant?",
+        href: "/answers/home-assistant-freeze-alert",
+      },
     ],
   },
   {
@@ -598,11 +681,20 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "Cabin winter watch scenario", href: "/stories/cabin-winter-watch" },
-      { label: "What temperature should I leave my house at in winter when I am away?", href: "/answers/vacant-house-winter-thermostat-setting" },
-      { label: "Will a Wi-Fi freeze alarm work during a power outage?", href: "/answers/wifi-freeze-alarm-power-outage" },
+      {
+        label: "What temperature should I leave my house at in winter when I am away?",
+        href: "/answers/vacant-house-winter-thermostat-setting",
+      },
+      {
+        label: "Will a Wi-Fi freeze alarm work during a power outage?",
+        href: "/answers/wifi-freeze-alarm-power-outage",
+      },
     ],
     sources: [
-      { label: "Frozen pipes: prevention and thawing (American Red Cross)", url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html" },
+      {
+        label: "Frozen pipes: prevention and thawing (American Red Cross)",
+        url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html",
+      },
       { label: "Temp Stick common questions", url: "https://tempstick.com/common-questions/" },
     ],
   },
@@ -651,12 +743,24 @@ export const answers: Answer[] = [
     ],
     related: [
       { label: "ESP32 freeze kit parts list", href: "/about/esp32-freeze-kit" },
-      { label: "Where should a freeze sensor go in a crawlspace?", href: "/answers/crawlspace-freeze-sensor-placement" },
-      { label: "How do I build a freeze alert with ESPHome?", href: "/answers/esphome-freeze-alert" },
+      {
+        label: "Where should a freeze sensor go in a crawlspace?",
+        href: "/answers/crawlspace-freeze-sensor-placement",
+      },
+      {
+        label: "How do I build a freeze alert with ESPHome?",
+        href: "/answers/esphome-freeze-alert",
+      },
     ],
     sources: [
-      { label: "Waterproof DS18B20 digital temperature sensor: technical specs (Adafruit)", url: "https://www.adafruit.com/product/381" },
-      { label: "AM2302 / DHT22 datasheet (Aosong, hosted by Adafruit)", url: "https://cdn-shop.adafruit.com/datasheets/Digital+humidity+and+temperature+sensor+AM2302.pdf" },
+      {
+        label: "Waterproof DS18B20 digital temperature sensor: technical specs (Adafruit)",
+        url: "https://www.adafruit.com/product/381",
+      },
+      {
+        label: "AM2302 / DHT22 datasheet (Aosong, hosted by Adafruit)",
+        url: "https://cdn-shop.adafruit.com/datasheets/Digital+humidity+and+temperature+sensor+AM2302.pdf",
+      },
     ],
   },
   {
@@ -712,8 +816,14 @@ sensor:
     ],
     related: [
       { label: "ESPHome and Shelly recipes", href: "/about/esphome-shelly-recipes" },
-      { label: "How do I set up a freeze alert in Home Assistant?", href: "/answers/home-assistant-freeze-alert" },
-      { label: "DS18B20 or DHT22: which sensor is better for freeze monitoring?", href: "/answers/ds18b20-vs-dht22-freeze-sensor" },
+      {
+        label: "How do I set up a freeze alert in Home Assistant?",
+        href: "/answers/home-assistant-freeze-alert",
+      },
+      {
+        label: "DS18B20 or DHT22: which sensor is better for freeze monitoring?",
+        href: "/answers/ds18b20-vs-dht22-freeze-sensor",
+      },
     ],
   },
   {
@@ -814,10 +924,16 @@ sensor:
     related: [
       { label: "ProbeHarbor for landlords and property managers", href: "/property-management" },
       { label: "Claims evidence pack", href: "/claims-pack" },
-      { label: "What temperature should I leave my house at in winter when I am away?", href: "/answers/vacant-house-winter-thermostat-setting" },
+      {
+        label: "What temperature should I leave my house at in winter when I am away?",
+        href: "/answers/vacant-house-winter-thermostat-setting",
+      },
     ],
     sources: [
-      { label: "Frozen pipes: prevention and thawing (American Red Cross)", url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html" },
+      {
+        label: "Frozen pipes: prevention and thawing (American Red Cross)",
+        url: "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/types-of-emergencies/winter-storm/frozen-pipes.html",
+      },
     ],
   },
 ];
@@ -827,7 +943,11 @@ sensor:
  * `fallbackSlugs` to fill up to `limit`. Keeps cross-links two-way without a
  * second list to maintain.
  */
-export function getAnswersRelatedTo(path: string, fallbackSlugs: string[] = [], limit = 3): Answer[] {
+export function getAnswersRelatedTo(
+  path: string,
+  fallbackSlugs: string[] = [],
+  limit = 3,
+): Answer[] {
   const linking = answers.filter((a) => a.related.some((link) => link.href === path));
   const fallback = fallbackSlugs
     .map((slug) => getAnswer(slug))

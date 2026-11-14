@@ -58,14 +58,18 @@ describe("db:migrate --up-to", () => {
 
 describe("db:migrate target check", () => {
   it("accepts a Neon URL", () => {
-    expect(checkTargetUrl("postgresql://u:p@ep-x.us-east-2.aws.neon.tech/neondb?sslmode=require", "X")).toBeNull();
+    expect(
+      checkTargetUrl("postgresql://u:p@ep-x.us-east-2.aws.neon.tech/neondb?sslmode=require", "X"),
+    ).toBeNull();
   });
 
   it("refuses the Supabase database, direct or pooled", () => {
-    expect(checkTargetUrl("postgresql://u:p@db.abcd.supabase.co:5432/postgres", "X")).toMatch(/Supabase/);
-    expect(checkTargetUrl("postgresql://u:p@aws-0-us-east-1.pooler.supabase.com:6543/postgres", "X")).toMatch(
+    expect(checkTargetUrl("postgresql://u:p@db.abcd.supabase.co:5432/postgres", "X")).toMatch(
       /Supabase/,
     );
+    expect(
+      checkTargetUrl("postgresql://u:p@aws-0-us-east-1.pooler.supabase.com:6543/postgres", "X"),
+    ).toMatch(/Supabase/);
   });
 
   it("refuses non-postgres and malformed URLs without echoing them", () => {
@@ -92,8 +96,8 @@ describe("db:migrate files", () => {
   });
 
   it("the committed baseline has a valid name", () => {
-    expect(readMigrationFiles(join(__dirname, "../../db/migrations")).map((f) => f.version)).toContain(
-      "0001_baseline",
-    );
+    expect(
+      readMigrationFiles(join(__dirname, "../../db/migrations")).map((f) => f.version),
+    ).toContain("0001_baseline");
   });
 });

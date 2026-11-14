@@ -14,9 +14,7 @@ export function resetStatusSubscribeRateLimitStateForTests(): void {
   rateBuckets.clear();
 }
 
-export function isStatusSubscribeHoneypotTriggered(
-  value: FormDataEntryValue | null,
-): boolean {
+export function isStatusSubscribeHoneypotTriggered(value: FormDataEntryValue | null): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
 

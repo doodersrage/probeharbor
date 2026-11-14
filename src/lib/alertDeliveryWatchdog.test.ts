@@ -60,7 +60,9 @@ function coldRow(tempF: number) {
 }
 
 beforeEach(() => {
-  mockListHouseholdIdsForCron.mockReset().mockResolvedValue([{ householdId: "h1", ownerUserId: "u1" }]);
+  mockListHouseholdIdsForCron
+    .mockReset()
+    .mockResolvedValue([{ householdId: "h1", ownerUserId: "u1" }]);
   mockListHouseholdMembers.mockReset().mockResolvedValue({ members: [{ user_id: "u1" }] });
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue(settings);
   mockFetchLatest.mockReset().mockResolvedValue([coldRow(28)]);
@@ -95,7 +97,12 @@ describe("classifyAlertDelivery", () => {
 describe("runAlertDeliveryWatchdog", () => {
   it("is quiet when the cold probe produced a delivered alert", async () => {
     mockListRecentAlertEvents.mockResolvedValue([
-      { kind: "threshold", created_at: minutesAgo(30), channels_sent: ["email"], channels_skipped: [] },
+      {
+        kind: "threshold",
+        created_at: minutesAgo(30),
+        channels_sent: ["email"],
+        channels_skipped: [],
+      },
     ]);
     const { runAlertDeliveryWatchdog } = await import("./alertDeliveryWatchdog");
 
@@ -117,7 +124,12 @@ describe("runAlertDeliveryWatchdog", () => {
 
   it("flags when every recent attempt failed on its channels", async () => {
     mockListRecentAlertEvents.mockResolvedValue([
-      { kind: "threshold", created_at: minutesAgo(30), channels_sent: [], channels_skipped: ["email"] },
+      {
+        kind: "threshold",
+        created_at: minutesAgo(30),
+        channels_sent: [],
+        channels_skipped: ["email"],
+      },
     ]);
     const { runAlertDeliveryWatchdog } = await import("./alertDeliveryWatchdog");
 

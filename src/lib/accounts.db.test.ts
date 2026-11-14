@@ -15,7 +15,10 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function person(email: string) {
   const id = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [id]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [id],
+  );
   return { id, home: m!.household_id };
 }
 
@@ -28,7 +31,10 @@ async function deviceWithReading(householdId: string) {
     "insert into public.device_sensors (device_id, key, label, kind) values ($1, 't', 'T', 'temperature') returning id",
     [d!.id],
   );
-  await sql("insert into public.sensor_readings (sensor_id, household_id, value_num) values ($1, $2, 40)", [s!.id, householdId]);
+  await sql(
+    "insert into public.sensor_readings (sensor_id, household_id, value_num) values ($1, $2, 40)",
+    [s!.id, householdId],
+  );
   return d!.id;
 }
 
@@ -84,10 +90,10 @@ describe("account deletion (Neon)", () => {
     await addHouseholdMemberByUserId(owner.home, guest.id, "member");
     const ownersDevice = await deviceWithReading(owner.home);
     const bystandersDevice = await deviceWithReading(bystander.home);
-    await sql("insert into public.api_keys (household_id, name, key_prefix, key_hash, created_by) values ($1, 'k', 'p', 'h', $2)", [
-      owner.home,
-      guest.id,
-    ]);
+    await sql(
+      "insert into public.api_keys (household_id, name, key_prefix, key_hash, created_by) values ($1, 'k', 'p', 'h', $2)",
+      [owner.home, guest.id],
+    );
 
     await deleteUserAccount(guest.id);
     await expect(getUserHouseholdRole(owner.id, owner.home)).resolves.toBe("owner");
@@ -95,6 +101,8 @@ describe("account deletion (Neon)", () => {
     expect(await exists("devices", "id", bystandersDevice)).toBe(true);
     expect(await exists("households", "id", guest.home)).toBe(false); // their own solo household
     // Things they created in other households stay, credited to nobody.
-    expect(await sql("select created_by from public.api_keys where household_id = $1", [owner.home])).toEqual([{ created_by: null }]);
+    expect(
+      await sql("select created_by from public.api_keys where household_id = $1", [owner.home]),
+    ).toEqual([{ created_by: null }]);
   });
 });

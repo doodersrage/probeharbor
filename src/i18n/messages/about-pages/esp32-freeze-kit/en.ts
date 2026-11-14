@@ -1,4 +1,3 @@
-
 /**
  * /about/esp32-freeze-kit body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Dashboard UI paths such as
@@ -57,7 +56,8 @@ const en = {
     "Product listings rotate: treat Adafruit as the reference BOM. Amazon <code>/dp/</code> links in <code>bomLinks</code> are Associates-friendly alternatives when a listing is still live. Generic “ESP32 + DS18B20 kit” bundles often ship DHT11 instead of a waterproof probe — skip those.",
   wire: {
     title: "Wire it",
-    diagramAlt: "Wiring diagram: ESP32 DevKit to waterproof DS18B20 with 4.7 kilohm pull-up on GPIO 4",
+    diagramAlt:
+      "Wiring diagram: ESP32 DevKit to waterproof DS18B20 with 4.7 kilohm pull-up on GPIO 4",
     captionHtml:
       "Red → 3.3&nbsp;V, black → GND, yellow/white data → GPIO 4, with a 4.7&nbsp;kΩ pull-up between data and 3.3&nbsp;V. The sample ingest sketch defaults to GPIO 4.",
     itemsHtml: [

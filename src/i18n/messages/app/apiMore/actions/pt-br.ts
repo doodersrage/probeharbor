@@ -8,7 +8,8 @@ const ptBr: ApiMoreActionsMessages = {
   displayPrefsSaveFailed: "Não foi possível salvar as preferências de exibição.",
   displayPrefsSaved: "Preferências de exibição salvas.",
   expectedFormData: "Dados de formulário esperados.",
-  invalidWebhookUrl: "Uma das suas URLs de webhook não é um endereço https:// válido ou aponta para uma rede privada.",
+  invalidWebhookUrl:
+    "Uma das suas URLs de webhook não é um endereço https:// válido ou aponta para uma rede privada.",
   weakTelegramSecret: "O segredo do webhook do Telegram precisa ter pelo menos 16 caracteres.",
   alertSettingsSaveFailed: "Não foi possível salvar as configurações de alerta.",
   alertSettingsSavedIncomplete: "Configurações de alerta salvas — alguns canais estão sem destino.",
@@ -25,7 +26,8 @@ const ptBr: ApiMoreActionsMessages = {
   inviteSent: "Convite enviado para {email}.",
   ownerOnlyRename: "Só o proprietário da casa pode renomeá-la.",
   householdNameSaved: "Nome da casa salvo.",
-  ownerOnlyFreezeMap: "Só o proprietário da casa pode alterar as configurações do mapa de congelamento.",
+  ownerOnlyFreezeMap:
+    "Só o proprietário da casa pode alterar as configurações do mapa de congelamento.",
   freezeMapSaved: "Configurações do mapa de congelamento salvas.",
   deviceRenamed: "Dispositivo renomeado.",
   deviceSpaceSaved: "Espaço do dispositivo salvo.",

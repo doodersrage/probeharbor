@@ -32,7 +32,12 @@ export type HistorySensorRow = {
   } | null;
 };
 
-export type HistoryFilterInput = { feedName?: string; probeKey?: string; from?: string; to?: string };
+export type HistoryFilterInput = {
+  feedName?: string;
+  probeKey?: string;
+  from?: string;
+  to?: string;
+};
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
@@ -119,7 +124,10 @@ export async function countTemperatureHistoryRows(
 ): Promise<{ count: number; error: string | null }> {
   const { where, params } = historyWhere(householdId, filters, ["temperature"]);
   try {
-    const [row] = await query<{ n: number }>(`select count(*) as n ${READING_FROM} where ${where}`, params);
+    const [row] = await query<{ n: number }>(
+      `select count(*) as n ${READING_FROM} where ${where}`,
+      params,
+    );
     return { count: row?.n ?? 0, error: null };
   } catch (error) {
     return { count: 0, error: message(error) };
@@ -260,11 +268,18 @@ export async function fetchEarliestSensorReadingAt(householdId: string): Promise
 }
 
 /** Devices (sort order) with their sensors, for History's device/probe filters. */
-export async function listDevicesWithSensorsForFilters(
-  householdId: string,
-): Promise<{ data: Array<{ name: string; device_sensors: Array<{ key: string; label: string; kind: string }> }>; error: string | null }> {
+export async function listDevicesWithSensorsForFilters(householdId: string): Promise<{
+  data: Array<{
+    name: string;
+    device_sensors: Array<{ key: string; label: string; kind: string }>;
+  }>;
+  error: string | null;
+}> {
   try {
-    const data = await query<{ name: string; device_sensors: Array<{ key: string; label: string; kind: string }> }>(
+    const data = await query<{
+      name: string;
+      device_sensors: Array<{ key: string; label: string; kind: string }>;
+    }>(
       `select d.name,
               coalesce((select json_agg(json_build_object('key', s.key, 'label', s.label, 'kind', s.kind)
                                  order by s.sort_order, s.created_at, s.id)

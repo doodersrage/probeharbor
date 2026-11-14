@@ -10,7 +10,8 @@ const fr: ApiMoreBillingMessages = {
   },
   claims: {
     requiresPro: "Le dossier de sinistre nécessite l’offre Pro",
-    pdfUnavailable: "La génération de PDF est temporairement indisponible. Essayez ?format=html ou réessayez dans un instant.",
+    pdfUnavailable:
+      "La génération de PDF est temporairement indisponible. Essayez ?format=html ou réessayez dans un instant.",
   },
   certificate: {
     failed: "Impossible de générer le certificat",
@@ -19,9 +20,11 @@ const fr: ApiMoreBillingMessages = {
   claimsEmail: {
     eyebrow: "Dossier de sinistre",
     range: "{from} au {to}",
-    preheader: "Un rapport ProbeHarbor d’exposition au gel pour {household} est prêt à être consulté.",
+    preheader:
+      "Un rapport ProbeHarbor d’exposition au gel pour {household} est prêt à être consulté.",
     title: "Dossier de sinistre : {household}",
-    intro: "Un membre d’un foyer ProbeHarbor a partagé un rapport d’exposition au gel et d’historique des alertes couvrant la période du {range}.",
+    intro:
+      "Un membre d’un foyer ProbeHarbor a partagé un rapport d’exposition au gel et d’historique des alertes couvrant la période du {range}.",
     body: "Le rapport comprend des statistiques d’exposition au gel, des tableaux des appareils et des sondes, ainsi qu’une chronologie des alertes critiques pour la période choisie, avec un code de vérification permettant de reconfirmer plus tard cet export précis.",
     verificationCode: "Code de vérification : {code}",
     cta: "Voir le dossier de sinistre",

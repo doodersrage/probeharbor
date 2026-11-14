@@ -15,7 +15,8 @@ const de: CompareGuideMessages = {
   chooseOther: "Nimm {competitor}, wenn",
   faqLede: "Klare Antworten für alle, die ProbeHarbor mit {competitor} vergleichen.",
   sourcesTitle: "Quellen",
-  sourcesNote: "Die Angaben zu {competitor} stammen von den Herstellerseiten, geprüft im {checkedOn}. Preise ändern sich; prüfe sie vor dem Kauf.",
+  sourcesNote:
+    "Die Angaben zu {competitor} stammen von den Herstellerseiten, geprüft im {checkedOn}. Preise ändern sich; prüfe sie vor dem Kauf.",
   relatedTitle: "Passende Antworten",
   forecastLink: "Frieren meine Leitungen heute Nacht ein? (Prognose)",
   calculatorLink: "Rechner: Wann frieren Rohre ein?",

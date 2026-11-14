@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  HISTORY_POLL_STALE_MS,
-  isCollectHistoryStale,
-} from "./cronHealth";
+import { HISTORY_POLL_STALE_MS, isCollectHistoryStale } from "./cronHealth";
 
 describe("cronHealth", () => {
   it("marks history poll stale after two missed 15-minute slots plus grace", () => {

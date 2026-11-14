@@ -1,4 +1,3 @@
-
 /** /about/esp32-web-flash body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 import type { Esp32WebFlashMessages } from "./en";
 
@@ -15,7 +14,8 @@ const de: Esp32WebFlashMessages = {
   arduinoTitle: "2. Arduino IDE",
   arduinoItem1Html:
     "Installiere die Board-Unterstützung für <strong>ESP32</strong> (Espressif), nicht den Weg über Uno Ethernet mit Garagen-LCD.",
-  arduinoItem2Html: "Bibliotheken: <code>OneWire</code>, <code>DallasTemperature</code> (Bibliotheksverwalter).",
+  arduinoItem2Html:
+    "Bibliotheken: <code>OneWire</code>, <code>DallasTemperature</code> (Bibliotheksverwalter).",
   arduinoItem3Html:
     "Öffne die heruntergeladene <code>.ino</code>, setze <code>WIFI_*</code>, wähle den Port und flashe.",
   pioTitle: "3. PlatformIO",

@@ -28,8 +28,14 @@ describe("temperatureToFahrenheit", () => {
 
 describe("sensors[] temperatures are stored in °F", () => {
   it("converts °C and records what the device sent", () => {
-    expect(temp({ sensors: [{ key: "garage", kind: "temperature", value: 20, unit: "°C" }] })).toEqual([
-      expect.objectContaining({ value_num: 68, unit: "F", meta: { sent_value: 20, sent_unit: "°C" } }),
+    expect(
+      temp({ sensors: [{ key: "garage", kind: "temperature", value: 20, unit: "°C" }] }),
+    ).toEqual([
+      expect.objectContaining({
+        value_num: 68,
+        unit: "F",
+        meta: { sent_value: 20, sent_unit: "°C" },
+      }),
     ]);
   });
 
@@ -47,11 +53,15 @@ describe("sensors[] temperatures are stored in °F", () => {
   });
 
   it("doesn't touch a non-temperature sensor that happens to use C", () => {
-    const rows = interpretIngestPayload({ sensors: [{ key: "charge", kind: "generic", value: 3, unit: "C" }] }).readings;
+    const rows = interpretIngestPayload({
+      sensors: [{ key: "charge", kind: "generic", value: 3, unit: "C" }],
+    }).readings;
     expect(rows[0]).toMatchObject({ value_num: 3, unit: "C" });
   });
 
   it("leaves firmware flat keys (already °F) unchanged", () => {
-    expect(temp({ temp1: 41, fw: "1.2.2" })).toEqual([expect.objectContaining({ value_num: 41, meta: {} })]);
+    expect(temp({ temp1: 41, fw: "1.2.2" })).toEqual([
+      expect.objectContaining({ value_num: 41, meta: {} }),
+    ]);
   });
 });

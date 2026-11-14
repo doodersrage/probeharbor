@@ -22,7 +22,13 @@ describe("deliverWebhookPost retry", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { deliverWebhookPost } = await import("./webhookDeliveries");
-    const promise = deliverWebhookPost("user-1", "outbound_alert", "https://example.com/hook", {}, "{}");
+    const promise = deliverWebhookPost(
+      "user-1",
+      "outbound_alert",
+      "https://example.com/hook",
+      {},
+      "{}",
+    );
     const response = await promise;
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -46,9 +52,7 @@ describe("deliverWebhookPost retry", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(response?.ok).toBe(true);
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ success: true }),
-    );
+    expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
   });
 
   it("does not retry a non-retryable 4xx", async () => {
@@ -56,7 +60,13 @@ describe("deliverWebhookPost retry", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { deliverWebhookPost } = await import("./webhookDeliveries");
-    const response = await deliverWebhookPost("user-1", "outbound_alert", "https://example.com/hook", {}, "{}");
+    const response = await deliverWebhookPost(
+      "user-1",
+      "outbound_alert",
+      "https://example.com/hook",
+      {},
+      "{}",
+    );
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(response?.status).toBe(401);
@@ -110,7 +120,13 @@ describe("deliverWebhookPost retry", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const { deliverWebhookPost } = await import("./webhookDeliveries");
-    const promise = deliverWebhookPost("user-1", "outbound_alert", "https://example.com/hook", {}, "{}");
+    const promise = deliverWebhookPost(
+      "user-1",
+      "outbound_alert",
+      "https://example.com/hook",
+      {},
+      "{}",
+    );
     await vi.runAllTimersAsync();
     const response = await promise;
 

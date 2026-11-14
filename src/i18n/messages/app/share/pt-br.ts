@@ -10,18 +10,22 @@ const ptBr: ShareMessages = {
   notices: {
     created: "Link criado. Copie abaixo para enviar à sua família.",
     revoked: "Link revogado.",
-    regenerated: "Novo link criado, copie abaixo. O link antigo, e qualquer incorporação ou coleta que o use, não funciona mais.",
+    regenerated:
+      "Novo link criado, copie abaixo. O link antigo, e qualquer incorporação ou coleta que o use, não funciona mais.",
     apiKeyCreated: "Chave de API criada. Copie agora: ela não será exibida de novo.",
     apiKeyRevoked: "Chave de API revogada.",
     statusCreated: "Página de status criada. Copie o link abaixo.",
     statusRevoked: "Página de status revogada.",
-    statusRegenerated: "Novo link de status criado, copie abaixo. O link e o selo antigos não funcionam mais.",
-    familyLimit: "Você já tem um link familiar ao vivo. Revogue-o primeiro ou mude para o Pro para ter mais.",
+    statusRegenerated:
+      "Novo link de status criado, copie abaixo. O link e o selo antigos não funcionam mais.",
+    familyLimit:
+      "Você já tem um link familiar ao vivo. Revogue-o primeiro ou mude para o Pro para ter mais.",
     proRequired: "Essa opção exige o Pro. No Free você ainda pode criar um link familiar ao vivo.",
     error: "Não foi possível atualizar os links de compartilhamento.",
   },
   links: {
-    subtitle: "Visualização ao vivo com um clique. Qualquer pessoa com o link vê os sensores ao vivo.",
+    subtitle:
+      "Visualização ao vivo com um clique. Qualquer pessoa com o link vê os sensores ao vivo.",
     viewOnly: "Somente leitura: você não pode criar nem revogar links de compartilhamento.",
     newTitle: "Novo link de compartilhamento",
     newSubtitle: "Copie e envie este link. Qualquer pessoa com ele pode ver os sensores ao vivo.",
@@ -35,7 +39,8 @@ const ptBr: ShareMessages = {
     familyDefaultLabel: "Visão ao vivo da família",
     familyTitle: "Criar link familiar",
     familyBody: "Sensores ao vivo, expira em 7 dias. Revogue quando quiser.",
-    familyFreeNote: "O Free inclui um link familiar ao vivo. O Pro adiciona histórico, métricas e links sem expiração.",
+    familyFreeNote:
+      "O Free inclui um link familiar ao vivo. O Pro adiciona histórico, métricas e links sem expiração.",
     familySubmit: "Criar link familiar ao vivo",
     moreOptions: "Mais opções de compartilhamento (Pro)",
     label: "Nome",
@@ -61,9 +66,11 @@ const ptBr: ShareMessages = {
     embed: "Incorporar: {url}",
     scrape: "Scrape: {url}",
     confirmRevoke: "Revogar este link de compartilhamento?",
-    linkHidden: "Por segurança, o link completo só é mostrado ao ser criado. Gere de novo se precisar dele outra vez.",
+    linkHidden:
+      "Por segurança, o link completo só é mostrado ao ser criado. Gere de novo se precisar dele outra vez.",
     regenerate: "Gerar link de novo",
-    confirmRegenerate: "Criar um novo link? O link atual, e qualquer incorporação ou coleta que o use, vai parar de funcionar.",
+    confirmRegenerate:
+      "Criar um novo link? O link atual, e qualquer incorporação ou coleta que o use, vai parar de funcionar.",
     revoke: "Revogar",
     remove: "Remover",
     statusTitle: "Páginas de status públicas",
@@ -73,7 +80,8 @@ const ptBr: ShareMessages = {
     statusDefaultLabel: "Status da casa",
     createStatus: "Criar página de status",
     noStatusPages: "Nenhuma página de status ainda.",
-    statusUrlHidden: "Por segurança, o link só é mostrado ao ser criado. Gere de novo se precisar dele outra vez.",
+    statusUrlHidden:
+      "Por segurança, o link só é mostrado ao ser criado. Gere de novo se precisar dele outra vez.",
     regenerateStatus: "Gerar link de novo",
     confirmRegenerateStatus: "Criar um novo link? O link e o selo atuais vão parar de funcionar.",
     badgeLabel: "Selo:",
@@ -94,8 +102,10 @@ const ptBr: ShareMessages = {
     name: "Nome",
     keyDefaultName: "Chave de métricas",
     scopeLabel: "Acesso",
-    scopeRead: "Somente leitura: métricas e lista de dispositivos (recomendado para Prometheus/Grafana)",
-    scopeWrite: "Leitura e escrita: também criar dispositivos, renomear ou ocultar sensores, substituir a configuração pull",
+    scopeRead:
+      "Somente leitura: métricas e lista de dispositivos (recomendado para Prometheus/Grafana)",
+    scopeWrite:
+      "Leitura e escrita: também criar dispositivos, renomear ou ocultar sensores, substituir a configuração pull",
     scopeReadBadge: "Somente leitura",
     scopeWriteBadge: "Leitura e escrita",
     createKey: "Criar chave de API",
@@ -114,7 +124,8 @@ const ptBr: ShareMessages = {
     noInbound: "Nenhum webhook de entrada ainda.",
     statsTitle: "Estatísticas de ingestão (7 dias)",
     statsBody: "POSTs bem-sucedidos e com erro por dia e por dispositivo push.",
-    statsEmpty: "Nenhuma atividade de ingestão registrada ainda. Envie um POST de um dispositivo push para vê-la aqui.",
+    statsEmpty:
+      "Nenhuma atividade de ingestão registrada ainda. Envie um POST de um dispositivo push para vê-la aqui.",
     colDevice: "Dispositivo",
     colDay: "Dia",
     colOk: "OK",
@@ -126,7 +137,8 @@ const ptBr: ShareMessages = {
     activityEmpty:
       "As ações da casa (links de compartilhamento, configurações de alerta salvas, transferências de dispositivos, chaves de ingestão exibidas) aparecerão aqui.",
     exportTitle: "Exporte seus dados",
-    exportBody: "Baixe em JSON suas preferências, configurações de alerta, uma amostra do histórico e seus dispositivos.",
+    exportBody:
+      "Baixe em JSON suas preferências, configurações de alerta, uma amostra do histórico e seus dispositivos.",
     exportButton: "Baixar export.json",
   },
   grafana: {
@@ -136,7 +148,8 @@ const ptBr: ShareMessages = {
     step1: "Crie uma chave de API acima (prefixo {prefix}).",
     prefixPending: "exibido após a criação",
     step2Lead: "No Grafana → Connections → Data sources → Add Prometheus, defina a URL como",
-    step2TailHtml: "e adicione o cabeçalho <code>Authorization: Bearer &lt;your-api-key&gt;</code>.",
+    step2TailHtml:
+      "e adicione o cabeçalho <code>Authorization: Bearer &lt;your-api-key&gt;</code>.",
     step3Lead: "Baixe",
     step3Tail: "e importe em Dashboards → New → Import.",
     step4: "Opcional: duplique painéis por nome de sonda ou por nome de dispositivo da casa.",
@@ -164,7 +177,8 @@ const ptBr: ShareMessages = {
       'Instale a <a class="text-link" href="{integrationHref}">integração oficial do HACS</a> para ter sensores automáticos, ou importe os blueprints YAML e as receitas de webhook abaixo.',
     recommended: "Recomendado:",
     hacsCustom: "Integração personalizada do HACS",
-    hacsCustomTail: "cole um token de link de compartilhamento; webhook de entrada e chave de ingestão opcionais para os serviços",
+    hacsCustomTail:
+      "cole um token de link de compartilhamento; webhook de entrada e chave de ingestão opcionais para os serviços",
     guide: "Guia da integração com o Home Assistant",
     devDocs: "Documentação para desenvolvedores",
     downloadEntities: "Baixar YAML de nomes de entidades",
@@ -173,7 +187,8 @@ const ptBr: ShareMessages = {
     blueprintTail: "em HA → Configurações → Automações → Criar → Importar de YAML.",
     inboundHtml:
       'Crie um webhook de entrada em Compartilhar e envie <code>{"action":"status"}</code> por POST a partir de um rest_command.',
-    scrapeHtml: "Colete métricas do Prometheus em <code>/api/v1/metrics</code> com uma chave de API Pro.",
+    scrapeHtml:
+      "Colete métricas do Prometheus em <code>/api/v1/metrics</code> com uma chave de API Pro.",
     prefillRest: "Modelo: rest_command",
     prefillPrometheus: "Modelo: scrape do Prometheus",
     seeAlsoHtml:
@@ -183,7 +198,8 @@ const ptBr: ShareMessages = {
     title: "Diagnóstico do Home Assistant",
     emptyHtml:
       'Nenhum dispositivo recebeu leituras do Home Assistant ainda. Depois de instalar a <a class="text-link" href="{hacsHref}" target="_blank" rel="noreferrer">integração do HACS</a>, adicione a chave de ingestão de um dispositivo nas opções da integração e chame o serviço <code>thermaltrace.push</code> a partir de uma automação; o dispositivo aparece aqui após o primeiro envio. (A leitura de dados no Home Assistant por meio de um link de compartilhamento não é registrada aqui.)',
-    subtitle: "Dispositivos alimentados pelo Home Assistant, do mais recente ao mais antigo. “Inativo” significa sem envios há mais de 2 horas.",
+    subtitle:
+      "Dispositivos alimentados pelo Home Assistant, do mais recente ao mais antigo. “Inativo” significa sem envios há mais de 2 horas.",
     caption: "Dispositivos que recebem leituras do Home Assistant",
     colDevice: "Dispositivo",
     colSensors: "Sensores",
@@ -222,8 +238,10 @@ const ptBr: ShareMessages = {
     step1Html:
       'Crie um dispositivo push em <a class="text-link" href="/dashboard/devices">Dispositivos</a> e copie a chave de ingestão.',
     step2: "No Node-RED: Menu → Import → cole a URL ou envie o arquivo JSON.",
-    step3Html: 'Defina a variável de ambiente <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (ou edite o nó de função).',
-    step4: "Aponte os nós MQTT para o seu broker, faça o deploy e confira se o nó de debug mostra HTTP 200.",
+    step3Html:
+      'Defina a variável de ambiente <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (ou edite o nó de função).',
+    step4:
+      "Aponte os nós MQTT para o seu broker, faça o deploy e confira se o nó de debug mostra HTTP 200.",
     downloadFlow: "Baixar JSON do fluxo",
     devDocs: "Documentação para desenvolvedores",
     fullGuide: "Guia completo do Node-RED",

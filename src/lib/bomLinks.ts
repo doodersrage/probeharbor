@@ -48,9 +48,7 @@ export const BOM = {
 
   // Hardware-store commodities (stable catalog pages, not Amazon search)
   mcmasterUvZipTies: affiliateHref("https://www.mcmaster.com/7130K32/"),
-  mcmasterCableTieMounts: affiliateHref(
-    "https://www.mcmaster.com/products/cable-tie-mounts/",
-  ),
+  mcmasterCableTieMounts: affiliateHref("https://www.mcmaster.com/products/cable-tie-mounts/"),
 
   // Amazon product pages (verified live; re-check if a listing vanishes)
   amazonDs18b20: amazonDp("B07V2KS43L"), // uxcell waterproof DS18B20 1m

@@ -149,9 +149,7 @@ function snapshotFromNestDevice(device: NestDevice | undefined): ThermostatSnaps
   };
 }
 
-export async function fetchNestSnapshotDetailed(
-  accessToken: string,
-): Promise<NestSnapshotResult> {
+export async function fetchNestSnapshotDetailed(accessToken: string): Promise<NestSnapshotResult> {
   const projectId = getRuntimeEnv("NEST_PROJECT_ID")?.trim();
   if (!projectId) return { ok: false, status: null, reason: "no_project" };
 
@@ -181,16 +179,12 @@ export async function fetchNestSnapshotDetailed(
   }
 }
 
-export async function fetchNestSnapshot(
-  accessToken: string,
-): Promise<ThermostatSnapshot | null> {
+export async function fetchNestSnapshot(accessToken: string): Promise<ThermostatSnapshot | null> {
   const result = await fetchNestSnapshotDetailed(accessToken);
   return result.ok ? result.snapshot : null;
 }
 
-export async function fetchEcobeeSnapshot(
-  accessToken: string,
-): Promise<ThermostatSnapshot | null> {
+export async function fetchEcobeeSnapshot(accessToken: string): Promise<ThermostatSnapshot | null> {
   const result = await fetchEcobeeSnapshotDetailed(accessToken);
   return result.ok ? result.snapshot : null;
 }
@@ -254,8 +248,9 @@ export async function fetchThermostatContextWithStatus(
   locale: Locale = "en",
 ): Promise<ThermostatContextResult> {
   const hints = thermostatText(locale).hints;
-  const { resolveAccessTokenForHousehold, forceRefreshAccessTokenForHousehold } =
-    await import("./thermostatOAuth");
+  const { resolveAccessTokenForHousehold, forceRefreshAccessTokenForHousehold } = await import(
+    "./thermostatOAuth"
+  );
   const accessToken = await resolveAccessTokenForHousehold(householdId, provider);
   if (!accessToken) {
     return {

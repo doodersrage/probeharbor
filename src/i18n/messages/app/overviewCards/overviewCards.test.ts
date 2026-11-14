@@ -26,13 +26,20 @@ const samples = [
   { at: "2026-01-10T10:00:00Z", tempF: 40 },
   { at: "2026-01-10T12:00:00Z", tempF: 38 },
 ];
-const settings = { enabled: true, runwayAlertEnabled: true, freezeThresholdF: 34, forecastHoursAhead: 12 };
+const settings = {
+  enabled: true,
+  runwayAlertEnabled: true,
+  freezeThresholdF: 34,
+  forecastHoursAhead: 12,
+};
 
 describe("app/overviewCards", () => {
   it("keeps English output unchanged", () => {
     expect(computeGarageRiskStatus(base).detail).toBe("Coldest probe is 31.5°F (threshold 34°F).");
     // Fresh probes above freeze: a freezing fresh probe outranks stale ones.
-    expect(computeGarageRiskStatus({ ...base, coldestProbeTempF: 45, staleSensorCount: 2 }).detail).toBe(
+    expect(
+      computeGarageRiskStatus({ ...base, coldestProbeTempF: 45, staleSensorCount: 2 }).detail,
+    ).toBe(
       "2 probes look stale: likely unplugged, offline Wi‑Fi, or a dead battery. Check power and Devices before treating it as a freeze.",
     );
     const projection = buildTimeToFreezeProjection({

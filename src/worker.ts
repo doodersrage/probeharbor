@@ -1,14 +1,8 @@
 import * as Sentry from "@sentry/cloudflare";
 import { handle } from "@astrojs/cloudflare/handler";
 import { collectHistoryForAllUsers } from "./lib/collectHistory";
-import {
-  sendWeeklyDigestsForAllUsers,
-  shouldSendWeeklyDigest,
-} from "./lib/digestEmails";
-import {
-  sendMonthlyReportsForAllUsers,
-  shouldSendMonthlyReport,
-} from "./lib/monthlyReportEmails";
+import { sendWeeklyDigestsForAllUsers, shouldSendWeeklyDigest } from "./lib/digestEmails";
+import { sendMonthlyReportsForAllUsers, shouldSendMonthlyReport } from "./lib/monthlyReportEmails";
 import {
   sendQuarterlyReportsForAllUsers,
   shouldSendQuarterlyReport,
@@ -99,10 +93,7 @@ async function runCollectHistoryJob(): Promise<void> {
       );
     } else {
       if (result.warnings.length > 0) {
-        console.warn(
-          "Scheduled history collection soft-skips:",
-          result.warnings.slice(0, 20),
-        );
+        console.warn("Scheduled history collection soft-skips:", result.warnings.slice(0, 20));
       }
       console.info(
         `Scheduled history collection finished: ${result.householdsProcessed} household(s), ${result.usersProcessed} member alert pass(es)`,
@@ -140,389 +131,377 @@ async function runHourlyMaintenanceJobs(env: WorkerEnv): Promise<void> {
   }
 
   if (shouldSendWeeklyDigest()) {
-          const digestJobId = await startJobRun("weekly-digest");
-          try {
-            const digest = await sendWeeklyDigestsForAllUsers();
-            if (digest.errors.length > 0) {
-              console.error("Weekly digest errors:", digest.errors);
-              await finishJobRun(digestJobId, "error", {
-                sent: digest.sent,
-                skipped: digest.skipped,
-                errors: digest.errors.slice(0, 20),
-              });
-              await notifyOps(
-                "ProbeHarbor job failed: weekly-digest",
-                formatJobFailureBody("weekly-digest", {
-                  sent: digest.sent,
-                  skipped: digest.skipped,
-                  errors: digest.errors.slice(0, 20),
-                }),
-              );
-            } else {
-              console.info(
-                `Weekly digest finished: ${digest.sent} sent, ${digest.skipped} skipped`,
-              );
-              await finishJobRun(digestJobId, "success", {
-                sent: digest.sent,
-                skipped: digest.skipped,
-                errors: [],
-              });
-            }
-          } catch (error) {
-            const details = {
-              message: error instanceof Error ? error.message : "Unknown error",
-            };
-            await finishJobRun(digestJobId, "error", details);
-            await notifyOps(
-              "ProbeHarbor job failed: weekly-digest",
-              formatJobFailureBody("weekly-digest", details),
-            );
+    const digestJobId = await startJobRun("weekly-digest");
+    try {
+      const digest = await sendWeeklyDigestsForAllUsers();
+      if (digest.errors.length > 0) {
+        console.error("Weekly digest errors:", digest.errors);
+        await finishJobRun(digestJobId, "error", {
+          sent: digest.sent,
+          skipped: digest.skipped,
+          errors: digest.errors.slice(0, 20),
+        });
+        await notifyOps(
+          "ProbeHarbor job failed: weekly-digest",
+          formatJobFailureBody("weekly-digest", {
+            sent: digest.sent,
+            skipped: digest.skipped,
+            errors: digest.errors.slice(0, 20),
+          }),
+        );
+      } else {
+        console.info(`Weekly digest finished: ${digest.sent} sent, ${digest.skipped} skipped`);
+        await finishJobRun(digestJobId, "success", {
+          sent: digest.sent,
+          skipped: digest.skipped,
+          errors: [],
+        });
+      }
+    } catch (error) {
+      const details = {
+        message: error instanceof Error ? error.message : "Unknown error",
+      };
+      await finishJobRun(digestJobId, "error", details);
+      await notifyOps(
+        "ProbeHarbor job failed: weekly-digest",
+        formatJobFailureBody("weekly-digest", details),
+      );
+    }
+  }
+
+  if (shouldSendMonthlyReport()) {
+    const monthlyJobId = await startJobRun("monthly-report");
+    try {
+      const monthly = await sendMonthlyReportsForAllUsers();
+      if (monthly.errors.length > 0) {
+        await finishJobRun(monthlyJobId, "error", {
+          sent: monthly.sent,
+          skipped: monthly.skipped,
+          errors: monthly.errors.slice(0, 20),
+        });
+      } else {
+        await finishJobRun(monthlyJobId, "success", {
+          sent: monthly.sent,
+          skipped: monthly.skipped,
+          errors: [],
+        });
+        console.info(`Monthly report finished: ${monthly.sent} sent, ${monthly.skipped} skipped`);
+      }
+    } catch (error) {
+      const details = {
+        message: error instanceof Error ? error.message : "Unknown error",
+      };
+      await finishJobRun(monthlyJobId, "error", details);
+    }
+  }
+
+  if (shouldSendQuarterlyReport()) {
+    const quarterlyJobId = await startJobRun("quarterly-report");
+    try {
+      const quarterly = await sendQuarterlyReportsForAllUsers();
+      if (quarterly.errors.length > 0) {
+        await finishJobRun(quarterlyJobId, "error", {
+          sent: quarterly.sent,
+          skipped: quarterly.skipped,
+          errors: quarterly.errors.slice(0, 20),
+        });
+      } else {
+        await finishJobRun(quarterlyJobId, "success", {
+          sent: quarterly.sent,
+          skipped: quarterly.skipped,
+          errors: [],
+        });
+        console.info(
+          `Quarterly report finished: ${quarterly.sent} sent, ${quarterly.skipped} skipped`,
+        );
+      }
+    } catch (error) {
+      const details = {
+        message: error instanceof Error ? error.message : "Unknown error",
+      };
+      await finishJobRun(quarterlyJobId, "error", details);
+    }
+  }
+
+  const trialJobId = await startJobRun("trial-reminders");
+  try {
+    const trial = await sendTrialRemindersForAllUsers();
+    const failed = trialJobShouldFail(trial.errors);
+    await finishJobRun(trialJobId, failed ? "error" : "success", {
+      sent: trial.sent,
+      skipped: trial.skipped,
+      restricted: trial.restricted,
+      errors: trial.errors.slice(0, 20),
+    });
+  } catch (error) {
+    await finishJobRun(trialJobId, "error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+
+  const dripJobId = await startJobRun("drip-emails");
+  try {
+    const drip = await sendDripEmailsForAllUsers();
+    const failed = dripJobShouldFail(drip.errors);
+    await finishJobRun(dripJobId, failed ? "error" : "success", {
+      sent: drip.sent,
+      skipped: drip.skipped,
+      restricted: drip.restricted,
+      errors: drip.errors.slice(0, 20),
+      ...(drip.restricted > 0
+        ? {
+            hint: "MAILER binding blocked some recipients. Enable Email Sending for your from-domain and keep send_email unrestricted in wrangler.jsonc.",
           }
-        }
+        : {}),
+    });
+    if (failed) {
+      await notifyOps(
+        "ProbeHarbor job failed: drip-emails",
+        formatJobFailureBody("drip-emails", {
+          message: "Hard drip email failures",
+          errors: drip.errors.slice(0, 10),
+        }),
+      );
+    }
+  } catch (error) {
+    await finishJobRun(dripJobId, "error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 
-        if (shouldSendMonthlyReport()) {
-          const monthlyJobId = await startJobRun("monthly-report");
-          try {
-            const monthly = await sendMonthlyReportsForAllUsers();
-            if (monthly.errors.length > 0) {
-              await finishJobRun(monthlyJobId, "error", {
-                sent: monthly.sent,
-                skipped: monthly.skipped,
-                errors: monthly.errors.slice(0, 20),
-              });
-            } else {
-              await finishJobRun(monthlyJobId, "success", {
-                sent: monthly.sent,
-                skipped: monthly.skipped,
-                errors: [],
-              });
-              console.info(
-                `Monthly report finished: ${monthly.sent} sent, ${monthly.skipped} skipped`,
-              );
-            }
-          } catch (error) {
-            const details = {
-              message: error instanceof Error ? error.message : "Unknown error",
-            };
-            await finishJobRun(monthlyJobId, "error", details);
-          }
-        }
+  if (shouldRunDailyRetention()) {
+    const retentionJobId = await startJobRun("sensor-retention");
+    try {
+      const retention = await runSensorReadingRetention();
+      if (retention.error) {
+        await finishJobRun(retentionJobId, "error", {
+          rolledUp: retention.rolledUp,
+          deleted: retention.deleted,
+          error: retention.error,
+        });
+        await notifyOps(
+          "ProbeHarbor job failed: sensor-retention",
+          formatJobFailureBody("sensor-retention", {
+            message: retention.error,
+            rolledUp: retention.rolledUp,
+            deleted: retention.deleted,
+          }),
+        );
+      } else {
+        await finishJobRun(retentionJobId, "success", {
+          rolledUp: retention.rolledUp,
+          deleted: retention.deleted,
+          error: null,
+        });
+        console.info(
+          `Retention finished: rolled up ${retention.rolledUp}, deleted ${retention.deleted}`,
+        );
+      }
+    } catch (error) {
+      const details = {
+        message: error instanceof Error ? error.message : "Unknown error",
+      };
+      await finishJobRun(retentionJobId, "error", details);
+      await notifyOps(
+        "ProbeHarbor job failed: sensor-retention",
+        formatJobFailureBody("sensor-retention", details),
+      );
+    }
 
-        if (shouldSendQuarterlyReport()) {
-          const quarterlyJobId = await startJobRun("quarterly-report");
-          try {
-            const quarterly = await sendQuarterlyReportsForAllUsers();
-            if (quarterly.errors.length > 0) {
-              await finishJobRun(quarterlyJobId, "error", {
-                sent: quarterly.sent,
-                skipped: quarterly.skipped,
-                errors: quarterly.errors.slice(0, 20),
-              });
-            } else {
-              await finishJobRun(quarterlyJobId, "success", {
-                sent: quarterly.sent,
-                skipped: quarterly.skipped,
-                errors: [],
-              });
-              console.info(
-                `Quarterly report finished: ${quarterly.sent} sent, ${quarterly.skipped} skipped`,
-              );
-            }
-          } catch (error) {
-            const details = {
-              message: error instanceof Error ? error.message : "Unknown error",
-            };
-            await finishJobRun(quarterlyJobId, "error", details);
-          }
-        }
+    // Old job-run log rows and long-expired snooze links (bounded per run).
+    const housekeepingJobId = await startJobRun("housekeeping");
+    const housekeeping = await runHousekeeping();
+    await finishJobRun(housekeepingJobId, housekeeping.error ? "error" : "success", housekeeping);
+    if (housekeeping.error) {
+      await notifyOps(
+        "ProbeHarbor job failed: housekeeping",
+        formatJobFailureBody("housekeeping", { message: housekeeping.error, ...housekeeping }),
+      );
+    }
+  }
 
-        const trialJobId = await startJobRun("trial-reminders");
-        try {
-          const trial = await sendTrialRemindersForAllUsers();
-          const failed = trialJobShouldFail(trial.errors);
-          await finishJobRun(trialJobId, failed ? "error" : "success", {
-            sent: trial.sent,
-            skipped: trial.skipped,
-            restricted: trial.restricted,
-            errors: trial.errors.slice(0, 20),
-          });
-        } catch (error) {
-          await finishJobRun(trialJobId, "error", {
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
+  const freezeMapJobId = await startJobRun("freeze-map");
+  try {
+    const freezeMap = await collectFreezeMapSnapshots();
+    if (freezeMap.error) {
+      await finishJobRun(freezeMapJobId, "error", {
+        cities: freezeMap.cities,
+        error: freezeMap.error,
+      });
+      await notifyOps(
+        "ProbeHarbor job failed: freeze-map",
+        formatJobFailureBody("freeze-map", {
+          message: freezeMap.error,
+          cities: freezeMap.cities,
+        }),
+      );
+    } else {
+      await finishJobRun(freezeMapJobId, "success", {
+        cities: freezeMap.cities,
+        error: null,
+      });
+      console.info(`Freeze map finished: ${freezeMap.cities} city aggregate(s)`);
+    }
+  } catch (error) {
+    const details = {
+      message: error instanceof Error ? error.message : "Unknown error",
+    };
+    await finishJobRun(freezeMapJobId, "error", details);
+    await notifyOps(
+      "ProbeHarbor job failed: freeze-map",
+      formatJobFailureBody("freeze-map", details),
+    );
+  }
 
-        const dripJobId = await startJobRun("drip-emails");
-        try {
-          const drip = await sendDripEmailsForAllUsers();
-          const failed = dripJobShouldFail(drip.errors);
-          await finishJobRun(dripJobId, failed ? "error" : "success", {
-            sent: drip.sent,
-            skipped: drip.skipped,
-            restricted: drip.restricted,
-            errors: drip.errors.slice(0, 20),
-            ...(drip.restricted > 0
-              ? {
-                  hint: "MAILER binding blocked some recipients. Enable Email Sending for your from-domain and keep send_email unrestricted in wrangler.jsonc.",
-                }
-              : {}),
-          });
-          if (failed) {
-            await notifyOps(
-              "ProbeHarbor job failed: drip-emails",
-              formatJobFailureBody("drip-emails", {
-                message: "Hard drip email failures",
-                errors: drip.errors.slice(0, 10),
-              }),
-            );
-          }
-        } catch (error) {
-          await finishJobRun(dripJobId, "error", {
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
+  const feedUptimeJobId = await startJobRun("feed-uptime");
+  try {
+    const uptime = await runFeedUptimeForAllUsers();
+    await finishJobRun(feedUptimeJobId, uptime.errors.length ? "error" : "success", {
+      checked: uptime.checked,
+      failed: uptime.failed,
+      alertsSent: uptime.alertsSent,
+      errors: uptime.errors.slice(0, 20),
+    });
+  } catch (error) {
+    await finishJobRun(feedUptimeJobId, "error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 
-        if (shouldRunDailyRetention()) {
-          const retentionJobId = await startJobRun("sensor-retention");
-          try {
-            const retention = await runSensorReadingRetention();
-            if (retention.error) {
-              await finishJobRun(retentionJobId, "error", {
-                rolledUp: retention.rolledUp,
-                deleted: retention.deleted,
-                error: retention.error,
-              });
-              await notifyOps(
-                "ProbeHarbor job failed: sensor-retention",
-                formatJobFailureBody("sensor-retention", {
-                  message: retention.error,
-                  rolledUp: retention.rolledUp,
-                  deleted: retention.deleted,
-                }),
-              );
-            } else {
-              await finishJobRun(retentionJobId, "success", {
-                rolledUp: retention.rolledUp,
-                deleted: retention.deleted,
-                error: null,
-              });
-              console.info(
-                `Retention finished: rolled up ${retention.rolledUp}, deleted ${retention.deleted}`,
-              );
-            }
-          } catch (error) {
-            const details = {
-              message: error instanceof Error ? error.message : "Unknown error",
-            };
-            await finishJobRun(retentionJobId, "error", details);
-            await notifyOps(
-              "ProbeHarbor job failed: sensor-retention",
-              formatJobFailureBody("sensor-retention", details),
-            );
-          }
+  // Silent-failure monitors: alert ops when freeze alerts should have
+  // gone out but didn't, and when Stripe webhooks can't be delivered.
+  if (new Date().getUTCHours() % 6 === 0) {
+    const watchdogJobId = await startJobRun("alert-delivery-watchdog");
+    try {
+      const watchdog = await runAlertDeliveryWatchdog();
+      await finishJobRun(
+        watchdogJobId,
+        watchdog.findings.length || watchdog.errors.length ? "error" : "success",
+        {
+          checked: watchdog.checked,
+          findings: watchdog.findings.slice(0, 20),
+          errors: watchdog.errors.slice(0, 20),
+        },
+      );
+      if (watchdog.findings.length > 0) {
+        await notifyOps(
+          "ProbeHarbor: freeze alerts not delivered",
+          `${watchdog.findings.length} member(s) have a probe below their freeze threshold with no delivered alert in the last 6 hours.\n\n${formatWatchdogFindings(watchdog.findings)}`,
+        );
+      }
+    } catch (error) {
+      await finishJobRun(watchdogJobId, "error", {
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
 
-          // Old job-run log rows and long-expired snooze links (bounded per run).
-          const housekeepingJobId = await startJobRun("housekeeping");
-          const housekeeping = await runHousekeeping();
-          await finishJobRun(housekeepingJobId, housekeeping.error ? "error" : "success", housekeeping);
-          if (housekeeping.error) {
-            await notifyOps(
-              "ProbeHarbor job failed: housekeeping",
-              formatJobFailureBody("housekeeping", { message: housekeeping.error, ...housekeeping }),
-            );
-          }
-        }
+  if (shouldRunDailyRetention() && import.meta.env.STRIPE_SECRET_KEY) {
+    const stripeHealthJobId = await startJobRun("stripe-webhook-health");
+    try {
+      const health = await checkStripeWebhookHealth({
+        stripe: createStripeClient(),
+        webhookSecret: import.meta.env.STRIPE_WEBHOOK_SECRET,
+      });
+      await finishJobRun(stripeHealthJobId, health.ok ? "success" : "error", {
+        problems: health.problems,
+      });
+      if (!health.ok) {
+        await notifyOps(
+          "ProbeHarbor: Stripe webhooks unhealthy",
+          health.problems.map((problem) => `- ${problem}`).join("\n"),
+        );
+      }
+    } catch (error) {
+      await finishJobRun(stripeHealthJobId, "error", {
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
 
-        const freezeMapJobId = await startJobRun("freeze-map");
-        try {
-          const freezeMap = await collectFreezeMapSnapshots();
-          if (freezeMap.error) {
-            await finishJobRun(freezeMapJobId, "error", {
-              cities: freezeMap.cities,
-              error: freezeMap.error,
-            });
-            await notifyOps(
-              "ProbeHarbor job failed: freeze-map",
-              formatJobFailureBody("freeze-map", {
-                message: freezeMap.error,
-                cities: freezeMap.cities,
-              }),
-            );
-          } else {
-            await finishJobRun(freezeMapJobId, "success", {
-              cities: freezeMap.cities,
-              error: null,
-            });
-            console.info(`Freeze map finished: ${freezeMap.cities} city aggregate(s)`);
-          }
-        } catch (error) {
-          const details = {
-            message: error instanceof Error ? error.message : "Unknown error",
-          };
-          await finishJobRun(freezeMapJobId, "error", details);
-          await notifyOps(
-            "ProbeHarbor job failed: freeze-map",
-            formatJobFailureBody("freeze-map", details),
-          );
-        }
+  if (shouldRunDailyRetention()) {
+    const archiveJobId = await startJobRun("history-archive");
+    try {
+      const envWithR2 = env as { HISTORY_ARCHIVE?: R2Bucket };
+      const archive = await archiveOldReadings({ r2: envWithR2.HISTORY_ARCHIVE });
+      await finishJobRun(archiveJobId, archive.error ? "error" : "success", {
+        archived: archive.archived,
+        skipped: archive.skipped,
+        error: archive.error,
+      });
+    } catch (error) {
+      await finishJobRun(archiveJobId, "error", {
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
 
-        const feedUptimeJobId = await startJobRun("feed-uptime");
-        try {
-          const uptime = await runFeedUptimeForAllUsers();
-          await finishJobRun(feedUptimeJobId, uptime.errors.length ? "error" : "success", {
-            checked: uptime.checked,
-            failed: uptime.failed,
-            alertsSent: uptime.alertsSent,
-            errors: uptime.errors.slice(0, 20),
-          });
-        } catch (error) {
-          await finishJobRun(feedUptimeJobId, "error", {
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
+  const playbookJobId = await startJobRun("alert-playbooks");
+  try {
+    const playbooks = await runPlaybooksForAllUsers();
+    await finishJobRun(playbookJobId, playbooks.errors.length ? "error" : "success", playbooks);
+  } catch (error) {
+    await finishJobRun(playbookJobId, "error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 
-        // Silent-failure monitors: alert ops when freeze alerts should have
-        // gone out but didn't, and when Stripe webhooks can't be delivered.
-        if (new Date().getUTCHours() % 6 === 0) {
-          const watchdogJobId = await startJobRun("alert-delivery-watchdog");
-          try {
-            const watchdog = await runAlertDeliveryWatchdog();
-            await finishJobRun(
-              watchdogJobId,
-              watchdog.findings.length || watchdog.errors.length ? "error" : "success",
-              {
-                checked: watchdog.checked,
-                findings: watchdog.findings.slice(0, 20),
-                errors: watchdog.errors.slice(0, 20),
-              },
-            );
-            if (watchdog.findings.length > 0) {
-              await notifyOps(
-                "ProbeHarbor: freeze alerts not delivered",
-                `${watchdog.findings.length} member(s) have a probe below their freeze threshold with no delivered alert in the last 6 hours.\n\n${formatWatchdogFindings(watchdog.findings)}`,
-              );
-            }
-          } catch (error) {
-            await finishJobRun(watchdogJobId, "error", {
-              message: error instanceof Error ? error.message : "Unknown error",
-            });
-          }
-        }
+  const portfolioJobId = await startJobRun("portfolio-alerts");
+  try {
+    const portfolio = await sendPortfolioAlertsForAllUsers();
+    await finishJobRun(portfolioJobId, portfolio.errors.length ? "error" : "success", portfolio);
+  } catch (error) {
+    await finishJobRun(portfolioJobId, "error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 
-        if (shouldRunDailyRetention() && import.meta.env.STRIPE_SECRET_KEY) {
-          const stripeHealthJobId = await startJobRun("stripe-webhook-health");
-          try {
-            const health = await checkStripeWebhookHealth({
-              stripe: createStripeClient(),
-              webhookSecret: import.meta.env.STRIPE_WEBHOOK_SECRET,
-            });
-            await finishJobRun(stripeHealthJobId, health.ok ? "success" : "error", {
-              problems: health.problems,
-            });
-            if (!health.ok) {
-              await notifyOps(
-                "ProbeHarbor: Stripe webhooks unhealthy",
-                health.problems.map((problem) => `- ${problem}`).join("\n"),
-              );
-            }
-          } catch (error) {
-            await finishJobRun(stripeHealthJobId, "error", {
-              message: error instanceof Error ? error.message : "Unknown error",
-            });
-          }
-        }
+  const freezeDrillJobId = await startJobRun("freeze-drill");
+  try {
+    const freezeDrill = await sendFreezeDrillsForAllUsers();
+    await finishJobRun(
+      freezeDrillJobId,
+      freezeDrill.errors.length ? "error" : "success",
+      freezeDrill,
+    );
+    if (freezeDrill.sent > 0) {
+      console.info(
+        `Freeze drill finished: ${freezeDrill.sent} sent, ${freezeDrill.skipped} skipped`,
+      );
+    }
+  } catch (error) {
+    await finishJobRun(freezeDrillJobId, "error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 
-        if (shouldRunDailyRetention()) {
-          const archiveJobId = await startJobRun("history-archive");
-          try {
-            const envWithR2 = env as { HISTORY_ARCHIVE?: R2Bucket };
-            const archive = await archiveOldReadings({ r2: envWithR2.HISTORY_ARCHIVE });
-            await finishJobRun(archiveJobId, archive.error ? "error" : "success", {
-              archived: archive.archived,
-              skipped: archive.skipped,
-              error: archive.error,
-            });
-          } catch (error) {
-            await finishJobRun(archiveJobId, "error", {
-              message: error instanceof Error ? error.message : "Unknown error",
-            });
-          }
-        }
+  const freezeAlertsJobId = await startJobRun("freeze-alerts");
+  try {
+    const freezeAlerts = await sendFreezeAlerts();
+    await finishJobRun(
+      freezeAlertsJobId,
+      freezeAlerts.errors.length ? "error" : "success",
+      freezeAlerts,
+    );
+  } catch (error) {
+    await finishJobRun(freezeAlertsJobId, "error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 
-        const playbookJobId = await startJobRun("alert-playbooks");
-        try {
-          const playbooks = await runPlaybooksForAllUsers();
-          await finishJobRun(
-            playbookJobId,
-            playbooks.errors.length ? "error" : "success",
-            playbooks,
-          );
-        } catch (error) {
-          await finishJobRun(playbookJobId, "error", {
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
-
-        const portfolioJobId = await startJobRun("portfolio-alerts");
-        try {
-          const portfolio = await sendPortfolioAlertsForAllUsers();
-          await finishJobRun(
-            portfolioJobId,
-            portfolio.errors.length ? "error" : "success",
-            portfolio,
-          );
-        } catch (error) {
-          await finishJobRun(portfolioJobId, "error", {
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
-
-        const freezeDrillJobId = await startJobRun("freeze-drill");
-        try {
-          const freezeDrill = await sendFreezeDrillsForAllUsers();
-          await finishJobRun(
-            freezeDrillJobId,
-            freezeDrill.errors.length ? "error" : "success",
-            freezeDrill,
-          );
-          if (freezeDrill.sent > 0) {
-            console.info(
-              `Freeze drill finished: ${freezeDrill.sent} sent, ${freezeDrill.skipped} skipped`,
-            );
-          }
-        } catch (error) {
-          await finishJobRun(freezeDrillJobId, "error", {
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
-
-        const freezeAlertsJobId = await startJobRun("freeze-alerts");
-        try {
-          const freezeAlerts = await sendFreezeAlerts();
-          await finishJobRun(
-            freezeAlertsJobId,
-            freezeAlerts.errors.length ? "error" : "success",
-            freezeAlerts,
-          );
-        } catch (error) {
-          await finishJobRun(freezeAlertsJobId, "error", {
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
-
-        const statusNotifyJobId = await startJobRun("status-notify");
-        try {
-          const statusNotify = await checkAndNotifyStatusSubscribers();
-          await finishJobRun(
-            statusNotifyJobId,
-            statusNotify.errors.length ? "error" : "success",
-            statusNotify,
-          );
-        } catch (error) {
-          await finishJobRun(statusNotifyJobId, "error", {
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
+  const statusNotifyJobId = await startJobRun("status-notify");
+  try {
+    const statusNotify = await checkAndNotifyStatusSubscribers();
+    await finishJobRun(
+      statusNotifyJobId,
+      statusNotify.errors.length ? "error" : "success",
+      statusNotify,
+    );
+  } catch (error) {
+    await finishJobRun(statusNotifyJobId, "error", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 }
 
 const worker = {
@@ -531,11 +510,7 @@ const worker = {
     return handle(request, env as never, ctx);
   },
 
-  async scheduled(
-    controller: ScheduledController,
-    env: WorkerEnv,
-    ctx: ExecutionContext,
-  ) {
+  async scheduled(controller: ScheduledController, env: WorkerEnv, ctx: ExecutionContext) {
     ctx.waitUntil(
       (async () => {
         // Alerts and emails go out in each user's language; load those tables once per isolate.

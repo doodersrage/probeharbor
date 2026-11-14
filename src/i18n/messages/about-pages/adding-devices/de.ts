@@ -1,4 +1,3 @@
-
 /**
  * /about/adding-devices body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Dashboard UI labels
@@ -25,8 +24,16 @@ const de: AddingDevicesMessages = {
     colPull: "Pull-Feed",
     rowsHtml: [
       ["Wer startet", "Dein Gerät", "ProbeHarbor"],
-      ["Netzwerk", "Gerät braucht ausgehendes HTTPS (Uno Ethernet: HTTP an ein TLS-Relay im LAN)", "Feed-URL muss öffentlich erreichbar sein"],
-      ["Authentifizierung", "Geräteschlüssel in der URL; Flash-Hinweis + Reveal ingest key", "Öffentliche HTTPS-URL (TLS)"],
+      [
+        "Netzwerk",
+        "Gerät braucht ausgehendes HTTPS (Uno Ethernet: HTTP an ein TLS-Relay im LAN)",
+        "Feed-URL muss öffentlich erreichbar sein",
+      ],
+      [
+        "Authentifizierung",
+        "Geräteschlüssel in der URL; Flash-Hinweis + Reveal ingest key",
+        "Öffentliche HTTPS-URL (TLS)",
+      ],
       [
         "JSON-Format",
         "Flache Schlüssel, <code>temp</code>-Objekt, <code>sensors[]</code>, SenML oder HA REST",
@@ -58,7 +65,8 @@ const de: AddingDevicesMessages = {
   },
   pull: {
     title: "Pull-Feed",
-    step1Html: "Prüfe, dass dein Feed HTTPS-JSON liefert. Klassisches Format (Standard-Stammschlüssel <code>temp</code>):",
+    step1Html:
+      "Prüfe, dass dein Feed HTTPS-JSON liefert. Klassisches Format (Standard-Stammschlüssel <code>temp</code>):",
     stepsHtml: [
       'Öffne <a class="text-link" href="/dashboard/devices?tab=pull">Devices → Pull feeds</a>.',
       "Füge einen Feed hinzu: Name, HTTPS-URL und <strong>JSON root key</strong> (Standard <code>temp</code>). Nutze vor dem Speichern <strong>Test feed URL</strong>.",

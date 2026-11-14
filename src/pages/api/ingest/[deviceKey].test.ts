@@ -107,11 +107,9 @@ vi.mock("../../../lib/alertNotifications", () => ({
   fetchAlertSensorValues: (...a: unknown[]) => mockFetchLatestSensorValues(...a),
 }));
 
-function makeContext(options: {
-  deviceKey?: string;
-  headerKey?: string | null;
-  body?: unknown;
-} = {}): APIContext {
+function makeContext(
+  options: { deviceKey?: string; headerKey?: string | null; body?: unknown } = {},
+): APIContext {
   const headers = new Headers({ "Content-Type": "application/json" });
   if (options.headerKey !== null && options.headerKey !== undefined) {
     headers.set("X-Ingest-Key", options.headerKey);
@@ -137,7 +135,9 @@ const device = {
 };
 
 beforeEach(() => {
-  mockGetHouseholdAlertHold.mockReset().mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
+  mockGetHouseholdAlertHold
+    .mockReset()
+    .mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
   mockCheckEdgeRateLimit.mockReset().mockResolvedValue(null);
   mockCheckIngestRateLimit.mockReset().mockReturnValue({ ok: true });
   mockReadJsonBodyWithLimit.mockReset().mockResolvedValue({
@@ -156,21 +156,30 @@ beforeEach(() => {
   });
   mockParseTempFeedPayload.mockReset().mockReturnValue({});
   mockLabelForPushSensorKey.mockReset().mockReturnValue(null);
-  mockUpsertDeviceSensor.mockReset().mockImplementation(
-    async (_householdId: string, _deviceId: string, key: string, _label: string, kind: string) => ({
-      sensor: { id: `${kind}-${key}` },
-      error: null,
-    }),
-  );
+  mockUpsertDeviceSensor
+    .mockReset()
+    .mockImplementation(
+      async (
+        _householdId: string,
+        _deviceId: string,
+        key: string,
+        _label: string,
+        kind: string,
+      ) => ({
+        sensor: { id: `${kind}-${key}` },
+        error: null,
+      }),
+    );
   mockInsertSensorReadings
     .mockReset()
     .mockImplementation(async (rows: unknown[]) => ({ error: null, inserted: rows.length }));
   mockTouchDeviceLastSeen.mockReset().mockResolvedValue(undefined);
   mockUpdateDeviceMeta.mockReset().mockResolvedValue(undefined);
   mockRecordIngestStat.mockReset().mockResolvedValue(undefined);
-  mockEnrichDeviceMetaHistories.mockReset().mockImplementation(
-    (_meta: unknown, patch: Record<string, unknown>) => patch,
-  );  mockListHouseholdMembers.mockReset().mockResolvedValue({ members: [] });
+  mockEnrichDeviceMetaHistories
+    .mockReset()
+    .mockImplementation((_meta: unknown, patch: Record<string, unknown>) => patch);
+  mockListHouseholdMembers.mockReset().mockResolvedValue({ members: [] });
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [] });
   mockFetchLatestSensorValues.mockReset().mockResolvedValue([]);
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({});
@@ -184,9 +193,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
   it("returns 400 when the device key is missing", async () => {
     const { POST } = await import("./[deviceKey]");
 
-    const response = await POST(
-      makeContext({ deviceKey: "_", headerKey: null }),
-    );
+    const response = await POST(makeContext({ deviceKey: "_", headerKey: null }));
 
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: "Missing device key" });
@@ -224,9 +231,14 @@ describe("POST /api/ingest/[deviceKey]", () => {
 
     expect(mockFindDeviceByIngestKeyHash).toHaveBeenCalled();
     // Every device/sensor write names the key's own household.
-    expect(mockEnsureDiscoveredPushSensors.mock.calls[0]?.slice(0, 2)).toEqual(["house-1", "device-1"]);
+    expect(mockEnsureDiscoveredPushSensors.mock.calls[0]?.slice(0, 2)).toEqual([
+      "house-1",
+      "device-1",
+    ]);
     expect(mockUpsertDeviceSensor).toHaveBeenCalled();
-    expect(mockUpsertDeviceSensor.mock.calls.every((c) => c[0] === "house-1" && c[1] === "device-1")).toBe(true);
+    expect(
+      mockUpsertDeviceSensor.mock.calls.every((c) => c[0] === "house-1" && c[1] === "device-1"),
+    ).toBe(true);
     expect(mockInsertSensorReadings).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
@@ -264,9 +276,12 @@ describe("POST /api/ingest/[deviceKey]", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(mockInsertSensorReadings).toHaveBeenCalledWith([expect.objectContaining({ value_num: 41 })], {
-      skipDuplicates: false,
-    });
+    expect(mockInsertSensorReadings).toHaveBeenCalledWith(
+      [expect.objectContaining({ value_num: 41 })],
+      {
+        skipDuplicates: false,
+      },
+    );
     expect((body as { rejected: unknown }).rejected).toEqual([
       { key: "temp1", kind: "temperature", value: -196.6, reason: "sensor_fault" },
     ]);
@@ -293,7 +308,10 @@ describe("POST /api/ingest/[deviceKey]", () => {
   });
 
   it("hides the database error from the device when storing fails", async () => {
-    mockInsertSensorReadings.mockResolvedValue({ error: 'relation "sensor_readings" violates constraint xyz', inserted: 0 });
+    mockInsertSensorReadings.mockResolvedValue({
+      error: 'relation "sensor_readings" violates constraint xyz',
+      inserted: 0,
+    });
     vi.spyOn(console, "error").mockImplementation(() => {});
     const { POST } = await import("./[deviceKey]");
 
@@ -402,13 +420,28 @@ describe("POST /api/ingest/[deviceKey]", () => {
     await POST(makeContext({ headerKey: "good-key" }));
 
     expect(mockUpsertDeviceSensor).toHaveBeenCalledTimes(1);
-    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith("house-1", "device-1", "0", expect.any(String), "temperature", "F");
+    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith(
+      "house-1",
+      "device-1",
+      "0",
+      expect.any(String),
+      "temperature",
+      "F",
+    );
   });
 
   it("looks up each household member once for webhooks and alerts together", async () => {
-    mockGetUserRecord.mockImplementation(async (id: string) => ({ id, email: `${id}@example.com`, user_metadata: {} }));
-    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "user-a" }, { user_id: "user-b" }] });
-    mockGetAlertSettingsForUser.mockResolvedValue({ readingWebhookUrl: "https://hooks.example.com/x" });
+    mockGetUserRecord.mockImplementation(async (id: string) => ({
+      id,
+      email: `${id}@example.com`,
+      user_metadata: {},
+    }));
+    mockListHouseholdMembers.mockResolvedValue({
+      members: [{ user_id: "user-a" }, { user_id: "user-b" }],
+    });
+    mockGetAlertSettingsForUser.mockResolvedValue({
+      readingWebhookUrl: "https://hooks.example.com/x",
+    });
     const { POST } = await import("./[deviceKey]");
 
     await POST(makeContext({ headerKey: "good-key" }));
@@ -425,16 +458,27 @@ describe("POST /api/ingest/[deviceKey]", () => {
   it("reads the household's hold once and holds this household's alerts with it, not the reading webhook", async () => {
     const until = new Date(Date.now() + 3600_000).toISOString();
     mockGetHouseholdAlertHold.mockResolvedValueOnce({ snoozeUntil: until, vacationUntil: null });
-    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "user-a" }, { user_id: "user-b" }] });
-    mockGetAlertSettingsForUser.mockResolvedValue({ snoozeUntil: null, vacationUntil: null, readingWebhookUrl: "https://hooks.example.com/x" });
+    mockListHouseholdMembers.mockResolvedValue({
+      members: [{ user_id: "user-a" }, { user_id: "user-b" }],
+    });
+    mockGetAlertSettingsForUser.mockResolvedValue({
+      snoozeUntil: null,
+      vacationUntil: null,
+      readingWebhookUrl: "https://hooks.example.com/x",
+    });
     const { POST } = await import("./[deviceKey]");
 
     await POST(makeContext({ headerKey: "good-key" }));
 
     expect(mockGetHouseholdAlertHold).toHaveBeenCalledTimes(1);
-    expect(mockSendThresholdAlertsIfNeeded.mock.calls.map((call) => call[2].snoozeUntil)).toEqual([until, until]);
+    expect(mockSendThresholdAlertsIfNeeded.mock.calls.map((call) => call[2].snoozeUntil)).toEqual([
+      until,
+      until,
+    ]);
     // The members' own settings object is left alone.
-    expect(mockSendReadingWebhook.mock.calls.every((call) => call[1].snoozeUntil === null)).toBe(true);
+    expect(mockSendReadingWebhook.mock.calls.every((call) => call[1].snoozeUntil === null)).toBe(
+      true,
+    );
   });
 
   it("answers the device before alerts run when the Worker context is available", async () => {
@@ -442,7 +486,10 @@ describe("POST /api/ingest/[deviceKey]", () => {
     const waitUntil = vi.fn();
     const { POST } = await import("./[deviceKey]");
 
-    const response = await POST({ ...makeContext({ headerKey: "good-key" }), locals: { cfContext: { waitUntil } } } as never);
+    const response = await POST({
+      ...makeContext({ headerKey: "good-key" }),
+      locals: { cfContext: { waitUntil } },
+    } as never);
 
     expect(response.status).toBe(200);
     expect(waitUntil).toHaveBeenCalledTimes(1);
@@ -483,7 +530,10 @@ describe("POST /api/ingest/[deviceKey]", () => {
     const { POST } = await import("./[deviceKey]");
 
     await POST(makeContext({ headerKey: "good-key" }));
-    mockParseIngestPayload.mockReturnValue({ tempProbes: { "0": { c: 5, f: 41, h: 40 } }, typed: [] });
+    mockParseIngestPayload.mockReturnValue({
+      tempProbes: { "0": { c: 5, f: 41, h: 40 } },
+      typed: [],
+    });
     await POST(makeContext({ headerKey: "good-key" }));
 
     expect(mockRecordDoorSessions).not.toHaveBeenCalled();
@@ -530,9 +580,7 @@ describe("POST /api/ingest/[deviceKey]", () => {
   it("accepts the device key from the path when the header is absent", async () => {
     const { POST } = await import("./[deviceKey]");
 
-    const response = await POST(
-      makeContext({ deviceKey: "path-key", headerKey: null }),
-    );
+    const response = await POST(makeContext({ deviceKey: "path-key", headerKey: null }));
 
     expect(response.status).toBe(200);
     expect(mockFindDeviceByIngestKeyHash).toHaveBeenCalled();
@@ -547,7 +595,10 @@ describe("POST /api/ingest/[deviceKey]", () => {
 
       expect(response.status).toBe(429);
       expect(response.headers.get("Retry-After")).toBe("60");
-      expect(mockCheckEdgeRateLimit).toHaveBeenCalledWith("INGEST_RATE_LIMITER", expect.any(String));
+      expect(mockCheckEdgeRateLimit).toHaveBeenCalledWith(
+        "INGEST_RATE_LIMITER",
+        expect.any(String),
+      );
       expect(mockCheckIngestRateLimit).not.toHaveBeenCalled();
     });
 

@@ -1,4 +1,3 @@
-
 /** Body copy for /about/pic18-ethernet-ingest. Hrefs stay English; middleware localizes them. */
 
 const en = {

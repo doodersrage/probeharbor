@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { channelLastAttemptFailed, failingAlertChannels, summarizeChannelDelivery } from "./channelDelivery";
+import {
+  channelLastAttemptFailed,
+  failingAlertChannels,
+  summarizeChannelDelivery,
+} from "./channelDelivery";
 
 describe("failingAlertChannels", () => {
   const on = {
@@ -18,7 +22,11 @@ describe("failingAlertChannels", () => {
   };
   const delivery = summarizeChannelDelivery([
     { created_at: "2026-11-01T00:00:00Z", channels_sent: ["email", "sms"], channels_skipped: [] },
-    { created_at: "2026-11-02T00:00:00Z", channels_sent: [], channels_skipped: ["email", "discord"] },
+    {
+      created_at: "2026-11-02T00:00:00Z",
+      channels_sent: [],
+      channels_skipped: ["email", "discord"],
+    },
     { created_at: "2026-11-03T00:00:00Z", channels_sent: [], channels_skipped: ["sms"] },
   ]);
 
@@ -48,7 +56,11 @@ describe("failingAlertChannels", () => {
   it("does not treat held (quiet hours / snooze) alerts as channel failures", () => {
     const held = summarizeChannelDelivery([
       { created_at: "2026-11-05T00:00:00Z", channels_sent: [], channels_skipped: ["quiet_hours"] },
-      { created_at: "2026-11-05T01:00:00Z", channels_sent: [], channels_skipped: ["snooze_or_vacation"] },
+      {
+        created_at: "2026-11-05T01:00:00Z",
+        channels_sent: [],
+        channels_skipped: ["snooze_or_vacation"],
+      },
     ]);
     expect(failingAlertChannels(held, on)).toEqual([]);
   });
@@ -57,8 +69,16 @@ describe("failingAlertChannels", () => {
 describe("summarizeChannelDelivery", () => {
   it("tracks the latest success and failure per channel", () => {
     const summary = summarizeChannelDelivery([
-      { created_at: "2026-09-01T00:00:00Z", channels_sent: ["email", "discord"], channels_skipped: [] },
-      { created_at: "2026-09-03T00:00:00Z", channels_sent: ["email"], channels_skipped: ["discord", "quiet_hours"] },
+      {
+        created_at: "2026-09-01T00:00:00Z",
+        channels_sent: ["email", "discord"],
+        channels_skipped: [],
+      },
+      {
+        created_at: "2026-09-03T00:00:00Z",
+        channels_sent: ["email"],
+        channels_skipped: ["discord", "quiet_hours"],
+      },
       { created_at: "2026-09-02T00:00:00Z", channels_sent: ["email"], channels_skipped: null },
     ]);
 
@@ -75,9 +95,14 @@ describe("summarizeChannelDelivery", () => {
 describe("channelLastAttemptFailed", () => {
   it("is true only when the latest attempt failed", () => {
     expect(channelLastAttemptFailed(undefined)).toBe(false);
-    expect(channelLastAttemptFailed({ lastSentAt: null, lastFailedAt: "2026-09-03T00:00:00Z" })).toBe(true);
     expect(
-      channelLastAttemptFailed({ lastSentAt: "2026-09-04T00:00:00Z", lastFailedAt: "2026-09-03T00:00:00Z" }),
+      channelLastAttemptFailed({ lastSentAt: null, lastFailedAt: "2026-09-03T00:00:00Z" }),
+    ).toBe(true);
+    expect(
+      channelLastAttemptFailed({
+        lastSentAt: "2026-09-04T00:00:00Z",
+        lastFailedAt: "2026-09-03T00:00:00Z",
+      }),
     ).toBe(false);
   });
 });

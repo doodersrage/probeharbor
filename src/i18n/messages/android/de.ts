@@ -6,8 +6,10 @@ import type { AndroidMessages } from "./en";
 
 const de: AndroidMessages = {
   title: "Android-App",
-  descriptionLive: "{brand} Android-Begleit-App bei Google Play: Live-Fühler, Frost- und Wasseralarme, MFA und Haushaltsfunktionen. Das Handy ist kein Sensor.",
-  descriptionPwa: "Nutze {brand} auf Android per installierbarer Web-App; die native Play-App wird geprüft. Live-Fühler, Frost- und Wasseralarme. Das Handy ist kein Sensor.",
+  descriptionLive:
+    "{brand} Android-Begleit-App bei Google Play: Live-Fühler, Frost- und Wasseralarme, MFA und Haushaltsfunktionen. Das Handy ist kein Sensor.",
+  descriptionPwa:
+    "Nutze {brand} auf Android per installierbarer Web-App; die native Play-App wird geprüft. Live-Fühler, Frost- und Wasseralarme. Das Handy ist kein Sensor.",
   breadcrumbHome: "Start",
   breadcrumbApps: "Apps",
   breadcrumbAndroid: "Android-App",
@@ -24,7 +26,8 @@ const de: AndroidMessages = {
   githubSideload: "GitHub · selbst bauen oder sideloaden",
   sourceOnGithub: "Quellcode auf GitHub",
   requestLaunchNote: "Bei Play-Start benachrichtigen",
-  imageAlt: "{brand}-Stimmungsfoto: Fühlerwerte auf Handy und Laptop neben einer Eigenbau-Installation an Kupferrohren prüfen",
+  imageAlt:
+    "{brand}-Stimmungsfoto: Fühlerwerte auf Handy und Laptop neben einer Eigenbau-Installation an Kupferrohren prüfen",
   imageCaption:
     "Eigenbau-Stimmung: Handy und Laptop als Begleiter deiner eigenen Fühler. Die Bildschirme in dieser Illustration sind stilisiert und kein Produkt-Screenshot.",
   phoneTitle: "Was das Handy kann (und was nicht)",
@@ -60,7 +63,8 @@ const de: AndroidMessages = {
   deepLinksHtml:
     "Deep Links entsprechen denen der Web-App (<code>/dashboard</code>, Alarme, Haushalt), damit sich nativer Client und PWA vertraut anfühlen.",
   ossTitle: "Open Source",
-  ossHtml: 'App-Repository: <a class="text-link" href="{repo}" target="_blank" rel="noreferrer">probeharbor-android</a> · Datenschutz: <a class="text-link" href="/privacy">so werden Android-Push-Tokens behandelt</a> · API: <a class="text-link" href="/docs/api">HTTP-Referenz</a>',
+  ossHtml:
+    'App-Repository: <a class="text-link" href="{repo}" target="_blank" rel="noreferrer">probeharbor-android</a> · Datenschutz: <a class="text-link" href="/privacy">so werden Android-Push-Tokens behandelt</a> · API: <a class="text-link" href="/docs/api">HTTP-Referenz</a>',
   faqLede: "Klare Antworten für Play-Prüfer und Hausbesitzer, die auf den Eintrag warten.",
   backToApps: "← Alle Begleit-Apps",
 };

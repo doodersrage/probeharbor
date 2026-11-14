@@ -36,7 +36,8 @@ const es: FreezeSeasonMessages = {
   partsList: "Lista de piezas ESP32 + DS18B20",
   stories: "Lee historias de heladas",
   demo: "Prueba la demo en vivo",
-  faqLede: "Preparación para la temporada de heladas para propietarios con sondas en espacios fríos.",
+  faqLede:
+    "Preparación para la temporada de heladas para propietarios con sondas en espacios fríos.",
   howToName: "Prepara ProbeHarbor para una noche de helada",
   howToStep: "Paso {step} de la lista",
   howToMapName: "Súmate al mapa de heladas (opcional)",

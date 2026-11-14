@@ -27,11 +27,20 @@ export async function listManagedUsers(args: {
 }): Promise<{ users: ManagedUser[]; total: number; error: string | null }> {
   try {
     const [users, [count]] = await Promise.all([
-      query<ManagedUser>(
-        "select * from public.list_managed_users($1, $2, $3, $4, $5, $6, $7)",
-        [args.callerId, args.page, args.pageSize, args.search, args.group, args.sortBy, args.sortDir],
-      ),
-      query<{ n: number }>("select public.count_managed_users($1, $2, $3) as n", [args.callerId, args.search, args.group]),
+      query<ManagedUser>("select * from public.list_managed_users($1, $2, $3, $4, $5, $6, $7)", [
+        args.callerId,
+        args.page,
+        args.pageSize,
+        args.search,
+        args.group,
+        args.sortBy,
+        args.sortDir,
+      ]),
+      query<{ n: number }>("select public.count_managed_users($1, $2, $3) as n", [
+        args.callerId,
+        args.search,
+        args.group,
+      ]),
     ]);
     return { users, total: Number(count?.n ?? 0), error: null };
   } catch (error) {
@@ -41,9 +50,17 @@ export async function listManagedUsers(args: {
   }
 }
 
-export async function setUserAdminMembership(callerId: string, targetUserId: string, makeAdmin: boolean): Promise<{ error: string | null }> {
+export async function setUserAdminMembership(
+  callerId: string,
+  targetUserId: string,
+  makeAdmin: boolean,
+): Promise<{ error: string | null }> {
   try {
-    await query("select public.set_user_admin_membership($1, $2, $3)", [callerId, targetUserId, makeAdmin]);
+    await query("select public.set_user_admin_membership($1, $2, $3)", [
+      callerId,
+      targetUserId,
+      makeAdmin,
+    ]);
     return { error: null };
   } catch (error) {
     const cause = (error as { cause?: unknown }).cause;
@@ -74,13 +91,10 @@ export async function insertServerError(row: {
   stack: string | null;
   user_id: string | null;
 }): Promise<void> {
-  await query("insert into public.server_errors (path, method, message, stack, user_id) values ($1, $2, $3, $4, $5)", [
-    row.path,
-    row.method,
-    row.message,
-    row.stack,
-    row.user_id,
-  ]);
+  await query(
+    "insert into public.server_errors (path, method, message, stack, user_id) values ($1, $2, $3, $4, $5)",
+    [row.path, row.method, row.message, row.stack, row.user_id],
+  );
 }
 
 export async function listServerErrors<T>(limit: number): Promise<T[]> {
@@ -143,7 +157,10 @@ export async function allContacts(): Promise<{ rows: ContactSubmission[]; error:
   }
 }
 
-export async function updateContact(id: number, updates: { status?: string; admin_notes?: string }): Promise<{ error: string | null }> {
+export async function updateContact(
+  id: number,
+  updates: { status?: string; admin_notes?: string },
+): Promise<{ error: string | null }> {
   try {
     await query(
       `update public.contacts
@@ -160,7 +177,9 @@ export async function updateContact(id: number, updates: { status?: string; admi
 
 // ---- ops dashboards ---------------------------------------------------------
 
-export async function recentCheckoutRows(): Promise<Array<{ id: string; user_id: string | null; detail: string | null; created_at: string }>> {
+export async function recentCheckoutRows(): Promise<
+  Array<{ id: string; user_id: string | null; detail: string | null; created_at: string }>
+> {
   try {
     return await query(
       `select id, user_id, detail, created_at from public.household_activity
@@ -171,7 +190,9 @@ export async function recentCheckoutRows(): Promise<Array<{ id: string; user_id:
   }
 }
 
-export async function jobRunsSince(sinceIso: string): Promise<Array<{ job_name: string; status: string; started_at: string }>> {
+export async function jobRunsSince(
+  sinceIso: string,
+): Promise<Array<{ job_name: string; status: string; started_at: string }>> {
   try {
     return await query(
       `select job_name, status, started_at from public.job_runs

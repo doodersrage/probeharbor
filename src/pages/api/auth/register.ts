@@ -1,8 +1,6 @@
 import type { APIRoute } from "astro";
 import { getTurnstileToken, verifyTurnstileToken } from "../../../lib/turnstile";
-import {
-  applyReferralForNewUser,
-} from "../../../lib/referrals";
+import { applyReferralForNewUser } from "../../../lib/referrals";
 import {
   REGISTER_EMAIL_COOKIE,
   REGISTER_EMAIL_COOKIE_OPTIONS,
@@ -32,10 +30,7 @@ export const POST: APIRoute = async (context) => {
     return redirect(buildRegisterErrorHref(code, { next, ref: refCode }));
   };
 
-  const turnstile = await verifyTurnstileToken(
-    getTurnstileToken(formData),
-    clientAddress,
-  );
+  const turnstile = await verifyTurnstileToken(getTurnstileToken(formData), clientAddress);
 
   if (!turnstile.success) {
     return backToForm("verification");
@@ -50,7 +45,8 @@ export const POST: APIRoute = async (context) => {
   }
 
   const safeNext = sanitizeRegisterNext(next) ?? REGISTER_NEXT_DEVICES;
-  const done = () => redirect(`/signin?${new URLSearchParams({ registered: "1", next: safeNext }).toString()}`);
+  const done = () =>
+    redirect(`/signin?${new URLSearchParams({ registered: "1", next: safeNext }).toString()}`);
 
   const locale = requestLocale(context);
   const res = await withBetterAuth(
@@ -67,7 +63,10 @@ export const POST: APIRoute = async (context) => {
   const { user } = (await res.json()) as { user: { id: string } };
   if (await getUserRecord(user.id)) {
     await mergeUserMetadata(user.id, { locale }).catch((error: unknown) =>
-      console.error("register: could not save account language", error instanceof Error ? error.message : error),
+      console.error(
+        "register: could not save account language",
+        error instanceof Error ? error.message : error,
+      ),
     );
     if (refCode) await applyReferralForNewUser(user.id, refCode, {});
   }

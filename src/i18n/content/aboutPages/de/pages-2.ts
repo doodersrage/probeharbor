@@ -159,8 +159,7 @@ export default {
     title: "ESP32-OTA und Akkustand",
     description:
       "ESP32-Firmware per OTA im LAN aktuell halten, während der Push-Ingest Akku- und RSSI-Werte an die HTTP-API von ProbeHarbor sendet.",
-    summary:
-      "ESP32-Firmware im LAN aktuell halten, während die Telemetrie an die Ingest-API geht.",
+    summary: "ESP32-Firmware im LAN aktuell halten, während die Telemetrie an die Ingest-API geht.",
   },
   "esp32-web-flash": {
     title: "Möglichkeiten zum Flashen des ESP32",

@@ -10,7 +10,8 @@ const de: ReportEmailMessages = {
   titleMonthly: "Monatsbericht",
   titleQuarterly: "Quartalsbericht",
   emailTitle: "Fühlerbericht – {label}",
-  snapshotIntro: "{days}-Tage-Überblick aus deinen gespeicherten Messwerten und der Wettervorhersage.",
+  snapshotIntro:
+    "{days}-Tage-Überblick aus deinen gespeicherten Messwerten und der Wettervorhersage.",
   readings: { one: "{count} Messwert", other: "{count} Messwerte" },
 
   statReadings: "Messwerte",

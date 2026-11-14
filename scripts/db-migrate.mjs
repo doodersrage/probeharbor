@@ -54,7 +54,10 @@ export function planMigrations(files, applied) {
     else done.push(file.version);
   }
   // Recorded in the database but no longer on disk.
-  const missing = applied.map((row) => row.version).filter((v) => !names.has(v)).sort();
+  const missing = applied
+    .map((row) => row.version)
+    .filter((v) => !names.has(v))
+    .sort();
   // A pending file sorting before an applied one means history was rewritten.
   const lastApplied = done.at(-1) ?? changed.at(-1);
   const outOfOrder = lastApplied ? pending.filter((v) => v < lastApplied) : [];
@@ -71,7 +74,9 @@ export function pendingUpTo(pending, upTo) {
 export function blockingProblems(plan) {
   const problems = [];
   if (plan.changed.length) {
-    problems.push(`changed after being applied: ${plan.changed.join(", ")} (add a new migration instead)`);
+    problems.push(
+      `changed after being applied: ${plan.changed.join(", ")} (add a new migration instead)`,
+    );
   }
   if (plan.missing.length) {
     problems.push(`applied but missing from disk: ${plan.missing.join(", ")}`);
@@ -90,8 +95,12 @@ export function checkTargetUrl(raw, name) {
   } catch {
     return `${name} is not a valid postgres:// URL.`;
   }
-  if (!/^postgres(ql)?:$/.test(url.protocol)) return `${name} must start with postgres:// or postgresql://.`;
-  if (/(^|\.)supabase\.(co|com|net)$/i.test(url.hostname) || /pooler\.supabase\./i.test(url.hostname)) {
+  if (!/^postgres(ql)?:$/.test(url.protocol))
+    return `${name} must start with postgres:// or postgresql://.`;
+  if (
+    /(^|\.)supabase\.(co|com|net)$/i.test(url.hostname) ||
+    /pooler\.supabase\./i.test(url.hostname)
+  ) {
     return `${name} points at Supabase. db:migrate is for the Neon database only.`;
   }
   return null;
@@ -139,11 +148,16 @@ async function main() {
 
   const files = readMigrationFiles(dir);
   const { default: pg } = await import("pg");
-  const client = new pg.Client({ connectionString: raw, application_name: "probeharbor-db-migrate" });
+  const client = new pg.Client({
+    connectionString: raw,
+    application_name: "probeharbor-db-migrate",
+  });
   await client.connect();
   try {
     await client.query("select pg_advisory_lock($1)", [MIGRATION_LOCK_ID]);
-    const { rows: found } = await client.query("select to_regclass('public.schema_migrations') is not null as ok");
+    const { rows: found } = await client.query(
+      "select to_regclass('public.schema_migrations') is not null as ok",
+    );
     if (!found[0].ok && !statusOnly) {
       await client.query(`create table public.schema_migrations (
         version text primary key,
@@ -160,7 +174,9 @@ async function main() {
     const plan = planMigrations(files, rows);
     const host = new URL(raw).hostname;
     console.log(`Target: ${urlEnv} (${host})`);
-    console.log(`Applied: ${plan.done.length}. Pending: ${plan.pending.length ? plan.pending.join(", ") : "none"}.`);
+    console.log(
+      `Applied: ${plan.done.length}. Pending: ${plan.pending.length ? plan.pending.join(", ") : "none"}.`,
+    );
 
     const problems = blockingProblems(plan);
     if (problems.length) {
@@ -171,7 +187,9 @@ async function main() {
 
     const toApply = pendingUpTo(plan.pending, upTo);
     if (upTo && toApply.length < plan.pending.length) {
-      console.log(`Up to ${upTo}: applying ${toApply.length ? toApply.join(", ") : "nothing"}; leaving ${plan.pending.filter((v) => !toApply.includes(v)).join(", ")}.`);
+      console.log(
+        `Up to ${upTo}: applying ${toApply.length ? toApply.join(", ") : "nothing"}; leaving ${plan.pending.filter((v) => !toApply.includes(v)).join(", ")}.`,
+      );
     }
     for (const version of toApply) {
       const sql = files.find((f) => f.version === version).sql;
@@ -180,10 +198,10 @@ async function main() {
       try {
         await client.query(sql);
         // Migrations may change search_path; keep the bookkeeping explicit.
-        await client.query("insert into public.schema_migrations (version, checksum) values ($1, $2)", [
-          version,
-          checksum(sql),
-        ]);
+        await client.query(
+          "insert into public.schema_migrations (version, checksum) values ($1, $2)",
+          [version, checksum(sql)],
+        );
         await client.query("commit");
       } catch (error) {
         await client.query("rollback");

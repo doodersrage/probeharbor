@@ -166,12 +166,10 @@ export function resolveFreezeMapDisplay(
   const approaching = [...snapshots]
     // Unnamed rows are private custom locations: counted in the "private"
     // note, never listed by themselves.
-    .filter((row) => row.sample_count > 0 && row.sample_count < sampleFloor && row.city_label !== "")
-    .sort(
-      (a, b) =>
-        b.sample_count - a.sample_count ||
-        a.city_label.localeCompare(b.city_label),
-    );
+    .filter(
+      (row) => row.sample_count > 0 && row.sample_count < sampleFloor && row.city_label !== "",
+    )
+    .sort((a, b) => b.sample_count - a.sample_count || a.city_label.localeCompare(b.city_label));
 
   const qualifying = snapshots.filter((row) => row.sample_count >= sampleFloor);
   if (qualifying.length > 0) {

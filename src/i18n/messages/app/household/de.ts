@@ -11,7 +11,8 @@ const de: HouseholdMessages = {
     switched: "Aktiver Haushalt gewechselt.",
     joined: "Du bist dem Haushalt beigetreten.",
     inviteRevoked: "Einladung zurückgezogen.",
-    inviteResent: "Neuer Einladungslink per E-Mail gesendet. Der vorherige Link funktioniert nicht mehr.",
+    inviteResent:
+      "Neuer Einladungslink per E-Mail gesendet. Der vorherige Link funktioniert nicht mehr.",
     left: "Du hast den Haushalt verlassen.",
     propertyCreated: "Neues Objekt angelegt und aktiviert.",
     digestSaved: "Einstellung zur Zusammenfassung gespeichert.",
@@ -29,8 +30,10 @@ const de: HouseholdMessages = {
     changeRole: "Rolle ändern",
     roleFor: "Rolle für {email}",
     confirmRemove: "Dieses Mitglied aus dem Haushalt entfernen?",
-    confirmLeave: "Diesen Haushalt verlassen? Du verlierst den Zugriff auf seine geteilten Geräte und seinen Verlauf.",
-    leaveBody: "Du bist Mitglied dieses Haushalts. Wenn du ihn verlässt, verlierst du den Zugriff auf seine Geräte und seinen Verlauf.",
+    confirmLeave:
+      "Diesen Haushalt verlassen? Du verlierst den Zugriff auf seine geteilten Geräte und seinen Verlauf.",
+    leaveBody:
+      "Du bist Mitglied dieses Haushalts. Wenn du ihn verlässt, verlierst du den Zugriff auf seine Geräte und seinen Verlauf.",
     leave: "Haushalt verlassen",
   },
   invite: {
@@ -45,7 +48,8 @@ const de: HouseholdMessages = {
     roleAlertOnly: "Nur Alarme (Benachrichtigungen, nur lesen)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> bietet Objektverwalter-Zugänge für Personal vor Ort (ohne Zugriff auf die Abrechnung).',
-    existingMemberHint: "Eine Einladung an jemanden, der schon Mitglied ist, ändert seine Rolle nicht. Der Eigentümer kann Rollen unter Mitglieder ändern.",
+    existingMemberHint:
+      "Eine Einladung an jemanden, der schon Mitglied ist, ändert seine Rolle nicht. Der Eigentümer kann Rollen unter Mitglieder ändern.",
     submit: "Einladungslink senden",
     invitesHeading: "Einladungen",
     managersOnly: "Nur der Eigentümer und Bearbeiter des Haushalts können Einladungen senden.",
@@ -59,7 +63,8 @@ const de: HouseholdMessages = {
     expires: "Läuft ab am {time}",
     copyLink: "Link kopieren",
     confirmCancel: "Diese Einladung zurückziehen?",
-    linkHidden: "Aus Sicherheitsgründen wird der Link nur beim Senden angezeigt. Mit „Erneut senden“ verschickst du einen neuen.",
+    linkHidden:
+      "Aus Sicherheitsgründen wird der Link nur beim Senden angezeigt. Mit „Erneut senden“ verschickst du einen neuen.",
     resend: "Erneut senden",
     confirmResend: "Neuen Link senden? Der aktuelle Link funktioniert dann nicht mehr.",
     cancel: "Zurückziehen",
@@ -88,7 +93,8 @@ const de: HouseholdMessages = {
     selected: "Ausgewählt: {label}",
     searchHint: "Ist deine Stadt nicht in der Liste, suche danach und wähle ein Ergebnis.",
     submit: "Einstellungen der Frostkarte speichern",
-    publicListHtml: 'Die öffentliche Liste findest du unter <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+    publicListHtml:
+      'Die öffentliche Liste findest du unter <a class="text-link" href="/freeze-map">/freeze-map</a>.',
   },
   property: {
     heading: "Weiteres Objekt hinzufügen",
@@ -99,7 +105,8 @@ const de: HouseholdMessages = {
     submit: "Objekt anlegen",
     limit: {
       one: "Dein Tarif erlaubt {count} eigenen Haushalt ({inUse} genutzt). Mit Pro verwaltest du mehrere Objekte.",
-      other: "Dein Tarif erlaubt {count} eigene Haushalte ({inUse} genutzt). Mit Pro verwaltest du mehrere Objekte.",
+      other:
+        "Dein Tarif erlaubt {count} eigene Haushalte ({inUse} genutzt). Mit Pro verwaltest du mehrere Objekte.",
     },
   },
   activity: {
@@ -139,7 +146,8 @@ const de: HouseholdMessages = {
     property_limit:
       "Du hast die Grenze für eigene Objekte in deinem Tarif erreicht. Wechsle den Tarif für weitere Haushalte.",
     portfolio_required: "Einladungen für Objektverwalter erfordern den Tarif Portfolio.",
-    owner_required: "Nur der Eigentümer des Haushalts kann Mitglieder entfernen oder ihre Rollen ändern.",
+    owner_required:
+      "Nur der Eigentümer des Haushalts kann Mitglieder entfernen oder ihre Rollen ändern.",
     cannot_change_owner: "Die Rolle des Eigentümers kann nicht geändert werden.",
     not_a_member: "Diese Person ist kein Mitglied dieses Haushalts.",
   },

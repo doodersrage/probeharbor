@@ -70,12 +70,15 @@ export default function DemoPullQuickStart({
 
   return (
     <div class="flex flex-wrap items-center gap-3">
-      <button type="button" class="btn-primary" disabled={loading} onClick={() => void startExampleFeed()}>
+      <button
+        type="button"
+        class="btn-primary"
+        disabled={loading}
+        onClick={() => void startExampleFeed()}
+      >
         {loading ? text.settingUp : buttonLabel}
       </button>
-      <span class="text-sm text-[var(--color-text-muted)]">
-        {text.hint}
-      </span>
+      <span class="text-sm text-[var(--color-text-muted)]">{text.hint}</span>
       {status ? <span class="text-sm text-[var(--color-danger)]">{status}</span> : null}
     </div>
   );

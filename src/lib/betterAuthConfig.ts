@@ -15,7 +15,11 @@ import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { bearer, twoFactor } from "better-auth/plugins";
-import { type OAuthProviderId, oauthTwoFactorPlugin, refuseGitHubImplicitLink } from "./betterAuthOAuth";
+import {
+  type OAuthProviderId,
+  oauthTwoFactorPlugin,
+  refuseGitHubImplicitLink,
+} from "./betterAuthOAuth";
 import { type YubiKeyVerifier, yubikeyTwoFactorPlugin } from "./betterAuthYubiKey";
 
 /** Minimum length on the sign-up and reset forms. */
@@ -28,7 +32,13 @@ const BCRYPT_PREFIX = /^\$2[aby]\$\d{2}\$/;
  * changed passwords use Better Auth's default (scrypt). Accept both, so
  * existing passwords keep working after the move.
  */
-export async function verifyStoredPassword({ hash, password }: { hash: string; password: string }): Promise<boolean> {
+export async function verifyStoredPassword({
+  hash,
+  password,
+}: {
+  hash: string;
+  password: string;
+}): Promise<boolean> {
   if (BCRYPT_PREFIX.test(hash)) return bcrypt.compare(password, hash);
   return verifyPassword({ hash, password });
 }
@@ -41,7 +51,11 @@ type Queryable = { query: (text: string, params?: unknown[]) => Promise<unknown>
  * matches the old hash, so it runs once and a concurrent password change
  * wins. Best effort: a failure is logged and never blocks the sign-in.
  */
-export async function upgradeCopiedPasswordHash(database: unknown, oldHash: string, password: string): Promise<boolean> {
+export async function upgradeCopiedPasswordHash(
+  database: unknown,
+  oldHash: string,
+  password: string,
+): Promise<boolean> {
   try {
     const newHash = await hashPassword(password);
     const result = (await (database as Queryable).query(
@@ -51,7 +65,10 @@ export async function upgradeCopiedPasswordHash(database: unknown, oldHash: stri
     )) as { rowCount?: number | null };
     return (result.rowCount ?? 0) > 0;
   } catch (error) {
-    console.error("auth: could not upgrade a copied password hash", error instanceof Error ? error.message : String(error));
+    console.error(
+      "auth: could not upgrade a copied password hash",
+      error instanceof Error ? error.message : String(error),
+    );
     return false;
   }
 }
@@ -79,7 +96,9 @@ export type BetterAuthDeps = {
    * OAuth apps with credentials set. Each provider returns to the app's
    * existing callback path (see `redirectURI`), not Better Auth's own.
    */
-  oauth?: Partial<Record<OAuthProviderId, { clientId: string; clientSecret: string; redirectURI: string }>>;
+  oauth?: Partial<
+    Record<OAuthProviderId, { clientId: string; clientSecret: string; redirectURI: string }>
+  >;
   /** YubiKey OTP check for finishing the two-factor challenge (unset when YubiCloud isn't configured). */
   verifyYubiKey?: YubiKeyVerifier;
 };
@@ -110,31 +129,40 @@ export function createBetterAuth(deps: BetterAuthDeps) {
         hash: hashPassword,
         verify: async (input) => {
           const ok = await verifyStoredPassword(input);
-          if (ok && BCRYPT_PREFIX.test(input.hash)) await upgradeCopiedPasswordHash(deps.database, input.hash, input.password);
+          if (ok && BCRYPT_PREFIX.test(input.hash))
+            await upgradeCopiedPasswordHash(deps.database, input.hash, input.password);
           return ok;
         },
       },
-      sendResetPassword: async ({ user, url, token }) => deps.sendResetPassword({ email: user.email, url, token }),
+      sendResetPassword: async ({ user, url, token }) =>
+        deps.sendResetPassword({ email: user.email, url, token }),
       revokeSessionsOnPasswordReset: true,
     },
     emailVerification: {
       sendOnSignUp: true,
       // Following the confirmation link signs the user in.
       autoSignInAfterVerification: true,
-      sendVerificationEmail: async ({ user, url, token }) => deps.sendVerificationEmail({ email: user.email, url, token }),
+      sendVerificationEmail: async ({ user, url, token }) =>
+        deps.sendVerificationEmail({ email: user.email, url, token }),
     },
     socialProviders: {
-      ...(deps.oauth?.google ? { google: { ...deps.oauth.google, prompt: "select_account" as const } } : {}),
+      ...(deps.oauth?.google
+        ? { google: { ...deps.oauth.google, prompt: "select_account" as const } }
+        : {}),
       ...(deps.oauth?.discord ? { discord: deps.oauth.discord } : {}),
       // Same scopes as before, so accounts with a private email still work.
-      ...(deps.oauth?.github ? { github: { ...deps.oauth.github, scope: ["read:user", "user:email"] } } : {}),
+      ...(deps.oauth?.github
+        ? { github: { ...deps.oauth.github, scope: ["read:user", "user:email"] } }
+        : {}),
     },
     databaseHooks: {
       account: {
         create: {
           before: async (account, ctx) => {
             if (!ctx) return;
-            const allowed = await refuseGitHubImplicitLink(account, (userId) => ctx.context.internalAdapter.findAccounts(userId));
+            const allowed = await refuseGitHubImplicitLink(account, (userId) =>
+              ctx.context.internalAdapter.findAccounts(userId),
+            );
             return allowed ? undefined : false;
           },
         },
@@ -150,7 +178,12 @@ export function createBetterAuth(deps: BetterAuthDeps) {
         allowPasswordless: true,
         schema: { twoFactor: { modelName: "auth_two_factors" } },
       }),
-      passkey({ rpID: deps.rpID, rpName: "ProbeHarbor", origin: deps.baseURL, schema: { passkey: { modelName: "auth_passkeys" } } }),
+      passkey({
+        rpID: deps.rpID,
+        rpName: "ProbeHarbor",
+        origin: deps.baseURL,
+        schema: { passkey: { modelName: "auth_passkeys" } },
+      }),
       bearer(),
     ],
   });

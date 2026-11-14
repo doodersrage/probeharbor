@@ -11,7 +11,8 @@ const en = {
       eyebrow: "Freeze alerts",
       title: "Confirm your freeze alerts",
       intro: "Click below and we'll email you the afternoon before a freezing night in {place}.",
-      ignore: "If you didn't ask for this, ignore this message. You won't get anything unless you confirm.",
+      ignore:
+        "If you didn't ask for this, ignore this message. You won't get anything unless you confirm.",
       cta: "Confirm freeze alerts",
       footerNote:
         "You're receiving this because someone entered this address on the ProbeHarbor pipe freeze forecast.",
@@ -20,9 +21,11 @@ const en = {
     move: {
       eyebrow: "Freeze alerts",
       title: "Switch your freeze alerts to {place}?",
-      intro: "This address already gets freeze alerts for {current}. Someone just asked to send them for {place} instead.",
+      intro:
+        "This address already gets freeze alerts for {current}. Someone just asked to send them for {place} instead.",
       keep: "Nothing changes until you click below. Your alerts for {current} keep coming as usual.",
-      ignore: "If you didn't ask for this, ignore this message. The link stops working after 7 days.",
+      ignore:
+        "If you didn't ask for this, ignore this message. The link stops working after 7 days.",
       cta: "Switch my freeze alerts",
       footerNote:
         "You're receiving this because someone entered this address on the ProbeHarbor pipe freeze forecast.",
@@ -69,7 +72,8 @@ const en = {
   stuck: {
     faultReset: "the value a DS18B20 reports after a reset (often weak power or a long cable)",
     faultDisconnected: "the value a DS18B20 library reports when the probe is disconnected",
-    faultMessage: "{label} reads {value}°F, {why}. Check the probe's wiring; this isn't a real temperature.",
+    faultMessage:
+      "{label} reads {value}°F, {why}. Check the probe's wiring; this isn't a real temperature.",
     faultDetail: "{label} reads {value}{unit} (sensor fault), check wiring",
     stuckMessage:
       "{label} has reported exactly {value}°F for {span}. The probe may be stuck or the board may be resending an old value; a freeze here could go unnoticed.",
@@ -116,10 +120,14 @@ const en = {
     falseAlarmTip: "Marked as false alarm: alerts snoozed 24h. Suggested fix: {tip}. Open {href}",
     results: {
       ack: "Alert marked as handled.",
-      snooze_1h: "Alert handled: other alerts snoozed for 1 hour. Freeze alerts stay on; this one won't repeat while it continues.",
-      snooze_4h: "Alert handled: other alerts snoozed for 4 hours. Freeze alerts stay on; this one won't repeat while it continues.",
-      snooze_24h: "Alert handled: other alerts snoozed for 24 hours. Freeze alerts stay on; this one won't repeat while it continues.",
-      false_alarm: "Marked as false alarm: alerts snoozed 24h. Check probe placement if this keeps happening.",
+      snooze_1h:
+        "Alert handled: other alerts snoozed for 1 hour. Freeze alerts stay on; this one won't repeat while it continues.",
+      snooze_4h:
+        "Alert handled: other alerts snoozed for 4 hours. Freeze alerts stay on; this one won't repeat while it continues.",
+      snooze_24h:
+        "Alert handled: other alerts snoozed for 24 hours. Freeze alerts stay on; this one won't repeat while it continues.",
+      false_alarm:
+        "Marked as false alarm: alerts snoozed 24h. Check probe placement if this keeps happening.",
       raise_threshold: "False alarm handled and freeze threshold raised.",
       notify_tenant: "Alert handled: tenant contact emailed.",
       webhook_ping: "Alert handled: outbound webhook notified.",
@@ -168,7 +176,10 @@ const en = {
     /** Results of applySnoozeToken (English text in src/lib/alertSnoozeTokens.ts). */
     resultInvalid: "Invalid or already used snooze link.",
     resultExpired: "Snooze link expired.",
-    resultSnoozed: { one: "Alerts snoozed for {count} hours.", other: "Alerts snoozed for {count} hours." },
+    resultSnoozed: {
+      one: "Alerts snoozed for {count} hours.",
+      other: "Alerts snoozed for {count} hours.",
+    },
   },
 };
 

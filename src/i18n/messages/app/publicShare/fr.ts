@@ -50,7 +50,8 @@ const fr: PublicShareMessages = {
       updatesEvery: "Mise à jour toutes les 90 secondes",
       trendTitle: "Tendance de température sur 7 jours",
       trendAria: "Graphique de l’historique de température",
-      emptyTitle: "Aucune mesure pour l’instant. Les capteurs de ce lien n’ont peut-être pas encore envoyé de données.",
+      emptyTitle:
+        "Aucune mesure pour l’instant. Les capteurs de ce lien n’ont peut-être pas encore envoyé de données.",
       emptyNote: "Cette page continue de vérifier automatiquement.",
       loadError: "Impossible de charger ce lien de partage.",
       fetchError: "Échec du chargement des mesures partagées.",
@@ -110,7 +111,8 @@ const fr: PublicShareMessages = {
   pipeFreeze: {
     heading: "Prévision de gel des canalisations · {place}",
     thisArea: "Cette zone",
-    source: "Minimales extérieures du National Weather Service (États-Unis), évaluées pour les canalisations dans des espaces non chauffés.",
+    source:
+      "Minimales extérieures du National Weather Service (États-Unis), évaluées pour les canalisations dans des espaces non chauffés.",
     hours: "{hours} h à {temp} ou moins",
     needCoords: "Ajoutez ?lat= et ?lon= pour un lieu aux États-Unis.",
     usOnly: "La prévision ne couvre que les lieux aux États-Unis.",

@@ -66,7 +66,11 @@ describe("resolveOutdoorCompareCoords", () => {
     const result = await resolveOutdoorCompareCoords("user-1", { id: "user-1" } as never);
 
     expect(result).toEqual({ lat: 5, lon: 6, label: "My Freeze Map" });
-    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", ["freeze_map_lat", "freeze_map_lon", "freeze_map_label"]);
+    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", [
+      "freeze_map_lat",
+      "freeze_map_lon",
+      "freeze_map_label",
+    ]);
   });
 
   it("returns null when there is no household", async () => {
@@ -89,10 +93,16 @@ describe("resolveOutdoorCompareCoords", () => {
     mockGetUserHouseholdId.mockResolvedValue("house-1");
     const { resolveOutdoorCompareCoords } = await import("./outdoorCompareCoords");
 
-    mockGetHouseholdFields.mockResolvedValue({ data: { freeze_map_lat: null, freeze_map_lon: 6 }, error: null });
+    mockGetHouseholdFields.mockResolvedValue({
+      data: { freeze_map_lat: null, freeze_map_lon: 6 },
+      error: null,
+    });
     expect(await resolveOutdoorCompareCoords("user-1")).toBeNull();
 
-    mockGetHouseholdFields.mockResolvedValue({ data: { freeze_map_lat: NaN, freeze_map_lon: 6 }, error: null });
+    mockGetHouseholdFields.mockResolvedValue({
+      data: { freeze_map_lat: NaN, freeze_map_lon: 6 },
+      error: null,
+    });
     expect(await resolveOutdoorCompareCoords("user-1")).toBeNull();
   });
 

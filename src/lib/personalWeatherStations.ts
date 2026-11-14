@@ -24,9 +24,7 @@ export function normalizeAmbientMac(raw: string | null | undefined): string | nu
   return MAC_PATTERN.test(mac) ? mac : null;
 }
 
-export function normalizeWeatherflowStationId(
-  raw: string | null | undefined,
-): string | null {
+export function normalizeWeatherflowStationId(raw: string | null | undefined): string | null {
   const id = clean(raw);
   return /^\d+$/.test(id) ? id : null;
 }
@@ -43,9 +41,7 @@ export function personalWeatherConfigFromMetadata(
     source,
     openWeatherCityId,
     ambientMac: normalizeAmbientMac(
-      typeof metadata?.ambient_weather_mac === "string"
-        ? metadata.ambient_weather_mac
-        : null,
+      typeof metadata?.ambient_weather_mac === "string" ? metadata.ambient_weather_mac : null,
     ),
     ambientApiKey:
       typeof metadata?.ambient_weather_api_key === "string"

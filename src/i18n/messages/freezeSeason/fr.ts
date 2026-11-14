@@ -25,7 +25,8 @@ const fr: FreezeSeasonMessages = {
     'Facultatif : inscrivez votre ville sur la <a class="text-link" href="/freeze-map">carte publique du gel</a>.',
   sampleColdest: "Villes les plus froides (exemple)",
   liveColdest: "Villes participantes les plus froides",
-  sampleNote: "Aperçu illustratif en attendant que suffisamment de foyers rejoignent la carte du gel.",
+  sampleNote:
+    "Aperçu illustratif en attendant que suffisamment de foyers rejoignent la carte du gel.",
   liveNote: "D’après le dernier relevé de la carte du gel ProbeHarbor.",
   minTemp: "min. {temp}",
   viewMap: "Voir la carte complète",

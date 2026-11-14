@@ -26,19 +26,22 @@ export default {
     title: "Montaje de sondas y carcasas",
     description:
       "Monta las sondas para obtener lecturas estables en espacios sin calefacción: altura, protección del sol y las corrientes, y carcasas ventiladas.",
-    summary: "A la altura del hombro, lejos de puertas y fuentes de calor, en carcasas que dejen pasar el aire.",
+    summary:
+      "A la altura del hombro, lejos de puertas y fuentes de calor, en carcasas que dejen pasar el aire.",
   },
   "multi-zone-garage-layout": {
     title: "Distribución del garaje en varias zonas",
     description:
       "Planifica varias zonas de sondas para captar los gradientes del suelo al techo, las oscilaciones junto a la puerta y las zonas de banco de trabajo.",
-    summary: "Divide el garaje en zonas con sentido en lugar de promediar y perder la señal que necesitas.",
+    summary:
+      "Divide el garaje en zonas con sentido en lugar de promediar y perder la señal que necesitas.",
   },
   "probe-mapping-labels": {
     title: "Asignación de sondas y etiquetas del panel",
     description:
       "Asigna las claves JSON de cada sonda a nombres legibles en el panel para que las tarjetas de la página de inicio coincidan con las ubicaciones físicas.",
-    summary: "Claves JSON estables, etiquetas descriptivas y organización por feed para instalaciones con varias sondas.",
+    summary:
+      "Claves JSON estables, etiquetas descriptivas y organización por feed para instalaciones con varias sondas.",
   },
   "humidity-condensation-basics": {
     title: "Fundamentos de humedad y condensación",
@@ -72,7 +75,8 @@ export default {
     title: "Oscilaciones de temperatura por la puerta del garaje",
     description:
       "Por qué abrir la puerta del garaje provoca cambios rápidos de temperatura y humedad, y cómo interpretar los picos de las sondas.",
-    summary: "Infiltración y estratificación térmica cuando se mueve la mayor abertura de la pared.",
+    summary:
+      "Infiltración y estratificación térmica cuando se mueve la mayor abertura de la pared.",
   },
   "sun-load-garage-walls": {
     title: "Carga solar en las paredes del garaje",
@@ -92,7 +96,8 @@ export default {
     title: "Patrones estacionales del garaje",
     description:
       "Lee meses de historial de ProbeHarbor: suelos de invierno, picos de verano y entretiempo, para que una sola noche fría no distorsione tus decisiones.",
-    summary: "Contexto a largo plazo para que los picos de un solo día no lleven a malas decisiones.",
+    summary:
+      "Contexto a largo plazo para que los picos de un solo día no lleven a malas decisiones.",
   },
   "thermal-mass-concrete-slab": {
     title: "Masa térmica y losas de hormigón",
@@ -126,19 +131,22 @@ export default {
     title: "Navegar por el historial del panel",
     description:
       "Recorre el historial paginado de sondas de ProbeHarbor, lee las columnas de feed y sonda, y detecta huecos antes de fiarte de una exportación CSV.",
-    summary: "Convierte las instantáneas guardadas en una línea de tiempo legible dentro del panel con sesión iniciada.",
+    summary:
+      "Convierte las instantáneas guardadas en una línea de tiempo legible dentro del panel con sesión iniciada.",
   },
   "csv-export-spreadsheet-analysis": {
     title: "Exportación CSV y análisis en hojas de cálculo",
     description:
       "Exporta el historial completo para gráficos, tablas dinámicas, auditorías de heladas y comparaciones estacionales en Excel o Sheets.",
-    summary: "Flujos de exportación CSV para suscriptores y administradores, para analizar fuera del sitio web.",
+    summary:
+      "Flujos de exportación CSV para suscriptores y administradores, para analizar fuera del sitio web.",
   },
   "freeze-protection-thresholds": {
     title: "Umbrales de protección contra heladas",
     description:
       "Usa las mínimas nocturnas y la comparación entre zonas para proteger las tuberías y lo que guardas antes de que haya daños.",
-    summary: "Define las temperaturas de riesgo a partir del historial en lugar de adivinarlas por el pronóstico exterior.",
+    summary:
+      "Define las temperaturas de riesgo a partir del historial en lugar de adivinarlas por el pronóstico exterior.",
   },
   "spotting-data-gaps": {
     title: "Detectar huecos en el historial",
@@ -183,7 +191,8 @@ export default {
     title: "Watchdog y recuperación del firmware",
     description:
       "Recupérate de bloqueos de red y errores del bus de sensores poco frecuentes sin subir a una escalera para reiniciar la placa.",
-    summary: "Temporizadores watchdog, reintentos y estrategias de reinicio para instalaciones desatendidas.",
+    summary:
+      "Temporizadores watchdog, reintentos y estrategias de reinicio para instalaciones desatendidas.",
   },
   "serial-debugging-tips": {
     title: "Consejos de depuración por serie",
@@ -217,7 +226,8 @@ export default {
     title: "Rieles de alimentación del protoboard",
     description:
       "Distribuye la alimentación USB o de conector jack por el protoboard para sensores, LCD y resistencias pull-up, con una tierra común.",
-    summary: "Unos rieles de alimentación limpios reducen el ruido que aparece como picos de humedad falsos.",
+    summary:
+      "Unos rieles de alimentación limpios reducen el ruido que aparece como picos de humedad falsos.",
   },
   "ethernet-shield-stacking": {
     title: "Montaje del shield Ethernet",
@@ -229,7 +239,8 @@ export default {
     title: "Solución de problemas del cableado",
     description:
       "Diagnostica pantallas LCD en blanco, sondas DHT22 ausentes y lecturas intermitentes con un multímetro, registros serie y una lista de alimentación a datos.",
-    summary: "Comprobaciones sistemáticas desde la alimentación hasta las líneas de datos antes de cambiar piezas.",
+    summary:
+      "Comprobaciones sistemáticas desde la alimentación hasta las líneas de datos antes de cambiar piezas.",
   },
   "ground-loop-avoidance": {
     title: "Cómo evitar bucles de tierra",

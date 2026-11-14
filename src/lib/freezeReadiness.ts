@@ -29,8 +29,7 @@ export function hasConfiguredAlertChannel(
   fallbackEmail?: string | null,
 ): boolean {
   return (
-    (alertSettings.channelEmail &&
-      Boolean(resolveAlertEmail(alertSettings, fallbackEmail))) ||
+    (alertSettings.channelEmail && Boolean(resolveAlertEmail(alertSettings, fallbackEmail))) ||
     (alertSettings.channelSms && Boolean(alertSettings.smsPhone?.trim())) ||
     (alertSettings.channelDiscord && Boolean(alertSettings.discordWebhookUrl?.trim())) ||
     alertSettings.channelPush ||
@@ -46,16 +45,19 @@ export function hasConfiguredAlertChannel(
   );
 }
 
-export function computeFreezeReadiness(input: {
-  alertSettings: AlertSettings;
-  devices: DeviceWithSensors[];
-  latest: LatestSensorRow[];
-  weatherLocationConfigured: boolean;
-  canUseForecast: boolean;
-  canUseNws: boolean;
-  hasSentAnyAlert: boolean;
-  nowMs?: number;
-}, locale: Locale = "en"): FreezeReadinessResult {
+export function computeFreezeReadiness(
+  input: {
+    alertSettings: AlertSettings;
+    devices: DeviceWithSensors[];
+    latest: LatestSensorRow[];
+    weatherLocationConfigured: boolean;
+    canUseForecast: boolean;
+    canUseNws: boolean;
+    hasSentAnyAlert: boolean;
+    nowMs?: number;
+  },
+  locale: Locale = "en",
+): FreezeReadinessResult {
   const c = overviewCardsMessages(locale).readiness.checks;
   const readinessText = overviewCardsMessages(locale).readiness;
   const {
@@ -80,9 +82,7 @@ export function computeFreezeReadiness(input: {
       id: "alerts_on",
       label: c.alerts_on.label,
       ok: alertSettings.enabled,
-      hint: alertSettings.enabled
-        ? undefined
-        : c.alerts_on.hint,
+      hint: alertSettings.enabled ? undefined : c.alerts_on.hint,
       href: "/dashboard/alerts?tab=settings#alert-section-essentials",
       action: c.alerts_on.action,
     },
@@ -114,9 +114,7 @@ export function computeFreezeReadiness(input: {
       id: "flood_sensor",
       label: c.flood_sensor.label,
       ok: hasFloodSensor,
-      hint: hasFloodSensor
-        ? undefined
-        : c.flood_sensor.hint,
+      hint: hasFloodSensor ? undefined : c.flood_sensor.hint,
       href: "/flash",
       action: c.flood_sensor.action,
     },
@@ -127,8 +125,8 @@ export function computeFreezeReadiness(input: {
       hint:
         stale.total === 0
           ? undefined
-          : (locale === "en" ? stale.bannerMessage : null) ??
-            plural(readinessText.staleHint, stale.total, locale),
+          : ((locale === "en" ? stale.bannerMessage : null) ??
+            plural(readinessText.staleHint, stale.total, locale)),
       href: "/dashboard/devices?view=ops",
       action: c.fresh.action,
     },
@@ -149,9 +147,7 @@ export function computeFreezeReadiness(input: {
       id: "weather",
       label: c.weather.label,
       ok: weatherLocationConfigured,
-      hint: weatherLocationConfigured
-        ? undefined
-        : c.weather.hint,
+      hint: weatherLocationConfigured ? undefined : c.weather.hint,
       href: "/dashboard/settings",
       action: c.weather.action,
     },
@@ -159,9 +155,7 @@ export function computeFreezeReadiness(input: {
       id: "runway",
       label: c.runway.label,
       ok: alertSettings.runwayAlertEnabled,
-      hint: alertSettings.runwayAlertEnabled
-        ? undefined
-        : c.runway.hint,
+      hint: alertSettings.runwayAlertEnabled ? undefined : c.runway.hint,
       href: "/dashboard/alerts?tab=settings#setting-runway",
       action: c.runway.action,
     },
@@ -172,9 +166,7 @@ export function computeFreezeReadiness(input: {
       id: "level_rule",
       label: c.level_rule.label,
       ok: (alertSettings.alertRules ?? []).some(
-        (rule) =>
-          rule.enabled !== false &&
-          (rule.all ?? []).some((c) => c.type === "level_above"),
+        (rule) => rule.enabled !== false && (rule.all ?? []).some((c) => c.type === "level_above"),
       ),
       hint: c.level_rule.hint,
       href: "/dashboard/alerts?tab=settings#alert-section-automation",
@@ -187,9 +179,7 @@ export function computeFreezeReadiness(input: {
       id: "forecast",
       label: c.forecast.label,
       ok: alertSettings.forecastFreezeEnabled,
-      hint: alertSettings.forecastFreezeEnabled
-        ? undefined
-        : c.forecast.hint,
+      hint: alertSettings.forecastFreezeEnabled ? undefined : c.forecast.hint,
       href: "/dashboard/alerts?tab=settings#setting-forecast-freeze",
       action: c.forecast.action,
     });
@@ -200,9 +190,7 @@ export function computeFreezeReadiness(input: {
       id: "nws",
       label: c.nws.label,
       ok: alertSettings.nwsFreezeAlertsEnabled,
-      hint: alertSettings.nwsFreezeAlertsEnabled
-        ? undefined
-        : c.nws.hint,
+      hint: alertSettings.nwsFreezeAlertsEnabled ? undefined : c.nws.hint,
       href: "/dashboard/alerts?tab=settings#setting-nws",
       action: c.nws.action,
     });
@@ -214,9 +202,6 @@ export function computeFreezeReadiness(input: {
   return {
     score,
     checks,
-    ready:
-      score >= 85 &&
-      checks.find((c) => c.id === "alerts_on")?.ok === true &&
-      channelOk,
+    ready: score >= 85 && checks.find((c) => c.id === "alerts_on")?.ok === true && channelOk,
   };
 }

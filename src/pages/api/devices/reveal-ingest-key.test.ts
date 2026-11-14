@@ -59,7 +59,9 @@ beforeEach(() => {
   });
   mockCheckRevealIngestKeyRateLimit.mockReset().mockReturnValue({ ok: true });
   mockIngestKeyVaultConfigured.mockReset().mockReturnValue(true);
-  mockGetTotpState.mockReset().mockResolvedValue({ enabled: false, pending: false, hasPassword: true });
+  mockGetTotpState
+    .mockReset()
+    .mockResolvedValue({ enabled: false, pending: false, hasPassword: true });
   mockGetUserMetadata.mockReset().mockResolvedValue({});
   mockIsElevated.mockReset().mockResolvedValue(true);
   mockRequireHouseholdEditor.mockReset().mockResolvedValue({ ok: true });

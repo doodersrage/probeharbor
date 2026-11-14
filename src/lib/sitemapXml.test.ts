@@ -31,7 +31,7 @@ describe("sitemapXml", () => {
 
   it("lists translated pages with hreflang alternates", () => {
     const xml = buildSitemapUrlsetXml("https://probeharbor.dev");
-    expect(xml).toContain("xmlns:xhtml=\"http://www.w3.org/1999/xhtml\"");
+    expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"');
     expect(xml).toContain("<loc>https://probeharbor.dev/es/pricing</loc>");
     expect(xml).toContain("<loc>https://probeharbor.dev/pt-br</loc>");
     expect(xml).toContain('hreflang="de" href="https://probeharbor.dev/de/pricing"');
@@ -43,7 +43,9 @@ describe("sitemapXml", () => {
 
   it("lists translations only for the indexed core", () => {
     const xml = buildSitemapUrlsetXml("https://probeharbor.dev");
-    expect(xml).toContain("<loc>https://probeharbor.dev/de/answers/garage-pipe-freeze-temperature</loc>");
+    expect(xml).toContain(
+      "<loc>https://probeharbor.dev/de/answers/garage-pipe-freeze-temperature</loc>",
+    );
     expect(xml).toContain("<loc>https://probeharbor.dev/fr/integrations/home-assistant</loc>");
     // Translated guides and comparisons are served but not listed.
     expect(xml).not.toContain("https://probeharbor.dev/es/about/");

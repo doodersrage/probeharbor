@@ -7,7 +7,8 @@ const fr: AuthHandoffMessages = {
     heading: "Invitation au foyer",
     aHousehold: "un foyer",
     invalid: "Ce lien d’invitation n’est pas valide.",
-    expired: "Cette invitation a expiré. Demandez au propriétaire du foyer de vous en envoyer une nouvelle.",
+    expired:
+      "Cette invitation a expiré. Demandez au propriétaire du foyer de vous en envoyer une nouvelle.",
     alreadyAccepted: "Cette invitation a déjà été acceptée.",
     openHousehold: "Ouvrir le foyer",
     invited: "Vous êtes invité à partager des capteurs dans {household}.",
@@ -35,7 +36,8 @@ const fr: AuthHandoffMessages = {
       open: "Ouvrir Bay Buddy",
       handoff:
         "Si Bay Buddy est en attente, il devrait reprendre automatiquement. Sinon, touchez le bouton ci-dessous.",
-      close: "Vous pouvez fermer cet onglet dès que Bay Buddy affiche l’humeur de votre garage en direct.",
+      close:
+        "Vous pouvez fermer cet onglet dès que Bay Buddy affiche l’humeur de votre garage en direct.",
       missing:
         "Cette page vous ramène à Bay Buddy après la connexion. Ouvrez Bay Buddy et choisissez à nouveau Connect.",
     },
@@ -45,7 +47,8 @@ const fr: AuthHandoffMessages = {
       open: "Ouvrir ProbeHarbor Desktop",
       handoff:
         "Si ProbeHarbor Desktop attend le transfert par loopback, la connexion devrait se terminer automatiquement. Sinon, cette page sert de solution de repli : rouvrez l’application et choisissez à nouveau Connect.",
-      close: "Vous pouvez fermer cet onglet dès que ProbeHarbor Desktop affiche votre tableau de bord.",
+      close:
+        "Vous pouvez fermer cet onglet dès que ProbeHarbor Desktop affiche votre tableau de bord.",
       missing:
         "Cette page vous ramène à ProbeHarbor Desktop après la connexion. Ouvrez l’application de bureau et choisissez à nouveau Connect.",
     },

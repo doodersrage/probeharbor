@@ -56,18 +56,13 @@ export async function createClaimsPackExport(
   return { token, contentHash, error: null };
 }
 
-export async function getClaimsPackExportByToken(
-  token: string,
-): Promise<ClaimsPackData | null> {
+export async function getClaimsPackExportByToken(token: string): Promise<ClaimsPackData | null> {
   const data = await neonTools.findClaimsPack(token);
   if (!data || data.revoked_at) return null;
   if (data.expires_at && Date.parse(data.expires_at) < Date.now()) return null;
   return data.pack_data as ClaimsPackData;
 }
 
-export async function revokeClaimsPackExport(
-  householdId: string,
-  token: string,
-): Promise<boolean> {
+export async function revokeClaimsPackExport(householdId: string, token: string): Promise<boolean> {
   return neonTools.revokeClaimsPack(householdId, token);
 }

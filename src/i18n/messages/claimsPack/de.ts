@@ -45,7 +45,8 @@ const de: ClaimsPackMessages = {
   },
   adjuster: {
     title: "Was du dem Gutachter sagst",
-    subtitle: "Fasse dich kurz. Gib ihm das Paket (oder den E-Mail-Link) und sprich diese Punkte an:",
+    subtitle:
+      "Fasse dich kurz. Gib ihm das Paket (oder den E-Mail-Link) und sprich diese Punkte an:",
     items: [
       {
         lead: "Wir überwachen diesen Raum durchgehend.",
@@ -89,7 +90,8 @@ const de: ClaimsPackMessages = {
     title: "So erstellst du eins",
     step1:
       "Verbinde mindestens eine Sonde und lass ProbeHarbor etwas Verlauf sammeln (Frostalarme funktionieren ab dem ersten Tag; das Nachweispaket deckt den Zeitraum ab, den du überwacht hast).",
-    step2: "Wechsle zu Pro, falls noch nicht geschehen: Das Nachweispaket ist eine Pro-Funktion. Du bist schon bei Free oder Member und hattest gerade Frost? Messwerte, die noch in deinem Zeitfenster von {free} / {member} liegen, bleiben gespeichert; Pro schaltet das Paket für diesen aufbewahrten Verlauf frei (und verlängert künftig, wie weit du zurückblicken kannst).",
+    step2:
+      "Wechsle zu Pro, falls noch nicht geschehen: Das Nachweispaket ist eine Pro-Funktion. Du bist schon bei Free oder Member und hattest gerade Frost? Messwerte, die noch in deinem Zeitfenster von {free} / {member} liegen, bleiben gespeichert; Pro schaltet das Paket für diesen aufbewahrten Verlauf frei (und verlängert künftig, wie weit du zurückblicken kannst).",
     step3Html:
       'Wähle unter <a class="text-link" href="/dashboard/history?tab=exports#claims-pack">History → claims pack</a> einen Zeitraum und lade das Paket herunter oder schick es direkt an die E-Mail-Adresse eines Gutachters.',
     samplePdf: "Beispiel-PDF",
@@ -103,8 +105,10 @@ const de: ClaimsPackMessages = {
         "Das Nachweispaket ist eine Pro-Funktion (auch in Portfolio). Mit Free und Member siehst du weiterhin Live-Messwerte und Verlauf, aber zum Erstellen und Versenden eines Nachweispakets brauchst du Pro.",
     },
     {
-      question: "Ich bin bei Free oder Member und gerade ist etwas eingefroren. Kann ich upgraden und trotzdem ein Paket erstellen?",
-      answer: "Ja, solange die Messwerte noch im Verlaufszeitfenster deines Tarifs liegen. Free speichert etwa {free}, Member etwa {member}, Pro etwa {pro} oder länger. Ein Upgrade löscht keine gespeicherten Messwerte: Alles, was noch im längeren Pro-Zeitfenster liegt, steht dann für Diagramme, CSV und das Nachweispaket zur Verfügung. Upgrade zügig, wenn du ein Paket brauchst, das weiter zurückreicht, als dein aktueller Tarif anzeigt.",
+      question:
+        "Ich bin bei Free oder Member und gerade ist etwas eingefroren. Kann ich upgraden und trotzdem ein Paket erstellen?",
+      answer:
+        "Ja, solange die Messwerte noch im Verlaufszeitfenster deines Tarifs liegen. Free speichert etwa {free}, Member etwa {member}, Pro etwa {pro} oder länger. Ein Upgrade löscht keine gespeicherten Messwerte: Alles, was noch im längeren Pro-Zeitfenster liegt, steht dann für Diagramme, CSV und das Nachweispaket zur Verfügung. Upgrade zügig, wenn du ein Paket brauchst, das weiter zurückreicht, als dein aktueller Tarif anzeigt.",
     },
     {
       question: "Kann ich das direkt an den Gutachter meiner Versicherung schicken?",

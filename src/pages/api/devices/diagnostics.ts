@@ -38,7 +38,11 @@ export const GET: APIRoute = async ({ cookies, url, locals }) => {
     ingestStats,
     now,
   });
-  const slug = device.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "device";
+  const slug =
+    device.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "device";
   return new Response(JSON.stringify(bundle, null, 2), {
     headers: {
       "Content-Type": "application/json",

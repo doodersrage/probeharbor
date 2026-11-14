@@ -30,8 +30,10 @@ const fr: AdminMessages = {
     pushNoSubscriptionHtml:
       'Ouvrez <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-channels">Alertes → Canaux → Push</a>, cliquez sur <strong>Activer le push navigateur sur cet appareil</strong>, autorisez les notifications, enregistrez si besoin, puis réessayez.',
     channelErrors: {
-      sms_no_phone: "Aucun numéro SMS dans les paramètres d’alerte ni dans le champ de remplacement.",
-      sms_send_failed: "Échec de l’envoi du SMS via Twilio. Vérifiez les identifiants Twilio et le numéro de destination.",
+      sms_no_phone:
+        "Aucun numéro SMS dans les paramètres d’alerte ni dans le champ de remplacement.",
+      sms_send_failed:
+        "Échec de l’envoi du SMS via Twilio. Vérifiez les identifiants Twilio et le numéro de destination.",
       unknown_kind: "Type de test de canal inconnu.",
       sms_not_configured: "SMS (Twilio non configuré sur le serveur)",
       push_not_configured: "push (clés VAPID absentes sur le serveur)",
@@ -44,9 +46,11 @@ const fr: AdminMessages = {
       "{count} prix affiché(s) Stripe ne correspondent pas aux montants Stripe réels : mettez à jour les secrets `STRIPE_DISPLAY_*` du Worker.",
     checklist: {
       title: "Liste hebdomadaire",
-      scanHtml: "Parcourez <strong>État de la plateforme</strong> et les erreurs de page récentes ci-dessous.",
+      scanHtml:
+        "Parcourez <strong>État de la plateforme</strong> et les erreurs de page récentes ci-dessous.",
       stripeAudit: "Vérifiez que l’audit des prix Stripe affiche Correspond pour les quatre prix.",
-      funnel: "Examinez les sources du tunnel de paiement : misez sur les incitations qui fonctionnent.",
+      funnel:
+        "Examinez les sources du tunnel de paiement : misez sur les incitations qui fonctionnent.",
       drip: "Envoyez un test d’e-mail d’accueil ou d’essai après toute modification de modèle.",
       verifySecrets: "Vérifiez les secrets Twilio + VAPID",
       twilioConfigured: " · Twilio configuré",
@@ -112,7 +116,8 @@ const fr: AdminMessages = {
       smsPhone: "Téléphone SMS (remplacement facultatif)",
       testSms: "Tester le SMS",
       testPush: "Tester le push navigateur",
-      hintStart: "Si le remplacement est vide, le SMS utilise votre téléphone d’alerte. Push navigateur :",
+      hintStart:
+        "Si le remplacement est vide, le SMS utilise votre téléphone d’alerte. Push navigateur :",
       subscriptions: {
         one: " {count} abonnement enregistré pour votre compte.",
         other: " {count} abonnements enregistrés pour votre compte.",
@@ -120,11 +125,13 @@ const fr: AdminMessages = {
       notSubscribed: " ce navigateur n’est pas encore abonné.",
       enableUnder: "Activez-le dans",
       alertsPush: "Alertes → Push",
-      hintEnd: "avant de tester. Les jetons FCM Android s’enregistrent depuis l’app native quand les secrets FCM sont définis.",
+      hintEnd:
+        "avant de tester. Les jetons FCM Android s’enregistrent depuis l’app native quand les secrets FCM sont définis.",
     },
     funnel: {
       title: "Tunnel de paiement (30 jours)",
-      subtitle: "Sessions de paiement Stripe ouvertes, y compris les sources des incitations à passer à l’offre supérieure.",
+      subtitle:
+        "Sessions de paiement Stripe ouvertes, y compris les sources des incitations à passer à l’offre supérieure.",
       started: "Paiements commencés",
       allTime: "Depuis le début (500 derniers enregistrés)",
       bySource: "Par source",
@@ -138,12 +145,14 @@ const fr: AdminMessages = {
     title: "Utilisateurs",
     subtitle: "Gérez les comptes inscrits et l’appartenance au groupe administrateur.",
     referralTitle: "Programme de parrainage",
-    referralSubtitle: "Inscriptions et récompenses des parrains accordées lors d’un abonnement Pro.",
+    referralSubtitle:
+      "Inscriptions et récompenses des parrains accordées lors d’un abonnement Pro.",
     referrerRewards: "Récompenses de parrain accordées",
     signups: { one: "{count} inscription", other: "{count} inscriptions" },
     manager: {
       title: "Utilisateurs inscrits",
-      subtitle: "Consultez les comptes et leurs groupes, accordez ou retirez l’accès administrateur.",
+      subtitle:
+        "Consultez les comptes et leurs groupes, accordez ou retirez l’accès administrateur.",
       updated: "Accès de l’utilisateur mis à jour.",
       updateError: "Impossible de mettre à jour l’accès de l’utilisateur. Veuillez réessayer.",
       searchPlaceholder: "E-mail ou identifiant",
@@ -175,12 +184,14 @@ const fr: AdminMessages = {
     title: "Tâches",
     subtitle: "Historique cron, récapitulatifs et surveillance des abus d’ingestion.",
     abuseTitle: "Surveillance des abus d’ingestion",
-    abuseSubtitle: "Appareils avec ≥ 50 % d’erreurs d’ingestion sur les 7 derniers jours (5 envois minimum).",
+    abuseSubtitle:
+      "Appareils avec ≥ 50 % d’erreurs d’ingestion sur les 7 derniers jours (5 envois minimum).",
     abuseEmpty: "Aucun comportement d’ingestion suspect pour le moment.",
     abuseRow: " le {day} : {errors} erreurs / {total} au total ({rate} %)",
     runsTitle: "Exécutions des tâches",
     runsError: "Impossible de charger les exécutions : {error}",
-    runsEmpty: "Aucune exécution enregistrée pour l’instant. Elles apparaissent après la première interrogation planifiée (toutes les 15 minutes).",
+    runsEmpty:
+      "Aucune exécution enregistrée pour l’instant. Elles apparaissent après la première interrogation planifiée (toutes les 15 minutes).",
     started: "Début",
     job: "Tâche",
     finished: "Fin",
@@ -201,7 +212,8 @@ const fr: AdminMessages = {
     title: "Contacts",
     subtitle: "Consultez les messages du formulaire de contact du site.",
     heading: "Messages du formulaire de contact",
-    intro: "Messages envoyés via le formulaire de contact public, enregistrés quand l’e-mail est bien parti.",
+    intro:
+      "Messages envoyés via le formulaire de contact public, enregistrés quand l’e-mail est bien parti.",
     downloadCsv: "Télécharger le CSV",
     all: "Tous",
     statusNew: "Nouveau",
@@ -228,7 +240,8 @@ const fr: AdminMessages = {
     removed: "Blocage supprimé.",
     updateError: "Mise à jour impossible : {error}",
     addTitle: "Bloquer une adresse",
-    addSubtitle: "Bloquez manuellement une adresse avant le prochain envoi (rebond connu, noreply, adresse de test).",
+    addSubtitle:
+      "Bloquez manuellement une adresse avant le prochain envoi (rebond connu, noreply, adresse de test).",
     reason: "Motif",
     reasons: {
       manual: "manuel",
@@ -247,7 +260,8 @@ const fr: AdminMessages = {
     remove: "Retirer",
     showing: {
       one: "{count} ligne affichée (200 max). Vérifiez aussi les blocages de Cloudflare Email Service dans son tableau de bord.",
-      other: "{count} lignes affichées (200 max). Vérifiez aussi les blocages de Cloudflare Email Service dans son tableau de bord.",
+      other:
+        "{count} lignes affichées (200 max). Vérifiez aussi les blocages de Cloudflare Email Service dans son tableau de bord.",
     },
   },
   api: {

@@ -1,4 +1,3 @@
-
 /** /about/temperature-probes body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
@@ -25,7 +24,8 @@ const ptBr: Messages = {
   multipleHtml:
     "Garagens, oficinas e sótãos não são caixas uniformes. Um único sensor pode marcar 7 °C (45 °F) perto do piso enquanto a parte de cima está a 14 °C (58 °F) em uma tarde ensolarada de inverno. Várias sondas revelam gradientes, pontos com isolamento ruim e qual área representa o risco que importa para você. O firmware tira a média das sondas ativas, então a página de histórico continua com um resumo por carregamento, enquanto a página inicial mantém o detalhe de cada sonda.",
   boardAlt: "Placa controladora de sondas do ProbeHarbor com conexão Ethernet e sensores DHT22",
-  boardCaption: "Segunda revisão da placa de sondas do ProbeHarbor: Ethernet, LCD e duas entradas DHT22.",
+  boardCaption:
+    "Segunda revisão da placa de sondas do ProbeHarbor: Ethernet, LCD e duas entradas DHT22.",
   webTitle: "Do fio da sonda à página web",
   webHtml:
     'As sondas não falam diretamente com o site. O sketch do Arduino lê cada sensor em intervalos programados, valida as faixas e publica JSON via HTTPS. O site busca esse feed, associa as chaves aos rótulos que você configura no painel e, se você estiver conectado, pode salvar as leituras. Experimente a <a class="text-link" href="/about/probe-demo">demonstração interativa de sondas</a> para ver como várias áreas e as médias se comportam, ou leia o guia do <a class="text-link" href="/about/data-flow">fluxo de dados de ponta a ponta</a>.',

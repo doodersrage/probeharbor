@@ -29,16 +29,16 @@ describe("emailSuppressions", () => {
     expect(isPlausibleEmailAddress("user@example.com")).toBe(true);
     expect(isPlausibleEmailAddress("not-an-email")).toBe(false);
     expect(isPlausibleEmailAddress("a@b")).toBe(false);
-    expect(isPlausibleEmailAddress("1234567+user@users.noreply.github.com")).toBe(
-      false,
-    );
+    expect(isPlausibleEmailAddress("1234567+user@users.noreply.github.com")).toBe(false);
     expect(isPlausibleEmailAddress("noreply@example.com")).toBe(false);
   });
 
   it("detects bounce-like mailer errors", () => {
     expect(
       isMailDeliveryBounceError(
-        new Error("failed to enqueue email: enqueue failed and delivery had 1 temporary bounces (cannot retry)"),
+        new Error(
+          "failed to enqueue email: enqueue failed and delivery had 1 temporary bounces (cannot retry)",
+        ),
       ),
     ).toBe(true);
     expect(isMailDeliveryBounceError(new Error("E_RECIPIENT_SUPPRESSED"))).toBe(true);
@@ -64,9 +64,10 @@ describe("emailSuppressions", () => {
 
   it("adds a manual suppression with a result", async () => {
     db.upsertSuppression.mockResolvedValue(undefined);
-    expect(
-      await addEmailSuppression("Bad@Example.com", "manual", "ops note"),
-    ).toEqual({ ok: true, error: null });
+    expect(await addEmailSuppression("Bad@Example.com", "manual", "ops note")).toEqual({
+      ok: true,
+      error: null,
+    });
     expect(db.upsertSuppression).toHaveBeenCalledWith("bad@example.com", "manual", "ops note");
   });
 

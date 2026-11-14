@@ -39,7 +39,14 @@ export const POST: APIRoute = async ({ cookies, locals }) => {
     feedId: result.id,
     name: result.name,
     ok: !result.error,
-    message: result.error != null ? localizeFeedError(result.error, locale) : plural(apiDevicesMessages(locale).pullFetchProbes, Object.keys(result.probes).length, locale),
+    message:
+      result.error != null
+        ? localizeFeedError(result.error, locale)
+        : plural(
+            apiDevicesMessages(locale).pullFetchProbes,
+            Object.keys(result.probes).length,
+            locale,
+          ),
     probeCount: Object.keys(result.probes).length,
   }));
 

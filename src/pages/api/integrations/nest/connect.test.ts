@@ -69,9 +69,7 @@ beforeEach(() => {
     ctx: { householdId: "house-1", role: "owner" },
   });
   mockBuildSiteUrl.mockReset().mockReturnValue("https://example.com");
-  mockBuildNestAuthorizeUrl.mockReset().mockReturnValue(
-    "https://nest.example/authorize?state=abc",
-  );
+  mockBuildNestAuthorizeUrl.mockReset().mockReturnValue("https://nest.example/authorize?state=abc");
 });
 
 describe("GET /api/integrations/nest/connect", () => {
@@ -102,9 +100,7 @@ describe("GET /api/integrations/nest/connect", () => {
 
     await GET(context);
 
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?error=manager_required",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?error=manager_required");
   });
 
   it("redirects with not_configured when Nest OAuth is not configured", async () => {

@@ -25,7 +25,12 @@ describe("dewPoint", () => {
   });
 
   it("is what the Overview's dewPointF returns (°F)", () => {
-    for (const [t, rh] of [[68, 50], [35, 90], [-4, 60], [95, 20]] as const) {
+    for (const [t, rh] of [
+      [68, 50],
+      [35, 90],
+      [-4, 60],
+      [95, 20],
+    ] as const) {
       expect(dewPointF(t, rh)).toBe(dewPoint(t, rh));
     }
   });

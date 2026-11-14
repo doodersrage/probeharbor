@@ -30,7 +30,8 @@ const en = {
       'Open <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-channels">Alerts → Channels → Push</a>, click <strong>Enable browser push on this device</strong>, allow notifications, save if needed, then retry.',
     channelErrors: {
       sms_no_phone: "No SMS phone on alert settings or the override field.",
-      sms_send_failed: "Twilio SMS send failed. Check Twilio credentials and the destination number.",
+      sms_send_failed:
+        "Twilio SMS send failed. Check Twilio credentials and the destination number.",
       unknown_kind: "Unknown channel test kind.",
       sms_not_configured: "SMS (Twilio not configured on server)",
       push_not_configured: "push (VAPID keys missing on server)",
@@ -179,7 +180,8 @@ const en = {
     abuseRow: " on {day}: {errors} errors / {total} total ({rate}%)",
     runsTitle: "Job runs",
     runsError: "Unable to load job runs: {error}",
-    runsEmpty: "No job runs recorded yet. They appear after the first scheduled poll (every 15 minutes).",
+    runsEmpty:
+      "No job runs recorded yet. They appear after the first scheduled poll (every 15 minutes).",
     started: "Started",
     job: "Job",
     finished: "Finished",
@@ -200,7 +202,8 @@ const en = {
     title: "Contacts",
     subtitle: "Review messages from the site contact form.",
     heading: "Contact form submissions",
-    intro: "Messages submitted through the public contact form, stored when email delivery succeeds.",
+    intro:
+      "Messages submitted through the public contact form, stored when email delivery succeeds.",
     downloadCsv: "Download CSV",
     all: "All",
     statusNew: "New",
@@ -227,7 +230,8 @@ const en = {
     removed: "Suppression removed.",
     updateError: "Could not update: {error}",
     addTitle: "Add suppression",
-    addSubtitle: "Manually block an address before the next send (known bounce, noreply, test junk).",
+    addSubtitle:
+      "Manually block an address before the next send (known bounce, noreply, test junk).",
     reason: "Reason",
     reasons: {
       manual: "manual",
@@ -246,7 +250,8 @@ const en = {
     remove: "Remove",
     showing: {
       one: "Showing {count} row (max 200). Also review Cloudflare Email Service suppressions in the dashboard.",
-      other: "Showing {count} rows (max 200). Also review Cloudflare Email Service suppressions in the dashboard.",
+      other:
+        "Showing {count} rows (max 200). Also review Cloudflare Email Service suppressions in the dashboard.",
     },
   },
   api: {

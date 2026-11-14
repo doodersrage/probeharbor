@@ -58,12 +58,8 @@ export function buildReadingRowsFromTempResults(
     const reading = result.probes[probe.key];
     if (!reading) continue;
 
-    const tempSensor = device.sensors.find(
-      (s) => s.key === probe.key && s.kind === "temperature",
-    );
-    const humiditySensor = device.sensors.find(
-      (s) => s.key === probe.key && s.kind === "humidity",
-    );
+    const tempSensor = device.sensors.find((s) => s.key === probe.key && s.kind === "temperature");
+    const humiditySensor = device.sensors.find((s) => s.key === probe.key && s.kind === "humidity");
 
     if (tempSensor && reading.f != null && !implausibleReason("temperature", reading.f)) {
       rows.push({
@@ -156,9 +152,7 @@ export async function getFreezeDwellSamples(
   sensorId: string,
   cutoffIso: string,
 ): Promise<Array<{ at: string; tempF: number }>> {
-  const anchorSinceIso = new Date(
-    Date.parse(cutoffIso) - DWELL_ANCHOR_LOOKBACK_MS,
-  ).toISOString();
+  const anchorSinceIso = new Date(Date.parse(cutoffIso) - DWELL_ANCHOR_LOOKBACK_MS).toISOString();
   const [anchor, window] = await Promise.all([
     neonReadings.getDwellAnchor(householdId, sensorId, anchorSinceIso, cutoffIso),
     getRecentNumericReadingSamples(householdId, sensorId, cutoffIso),
@@ -204,8 +198,6 @@ export async function fetchLatestSensorValuesResult(
 }
 
 /** Latest reading per visible sensor; a failed query reads as no rows (see fetchLatestSensorValuesResult). */
-export async function fetchLatestSensorValues(
-  householdId: string,
-): Promise<LatestSensorRow[]> {
+export async function fetchLatestSensorValues(householdId: string): Promise<LatestSensorRow[]> {
   return (await fetchLatestSensorValuesResult(householdId)).rows;
 }

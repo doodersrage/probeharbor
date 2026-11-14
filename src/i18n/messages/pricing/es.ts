@@ -43,8 +43,10 @@ const es: PricingMessages = {
     saveApprox: "Ahorra ~20 %",
     saveVsMonthly: "Ahorra {pct} frente al pago mensual",
     switchToAnnual: "Pásate al plan anual y ahorra {pct}",
-    monthlyHint: "Estás viendo los precios mensuales. El plan anual te asegura {pct} de descuento ({memberAnnual} / {proAnnual} al año).",
-    annualHint: "Estás viendo los totales anuales. Cambia a Mensual para ver {memberMonthly} / {proMonthly} al mes.",
+    monthlyHint:
+      "Estás viendo los precios mensuales. El plan anual te asegura {pct} de descuento ({memberAnnual} / {proAnnual} al año).",
+    annualHint:
+      "Estás viendo los totales anuales. Cambia a Mensual para ver {memberMonthly} / {proMonthly} al mes.",
     withTrial: "{sub} · prueba gratis de 14 días",
   },
   cards: {
@@ -84,7 +86,8 @@ const es: PricingMessages = {
     },
     portfolio: {
       badge: "Para carteras",
-      tagline: "Para operaciones que superan el límite de {proMax} propiedades de Pro: administradores sin acceso a la facturación",
+      tagline:
+        "Para operaciones que superan el límite de {proMax} propiedades de Pro: administradores sin acceso a la facturación",
       everythingInPro: "Todo lo de Pro, más: ",
       properties: "Hasta {max} propiedades propias (Pro ya cubre hasta {proMax})",
       crossProperty: "Panel de riesgo de congelación entre propiedades",
@@ -113,7 +116,8 @@ const es: PricingMessages = {
     title: "Comparación completa de funciones",
     subtitleHtml:
       'La matriz de referencia de Free / Member / Pro / Portfolio: número de dispositivos, retención, alertas de congelación y fugas, termostato y accesos para administradores. ¿Comparas ProbeHarbor con MQTT, Govee o una estación meteorológica? <a class="text-link" href="/compare">Ver alternativas</a> (guías de la competencia, no otra copia de esta tabla).',
-    noteHtml: 'Portfolio incluye todo lo de Pro, amplía el límite de propiedades propias (Pro ya permite hasta {proMax}; Portfolio hasta {portfolioMax}) y añade accesos para administradores de propiedades: consulta la tarjeta de Portfolio más arriba y <a class="text-link" href="/property-management">administración de propiedades</a>.',
+    noteHtml:
+      'Portfolio incluye todo lo de Pro, amplía el límite de propiedades propias (Pro ya permite hasta {proMax}; Portfolio hasta {portfolioMax}) y añade accesos para administradores de propiedades: consulta la tarjeta de Portfolio más arriba y <a class="text-link" href="/property-management">administración de propiedades</a>.',
   },
   hosted: {
     title: "Alojado en el edge de Cloudflare",

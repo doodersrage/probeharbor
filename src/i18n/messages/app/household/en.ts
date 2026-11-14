@@ -29,7 +29,8 @@ const en = {
     roleFor: "Role for {email}",
     confirmRemove: "Remove this member from the household?",
     confirmLeave: "Leave this household? You will lose access to its shared devices and history.",
-    leaveBody: "You are a member of this household. Leaving removes your access to its devices and history.",
+    leaveBody:
+      "You are a member of this household. Leaving removes your access to its devices and history.",
     leave: "Leave household",
   },
   invite: {
@@ -44,7 +45,8 @@ const en = {
     roleAlertOnly: "Alert only (notifications, read-only)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> adds property-manager logins for on-site staff (no billing access).',
-    existingMemberHint: "Inviting someone who’s already a member doesn’t change their role. The owner can change roles under Members.",
+    existingMemberHint:
+      "Inviting someone who’s already a member doesn’t change their role. The owner can change roles under Members.",
     submit: "Send invite link",
     invitesHeading: "Invites",
     managersOnly: "Only the household owner and editors can send invites.",
@@ -58,7 +60,8 @@ const en = {
     expires: "Expires {time}",
     copyLink: "Copy link",
     confirmCancel: "Cancel this invite?",
-    linkHidden: "For security, the link is only shown when it’s sent. Use Resend to email a new one.",
+    linkHidden:
+      "For security, the link is only shown when it’s sent. Use Resend to email a new one.",
     resend: "Resend",
     confirmResend: "Send a new link? The current link will stop working.",
     cancel: "Cancel",
@@ -70,7 +73,8 @@ const en = {
   },
   digest: {
     heading: "Weekly digest",
-    subtitle: "When the property owner has digests enabled, opt in to receive the same weekly probe summary.",
+    subtitle:
+      "When the property owner has digests enabled, opt in to receive the same weekly probe summary.",
     checkbox: "Email me the weekly household digest",
     save: "Save",
   },
@@ -86,22 +90,26 @@ const en = {
     selected: "Selected: {label}",
     searchHint: "Search and pick a result if your city is not in the preset list.",
     submit: "Save freeze map settings",
-    publicListHtml: 'View the public list at <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+    publicListHtml:
+      'View the public list at <a class="text-link" href="/freeze-map">/freeze-map</a>.',
   },
   property: {
     heading: "Add another property",
-    subtitle: "Create a second household (vacation home, rental, etc.) and switch between them from the dashboard.",
+    subtitle:
+      "Create a second household (vacation home, rental, etc.) and switch between them from the dashboard.",
     nameLabel: "Property name",
     namePlaceholder: "Lake house",
     submit: "Create property",
     limit: {
       one: "Your plan allows {count} owned household ({inUse} in use). Upgrade to Pro for multiple properties.",
-      other: "Your plan allows {count} owned households ({inUse} in use). Upgrade to Pro for multiple properties.",
+      other:
+        "Your plan allows {count} owned households ({inUse} in use). Upgrade to Pro for multiple properties.",
     },
   },
   activity: {
     heading: "Recent activity",
-    subtitle: "Invites, alert changes, device transfers, and ingest key reveals for this household.",
+    subtitle:
+      "Invites, alert changes, device transfers, and ingest key reveals for this household.",
     empty: "No activity yet.",
     repeat: "×{count}",
     backTo: "(back to {time})",
@@ -129,7 +137,8 @@ const en = {
     already_member: "You are already a member of this household.",
     expired: "This invite has expired. Ask for a new one.",
     invalid: "This invite link is invalid.",
-    cannot_leave_owner: "Household owners cannot leave. Transfer ownership or delete the household instead.",
+    cannot_leave_owner:
+      "Household owners cannot leave. Transfer ownership or delete the household instead.",
     manager_required:
       "Only household owners and full members can manage invites, share links, and billing integrations.",
     viewer: "View-only. You cannot change settings on this account.",

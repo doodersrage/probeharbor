@@ -17,21 +17,25 @@ describe("linkClickLeavesPage", () => {
 
   it("ignores same-page hash jumps", () => {
     expect(linkClickLeavesPage({ href: "#alert-section-essentials" }, click, here)).toBe(false);
-    expect(
-      linkClickLeavesPage({ href: "#x" }, click, `${here}#x`),
-    ).toBe(false);
+    expect(linkClickLeavesPage({ href: "#x" }, click, `${here}#x`)).toBe(false);
   });
 
   it("ignores new tabs, downloads and modified clicks", () => {
     expect(linkClickLeavesPage({ href: "/dashboard", target: "_blank" }, click, here)).toBe(false);
     expect(linkClickLeavesPage({ href: "/export.csv", download: true }, click, here)).toBe(false);
-    expect(linkClickLeavesPage({ href: "/dashboard" }, { button: 0, metaKey: true }, here)).toBe(false);
-    expect(linkClickLeavesPage({ href: "/dashboard" }, { button: 0, ctrlKey: true }, here)).toBe(false);
+    expect(linkClickLeavesPage({ href: "/dashboard" }, { button: 0, metaKey: true }, here)).toBe(
+      false,
+    );
+    expect(linkClickLeavesPage({ href: "/dashboard" }, { button: 0, ctrlKey: true }, here)).toBe(
+      false,
+    );
     expect(linkClickLeavesPage({ href: "/dashboard" }, { button: 1 }, here)).toBe(false);
   });
 
   it("ignores links another handler already took over", () => {
-    expect(linkClickLeavesPage({ href: "/dashboard" }, { button: 0, defaultPrevented: true }, here)).toBe(false);
+    expect(
+      linkClickLeavesPage({ href: "/dashboard" }, { button: 0, defaultPrevented: true }, here),
+    ).toBe(false);
   });
 
   it("ignores non-http links", () => {

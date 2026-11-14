@@ -188,12 +188,20 @@ function jsonContext(params: Record<string, string>, body: unknown): APIContext 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  return { params, request, cookies: {}, locals: {}, redirect: redirectFn() } as unknown as APIContext;
+  return {
+    params,
+    request,
+    cookies: {},
+    locals: {},
+    redirect: redirectFn(),
+  } as unknown as APIContext;
 }
 
 /** The caller's role in each household. */
 function roles(byHousehold: Record<string, string | null>) {
-  m.getUserHouseholdRole.mockImplementation(async (_user: string, householdId: string) => byHousehold[householdId] ?? null);
+  m.getUserHouseholdRole.mockImplementation(
+    async (_user: string, householdId: string) => byHousehold[householdId] ?? null,
+  );
 }
 
 beforeEach(() => {
@@ -213,7 +221,9 @@ beforeEach(() => {
     source: "default",
   });
   m.setBayMoodOverride.mockResolvedValue({ ok: true });
-  m.listHouseholdDevices.mockResolvedValue({ devices: [{ id: "dev-a1", source: "push", sensors: [] }] });
+  m.listHouseholdDevices.mockResolvedValue({
+    devices: [{ id: "dev-a1", source: "push", sensors: [] }],
+  });
   m.rotatePushDeviceKey.mockResolvedValue({ error: null });
   m.deleteDevices.mockResolvedValue({ error: null });
   m.setDevicesEnabled.mockResolvedValue({ error: null });
@@ -224,7 +234,13 @@ beforeEach(() => {
   m.listHouseholdMembers.mockResolvedValue({ members: [] });
   m.listUserHouseholds.mockResolvedValue({ households: [] });
   m.listPendingInvites.mockResolvedValue({ invites: [] });
-  m.getHouseholdFreezeMapSettings.mockResolvedValue({ optIn: false, cityId: null, label: null, lat: null, lon: null });
+  m.getHouseholdFreezeMapSettings.mockResolvedValue({
+    optIn: false,
+    cityId: null,
+    label: null,
+    lat: null,
+    lon: null,
+  });
   m.getIndoorReferenceSensorId.mockResolvedValue(null);
   m.checkWeatherSearchRateLimit.mockReturnValue({ ok: true });
   m.resolveWeatherCityId.mockReturnValue("5128581");
@@ -237,13 +253,20 @@ describe("/api/bays/[bay_id]/mood", () => {
     const res = await GET(jsonContext({ bay_id: "bay-1" }, {}));
     expect(res.status).toBe(200);
     expect(m.getOrCreateHouseholdForUser).toHaveBeenCalledWith("user-1", "user@example.com");
-    expect(m.resolveBayMoodForHousehold).toHaveBeenCalledWith({ bayId: "bay-1", householdId: "house-a" });
+    expect(m.resolveBayMoodForHousehold).toHaveBeenCalledWith({
+      bayId: "bay-1",
+      householdId: "house-a",
+    });
   });
 
   it("PUT writes the override in the session's household, ignoring a household id in the body", async () => {
     const { PUT } = await import("./bays/[bay_id]/mood");
     await PUT(jsonContext({ bay_id: "bay-1" }, { mood: "cozy", household_id: "house-b" }));
-    expect(m.setBayMoodOverride).toHaveBeenCalledWith({ bayId: "bay-1", householdId: "house-a", mood: "cozy" });
+    expect(m.setBayMoodOverride).toHaveBeenCalledWith({
+      bayId: "bay-1",
+      householdId: "house-a",
+      mood: "cozy",
+    });
   });
 
   // Fixed 2026-11-08 (audit gap): PUT has no role check (src/pages/api/bays/[bay_id]/mood.ts:49-85).
@@ -311,7 +334,12 @@ describe("POST /api/devices (real householdAuth)", () => {
     m.rotatePushDeviceKey.mockResolvedValue({ error: "Failed to rotate key" });
     const { POST } = await import("./devices/index");
     await POST(formContext({ action: "rotate_key", device_id: "dev-b1" }));
-    expect(m.rotatePushDeviceKey).toHaveBeenCalledWith("house-a", "dev-b1", expect.any(String), expect.any(String));
+    expect(m.rotatePushDeviceKey).toHaveBeenCalledWith(
+      "house-a",
+      "dev-b1",
+      expect.any(String),
+      expect.any(String),
+    );
     expect(m.persistEncryptedIngestKey).not.toHaveBeenCalled();
     expect(m.setSecretFlash).not.toHaveBeenCalled();
   });
@@ -320,7 +348,11 @@ describe("POST /api/devices (real householdAuth)", () => {
 describe("GET /api/devices/ingest-status", () => {
   it("lists the session household's devices only", async () => {
     const { GET } = await import("./devices/ingest-status");
-    await GET({ cookies: {}, locals: {}, url: new URL("https://example.com/api/devices/ingest-status?household_id=house-b") } as unknown as APIContext);
+    await GET({
+      cookies: {},
+      locals: {},
+      url: new URL("https://example.com/api/devices/ingest-status?household_id=house-b"),
+    } as unknown as APIContext);
     expect(m.listHouseholdDevices).toHaveBeenCalledWith("house-a");
     expect(m.fetchLatestSensorValues).toHaveBeenCalledWith("house-a");
   });
@@ -344,7 +376,9 @@ describe("POST /api/household manage actions", () => {
 
   it("revokes an invite only within the household the caller manages", async () => {
     const { POST } = await import("./household/index");
-    await POST(formContext({ action: "revoke_invite", invite_id: "inv-b", household_id: "house-b" }));
+    await POST(
+      formContext({ action: "revoke_invite", invite_id: "inv-b", household_id: "house-b" }),
+    );
     expect(m.revokeHouseholdInvite).toHaveBeenCalledWith("house-a", "inv-b");
   });
 
@@ -401,7 +435,12 @@ describe("GET /api/home/weather", () => {
   it("anonymous visitors get public-city weather, never a personal config", async () => {
     m.getAuthFromCookies.mockResolvedValue({ session: null, user: null });
     const { GET } = await import("./home/weather");
-    const res = await GET({ url: new URL("https://example.com/api/home/weather"), cookies: {}, clientAddress: "1.2.3.4", locals: {} } as unknown as APIContext);
+    const res = await GET({
+      url: new URL("https://example.com/api/home/weather"),
+      cookies: {},
+      clientAddress: "1.2.3.4",
+      locals: {},
+    } as unknown as APIContext);
     expect(res.status).toBe(200);
     expect(m.getPersonalWeatherConfig).not.toHaveBeenCalled();
     expect(m.fetchWeatherSnapshot).toHaveBeenCalledWith("5128581");
@@ -414,9 +453,20 @@ describe("GET /api/home/weather", () => {
   // station location to another visitor of the same URL.
   it("a signed-in user's personal weather isn't publicly cacheable", async () => {
     m.getPersonalWeatherConfig.mockReturnValue({ source: "ambient", openWeatherCityId: null });
-    m.fetchWeatherSnapshotForConfig.mockResolvedValue({ name: "My station", lat: 40.1, lon: -75.2, temp: 41, source: "ambient" });
+    m.fetchWeatherSnapshotForConfig.mockResolvedValue({
+      name: "My station",
+      lat: 40.1,
+      lon: -75.2,
+      temp: 41,
+      source: "ambient",
+    });
     const { GET } = await import("./home/weather");
-    const res = await GET({ url: new URL("https://example.com/api/home/weather"), cookies: {}, clientAddress: "1.2.3.4", locals: {} } as unknown as APIContext);
+    const res = await GET({
+      url: new URL("https://example.com/api/home/weather"),
+      cookies: {},
+      clientAddress: "1.2.3.4",
+      locals: {},
+    } as unknown as APIContext);
     expect(res.status).toBe(200);
     expect(res.headers.get("Cache-Control") ?? "").not.toMatch(/public/);
   });

@@ -11,7 +11,8 @@ const en = {
   ctaTest: "Send test alert",
   footerNote: "Disable pre-season drills in Dashboard → Alerts.",
   notifyTitle: "Pre-season freeze drill",
-  notifyBody: "Readiness {score}%. Open the dashboard and send a test alert if you have not this season.",
+  notifyBody:
+    "Readiness {score}%. Open the dashboard and send a test alert if you have not this season.",
 };
 
 export type FreezeDrillEmailMessages = typeof en;

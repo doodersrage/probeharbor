@@ -109,12 +109,24 @@ describe("overviewExtras", () => {
       probeLabel: "Probe",
     }));
     const off: DoorOpenSession[] = [
-      { label: "Heater", openedAt: new Date(now - 40 * 60_000).toISOString(), closedAt: null, durationMs: null, stillOpen: true },
+      {
+        label: "Heater",
+        openedAt: new Date(now - 40 * 60_000).toISOString(),
+        closedAt: null,
+        durationMs: null,
+        stillOpen: true,
+      },
     ];
-    expect(buildPowerTempSummary(off, points, 10)?.detail).toBe("Heater Off: space falling ~2.0°F/h.");
-    expect(buildPowerTempSummary(off, points, 10, "en", true)?.detail).toBe("Heater Off: space falling ~1.1°C/h.");
+    expect(buildPowerTempSummary(off, points, 10)?.detail).toBe(
+      "Heater Off: space falling ~2.0°F/h.",
+    );
+    expect(buildPowerTempSummary(off, points, 10, "en", true)?.detail).toBe(
+      "Heater Off: space falling ~1.1°C/h.",
+    );
     const doorOpen = [{ ...off[0]!, label: "Bay door" }];
-    expect(buildDoorTempSummary(doorOpen, points, 10)?.detail).toBe("Bay door: space falling ~2.0°F/h while open.");
+    expect(buildDoorTempSummary(doorOpen, points, 10)?.detail).toBe(
+      "Bay door: space falling ~2.0°F/h while open.",
+    );
     expect(buildDoorTempSummary(doorOpen, points, 10, "en", true)?.detail).toBe(
       "Bay door: space falling ~1.1°C/h while open.",
     );
@@ -262,14 +274,20 @@ describe("overviewExtras", () => {
 
   it("titles a pressure-only card as pressure and shows the measured trend", () => {
     const pressureRow = (id: string, value: number): LatestSensorRow => ({
-      sensor: { id, kind: "pressure", label: "Garage Environmental Sensor" } as LatestSensorRow["sensor"],
+      sensor: {
+        id,
+        kind: "pressure",
+        label: "Garage Environmental Sensor",
+      } as LatestSensorRow["sensor"],
       deviceName: "d",
       value_num: value,
       value_bool: null,
       value_text: null,
       recorded_at: "2026-11-04T20:00:00Z",
     });
-    const falling = buildAirQualityOverview([pressureRow("p", 1013)], "en", { p: { deltaHpa: -2.14 } });
+    const falling = buildAirQualityOverview([pressureRow("p", 1013)], "en", {
+      p: { deltaHpa: -2.14 },
+    });
     expect(falling.pressureOnly).toBe(true);
     expect(falling.rows[0]!.display).toBe("1013.0 hPa");
     expect(falling.rows[0]!.trend).toBe("falling 2.1 hPa in 3 h");

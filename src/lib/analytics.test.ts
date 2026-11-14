@@ -20,9 +20,7 @@ describe("resolveGaMeasurementId", () => {
   });
 
   it("returns env override", () => {
-    expect(resolveGaMeasurementId({ GA_MEASUREMENT_ID: "G-TEST123" })).toBe(
-      "G-TEST123",
-    );
+    expect(resolveGaMeasurementId({ GA_MEASUREMENT_ID: "G-TEST123" })).toBe("G-TEST123");
   });
 
   it("returns null when disabled", () => {
@@ -46,9 +44,7 @@ describe("shouldLoadGoogleAnalytics", () => {
 
   it("skips mobile OAuth handoff path", () => {
     expect(shouldLoadGoogleAnalytics("/app/oauth", { prod: true })).toBe(false);
-    expect(shouldLoadGoogleAnalytics("/app/oauth?exchange=abc", { prod: true })).toBe(
-      false,
-    );
+    expect(shouldLoadGoogleAnalytics("/app/oauth?exchange=abc", { prod: true })).toBe(false);
   });
 
   it("loads on post-checkout success under dashboard", () => {

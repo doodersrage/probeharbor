@@ -2,7 +2,8 @@ import type { ApiMorePublicFormsMessages } from "./en";
 
 const de: ApiMorePublicFormsMessages = {
   contact: {
-    success: "Danke, deine Nachricht ist angekommen. Wir antworten in der Regel innerhalb von 1–2 Werktagen.",
+    success:
+      "Danke, deine Nachricht ist angekommen. Wir antworten in der Regel innerhalb von 1–2 Werktagen.",
     verificationFailed: "Überprüfung fehlgeschlagen.",
     missingFields: "Pflichtfelder fehlen.",
     tooLong: "Die Nachricht ist zu lang.",
@@ -10,16 +11,19 @@ const de: ApiMorePublicFormsMessages = {
     sendFailed: "Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
   },
   freezeAlerts: {
-    success: "Prüfe dein E-Mail-Postfach und bestätige. Die Alarme starten in der nächsten Frostnacht nach deiner Bestätigung.",
+    success:
+      "Prüfe dein E-Mail-Postfach und bestätige. Die Alarme starten in der nächsten Frostnacht nach deiner Bestätigung.",
     tooMany: "Zu viele Versuche. Versuche es in ein paar Minuten erneut.",
     verificationFailed: "Überprüfung fehlgeschlagen. Bitte versuche es erneut.",
     genericError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     move: {
       confirmTitle: "Frostwarnungen umstellen?",
-      confirmBody: "Frostwarnungen an diese Adresse gelten dann für {place} statt für den bisherigen Ort.",
+      confirmBody:
+        "Frostwarnungen an diese Adresse gelten dann für {place} statt für den bisherigen Ort.",
       button: "Warnungen umstellen",
       invalidTitle: "Link ungültig",
-      invalidBodyHtml: "<p>Dieser Link ist abgelaufen, wurde verändert oder die Warnungen wurden abbestellt. Deine aktuellen Frostwarnungen bleiben unverändert.</p>",
+      invalidBodyHtml:
+        "<p>Dieser Link ist abgelaufen, wurde verändert oder die Warnungen wurden abbestellt. Deine aktuellen Frostwarnungen bleiben unverändert.</p>",
     },
     unsubscribe: {
       forecastLink: "Frostprognose für Rohrleitungen",

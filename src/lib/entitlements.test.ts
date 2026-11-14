@@ -13,7 +13,12 @@ vi.mock("./adminAccess", () => ({
 // (defined locally) but resolves group membership through isUserInGroup,
 // so the mock above only needs to fake admin + generic group lookups.
 
-function mockGroups(memberships: { admin?: boolean; portfolio?: boolean; pro?: boolean; member?: boolean }) {
+function mockGroups(memberships: {
+  admin?: boolean;
+  portfolio?: boolean;
+  pro?: boolean;
+  member?: boolean;
+}) {
   mockIsUserAdmin.mockResolvedValue(Boolean(memberships.admin));
   mockIsUserInGroup.mockImplementation(async (_userId: string, groupName: string) => {
     if (groupName === "portfolio") return Boolean(memberships.portfolio);

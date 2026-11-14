@@ -1,4 +1,3 @@
-
 /**
  * /about/esp32-freeze-kit body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Dashboard UI paths such as
@@ -51,14 +50,16 @@ const es: Esp32FreezeKitMessages = {
     pullupWhy: "Obligatoria en la línea de datos 1-Wire si el paquete de la sonda no la incluye",
     amazonResistor: "4,7k en Amazon",
     powerPart: "Alimentación USB",
-    powerWhy: "Cargador de pared o cable USB-C; cuando puedas, deja la placa en un lugar más cálido que el de la sonda",
+    powerWhy:
+      "Cargador de pared o cable USB-C; cuando puedas, deja la placa en un lugar más cálido que el de la sonda",
     powerBuyHtml: "Cualquier fuente USB de 5&nbsp;V de ≥500&nbsp;mA",
   },
   bomNoteHtml:
     "Los anuncios de productos cambian: toma Adafruit como lista de referencia. Los enlaces <code>/dp/</code> de Amazon en <code>bomLinks</code> son alternativas compatibles con Associates mientras el anuncio siga activo. Los paquetes genéricos “kit ESP32 + DS18B20” suelen traer un DHT11 en lugar de una sonda impermeable: evítalos.",
   wire: {
     title: "Conéctalo",
-    diagramAlt: "Diagrama de cableado: ESP32 DevKit a un DS18B20 impermeable con pull-up de 4,7 kiloohmios en GPIO 4",
+    diagramAlt:
+      "Diagrama de cableado: ESP32 DevKit a un DS18B20 impermeable con pull-up de 4,7 kiloohmios en GPIO 4",
     captionHtml:
       "Rojo → 3,3&nbsp;V, negro → GND, datos amarillo/blanco → GPIO 4, con una pull-up de 4,7&nbsp;kΩ entre datos y 3,3&nbsp;V. El sketch de ingesta de ejemplo usa GPIO 4 por defecto.",
     itemsHtml: [

@@ -2,7 +2,8 @@ import type { HouseholdMessages } from "./en";
 
 const es: HouseholdMessages = {
   title: "Hogar",
-  subtitle: "Comparte dispositivos e historial. Invita por correo: no hace falta que los invitados tengan cuenta todavía.",
+  subtitle:
+    "Comparte dispositivos e historial. Invita por correo: no hace falta que los invitados tengan cuenta todavía.",
   notices: {
     invited: "Invitación enviada por correo.",
     removed: "Miembro eliminado.",
@@ -29,8 +30,10 @@ const es: HouseholdMessages = {
     changeRole: "Cambiar rol",
     roleFor: "Rol de {email}",
     confirmRemove: "¿Quitar a este miembro del hogar?",
-    confirmLeave: "¿Salir de este hogar? Perderás el acceso a sus dispositivos compartidos y a su historial.",
-    leaveBody: "Eres miembro de este hogar. Si sales, perderás el acceso a sus dispositivos y a su historial.",
+    confirmLeave:
+      "¿Salir de este hogar? Perderás el acceso a sus dispositivos compartidos y a su historial.",
+    leaveBody:
+      "Eres miembro de este hogar. Si sales, perderás el acceso a sus dispositivos y a su historial.",
     leave: "Salir del hogar",
   },
   invite: {
@@ -45,7 +48,8 @@ const es: HouseholdMessages = {
     roleAlertOnly: "Solo alertas (notificaciones, solo lectura)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> añade accesos de administrador de propiedad para el personal in situ (sin acceso a la facturación).',
-    existingMemberHint: "Invitar a alguien que ya es miembro no cambia su rol. El propietario puede cambiar los roles en Miembros.",
+    existingMemberHint:
+      "Invitar a alguien que ya es miembro no cambia su rol. El propietario puede cambiar los roles en Miembros.",
     submit: "Enviar enlace de invitación",
     invitesHeading: "Invitaciones",
     managersOnly: "Solo el propietario y los editores del hogar pueden enviar invitaciones.",
@@ -59,7 +63,8 @@ const es: HouseholdMessages = {
     expires: "Caduca el {time}",
     copyLink: "Copiar enlace",
     confirmCancel: "¿Cancelar esta invitación?",
-    linkHidden: "Por seguridad, el enlace solo se muestra al enviarlo. Usa Reenviar para enviar uno nuevo.",
+    linkHidden:
+      "Por seguridad, el enlace solo se muestra al enviarlo. Usa Reenviar para enviar uno nuevo.",
     resend: "Reenviar",
     confirmResend: "¿Enviar un enlace nuevo? El enlace actual dejará de funcionar.",
     cancel: "Cancelar",
@@ -88,7 +93,8 @@ const es: HouseholdMessages = {
     selected: "Seleccionada: {label}",
     searchHint: "Si tu ciudad no está en la lista, búscala y elige un resultado.",
     submit: "Guardar ajustes del mapa de congelación",
-    publicListHtml: 'Consulta la lista pública en <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+    publicListHtml:
+      'Consulta la lista pública en <a class="text-link" href="/freeze-map">/freeze-map</a>.',
   },
   property: {
     heading: "Añadir otra propiedad",
@@ -99,7 +105,8 @@ const es: HouseholdMessages = {
     submit: "Crear propiedad",
     limit: {
       one: "Tu plan permite {count} hogar propio ({inUse} en uso). Pasa a Pro para tener varias propiedades.",
-      other: "Tu plan permite {count} hogares propios ({inUse} en uso). Pasa a Pro para tener varias propiedades.",
+      other:
+        "Tu plan permite {count} hogares propios ({inUse} en uso). Pasa a Pro para tener varias propiedades.",
     },
   },
   activity: {
@@ -138,7 +145,8 @@ const es: HouseholdMessages = {
     viewer: "Solo lectura. No puedes cambiar los ajustes de esta cuenta.",
     property_limit:
       "Alcanzaste el límite de propiedades propias de tu plan. Mejora tu plan para tener más hogares.",
-    portfolio_required: "Las invitaciones de administrador de propiedad requieren el plan Portfolio.",
+    portfolio_required:
+      "Las invitaciones de administrador de propiedad requieren el plan Portfolio.",
     owner_required: "Solo el propietario del hogar puede quitar miembros o cambiar sus roles.",
     cannot_change_owner: "No se puede cambiar el rol del propietario del hogar.",
     not_a_member: "Esa persona no es miembro de este hogar.",

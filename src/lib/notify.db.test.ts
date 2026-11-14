@@ -22,14 +22,21 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
   (await db.client().query(text, params)).rows as T[];
 
 const column = async (userId: string, name: string) =>
-  (await sql<Record<string, unknown>>(`select ${name} as v from public.alert_settings where user_id = $1`, [userId]))[0]?.v;
+  (
+    await sql<Record<string, unknown>>(
+      `select ${name} as v from public.alert_settings where user_id = $1`,
+      [userId],
+    )
+  )[0]?.v;
 
 describe("alert settings (Neon)", () => {
   it("first load stores the defaults; later loads read them back", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     const first = await getAlertSettingsForUser(userId, {});
     expect(first.freezeThresholdF).toBe(DEFAULT_ALERT_SETTINGS.freezeThresholdF);
-    expect(await sql("select 1 from public.alert_settings where user_id = $1", [userId])).toHaveLength(1);
+    expect(
+      await sql("select 1 from public.alert_settings where user_id = $1", [userId]),
+    ).toHaveLength(1);
     await expect(getAlertSettingsForUser(userId, {})).resolves.toEqual(first);
   });
 
@@ -44,7 +51,15 @@ describe("alert settings (Neon)", () => {
       smsPhone: "+15555550100",
       quietHoursEnabled: true,
       quietHoursStart: "23:00",
-      alertRules: [{ id: "r1", name: "Pipe cold", enabled: true, match: "all", all: [{ type: "temp_below", value: 33 }] } as never],
+      alertRules: [
+        {
+          id: "r1",
+          name: "Pipe cold",
+          enabled: true,
+          match: "all",
+          all: [{ type: "temp_below", value: 33 }],
+        } as never,
+      ],
       channelSeverity: { threshold: ["email", "sms"] } as never,
       snoozeUntil: "2026-12-01T05:00:00.123+00:00",
       batteryThresholdPct: 15,
@@ -65,12 +80,19 @@ describe("alert settings (Neon)", () => {
     });
     expect(Date.parse(loaded.snoozeUntil!)).toBe(Date.parse(settings.snoozeUntil!));
     expect(loaded.alertRules).toEqual([
-      expect.objectContaining({ id: "r1", name: "Pipe cold", all: [expect.objectContaining({ type: "temp_below", value: 33 })] }),
+      expect.objectContaining({
+        id: "r1",
+        name: "Pipe cold",
+        all: [expect.objectContaining({ type: "temp_below", value: 33 })],
+      }),
     ]);
 
     // A second save replaces values (including back to null).
     await saveAlertSettingsForUser(userId, { ...loaded, snoozeUntil: null, email: null });
-    expect(await getAlertSettingsForUser(userId, {})).toMatchObject({ snoozeUntil: null, email: null });
+    expect(await getAlertSettingsForUser(userId, {})).toMatchObject({
+      snoozeUntil: null,
+      email: null,
+    });
   });
 
   it("saving one user's settings never changes another's", async () => {
@@ -109,13 +131,16 @@ describe("cooldowns (Neon)", () => {
   it("a claim from a stale value loses; from the current stored value (full precision) it wins", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await saveAlertSettingsForUser(userId, DEFAULT_ALERT_SETTINGS);
-    await sql("update public.alert_settings set last_flood_alert_at = '2026-11-07 10:00:00.123456+00' where user_id = $1", [
-      userId,
-    ]);
+    await sql(
+      "update public.alert_settings set last_flood_alert_at = '2026-11-07 10:00:00.123456+00' where user_id = $1",
+      [userId],
+    );
     const stored = (await getAlertSettingsForUser(userId, {})).lastFloodAlertAt;
     expect(stored).toBe("2026-11-07T10:00:00.123456+00:00");
 
-    await expect(claimCooldown(userId, "last_flood_alert_at", "2026-11-07T09:00:00+00:00")).resolves.toEqual({
+    await expect(
+      claimCooldown(userId, "last_flood_alert_at", "2026-11-07T09:00:00+00:00"),
+    ).resolves.toEqual({
       claimed: false,
       claimedAt: null,
     });
@@ -139,7 +164,10 @@ describe("cooldowns (Neon)", () => {
 
   it("with no settings row, a claim fails open (sends) instead of skipping", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
-    await expect(claimCooldown(userId, "last_alert_sent_at", null)).resolves.toEqual({ claimed: true, claimedAt: null });
+    await expect(claimCooldown(userId, "last_alert_sent_at", null)).resolves.toEqual({
+      claimed: true,
+      claimedAt: null,
+    });
   });
 
   it("refuses a field name that isn't a cooldown", async () => {
@@ -165,11 +193,16 @@ describe("escalation and delivery evidence (Neon)", () => {
 
   it("delivery evidence comes from a recent alert that reached a channel", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
-    expect((await ensureAlertDeliveryEvidence(userId, DEFAULT_ALERT_SETTINGS)).hasDelivery).toBe(false);
-    await sql("insert into public.alert_events (user_id, kind, title, body, channels_sent) values ($1, 'generic', 't', 'b', '{email}')", [
-      userId,
-    ]);
-    expect((await ensureAlertDeliveryEvidence(userId, DEFAULT_ALERT_SETTINGS)).hasDelivery).toBe(true);
+    expect((await ensureAlertDeliveryEvidence(userId, DEFAULT_ALERT_SETTINGS)).hasDelivery).toBe(
+      false,
+    );
+    await sql(
+      "insert into public.alert_events (user_id, kind, title, body, channels_sent) values ($1, 'generic', 't', 'b', '{email}')",
+      [userId],
+    );
+    expect((await ensureAlertDeliveryEvidence(userId, DEFAULT_ALERT_SETTINGS)).hasDelivery).toBe(
+      true,
+    );
   });
 });
 
@@ -204,7 +237,10 @@ describe("alert settings read as one jsonb value", () => {
       const value = sample[data_type];
       if (value === undefined) continue;
       try {
-        await sql(`update public.alert_settings set "${column_name}" = $2 where user_id = $1`, [userId, value]);
+        await sql(`update public.alert_settings set "${column_name}" = $2 where user_id = $1`, [
+          userId,
+          value,
+        ]);
         populated += 1;
       } catch {
         // a check constraint (e.g. HH:MM text) rejects the sample; that column keeps its default
@@ -212,9 +248,10 @@ describe("alert settings read as one jsonb value", () => {
     }
     expect(populated).toBeGreaterThan(60);
 
-    const [viaSelectStar] = await query<Record<string, unknown>>("select * from public.alert_settings where user_id = $1", [
-      userId,
-    ]);
+    const [viaSelectStar] = await query<Record<string, unknown>>(
+      "select * from public.alert_settings where user_id = $1",
+      [userId],
+    );
     expect(await getAlertSettingsRow(userId)).toEqual(viaSelectStar);
     expect(await getAlertSettingsRow("00000000-0000-0000-0000-000000000000")).toBeNull();
   });

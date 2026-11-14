@@ -85,8 +85,7 @@ export type BrandedEmailContent = {
   tone?: "brand" | "alert" | "success";
 };
 
-const FONT =
-  "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 
 const COLORS = {
   bg: "#07111a",
@@ -143,7 +142,9 @@ function emailSectionToText(section: EmailSection): string[] {
   }
   if (section.type === "stats") {
     return section.items.map((item) =>
-      item.detail ? `${item.label}: ${item.value} (${item.detail})` : `${item.label}: ${item.value}`,
+      item.detail
+        ? `${item.label}: ${item.value} (${item.detail})`
+        : `${item.label}: ${item.value}`,
     );
   }
   if (section.type === "table") {

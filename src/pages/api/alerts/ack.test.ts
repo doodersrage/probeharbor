@@ -18,7 +18,9 @@ function makeContext(query: string): APIContext {
 
 beforeEach(() => {
   mockApplyAckToken.mockReset();
-  mockGetUserRecord.mockReset().mockResolvedValue({ id: "user-1", email: "a@example.com", user_metadata: {} });
+  mockGetUserRecord
+    .mockReset()
+    .mockResolvedValue({ id: "user-1", email: "a@example.com", user_metadata: {} });
 });
 
 describe("POST /api/alerts/ack", () => {
@@ -28,7 +30,13 @@ describe("POST /api/alerts/ack", () => {
 
     await POST(makeContext("?uid=user-1&eid=42&exp=9999999999999&sig=abc"));
 
-    expect(mockApplyAckToken).toHaveBeenCalledWith("user-1", 9999999999999, "abc", expect.any(String), 42);
+    expect(mockApplyAckToken).toHaveBeenCalledWith(
+      "user-1",
+      9999999999999,
+      "abc",
+      expect.any(String),
+      42,
+    );
   });
 
   it("rejects a malformed event id", async () => {
@@ -36,7 +44,9 @@ describe("POST /api/alerts/ack", () => {
 
     const response = await POST(makeContext("?uid=user-1&eid=42abc&exp=9999999999999&sig=abc"));
 
-    expect(response.headers.get("Location")).toBe("https://example.com/dashboard/alerts?ack_error=1");
+    expect(response.headers.get("Location")).toBe(
+      "https://example.com/dashboard/alerts?ack_error=1",
+    );
     expect(mockApplyAckToken).not.toHaveBeenCalled();
   });
 
@@ -141,7 +151,11 @@ describe("ack links in the alert owner's language", () => {
   it("renders the confirm page and the result in German", async () => {
     const { ensureLocale } = await import("../../../i18n/catalog");
     await ensureLocale("de", ["app"]);
-    mockGetUserRecord.mockResolvedValue({ id: "user-1", email: "a@example.com", user_metadata: { locale: "de" } });
+    mockGetUserRecord.mockResolvedValue({
+      id: "user-1",
+      email: "a@example.com",
+      user_metadata: { locale: "de" },
+    });
     const { GET, POST } = await import("./ack");
 
     const html = await (await GET(makeContext("?uid=user-1&exp=123&sig=abc"))).text();

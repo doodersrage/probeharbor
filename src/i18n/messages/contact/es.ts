@@ -25,7 +25,8 @@ const es: ContactMessages = {
     "Dudas sobre ingesta o sondas después de revisar las guías",
   ],
   issuesTitle: "Issues en GitHub",
-  issuesHtml: 'Los errores, los parches de firmware y las ideas de funciones van en los <a class="text-link" href="{url}" target="_blank" rel="noreferrer">issues de GitHub</a>, para que otros makers puedan seguirlos. ¿Prefieres no usar un formulario web? Esa es la mejor vía pública.',
+  issuesHtml:
+    'Los errores, los parches de firmware y las ideas de funciones van en los <a class="text-link" href="{url}" target="_blank" rel="noreferrer">issues de GitHub</a>, para que otros makers puedan seguirlos. ¿Prefieres no usar un formulario web? Esa es la mejor vía pública.',
   beforeTitle: "Antes de escribir",
   beforeHtml:
     'Muchas respuestas ya están en el <a class="text-link" href="/guides">centro de guías</a>, la <a class="text-link" href="/about">biblioteca de documentación</a>, la <a class="text-link" href="/about/probe-demo">demo de sondas</a> y los <a class="text-link" href="/about/arduino-sketches">sketches de Arduino</a>. Datos útiles para responderte: placa, sensores, lecturas esperadas frente a observadas y las URL de los feeds.',

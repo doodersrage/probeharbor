@@ -9,7 +9,8 @@ const en = {
     notAllTrue: "Wouldn't fire: at least one condition isn't true.",
     alertsOff: "Matches, but alerts are turned off, so nothing would send.",
     cooldown: "Matches, but a rule alert went out recently; the next one can send after {time}.",
-    fires: "Matches: the next alert check (every few minutes) would send it, unless alerts are snoozed or it's quiet hours.",
+    fires:
+      "Matches: the next alert check (every few minutes) would send it, unless alerts are snoozed or it's quiet hours.",
     checking: "Checking…",
     noRules: "No saved rules yet. Add one above and save.",
     checkedAt: "Checked {time}.",

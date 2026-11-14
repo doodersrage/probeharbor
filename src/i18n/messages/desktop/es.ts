@@ -28,7 +28,8 @@ const es: DesktopMessages = {
   ],
   openReleases: "Ver versiones",
   faqTitle: "Preguntas frecuentes sobre Desktop",
-  faqLede: "Respuestas sobre la app de escritorio: descarga, conexión y en qué se diferencia de Bay Buddy.",
+  faqLede:
+    "Respuestas sobre la app de escritorio: descarga, conexión y en qué se diferencia de Bay Buddy.",
   backToApps: "← Todas las apps complementarias",
 };
 

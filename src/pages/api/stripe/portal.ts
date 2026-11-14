@@ -29,7 +29,9 @@ export const POST: APIRoute = async (context) => {
     return redirect(portalSession.url);
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : apiMoreBillingMessages(apiLocale(context)).stripe.portalFailed;
+      error instanceof Error
+        ? error.message
+        : apiMoreBillingMessages(apiLocale(context)).stripe.portalFailed;
     return new Response(message, { status: 500 });
   }
 };

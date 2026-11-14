@@ -28,8 +28,7 @@ export function summarizeSeasonal(
   const coldest = points.reduce((a, b) => (a.tempf <= b.tempf ? a : b));
   const hottest = points.reduce((a, b) => (a.tempf >= b.tempf ? a : b));
   const wettest = wettestPoint(points);
-  const avgTemp =
-    points.reduce((sum, p) => sum + p.tempf, 0) / points.length;
+  const avgTemp = points.reduce((sum, p) => sum + p.tempf, 0) / points.length;
 
   insights.push({
     title: t.coldestTitle,
@@ -71,7 +70,11 @@ export function summarizeSeasonal(
   return insights;
 }
 
-export function compareProbeAverages(points: ChartPoint[], locale: Locale = "en", useCelsius = false): string[] {
+export function compareProbeAverages(
+  points: ChartPoint[],
+  locale: Locale = "en",
+  useCelsius = false,
+): string[] {
   const byProbe = new Map<string, number[]>();
   for (const point of points) {
     const list = byProbe.get(point.probeLabel) ?? [];
@@ -142,8 +145,7 @@ export function compareYearOverYear(
   useCelsius = false,
 ): SeasonalInsight | null {
   if (current.length === 0 || priorYear.length === 0) return null;
-  const avg = (pts: ChartPoint[]) =>
-    pts.reduce((sum, p) => sum + p.tempf, 0) / pts.length;
+  const avg = (pts: ChartPoint[]) => pts.reduce((sum, p) => sum + p.tempf, 0) / pts.length;
   const currentAvg = avg(current);
   const priorAvg = avg(priorYear);
   const delta = currentAvg - priorAvg;

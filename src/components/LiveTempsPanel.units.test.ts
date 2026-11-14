@@ -27,7 +27,11 @@ describe("Live tile temperatures follow the °C preference", () => {
   });
 
   it("uses locale digits and the translated line", () => {
-    const f = makeFormat({ ...LIVE_TEMPS_PANEL_TEXT_EN, tempHumidity: "{temp} {unit} · {humidity} % Luftfeuchte" }, "de-DE", true);
+    const f = makeFormat(
+      { ...LIVE_TEMPS_PANEL_TEXT_EN, tempHumidity: "{temp} {unit} · {humidity} % Luftfeuchte" },
+      "de-DE",
+      true,
+    );
     expect(f.tempMain(34, 1.1)).toBe("1,1°C");
     expect(f.tempDetail(34, 1.1, 50)).toBe("34,0 °F · 50 % Luftfeuchte");
   });

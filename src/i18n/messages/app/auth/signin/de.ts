@@ -18,7 +18,8 @@ const de: AuthSigninMessages = {
     submit: "Mit E-Mail anmelden",
     forgotPassword: "Passwort vergessen?",
     passkeySignIn: "Mit Passkey anmelden",
-    passkeyFailed: "Die Anmeldung mit Passkey hat nicht geklappt. Versuche es erneut oder melde dich mit E-Mail und Passwort an.",
+    passkeyFailed:
+      "Die Anmeldung mit Passkey hat nicht geklappt. Versuche es erneut oder melde dich mit E-Mail und Passwort an.",
     newHere: "Neu hier?",
     createAccount: "Kostenloses Konto erstellen",
     privacy: "Datenschutz",
@@ -32,8 +33,7 @@ const de: AuthSigninMessages = {
     lede: "Für immer kostenlos, ohne Kreditkarte. Nach der Registrierung landest du bei Geräte, um deinen ersten Fühler oder deine Leckmeldung per Feuchtekontakt zu verbinden.",
     preferLook: "Erst mal reinschauen?",
     liveDemo: "Live-Demo (ohne Konto)",
-    referral:
-      "Empfehlungscode {code} angewendet. Die Pro-Testphase verlängert sich um 7 Tage.",
+    referral: "Empfehlungscode {code} angewendet. Die Pro-Testphase verlängert sich um 7 Tage.",
     email: "E-Mail",
     password: "Passwort",
     passwordHint: "Mindestens 8 Zeichen.",
@@ -47,8 +47,10 @@ const de: AuthSigninMessages = {
       verification: "Überprüfung fehlgeschlagen. Bitte versuche es erneut.",
       weak_password: "Das Passwort muss mindestens 8 Zeichen lang sein.",
       generic: "Beim Erstellen deines Kontos ist etwas schiefgelaufen. Bitte versuche es erneut.",
-      signup_failed: "Beim Erstellen deines Kontos ist etwas schiefgelaufen. Bitte versuche es erneut.",
-      email_taken: "Für diese E-Mail gibt es möglicherweise schon ein Konto. Melde dich an oder setze dein Passwort zurück, falls du es vergessen hast.",
+      signup_failed:
+        "Beim Erstellen deines Kontos ist etwas schiefgelaufen. Bitte versuche es erneut.",
+      email_taken:
+        "Für diese E-Mail gibt es möglicherweise schon ein Konto. Melde dich an oder setze dein Passwort zurück, falls du es vergessen hast.",
     },
   },
   oauth: {
@@ -66,7 +68,8 @@ const de: AuthSigninMessages = {
       "Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest. Den Bestätigungslink findest du in deinem Posteingang.",
     oauth_failed:
       "Die Anmeldung über ein soziales Konto konnte nicht gestartet werden. Versuche es erneut oder melde dich mit E-Mail an.",
-    oauth_denied: "Die Anmeldung über ein soziales Konto wurde abgebrochen. Versuche es erneut, wenn du so weit bist.",
+    oauth_denied:
+      "Die Anmeldung über ein soziales Konto wurde abgebrochen. Versuche es erneut, wenn du so weit bist.",
     oauth_provider_failed:
       "Die Anmeldung über ein soziales Konto ist beim Anbieter fehlgeschlagen. Versuche es erneut oder melde dich mit E-Mail an.",
     oauth_secret_mismatch:
@@ -79,7 +82,8 @@ const de: AuthSigninMessages = {
       "Beim Abschließen der Anmeldung über ein soziales Konto ist etwas schiefgelaufen. Bitte versuche es erneut.",
     confirm_link:
       "Dieser Bestätigungslink ist abgelaufen oder wurde bereits verwendet. Wenn du schon bestätigt hast, melde dich einfach an.",
-    turnstile_failed: "Bitte setze das Häkchen bei der Prüfung, ob du ein Mensch bist, und versuche es erneut.",
+    turnstile_failed:
+      "Bitte setze das Häkchen bei der Prüfung, ob du ein Mensch bist, und versuche es erneut.",
     rate_limited:
       "Zu viele Anmeldeversuche für dieses Konto. Bitte warte ein paar Minuten und versuche es erneut.",
     generic: "Bei der Anmeldung ist etwas schiefgelaufen. Bitte versuche es erneut.",
@@ -99,7 +103,8 @@ const de: AuthSigninMessages = {
         "Dieser YubiKey ist für dieses Konto nicht registriert. Füge ihn unter Einstellungen → Sicherheit hinzu oder verwende deinen Authenticator-Code.",
       no_factor:
         "Für dieses Konto ist kein MFA-Faktor registriert. Melde dich erneut an und füge unter Einstellungen einen hinzu.",
-      rate_limited: "Zu viele falsche Versuche. Bitte warte ein paar Minuten und versuche es erneut.",
+      rate_limited:
+        "Zu viele falsche Versuche. Bitte warte ein paar Minuten und versuche es erneut.",
       generic: "Bei der Prüfung deines Codes ist etwas schiefgelaufen. Versuche es erneut.",
     },
     challenge: {
@@ -107,7 +112,8 @@ const de: AuthSigninMessages = {
       lede: "Schließe die Anmeldung für {email} mit einem Authenticator-Code oder einem YubiKey-OTP ab.",
       codeLabel: "Authenticator-Code",
       verifyCode: "Code prüfen",
-      totpHint: "Du nutzt Yubico Authenticator auf deinem YubiKey? Gib oben den 6-stelligen Code ein.",
+      totpHint:
+        "Du nutzt Yubico Authenticator auf deinem YubiKey? Gib oben den 6-stelligen Code ein.",
       yubikeyLabel: "YubiKey OTP",
       verifyYubikey: "Mit YubiKey prüfen",
       otpHint:

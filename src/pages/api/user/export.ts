@@ -20,15 +20,14 @@ export const GET: APIRoute = async ({ request, cookies, locals }) => {
   }
 
   const householdId = await getUserHouseholdId(user.id);
-  const [preferences, alertSettings, history, chart, devices, entitlements] =
-    await Promise.all([
-      getUserPreferences(user),
-      getAlertSettingsForUser(user.id, user.user_metadata as Record<string, unknown>),
-      fetchGarageTempHistory(user.id, 1, 50),
-      fetchGarageTempChartData(user.id, 30),
-      householdId ? listHouseholdDevices(householdId) : Promise.resolve({ devices: [], error: null }),
-      getUserEntitlements(user.id),
-    ]);
+  const [preferences, alertSettings, history, chart, devices, entitlements] = await Promise.all([
+    getUserPreferences(user),
+    getAlertSettingsForUser(user.id, user.user_metadata as Record<string, unknown>),
+    fetchGarageTempHistory(user.id, 1, 50),
+    fetchGarageTempChartData(user.id, 30),
+    householdId ? listHouseholdDevices(householdId) : Promise.resolve({ devices: [], error: null }),
+    getUserEntitlements(user.id),
+  ]);
 
   const payload = {
     exported_at: new Date().toISOString(),

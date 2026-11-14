@@ -19,7 +19,10 @@ describe("checkApiPlan", () => {
     mockGetUserEntitlements.mockResolvedValue({ canCreateShareLinks: true, maxDevices: 24 });
     const { checkApiPlan } = await import("./apiPlan");
 
-    expect(await checkApiPlan("house-1")).toEqual({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
+    expect(await checkApiPlan("house-1")).toEqual({
+      ok: true,
+      entitlements: { canCreateShareLinks: true, maxDevices: 24 },
+    });
     expect(mockGetFirstOwnerId).toHaveBeenCalledWith("house-1");
     expect(mockGetUserEntitlements).toHaveBeenCalledWith("owner-1");
   });
@@ -28,7 +31,11 @@ describe("checkApiPlan", () => {
     mockGetUserEntitlements.mockResolvedValue({ canCreateShareLinks: false, maxDevices: 2 });
     const { checkApiPlan } = await import("./apiPlan");
 
-    expect(await checkApiPlan("house-1")).toEqual({ ok: false, status: 403, error: "API access needs a Pro plan" });
+    expect(await checkApiPlan("house-1")).toEqual({
+      ok: false,
+      status: 403,
+      error: "API access needs a Pro plan",
+    });
   });
 
   it("blocks with 403 when the household has no owner", async () => {

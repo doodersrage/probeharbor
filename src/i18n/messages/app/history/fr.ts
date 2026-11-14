@@ -11,18 +11,23 @@ const fr: AppHistoryMessages = {
       openDevices: "Ouvrir Appareils",
       overview: "Vue d’ensemble",
     },
-    introCsv: "Parcourez les relevés de température et d’humidité enregistrés par flux et par sonde. Téléchargez le CSV depuis l’onglet Tableau ou Exports ci-dessous.",
-    introNoCsv: "Parcourez les relevés de température et d’humidité enregistrés par flux et par sonde. Abonnez-vous pour exporter votre historique en CSV.",
+    introCsv:
+      "Parcourez les relevés de température et d’humidité enregistrés par flux et par sonde. Téléchargez le CSV depuis l’onglet Tableau ou Exports ci-dessous.",
+    introNoCsv:
+      "Parcourez les relevés de température et d’humidité enregistrés par flux et par sonde. Abonnez-vous pour exporter votre historique en CSV.",
     tabsAria: "Vues de l’historique",
     tabs: { chart: "Graphique", table: "Tableau", exports: "Exports", doors: "Portes" },
-    retentionTitle: "Au-delà de 90 jours, les relevés bruts sont regroupés en moyennes horaires pour les longues périodes.",
-    retention: "Votre offre {plan} conserve {retention}{plus} d’historique ; au-delà de 90 jours, les relevés sont conservés en moyennes horaires.",
+    retentionTitle:
+      "Au-delà de 90 jours, les relevés bruts sont regroupés en moyennes horaires pour les longues périodes.",
+    retention:
+      "Votre offre {plan} conserve {retention}{plus} d’historique ; au-delà de 90 jours, les relevés sont conservés en moyennes horaires.",
     adminPlan: "Admin",
     retentionYears: { one: "{count} an", other: "{count} ans" },
     retentionDays: { one: "{count} jour", other: "{count} jours" },
   },
   overlay: {
-    coldestOutdoorEstimated: "Gris = jour extérieur le plus froid de l’an dernier ({day}, estimation)",
+    coldestOutdoorEstimated:
+      "Gris = jour extérieur le plus froid de l’an dernier ({day}, estimation)",
     coldestDayLow: "Gris = jour le plus froid de l’an dernier ({day}, minimum {temp} {unit})",
     coldestDay: "Gris = jour le plus froid de l’an dernier ({day})",
     noPriorProbeData: "Gris = aucune donnée de sonde l’an dernier (historique depuis le {date})",
@@ -38,22 +43,27 @@ const fr: AppHistoryMessages = {
   compare: {
     summary: "Comparer",
     outdoorTitle: "Intérieur et extérieur",
-    outdoorSubtitle: "Moyenne des sondes sur la période du graphique, comparée à la météo extérieure actuelle.",
-    outdoorSubtitleCity: "Moyenne des sondes sur la période du graphique, comparée à la météo extérieure actuelle à {city}.",
+    outdoorSubtitle:
+      "Moyenne des sondes sur la période du graphique, comparée à la météo extérieure actuelle.",
+    outdoorSubtitleCity:
+      "Moyenne des sondes sur la période du graphique, comparée à la météo extérieure actuelle à {city}.",
     indoorAvg: "Moyenne intérieure",
     outdoorNow: "Extérieur actuel",
     delta: "Écart",
     spreadTitle: "Écart entre sondes",
-    spreadSubtitle: "Écart horaire entre la sonde la plus chaude et la plus froide sur cette période.",
+    spreadSubtitle:
+      "Écart horaire entre la sonde la plus chaude et la plus froide sur cette période.",
     freezeTitle: "Exposition au gel sur la saison",
-    freezeSubtitle: "Temps estimé à {temp} {unit} ou moins sur la période sélectionnée du graphique.",
+    freezeSubtitle:
+      "Temps estimé à {temp} {unit} ou moins sur la période sélectionnée du graphique.",
     hoursAtOrBelow: "Heures ≤ {temp} {unit}",
     readingsAtOrBelow: "Mesures ≤ {temp} {unit}",
     coldest: "Minimum",
   },
   exports: {
     summaryTitle: "Résumé de la période",
-    summarySubtitle: "Aperçu du {from} → {to} (même période que le dossier pour l’assurance ci-dessous). Ouvrez l’onglet Graphique pour explorer, ou téléchargez les justificatifs depuis Exports.",
+    summarySubtitle:
+      "Aperçu du {from} → {to} (même période que le dossier pour l’assurance ci-dessous). Ouvrez l’onglet Graphique pour explorer, ou téléchargez les justificatifs depuis Exports.",
     notEnough: "Pas encore assez de mesures sur cette période pour un résumé.",
     coldest: "Minimum",
     hoursAtOrBelow: "Heures estimées ≤ {temp} {unit}",
@@ -73,16 +83,21 @@ const fr: AppHistoryMessages = {
       recipient_not_allowed: "Impossible de remettre l’e-mail à cette adresse.",
       send_failed: "Impossible d’envoyer l’e-mail du dossier pour l’assurance. Réessayez.",
     },
-    claimsUsesFilters: "Utilise les filtres de l’historique ci-dessus s’ils sont définis ({from} → {to}). Télécharge une synthèse PDF ; les CSV associés couvrent la même période.",
+    claimsUsesFilters:
+      "Utilise les filtres de l’historique ci-dessus s’ils sont définis ({from} → {to}). Télécharge une synthèse PDF ; les CSV associés couvrent la même période.",
     htmlVersion: "Version HTML",
     adjusterEmail: "E-mail de l’expert",
     adjusterPlaceholder: "expert@assureur.fr",
     sendClaims: "Envoyer le dossier",
     claimsUpgrade: "Passez à Pro pour télécharger le dossier pour l’assurance depuis cet onglet.",
     certificateTitle: "Certificat de surveillance",
-    certificateSubtitle: "Synthèse PDF d’une page de votre configuration d’alertes et des appareils surveillés : utile pour les assureurs, les propriétaires ou les gestionnaires de biens.",
+    certificateSubtitle:
+      "Synthèse PDF d’une page de votre configuration d’alertes et des appareils surveillés : utile pour les assureurs, les propriétaires ou les gestionnaires de biens.",
     certificateDownload: "Télécharger le certificat de surveillance (PDF)",
-    seasonalTitle: { one: "Tendances saisonnières ({count} jour)", other: "Tendances saisonnières ({count} jours)" },
+    seasonalTitle: {
+      one: "Tendances saisonnières ({count} jour)",
+      other: "Tendances saisonnières ({count} jours)",
+    },
     icalLink: "S’abonner aux prévisions de gel (iCal)",
   },
   table: {
@@ -92,9 +107,13 @@ const fr: AppHistoryMessages = {
     downloadCsv: "Télécharger le CSV",
     csvTimesUtc: "Les heures du CSV sont en UTC (ISO 8601, se terminant par Z).",
     chartTitleDates: "Évolution de la température (dates sélectionnées)",
-    chartTitleDays: { one: "Évolution de la température ({count} dernier jour)", other: "Évolution de la température ({count} derniers jours)" },
+    chartTitleDays: {
+      one: "Évolution de la température ({count} dernier jour)",
+      other: "Évolution de la température ({count} derniers jours)",
+    },
     anomaliesTitle: "Comportements inhabituels détectés sur la période du graphique",
-    anomaliesHow: "Signalé quand une sonde baisse de {band} ou plus entre deux mesures espacées de 60 minutes au plus ; une porte ouverte dans les 30 minutes est mentionnée.",
+    anomaliesHow:
+      "Signalé quand une sonde baisse de {band} ou plus entre deux mesures espacées de 60 minutes au plus ; une porte ouverte dans les 30 minutes est mentionnée.",
     feed: "Flux",
     allFeeds: "Tous les flux",
     probe: "Sonde",
@@ -125,11 +144,14 @@ const fr: AppHistoryMessages = {
     viewNamePlaceholder: "Nommer cette vue",
     saveView: "Enregistrer la vue",
     loadError: "Impossible de charger l’historique des mesures : {error}",
-    noMatch: "Aucune mesure ne correspond à ces filtres. Élargissez la plage de dates ou effacez les filtres.",
-    noHistory: "Pas encore d’historique. Les relevés s’enregistrent quand les appareils sont en ligne et quand vous ouvrez la Vue d’ensemble en étant connecté.",
+    noMatch:
+      "Aucune mesure ne correspond à ces filtres. Élargissez la plage de dates ou effacez les filtres.",
+    noHistory:
+      "Pas encore d’historique. Les relevés s’enregistrent quand les appareils sont en ligne et quand vous ouvrez la Vue d’ensemble en étant connecté.",
     stepAddDevice: "Ajoutez un appareil ou un flux",
     stepVerify: "Vérifiez l’ingestion sur la page Appareils",
-    stepLiveHtml: '<a class="text-link" href="/dashboard/live">Ouvrez En direct</a> pour confirmer les mesures en direct',
+    stepLiveHtml:
+      '<a class="text-link" href="/dashboard/live">Ouvrez En direct</a> pour confirmer les mesures en direct',
     goDevices: "Aller aux Appareils",
     humidityRh: "{value} % HR",
     colRecorded: "Enregistré",
@@ -187,15 +209,21 @@ const fr: AppHistoryMessages = {
     matchDevice: "même appareil",
     matchSpace: "même espace",
     howTitle: "Comment ces chiffres sont calculés",
-    howBody: "Chaque porte est comparée à un capteur de température et à un capteur d’humidité : le premier de l’appareil de la porte, sinon celui d’un autre appareil du même espace (les espaces se règlent dans Appareils). Les valeurs « ouverture » et « fermeture » sont le dernier relevé de ce capteur à ce moment ou avant, s’il date de 30 minutes au plus ; sinon la cellule l’indique. La variation est fermeture moins ouverture. Elle montre comment l’espace a évolué pendant que la porte était ouverte, pas ce qui l’a causé.",
+    howBody:
+      "Chaque porte est comparée à un capteur de température et à un capteur d’humidité : le premier de l’appareil de la porte, sinon celui d’un autre appareil du même espace (les espaces se règlent dans Appareils). Les valeurs « ouverture » et « fermeture » sont le dernier relevé de ce capteur à ce moment ou avant, s’il date de 30 minutes au plus ; sinon la cellule l’indique. La variation est fermeture moins ouverture. Elle montre comment l’espace a évolué pendant que la porte était ouverte, pas ce qui l’a causé.",
     empty: "Aucune ouverture de porte enregistrée sur cette période.",
-    emptyHint: "Une ouverture est enregistrée quand le capteur de porte signale de nouveau la fermeture. Les portes ouvertes plus de 24 heures ne sont pas encore enregistrées.",
-    noDoorSensors: "Aucun capteur de porte pour l’instant. Ajoutez-en un dans Appareils pour voir les ouvertures ici.",
-    truncated: "Affichage des {count} ouvertures les plus récentes de cette période. Réduisez les dates pour voir les plus anciennes.",
+    emptyHint:
+      "Une ouverture est enregistrée quand le capteur de porte signale de nouveau la fermeture. Les portes ouvertes plus de 24 heures ne sont pas encore enregistrées.",
+    noDoorSensors:
+      "Aucun capteur de porte pour l’instant. Ajoutez-en un dans Appareils pour voir les ouvertures ici.",
+    truncated:
+      "Affichage des {count} ouvertures les plus récentes de cette période. Réduisez les dates pour voir les plus anciennes.",
     loadError: "Impossible de charger l’historique des portes. Réessayez dans un instant.",
-    readingsError: "Impossible de charger la température et l’humidité de chaque ouverture : ces colonnes sont vides.",
+    readingsError:
+      "Impossible de charger la température et l’humidité de chaque ouverture : ces colonnes sont vides.",
     downloadCsv: "Télécharger le CSV",
-    csvNote: "Les heures du CSV sont en UTC (ISO 8601). Températures en °F, humidité en %. Une cellule vide signifie aucun relevé.",
+    csvNote:
+      "Les heures du CSV sont en UTC (ISO 8601). Températures en °F, humidité en %. Une cellule vide signifie aucun relevé.",
     csvUpgrade: "L’export CSV des ouvertures de portes est inclus avec un abonnement.",
   },
 };

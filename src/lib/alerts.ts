@@ -312,11 +312,7 @@ function parseAlertRules(raw: unknown): AlertRule[] {
   return raw.filter((item): item is AlertRule => {
     if (!item || typeof item !== "object") return false;
     const rule = item as Record<string, unknown>;
-    return (
-      typeof rule.id === "string" &&
-      typeof rule.name === "string" &&
-      Array.isArray(rule.all)
-    );
+    return typeof rule.id === "string" && typeof rule.name === "string" && Array.isArray(rule.all);
   }) as AlertRule[];
 }
 
@@ -346,12 +342,9 @@ export function getAlertSettingsFromMetadata(
         ? raw.rate_change_f
         : DEFAULT_ALERT_SETTINGS.rateChangeF,
     outageHours:
-      typeof raw.outage_hours === "number"
-        ? raw.outage_hours
-        : DEFAULT_ALERT_SETTINGS.outageHours,
+      typeof raw.outage_hours === "number" ? raw.outage_hours : DEFAULT_ALERT_SETTINGS.outageHours,
     email: typeof raw.email === "string" ? raw.email : null,
-    lastAlertSentAt:
-      typeof raw.last_alert_sent_at === "string" ? raw.last_alert_sent_at : null,
+    lastAlertSentAt: typeof raw.last_alert_sent_at === "string" ? raw.last_alert_sent_at : null,
   };
 }
 
@@ -378,9 +371,7 @@ export function rowToAlertSettings(row: Record<string, unknown> | null | undefin
         ? row.rate_change_f
         : DEFAULT_ALERT_SETTINGS.rateChangeF,
     outageHours:
-      typeof row.outage_hours === "number"
-        ? row.outage_hours
-        : DEFAULT_ALERT_SETTINGS.outageHours,
+      typeof row.outage_hours === "number" ? row.outage_hours : DEFAULT_ALERT_SETTINGS.outageHours,
     email: typeof row.email === "string" ? row.email : null,
     channelEmail: row.channel_email !== false,
     channelSms: row.channel_sms === true,
@@ -393,60 +384,40 @@ export function rowToAlertSettings(row: Record<string, unknown> | null | undefin
     channelNtfy: row.channel_ntfy === true,
     channelPushover: row.channel_pushover === true,
     channelWhatsapp: row.channel_whatsapp === true,
-    discordWebhookUrl:
-      typeof row.discord_webhook_url === "string" ? row.discord_webhook_url : null,
-    teamsWebhookUrl:
-      typeof row.teams_webhook_url === "string" ? row.teams_webhook_url : null,
+    discordWebhookUrl: typeof row.discord_webhook_url === "string" ? row.discord_webhook_url : null,
+    teamsWebhookUrl: typeof row.teams_webhook_url === "string" ? row.teams_webhook_url : null,
     ntfyTopic: typeof row.ntfy_topic === "string" ? row.ntfy_topic : null,
     ntfyServer:
       typeof row.ntfy_server === "string" && row.ntfy_server.trim()
         ? row.ntfy_server.trim()
         : DEFAULT_ALERT_SETTINGS.ntfyServer,
-    pushoverUserKey:
-      typeof row.pushover_user_key === "string" ? row.pushover_user_key : null,
-    pushoverAppToken:
-      typeof row.pushover_app_token === "string" ? row.pushover_app_token : null,
-    whatsappPhone:
-      typeof row.whatsapp_phone === "string" ? row.whatsapp_phone : null,
+    pushoverUserKey: typeof row.pushover_user_key === "string" ? row.pushover_user_key : null,
+    pushoverAppToken: typeof row.pushover_app_token === "string" ? row.pushover_app_token : null,
+    whatsappPhone: typeof row.whatsapp_phone === "string" ? row.whatsapp_phone : null,
     smsPhone: typeof row.sms_phone === "string" ? row.sms_phone : null,
     outboundWebhookUrl:
       typeof row.outbound_webhook_url === "string" ? row.outbound_webhook_url : null,
     outboundWebhookSecret:
-      typeof row.outbound_webhook_secret === "string"
-        ? row.outbound_webhook_secret
-        : null,
-    telegramBotToken:
-      typeof row.telegram_bot_token === "string" ? row.telegram_bot_token : null,
-    telegramChatId:
-      typeof row.telegram_chat_id === "string" ? row.telegram_chat_id : null,
-    slackWebhookUrl:
-      typeof row.slack_webhook_url === "string" ? row.slack_webhook_url : null,
-    lastAlertSentAt:
-      typeof row.last_alert_sent_at === "string" ? row.last_alert_sent_at : null,
+      typeof row.outbound_webhook_secret === "string" ? row.outbound_webhook_secret : null,
+    telegramBotToken: typeof row.telegram_bot_token === "string" ? row.telegram_bot_token : null,
+    telegramChatId: typeof row.telegram_chat_id === "string" ? row.telegram_chat_id : null,
+    slackWebhookUrl: typeof row.slack_webhook_url === "string" ? row.slack_webhook_url : null,
+    lastAlertSentAt: typeof row.last_alert_sent_at === "string" ? row.last_alert_sent_at : null,
     lastOutageAlertAt:
       typeof row.last_outage_alert_at === "string" ? row.last_outage_alert_at : null,
-    lastRateAlertAt:
-      typeof row.last_rate_alert_at === "string" ? row.last_rate_alert_at : null,
+    lastRateAlertAt: typeof row.last_rate_alert_at === "string" ? row.last_rate_alert_at : null,
     lastForecastAlertAt:
-      typeof row.last_forecast_alert_at === "string"
-        ? row.last_forecast_alert_at
-        : null,
-    lastRuleAlertAt:
-      typeof row.last_rule_alert_at === "string" ? row.last_rule_alert_at : null,
+      typeof row.last_forecast_alert_at === "string" ? row.last_forecast_alert_at : null,
+    lastRuleAlertAt: typeof row.last_rule_alert_at === "string" ? row.last_rule_alert_at : null,
     lastRunwayAlertAt:
-      typeof row.last_runway_alert_at === "string"
-        ? row.last_runway_alert_at
-        : null,
+      typeof row.last_runway_alert_at === "string" ? row.last_runway_alert_at : null,
     forecastFreezeEnabled: row.forecast_freeze_enabled === true,
     runwayAlertEnabled: row.runway_alert_enabled !== false,
     nwsFreezeAlertsEnabled: row.nws_freeze_alerts_enabled === true,
-    lastNwsAlertAt:
-      typeof row.last_nws_alert_at === "string" ? row.last_nws_alert_at : null,
-    lastFloodAlertAt:
-      typeof row.last_flood_alert_at === "string" ? row.last_flood_alert_at : null,
+    lastNwsAlertAt: typeof row.last_nws_alert_at === "string" ? row.last_nws_alert_at : null,
+    lastFloodAlertAt: typeof row.last_flood_alert_at === "string" ? row.last_flood_alert_at : null,
     powerAlertsEnabled: row.power_alerts_enabled !== false,
-    lastPowerAlertAt:
-      typeof row.last_power_alert_at === "string" ? row.last_power_alert_at : null,
+    lastPowerAlertAt: typeof row.last_power_alert_at === "string" ? row.last_power_alert_at : null,
     forecastHoursAhead:
       typeof row.forecast_hours_ahead === "number"
         ? row.forecast_hours_ahead
@@ -468,10 +439,8 @@ export function rowToAlertSettings(row: Record<string, unknown> | null | undefin
     quietHoursSmsCritical: row.quiet_hours_sms_critical !== false,
     alertRules: parseAlertRules(row.alert_rules),
     channelSeverity: parseChannelSeverity(row.channel_severity),
-    snoozeUntil:
-      typeof row.snooze_until === "string" ? row.snooze_until : null,
-    vacationUntil:
-      typeof row.vacation_until === "string" ? row.vacation_until : null,
+    snoozeUntil: typeof row.snooze_until === "string" ? row.snooze_until : null,
+    vacationUntil: typeof row.vacation_until === "string" ? row.vacation_until : null,
     batteryAlertsEnabled: row.battery_alerts_enabled === true,
     batteryTrendAlertsEnabled: row.battery_trend_alerts_enabled !== false,
     batteryThresholdPct:
@@ -485,19 +454,12 @@ export function rowToAlertSettings(row: Record<string, unknown> | null | undefin
         : DEFAULT_ALERT_SETTINGS.rssiThreshold,
     monthlyReportEnabled: row.monthly_report_enabled === true,
     lastBatteryAlertAt:
-      typeof row.last_battery_alert_at === "string"
-        ? row.last_battery_alert_at
-        : null,
+      typeof row.last_battery_alert_at === "string" ? row.last_battery_alert_at : null,
     lastBatteryTrendAlertAt:
-      typeof row.last_battery_trend_alert_at === "string"
-        ? row.last_battery_trend_alert_at
-        : null,
-    lastRssiAlertAt:
-      typeof row.last_rssi_alert_at === "string" ? row.last_rssi_alert_at : null,
+      typeof row.last_battery_trend_alert_at === "string" ? row.last_battery_trend_alert_at : null,
+    lastRssiAlertAt: typeof row.last_rssi_alert_at === "string" ? row.last_rssi_alert_at : null,
     lastMonthlyReportAt:
-      typeof row.last_monthly_report_at === "string"
-        ? row.last_monthly_report_at
-        : null,
+      typeof row.last_monthly_report_at === "string" ? row.last_monthly_report_at : null,
     escalationEnabled: row.escalation_enabled === true,
     escalationMinutes:
       typeof row.escalation_minutes === "number"
@@ -508,37 +470,26 @@ export function rowToAlertSettings(row: Record<string, unknown> | null | undefin
         ? (row.alert_templates as Record<string, { title?: string; body?: string }>)
         : {},
     telegramCommandSecret:
-      typeof row.telegram_command_secret === "string"
-        ? row.telegram_command_secret
-        : null,
-    lastEscalationAt:
-      typeof row.last_escalation_at === "string" ? row.last_escalation_at : null,
-    readingWebhookUrl:
-      typeof row.reading_webhook_url === "string" ? row.reading_webhook_url : null,
+      typeof row.telegram_command_secret === "string" ? row.telegram_command_secret : null,
+    lastEscalationAt: typeof row.last_escalation_at === "string" ? row.last_escalation_at : null,
+    readingWebhookUrl: typeof row.reading_webhook_url === "string" ? row.reading_webhook_url : null,
     readingWebhookSecret:
-      typeof row.reading_webhook_secret === "string"
-        ? row.reading_webhook_secret
-        : null,
+      typeof row.reading_webhook_secret === "string" ? row.reading_webhook_secret : null,
     spaceChannelRouting: parseSpaceChannelRouting(row.space_channel_routing),
     dripEmailsEnabled: row.drip_emails_enabled !== false,
     quarterlyReportEnabled: row.quarterly_report_enabled === true,
     alertPlaybooks: parseAlertPlaybooks(row.alert_playbooks),
-    dataRetentionDays:
-      typeof row.data_retention_days === "number" ? row.data_retention_days : null,
+    dataRetentionDays: typeof row.data_retention_days === "number" ? row.data_retention_days : null,
     feedUptimeAlertsEnabled: row.feed_uptime_alerts_enabled === true,
     lastFeedUptimeAlertAt:
-      typeof row.last_feed_uptime_alert_at === "string"
-        ? row.last_feed_uptime_alert_at
-        : null,
+      typeof row.last_feed_uptime_alert_at === "string" ? row.last_feed_uptime_alert_at : null,
     playbookFired:
       row.playbook_fired && typeof row.playbook_fired === "object"
         ? (row.playbook_fired as Record<string, string>)
         : {},
     portfolioAlertsEnabled: row.portfolio_alerts_enabled !== false,
     lastPortfolioAlertAt:
-      typeof row.last_portfolio_alert_at === "string"
-        ? row.last_portfolio_alert_at
-        : null,
+      typeof row.last_portfolio_alert_at === "string" ? row.last_portfolio_alert_at : null,
     freezeDrillEnabled: row.freeze_drill_enabled !== false,
     lastFreezeDrillAt:
       typeof row.last_freeze_drill_at === "string" ? row.last_freeze_drill_at : null,
@@ -551,8 +502,7 @@ export function isAlertCooldownActive(
   now = Date.now(),
 ): boolean {
   const lastSentAt =
-    typeof settingsOrLastSent === "string" ||
-    settingsOrLastSent == null
+    typeof settingsOrLastSent === "string" || settingsOrLastSent == null
       ? settingsOrLastSent
       : settingsOrLastSent.lastAlertSentAt;
 
@@ -668,7 +618,9 @@ export function formatThresholdAlertDetail(
     });
     const at = detail.recordedAt ? Date.parse(detail.recordedAt) : NaN;
     if (Number.isFinite(at) && now - at >= READING_AGE_NOTE_MS) {
-      return line + fmt(t.readingAge, { age: formatRelativeAge(detail.recordedAt, "", locale).label });
+      return (
+        line + fmt(t.readingAge, { age: formatRelativeAge(detail.recordedAt, "", locale).label })
+      );
     }
     return line;
   }
@@ -694,14 +646,18 @@ export function thresholdAlertTitle(
   const humid = details.filter((d) => d.kind === "humidity");
   if (freezes.length > 0) {
     const coldest = freezes.reduce((min, d) => (d.tempF < min.tempF ? d : min));
-    const more = freezes.length > 1 ? fmt(t.titleMore, { count: alertNumber(freezes.length - 1, locale) }) : "";
+    const more =
+      freezes.length > 1
+        ? fmt(t.titleMore, { count: alertNumber(freezes.length - 1, locale) })
+        : "";
     const humidNote = humid.length > 0 ? t.titleHumidityNote : "";
     const temp = alertTemp(coldest.tempF, locale, display, 1);
     return `${fmt(t.titleFreeze, { label: coldest.label, temp: temp.temp, unit: temp.unit })}${more}${humidNote}`;
   }
   if (humid.length > 0) {
     const wettest = humid.reduce((max, d) => (d.humidity > max.humidity ? d : max));
-    const more = humid.length > 1 ? fmt(t.titleMore, { count: alertNumber(humid.length - 1, locale) }) : "";
+    const more =
+      humid.length > 1 ? fmt(t.titleMore, { count: alertNumber(humid.length - 1, locale) }) : "";
     return `${fmt(t.titleHumidity, { label: wettest.label, humidity: alertNumber(wettest.humidity, locale, 0) })}${more}`;
   }
   return t.titleFallback;
@@ -727,7 +683,11 @@ export function evaluateAlerts(
  * alerts as if it were current, nor count toward "back to normal". With outage
  * alerts turned off nothing would cover a dead probe, so nothing is stale then.
  */
-export function isStaleAlertReading(settings: AlertSettings, reading: AlertReading, now = Date.now()): boolean {
+export function isStaleAlertReading(
+  settings: AlertSettings,
+  reading: AlertReading,
+  now = Date.now(),
+): boolean {
   if (!reading.recordedAt || !(settings.outageHours > 0)) return false;
   const at = Date.parse(reading.recordedAt);
   return Number.isFinite(at) && now - at > settings.outageHours * 60 * 60 * 1000;
@@ -757,17 +717,9 @@ export function evaluateAlertDetails(
 
     const freezeThreshold = freezeThresholdForReading(settings, reading);
     const samples =
-      reading.sensorId && dwellSamples[reading.sensorId]
-        ? dwellSamples[reading.sensorId]!
-        : [];
+      reading.sensorId && dwellSamples[reading.sensorId] ? dwellSamples[reading.sensorId]! : [];
     if (
-      meetsFreezeDwell(
-        reading.tempf,
-        freezeThreshold,
-        samples,
-        settings.freezeDwellMinutes,
-        nowMs,
-      )
+      meetsFreezeDwell(reading.tempf, freezeThreshold, samples, settings.freezeDwellMinutes, nowMs)
     ) {
       messages.push({
         kind: "freeze",
@@ -831,7 +783,12 @@ export function evaluateForecastFreeze(
   if (forecastMinF == null || !Number.isFinite(forecastMinF)) return null;
   if (forecastMinF > settings.freezeThresholdF) return null;
   const forecast = alertTemp(forecastMinF, locale, display, 1);
-  const threshold = alertTemp(settings.freezeThresholdF, locale, display, display?.useCelsius ? 1 : 0);
+  const threshold = alertTemp(
+    settings.freezeThresholdF,
+    locale,
+    display,
+    display?.useCelsius ? 1 : 0,
+  );
   return fmt(alertMessages(locale).forecast.detail, {
     temp: forecast.temp,
     unit: forecast.unit,
@@ -878,10 +835,7 @@ export function evaluateBatteryHealth(
   if (!settings.enabled || !settings.batteryAlertsEnabled) return [];
   const messages: string[] = [];
   for (const device of devices) {
-    if (
-      device.batteryPct != null &&
-      device.batteryPct <= settings.batteryThresholdPct
-    ) {
+    if (device.batteryPct != null && device.batteryPct <= settings.batteryThresholdPct) {
       messages.push(
         fmt(alertMessages(locale).battery.detail, {
           device: device.deviceName,
@@ -951,10 +905,7 @@ export function evaluateOutage(
  * Devices that never reported have no outage start; they count as new only
  * when no outage alert has been sent yet.
  */
-export function isNewOutage(
-  settings: AlertSettings,
-  lastSeenAt: string | null,
-): boolean {
+export function isNewOutage(settings: AlertSettings, lastSeenAt: string | null): boolean {
   const lastAlert = settings.lastOutageAlertAt ? Date.parse(settings.lastOutageAlertAt) : NaN;
   if (Number.isNaN(lastAlert)) return true;
   if (!lastSeenAt) return false;

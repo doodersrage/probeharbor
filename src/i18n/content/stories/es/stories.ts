@@ -13,9 +13,20 @@ export default {
       "Resumen semanal para el hogar; enlace en vivo familiar para un vecino que vigila la casa",
     ],
     timeline: [
-      { time: "2:14", detail: "El garaje baja de 1 °C (34 °F); ProbeHarbor envía un SMS a los dos propietarios y publica en un canal familiar de Telegram." },
-      { time: "2:22", detail: "Uno de los propietarios reinicia el calefactor con un enchufe inteligente." },
-      { time: "3:05", detail: "La gráfica muestra cómo se recupera la temperatura, mucho antes de que las tuberías lleguen a 0 °C (32 °F)." },
+      {
+        time: "2:14",
+        detail:
+          "El garaje baja de 1 °C (34 °F); ProbeHarbor envía un SMS a los dos propietarios y publica en un canal familiar de Telegram.",
+      },
+      {
+        time: "2:22",
+        detail: "Uno de los propietarios reinicia el calefactor con un enchufe inteligente.",
+      },
+      {
+        time: "3:05",
+        detail:
+          "La gráfica muestra cómo se recupera la temperatura, mucho antes de que las tuberías lleguen a 0 °C (32 °F).",
+      },
     ],
     outcome:
       "Que falle un calefactor solo es un desastre si nadie se entera hasta la mañana. El umbral está un par de grados por encima del punto de congelación para que haya tiempo de reaccionar, y el SMS es lo que te despierta a las 2 de la madrugada; un correo es fácil de no oír.",
@@ -44,9 +55,20 @@ export default {
       "Un amigo de la zona invitado al hogar como persona de respaldo",
     ],
     timeline: [
-      { time: "Mar., 11:40", detail: "Un corte breve de luz reinicia la caldera; la cámara sanitaria baja de 2 °C (36 °F)." },
-      { time: "Mar., 11:41", detail: "Salen el push y el correo; el propietario llama a su amigo de la zona." },
-      { time: "Mar., 13:10", detail: "El amigo vuelve a encender la caldera y la gráfica sube antes del frío de la tarde." },
+      {
+        time: "Mar., 11:40",
+        detail:
+          "Un corte breve de luz reinicia la caldera; la cámara sanitaria baja de 2 °C (36 °F).",
+      },
+      {
+        time: "Mar., 11:41",
+        detail: "Salen el push y el correo; el propietario llama a su amigo de la zona.",
+      },
+      {
+        time: "Mar., 13:10",
+        detail:
+          "El amigo vuelve a encender la caldera y la gráfica sube antes del frío de la tarde.",
+      },
     ],
     outcome:
       "Los edificios vacíos fallan en silencio. Lo valioso es el margen: una alerta el martes en lugar de descubrir las tuberías congeladas el viernes.",
@@ -75,9 +97,20 @@ export default {
       "Webhook saliente (Pro) hacia Home Assistant para apagar un enchufe inteligente",
     ],
     timeline: [
-      { time: "Vie., 18:05", detail: "El armario llega a 36 °C (96 °F) tras fallar un ventilador; salta la regla de calor y el webhook llega a Home Assistant." },
-      { time: "Vie., 18:06", detail: "Una automatización apaga los equipos no críticos; un SMS confirma la alerta." },
-      { time: "Sábado por la mañana", detail: "El propietario cambia el ventilador; el historial muestra lo rápido que se calentó el armario." },
+      {
+        time: "Vie., 18:05",
+        detail:
+          "El armario llega a 36 °C (96 °F) tras fallar un ventilador; salta la regla de calor y el webhook llega a Home Assistant.",
+      },
+      {
+        time: "Vie., 18:06",
+        detail: "Una automatización apaga los equipos no críticos; un SMS confirma la alerta.",
+      },
+      {
+        time: "Sábado por la mañana",
+        detail:
+          "El propietario cambia el ventilador; el historial muestra lo rápido que se calentó el armario.",
+      },
     ],
     outcome:
       "Las mismas sondas y la misma vía de ingest cubren los dos tipos de fallo: helada en el garaje y calor en el armario.",
@@ -106,9 +139,19 @@ export default {
       "Temperatura del garaje comparada con el tiempo exterior en el dashboard",
     ],
     timeline: [
-      { time: "Semana 1", detail: "Las alertas saltan en noches despejadas y sin viento; parece frío normal." },
-      { time: "Semana 2", detail: "El historial y el CSV muestran que la sonda del lado de la puerta siempre baja primero." },
-      { time: "Semana 3", detail: "Tras poner burletes en la puerta, las noches se mantienen por encima del umbral." },
+      {
+        time: "Semana 1",
+        detail: "Las alertas saltan en noches despejadas y sin viento; parece frío normal.",
+      },
+      {
+        time: "Semana 2",
+        detail:
+          "El historial y el CSV muestran que la sonda del lado de la puerta siempre baja primero.",
+      },
+      {
+        time: "Semana 3",
+        detail: "Tras poner burletes en la puerta, las noches se mantienen por encima del umbral.",
+      },
     ],
     outcome:
       "Una alerta te dice que algo va mal; el historial te dice dónde. Arreglar un burlete barato es mejor que esperar la noche en que haga frío suficiente para reventar una tubería.",
@@ -137,9 +180,21 @@ export default {
       "Enlace en vivo familiar para un pariente que vive cerca",
     ],
     timeline: [
-      { time: "Dom., 4:05", detail: "La cámara sanitaria baja de 2 °C (36 °F) con una rejilla de ventilación atascada abierta." },
-      { time: "Dom., 4:06", detail: "Salen el SMS y el correo; el pariente de la zona mira el enlace en vivo y va para allá." },
-      { time: "Dom., 5:20", detail: "La rejilla queda cerrada y la gráfica empieza a subir antes de la mínima de la mañana." },
+      {
+        time: "Dom., 4:05",
+        detail:
+          "La cámara sanitaria baja de 2 °C (36 °F) con una rejilla de ventilación atascada abierta.",
+      },
+      {
+        time: "Dom., 4:06",
+        detail:
+          "Salen el SMS y el correo; el pariente de la zona mira el enlace en vivo y va para allá.",
+      },
+      {
+        time: "Dom., 5:20",
+        detail:
+          "La rejilla queda cerrada y la gráfica empieza a subir antes de la mínima de la mañana.",
+      },
     ],
     outcome:
       "Nadie revisa una cámara sanitaria a las 4 de la madrugada. Una sonda en la tubería, no en la trampilla, es lo que convierte una rejilla atascada en un arreglo rápido.",
@@ -168,9 +223,21 @@ export default {
       "Modo vacaciones desactivado antes de un viaje para que las alertas sigan llegando",
     ],
     timeline: [
-      { time: "Miércoles", detail: "Un aviso de pronóstico marca la mínima de la noche del jueves; el propietario comprueba que el calefactor está encendido." },
-      { time: "Jue., 1:50", detail: "El calefactor hace saltar el diferencial; el taller baja de 1 °C (34 °F) y sale el correo." },
-      { time: "Jue., 2:15", detail: "El propietario restablece el circuito con un enchufe inteligente antes de que se congele la tubería del fregadero." },
+      {
+        time: "Miércoles",
+        detail:
+          "Un aviso de pronóstico marca la mínima de la noche del jueves; el propietario comprueba que el calefactor está encendido.",
+      },
+      {
+        time: "Jue., 1:50",
+        detail:
+          "El calefactor hace saltar el diferencial; el taller baja de 1 °C (34 °F) y sale el correo.",
+      },
+      {
+        time: "Jue., 2:15",
+        detail:
+          "El propietario restablece el circuito con un enchufe inteligente antes de que se congele la tubería del fregadero.",
+      },
     ],
     outcome:
       "Los edificios independientes pierden calor rápido. El aviso de pronóstico cubre el momento de planificar; la alerta de umbral cubre la avería en sí.",
@@ -199,9 +266,20 @@ export default {
       "Correo más SMS (Pro); el umbral de helada sigue vigilando el mismo espacio",
     ],
     timeline: [
-      { time: "3:08", detail: "El contacto de inundación detecta agua; salen el SMS y el correo aunque el modo vacaciones esté activado." },
-      { time: "3:20", detail: "Un vecino con el enlace en vivo familiar se acerca y encuentra un goteo en la válvula de vaciado." },
-      { time: "Por la mañana", detail: "Un fontanero aprieta la válvula cuando el suelo sigue casi seco." },
+      {
+        time: "3:08",
+        detail:
+          "El contacto de inundación detecta agua; salen el SMS y el correo aunque el modo vacaciones esté activado.",
+      },
+      {
+        time: "3:20",
+        detail:
+          "Un vecino con el enlace en vivo familiar se acerca y encuentra un goteo en la válvula de vaciado.",
+      },
+      {
+        time: "Por la mañana",
+        detail: "Un fontanero aprieta la válvula cuando el suelo sigue casi seco.",
+      },
     ],
     outcome:
       "Las fugas no esperan a una helada. Los contactos de inundación comparten dispositivo y vía de ingest, y las alertas de agua llegan aunque el modo vacaciones silencie las rutinarias.",

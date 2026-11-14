@@ -40,7 +40,10 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function home(email: string) {
   const id = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [id]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [id],
+  );
   return m!.household_id;
 }
 
@@ -78,9 +81,12 @@ describe("status email subscriptions (Neon)", () => {
   it("subscribe → confirm → listed; re-subscribing a confirmed address keeps its link; unsubscribe removes it", async () => {
     await expect(subscribeToStatusUpdates(" Ops@Example.com ")).resolves.toEqual({ ok: true });
     const token = lastEmailedToken();
-    const [row] = await sql<{ id: string; token: string | null; token_hash: string; email: string }>(
-      "select id, token, token_hash, email from public.status_subscriptions",
-    );
+    const [row] = await sql<{
+      id: string;
+      token: string | null;
+      token_hash: string;
+      email: string;
+    }>("select id, token, token_hash, email from public.status_subscriptions");
     expect(row?.email).toBe("ops@example.com");
     expect(row?.token).toBeNull(); // no plaintext stored
     expect(row?.token_hash).toMatch(/^[0-9a-f]{64}$/);
@@ -89,12 +95,16 @@ describe("status email subscriptions (Neon)", () => {
 
     expect((await confirmStatusSubscription(row!.token_hash)).ok).toBe(false); // the stored hash isn't a link
     expect((await confirmStatusSubscription(token)).ok).toBe(true);
-    expect(await listConfirmedStatusSubscribers()).toEqual([{ id: row!.id, email: "ops@example.com" }]);
+    expect(await listConfirmedStatusSubscribers()).toEqual([
+      { id: row!.id, email: "ops@example.com" },
+    ]);
 
     const emails = sent.length;
     await subscribeToStatusUpdates("ops@example.com");
     expect(sent.length).toBe(emails); // confirmed: no new email, link unchanged
-    expect(await sql("select token_hash from public.status_subscriptions")).toEqual([{ token_hash: row!.token_hash }]);
+    expect(await sql("select token_hash from public.status_subscriptions")).toEqual([
+      { token_hash: row!.token_hash },
+    ]);
 
     expect((await unsubscribeStatusSubscription(token)).ok).toBe(true);
     expect(await listConfirmedStatusSubscribers()).toEqual([]);
@@ -104,8 +114,13 @@ describe("status email subscriptions (Neon)", () => {
   it("an unconfirmed address gets a new link on re-subscribe; two at once leave one row", async () => {
     await subscribeToStatusUpdates("new@example.com");
     const first = lastEmailedToken();
-    await Promise.all([subscribeToStatusUpdates("new@example.com"), subscribeToStatusUpdates("new@example.com")]);
-    const rows = await sql<{ token: string | null }>("select token from public.status_subscriptions");
+    await Promise.all([
+      subscribeToStatusUpdates("new@example.com"),
+      subscribeToStatusUpdates("new@example.com"),
+    ]);
+    const rows = await sql<{ token: string | null }>(
+      "select token from public.status_subscriptions",
+    );
     expect(rows).toEqual([{ token: null }]);
     expect((await confirmStatusSubscription(first)).ok).toBe(false); // replaced
     expect((await confirmStatusSubscription(lastEmailedToken())).ok).toBe(true);
@@ -127,7 +142,10 @@ describe("status links from before hashing (Neon)", () => {
   it("a row holding only a raw token (no hash) no longer opens a page", async () => {
     const a = await home("a@example.com");
     const raw = "0123456789abcdef0123456789abcdef0123";
-    await sql("insert into public.status_page_tokens (household_id, token, token_hash) values ($1, $2, null)", [a, raw]);
+    await sql(
+      "insert into public.status_page_tokens (household_id, token, token_hash) values ($1, $2, null)",
+      [a, raw],
+    );
     await expect(resolveStatusPageToken(raw)).resolves.toBeNull();
   });
 });

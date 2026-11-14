@@ -12,9 +12,7 @@ export type AdminDashboardTabId = (typeof ADMIN_DASHBOARD_TABS)[number]["id"];
 const ADMIN_HREFS = ADMIN_DASHBOARD_TABS.map((tab) => tab.href);
 
 export function isAdminDashboardPath(pathname: string): boolean {
-  return ADMIN_HREFS.some(
-    (href) => pathname === href || pathname.startsWith(`${href}/`),
-  );
+  return ADMIN_HREFS.some((href) => pathname === href || pathname.startsWith(`${href}/`));
 }
 
 export function adminTabIdFromPath(pathname: string): AdminDashboardTabId {
@@ -33,9 +31,7 @@ export type MobileMonitorHref =
   | "/dashboard/history";
 
 /** Five-slot phone bar. Portfolio replaces History when it belongs in Monitor. */
-export function mobileMonitorHrefs(
-  showPortfolioInMonitor: boolean,
-): MobileMonitorHref[] {
+export function mobileMonitorHrefs(showPortfolioInMonitor: boolean): MobileMonitorHref[] {
   if (showPortfolioInMonitor) {
     return [
       "/dashboard",
@@ -54,9 +50,7 @@ export function mobileMonitorHrefs(
   ];
 }
 
-export function newestRecordedAt(
-  rows: Array<{ recorded_at?: string | null }>,
-): string | null {
+export function newestRecordedAt(rows: Array<{ recorded_at?: string | null }>): string | null {
   let newest: string | null = null;
   let newestMs = Number.NEGATIVE_INFINITY;
   for (const row of rows) {

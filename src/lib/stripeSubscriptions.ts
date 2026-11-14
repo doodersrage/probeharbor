@@ -13,9 +13,7 @@ export type UserSubscription = {
   plan_tier?: string | null;
 };
 
-export async function getUserSubscription(
-  userId: string,
-): Promise<UserSubscription | null> {
+export async function getUserSubscription(userId: string): Promise<UserSubscription | null> {
   return neonBilling.getUserSubscription(userId);
 }
 
@@ -46,20 +44,14 @@ export async function upsertUserSubscription(
     stripe_customer_id: customerId,
     stripe_subscription_id: subscription.id,
     status: subscription.status,
-    current_period_end: currentPeriodEnd
-      ? new Date(currentPeriodEnd * 1000).toISOString()
-      : null,
+    current_period_end: currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null,
     stripe_price_id: priceId,
     plan_tier: planTier,
   };
   const written = await neonBilling.upsertSubscriptionRow(row);
   if (written.error) return { error: written.error };
 
-  return syncPlanGroupForUser(
-    userId,
-    planTier,
-    isActiveSubscriptionStatus(subscription.status),
-  );
+  return syncPlanGroupForUser(userId, planTier, isActiveSubscriptionStatus(subscription.status));
 }
 
 export async function syncPlanGroupForUser(
@@ -74,11 +66,7 @@ export async function syncMemberGroupForUser(
   userId: string,
   status: string,
 ): Promise<{ error: string | null }> {
-  return syncPlanGroupForUser(
-    userId,
-    "member",
-    isActiveSubscriptionStatus(status),
-  );
+  return syncPlanGroupForUser(userId, "member", isActiveSubscriptionStatus(status));
 }
 
 export async function findUserIdByStripeSubscriptionId(

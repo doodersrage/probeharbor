@@ -1,5 +1,10 @@
 import type { DeviceSource, DeviceWithSensors } from "./devices";
-import { formatRelativeAge, freshnessDetail, readingFreshness, type ReadingFreshness } from "./relativeTime";
+import {
+  formatRelativeAge,
+  freshnessDetail,
+  readingFreshness,
+  type ReadingFreshness,
+} from "./relativeTime";
 import { reportIntervalMsFromMeta } from "./reportInterval";
 import { fmt, plural, type Locale } from "../i18n";
 import { libNumber, libTextMessages } from "../i18n/messages/app/libText";
@@ -36,7 +41,11 @@ export function rowReportIntervalMs(
 
 /** Fresh / late / stale for a latest-reading row, by the shared rule with its device's interval. */
 export function rowFreshness(
-  row: { sensor: { device_id: string }; recorded_at: string | null; reportIntervalMs?: number | null },
+  row: {
+    sensor: { device_id: string };
+    recorded_at: string | null;
+    reportIntervalMs?: number | null;
+  },
   devices: ReadonlyArray<{ id: string; meta?: unknown }> = [],
   now = Date.now(),
 ): ReadingFreshness {
@@ -48,12 +57,21 @@ export function rowFreshness(
  * as its most recently reporting probe, judged by that probe's own interval.
  */
 export function newestRowFreshness<
-  R extends { sensor: { device_id: string }; recorded_at: string | null; reportIntervalMs?: number | null },
+  R extends {
+    sensor: { device_id: string };
+    recorded_at: string | null;
+    reportIntervalMs?: number | null;
+  },
 >(
   rows: R[],
   devices: ReadonlyArray<{ id: string; meta?: unknown }> = [],
   now = Date.now(),
-): { row: R | null; recordedAt: string | null; reportIntervalMs: number | null; freshness: ReadingFreshness } {
+): {
+  row: R | null;
+  recordedAt: string | null;
+  reportIntervalMs: number | null;
+  freshness: ReadingFreshness;
+} {
   let newest: R | null = null;
   let newestMs = Number.NEGATIVE_INFINITY;
   for (const row of rows) {
@@ -102,22 +120,28 @@ export function summarizeStaleSensors(
   }
 
   const total = pushCount + pullCount + unknownCount;
-  const bannerMessage = buildStaleBannerMessage({
-    total,
-    pushCount,
-    pullCount,
-    unknownCount,
-  }, locale);
+  const bannerMessage = buildStaleBannerMessage(
+    {
+      total,
+      pushCount,
+      pullCount,
+      unknownCount,
+    },
+    locale,
+  );
 
   return { total, pushCount, pullCount, unknownCount, bannerMessage };
 }
 
-function buildStaleBannerMessage(counts: {
-  total: number;
-  pushCount: number;
-  pullCount: number;
-  unknownCount: number;
-}, locale: Locale): string {
+function buildStaleBannerMessage(
+  counts: {
+    total: number;
+    pushCount: number;
+    pullCount: number;
+    unknownCount: number;
+  },
+  locale: Locale,
+): string {
   const { total, pushCount, pullCount, unknownCount } = counts;
   if (total === 0) return "";
   const t = libTextMessages(locale).staleBanner;
@@ -126,10 +150,14 @@ function buildStaleBannerMessage(counts: {
   // Exactly one probe uses the singular, as the English always has.
   const pick = (forms: { one: string; other: string }) => (total === 1 ? forms.one : forms.other);
   if (pullCount === total) {
-    return locale === "en" ? fmt(pick(t.pullOnly), { count }) : plural(t.pullOnly, total, locale, { count });
+    return locale === "en"
+      ? fmt(pick(t.pullOnly), { count })
+      : plural(t.pullOnly, total, locale, { count });
   }
   if (pushCount === total) {
-    return locale === "en" ? fmt(pick(t.pushOnly), { count }) : plural(t.pushOnly, total, locale, { count });
+    return locale === "en"
+      ? fmt(pick(t.pushOnly), { count })
+      : plural(t.pushOnly, total, locale, { count });
   }
 
   const parts: string[] = [];

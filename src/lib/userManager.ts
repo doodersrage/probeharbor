@@ -19,13 +19,7 @@ export type PaginatedManagedUsers = {
 
 export const MANAGED_USERS_PAGE_SIZE = 20;
 
-export const MANAGED_USER_GROUPS = [
-  "admin",
-  "portfolio",
-  "pro",
-  "member",
-  "user",
-] as const;
+export const MANAGED_USER_GROUPS = ["admin", "portfolio", "pro", "member", "user"] as const;
 
 export type ManagedUserGroupFilter = (typeof MANAGED_USER_GROUPS)[number];
 
@@ -44,9 +38,7 @@ export type ManagedUserListQuery = {
   sort: ManagedUserSortKey;
 };
 
-export function parseManagedUserListQuery(
-  searchParams: URLSearchParams,
-): ManagedUserListQuery {
+export function parseManagedUserListQuery(searchParams: URLSearchParams): ManagedUserListQuery {
   const search = searchParams.get("q")?.trim() ?? "";
   const groupRaw = searchParams.get("group")?.trim() ?? "";
   const group = (MANAGED_USER_GROUPS as readonly string[]).includes(groupRaw)
@@ -113,7 +105,14 @@ export async function fetchManagedUsers(
     sortDir: sort.sortDir,
   });
   if (listed.error) {
-    return { users: [], page: safePage, pageSize, totalCount: 0, totalPages: 0, error: listed.error };
+    return {
+      users: [],
+      page: safePage,
+      pageSize,
+      totalCount: 0,
+      totalPages: 0,
+      error: listed.error,
+    };
   }
   return {
     users: listed.users,

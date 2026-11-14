@@ -55,7 +55,10 @@ export default {
       { label: "Caso práctico: falla el calefactor del garaje" },
     ],
     sources: [
-      { label: "At what temperature do pipes freeze? (KXAN, cita una investigación de la Universidad de Illinois)" },
+      {
+        label:
+          "At what temperature do pipes freeze? (KXAN, cita una investigación de la Universidad de Illinois)",
+      },
       { label: "How pipes freeze and burst (Farm Bureau Insurance)" },
     ],
   },
@@ -140,7 +143,8 @@ export default {
           "No. La humedad ayuda a detectar problemas de humedad, pero el riesgo de congelación depende de la temperatura en la tubería. Usa una sonda de temperatura en la tubería.",
       },
       {
-        question: "¿Hay que cerrar las rejillas de ventilación del espacio bajo el piso en invierno?",
+        question:
+          "¿Hay que cerrar las rejillas de ventilación del espacio bajo el piso en invierno?",
         answer:
           "En climas con heladas, muchos propietarios cierran o tapan las rejillas de los cimientos en invierno para que el aire frío no llegue a las tuberías. Una rejilla atascada en posición abierta es una causa frecuente de congelación en estos espacios.",
       },
@@ -287,7 +291,10 @@ export default {
       { label: "¿Conviene dejar gotear los grifos para que no se congelen las tuberías?" },
     ],
     sources: [
-      { label: "How pipes freeze and burst (Farm Bureau Insurance, cita una investigación de la Universidad de Illinois)" },
+      {
+        label:
+          "How pipes freeze and burst (Farm Bureau Insurance, cita una investigación de la Universidad de Illinois)",
+      },
     ],
   },
   "vacant-house-winter-thermostat-setting": {
@@ -335,9 +342,7 @@ export default {
       { label: "¿A qué temperatura debe configurarse una alarma de congelación?" },
       { label: "Lista de control para la temporada de heladas" },
     ],
-    sources: [
-      { label: "Frozen pipes: prevention and thawing (Cruz Roja Americana)" },
-    ],
+    sources: [{ label: "Frozen pipes: prevention and thawing (Cruz Roja Americana)" }],
   },
   "drip-faucets-to-prevent-frozen-pipes": {
     question: "¿Conviene dejar gotear los grifos para que no se congelen las tuberías?",

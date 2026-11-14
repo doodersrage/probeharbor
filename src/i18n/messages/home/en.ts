@@ -105,7 +105,8 @@ const en = {
   },
   ossHtml:
     'Source-available dashboard and MIT-licensed sample sensor sketches. <a class="text-link" href="https://github.com/doodersrage/probeharbor" target="_blank" rel="noreferrer">View source on GitHub</a>.',
-  faqLede: "Straight answers for homeowners wiring probes, wet contacts, and setting freeze or flood alerts.",
+  faqLede:
+    "Straight answers for homeowners wiring probes, wet contacts, and setting freeze or flood alerts.",
 };
 
 export type HomeMessages = typeof en;

@@ -9,8 +9,7 @@ function randomToken(): string {
 
 function getHistoryArchiveBucket(): R2Bucket | null {
   try {
-    const bucket = (cloudflareEnv as unknown as { HISTORY_ARCHIVE?: R2Bucket })
-      .HISTORY_ARCHIVE;
+    const bucket = (cloudflareEnv as unknown as { HISTORY_ARCHIVE?: R2Bucket }).HISTORY_ARCHIVE;
     return bucket ?? null;
   } catch {
     return null;
@@ -31,9 +30,7 @@ export async function createChartShare(input: {
   const token = randomToken();
   const key = chartShareKey(token);
   const expiresDays = Math.min(30, Math.max(1, input.expiresDays ?? 14));
-  const expiresAt = new Date(
-    Date.now() + expiresDays * 24 * 60 * 60 * 1000,
-  ).toISOString();
+  const expiresAt = new Date(Date.now() + expiresDays * 24 * 60 * 60 * 1000).toISOString();
 
   await bucket.put(key, input.pngBytes, {
     httpMetadata: { contentType: "image/png" },

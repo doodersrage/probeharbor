@@ -19,10 +19,13 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
   const entitlements = await getUserEntitlements(user.id);
   if (!entitlements.canDownloadCsv) {
-    return new Response(JSON.stringify({ error: apiUserMessages(locale).chartShare.upgradeRequired }), {
-      status: 403,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: apiUserMessages(locale).chartShare.upgradeRequired }),
+      {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 
   const contentType = request.headers.get("content-type") ?? "";

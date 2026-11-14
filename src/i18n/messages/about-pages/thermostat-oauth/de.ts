@@ -1,4 +1,3 @@
-
 /**
  * /about/thermostat-oauth body copy. Secret names, URIs and commands stay in English.
  * `*Html` keys are trusted inline HTML.

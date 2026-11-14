@@ -84,7 +84,8 @@ const en = {
     gaps: {
       unassigned: "Set a space on these devices so coverage is tracked per room.",
       noTemperature: "No temperature probe: freeze alerts can't cover this space.",
-      staleTemperature: "Temperature probe hasn't reported recently, so freeze alerts can't fire here.",
+      staleTemperature:
+        "Temperature probe hasn't reported recently, so freeze alerts can't fire here.",
       staleLeak: "Leak sensor hasn't reported recently.",
       noLeakWetSpace: "No leak sensor here, and this kind of space usually has plumbing.",
       staleDoor: "Door sensor hasn't reported recently.",

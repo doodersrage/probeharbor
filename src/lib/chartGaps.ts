@@ -32,7 +32,11 @@ export function gapThresholdMs(sortedMs: number[], sampleIntervalMs = 0): number
     const step = sortedMs[i]! - sortedMs[i - 1]!;
     if (step > 0) spacings.push(step);
   }
-  return Math.max(MIN_GAP_MS, GAP_INTERVALS * median(spacings), SAMPLE_GAP_BUCKETS * sampleIntervalMs);
+  return Math.max(
+    MIN_GAP_MS,
+    GAP_INTERVALS * median(spacings),
+    SAMPLE_GAP_BUCKETS * sampleIntervalMs,
+  );
 }
 
 /** Stretches longer than the threshold between consecutive sorted timestamps. */
@@ -71,6 +75,9 @@ export function findSharedGaps(seriesMs: number[][], sampleIntervalMs = 0): Data
  * fresh (first point, or after a gap) instead of joining the previous point.
  * Use with moveTo/lineTo so a line isn't drawn across missing data.
  */
-export function segmentStarts(sortedMs: number[], thresholdMs = gapThresholdMs(sortedMs)): boolean[] {
+export function segmentStarts(
+  sortedMs: number[],
+  thresholdMs = gapThresholdMs(sortedMs),
+): boolean[] {
   return sortedMs.map((ms, i) => i === 0 || ms - sortedMs[i - 1]! > thresholdMs);
 }

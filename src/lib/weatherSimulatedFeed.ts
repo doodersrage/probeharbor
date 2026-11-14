@@ -181,9 +181,7 @@ export async function fetchWeatherSimulatedFeed(
   const outdoorF = weather?.temp ?? defaultDemoControls.outdoorF;
   const sunIntensity =
     options.sunIntensity ??
-    (weather
-      ? deriveSunIntensity(weather, now)
-      : defaultDemoControls.sunIntensity);
+    (weather ? deriveSunIntensity(weather, now) : defaultDemoControls.sunIntensity);
   const doorOpen = deriveDoorOpen(now, options.doorOpen);
 
   const controls: DemoControls = {
@@ -256,10 +254,8 @@ export function formatExampleFeedResponse(
       homeassistant: "Home Assistant REST sensor { state, attributes }: auto-detected",
     },
     usage: {
-      pull:
-        "Dashboard → Devices → Pull feeds tab → paste feed URL, JSON root temp (or use SenML/HA JSON directly). Save pull setup: probe keys auto-import.",
-      push:
-        "POST native ingest, SenML array, or HA state JSON to /api/ingest/<your-device-key>.",
+      pull: "Dashboard → Devices → Pull feeds tab → paste feed URL, JSON root temp (or use SenML/HA JSON directly). Save pull setup: probe keys auto-import.",
+      push: "POST native ingest, SenML array, or HA state JSON to /api/ingest/<your-device-key>.",
     },
   };
 }

@@ -19,7 +19,11 @@ import { neonRunner } from "./client";
 describe("neonRunner", () => {
   it("passes the Supabase-shape type parsers on every query", async () => {
     await neonRunner("postgres://u:p@example.invalid/db")("select count(*) as n", [1]);
-    const [text, params, options] = calls[0] as [string, unknown[], { types?: { getTypeParser: (oid: number) => (t: string) => unknown } }];
+    const [text, params, options] = calls[0] as [
+      string,
+      unknown[],
+      { types?: { getTypeParser: (oid: number) => (t: string) => unknown } },
+    ];
     expect(text).toBe("select count(*) as n");
     expect(params).toEqual([1]);
     // The HTTP driver ignores neon(url, { types }) for .query(): without this, counts are strings

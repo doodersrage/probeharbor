@@ -63,7 +63,7 @@ export function getDefaultTempProbes(): TempProbeConfig[] {
     { id: "garage-1", feedId: "garage", key: "1", label: "Probe 1", visible: true },
     { id: "garage-avg", feedId: "garage", key: "avg", label: "Average", visible: true },
   ];
-};
+}
 
 export function isValidFeedUrl(url: string): boolean {
   return isSafeHttpsUrl(url);
@@ -96,7 +96,9 @@ function hasAnyValue(reading: TempReading): boolean {
 
 function averageOf(values: Array<number | null>): number | null {
   const present = values.filter((value): value is number => value != null);
-  return present.length > 0 ? present.reduce((sum, value) => sum + value, 0) / present.length : null;
+  return present.length > 0
+    ? present.reduce((sum, value) => sum + value, 0) / present.length
+    : null;
 }
 
 function coerceNumber(value: unknown): number | null {
@@ -207,14 +209,10 @@ function sanitizeFeed(raw: unknown, index: number): TempFeedConfig | null {
   }
 
   const name =
-    typeof feed.name === "string" && feed.name.trim()
-      ? feed.name.trim()
-      : `Feed ${index + 1}`;
+    typeof feed.name === "string" && feed.name.trim() ? feed.name.trim() : `Feed ${index + 1}`;
 
   const id =
-    typeof feed.id === "string" && feed.id.trim()
-      ? feed.id.trim()
-      : slugifyFeedId(name, index);
+    typeof feed.id === "string" && feed.id.trim() ? feed.id.trim() : slugifyFeedId(name, index);
 
   return {
     id,
@@ -239,14 +237,10 @@ function sanitizeProbe(raw: unknown, index: number, feedIds: Set<string>): TempP
   }
 
   const label =
-    typeof probe.label === "string" && probe.label.trim()
-      ? probe.label.trim()
-      : `Probe ${key}`;
+    typeof probe.label === "string" && probe.label.trim() ? probe.label.trim() : `Probe ${key}`;
 
   const id =
-    typeof probe.id === "string" && probe.id.trim()
-      ? probe.id.trim()
-      : `${feedId}-${key}-${index}`;
+    typeof probe.id === "string" && probe.id.trim() ? probe.id.trim() : `${feedId}-${key}-${index}`;
 
   return {
     id,
@@ -275,10 +269,7 @@ export function sanitizeTempFeeds(feeds: unknown): TempFeedConfig[] {
   return sanitized;
 }
 
-export function sanitizeTempProbes(
-  probes: unknown,
-  feeds: TempFeedConfig[],
-): TempProbeConfig[] {
+export function sanitizeTempProbes(probes: unknown, feeds: TempFeedConfig[]): TempProbeConfig[] {
   const feedIds = new Set(feeds.map((feed) => feed.id));
 
   if (!Array.isArray(probes)) {
@@ -309,10 +300,8 @@ export function parseTempFeedsFromFormData(formData: FormData): TempFeedConfig[]
       continue;
     }
 
-    const name =
-      formData.get(`feed_${index}_name`)?.toString().trim() || `Feed ${index + 1}`;
-    const id =
-      formData.get(`feed_${index}_id`)?.toString().trim() || slugifyFeedId(name, index);
+    const name = formData.get(`feed_${index}_name`)?.toString().trim() || `Feed ${index + 1}`;
+    const id = formData.get(`feed_${index}_id`)?.toString().trim() || slugifyFeedId(name, index);
 
     feeds.push({
       id,
@@ -341,11 +330,8 @@ export function parseTempProbesFromFormData(
       continue;
     }
 
-    const label =
-      formData.get(`probe_${index}_label`)?.toString().trim() || `Probe ${key}`;
-    const id =
-      formData.get(`probe_${index}_id`)?.toString().trim() ||
-      `${feedId}-${key}-${index}`;
+    const label = formData.get(`probe_${index}_label`)?.toString().trim() || `Probe ${key}`;
+    const id = formData.get(`probe_${index}_id`)?.toString().trim() || `${feedId}-${key}-${index}`;
 
     probes.push({
       id,
@@ -376,10 +362,7 @@ export function getLegacyTempProbes(metadata: Record<string, unknown>): TempProb
   });
 }
 
-export function usesDefaultTempConfig(
-  feeds: TempFeedConfig[],
-  probes: TempProbeConfig[],
-): boolean {
+export function usesDefaultTempConfig(feeds: TempFeedConfig[], probes: TempProbeConfig[]): boolean {
   const defaultFeeds = getDefaultTempFeeds();
   const defaultProbes = getDefaultTempProbes();
 
@@ -390,9 +373,7 @@ export function usesDefaultTempConfig(
   const feedsMatch = feeds.every((feed, index) => {
     const baseline = defaultFeeds[index];
     return (
-      feed.id === baseline.id &&
-      feed.url === baseline.url &&
-      feed.enabled === baseline.enabled
+      feed.id === baseline.id && feed.url === baseline.url && feed.enabled === baseline.enabled
     );
   });
 
@@ -445,10 +426,7 @@ function buildProbesForFeed(
       label: probe.label,
       key: probe.key,
       feedName: feed.name,
-      data:
-        feed.enabled && result && !result.error
-          ? result.probes[probe.key] ?? null
-          : null,
+      data: feed.enabled && result && !result.error ? (result.probes[probe.key] ?? null) : null,
     }));
   }
 
@@ -498,31 +476,29 @@ export function buildDisplayProbes(
   return probes
     .filter((probe) => probe.visible)
     .flatMap((probe) => {
-    const feed = feedsById.get(probe.feedId);
-    if (!feed || feed.error) {
-      return [];
-    }
+      const feed = feedsById.get(probe.feedId);
+      if (!feed || feed.error) {
+        return [];
+      }
 
-    const data = feed.probes[probe.key];
-    if (!data) {
-      return [];
-    }
+      const data = feed.probes[probe.key];
+      if (!data) {
+        return [];
+      }
 
-    return [
-      {
-        id: probe.id,
-        label: probe.label,
-        key: probe.key,
-        feedName: feed.name,
-        data,
-      },
-    ];
-  });
+      return [
+        {
+          id: probe.id,
+          label: probe.label,
+          key: probe.key,
+          feedName: feed.name,
+          data,
+        },
+      ];
+    });
 }
 
-export function getPrimaryAverageReading(
-  feedResults: TempFeedResult[],
-): TempReading | null {
+export function getPrimaryAverageReading(feedResults: TempFeedResult[]): TempReading | null {
   const firstSuccessfulFeed = feedResults.find((feed) => !feed.error && feed.probes.avg);
   return firstSuccessfulFeed?.probes.avg ?? null;
 }

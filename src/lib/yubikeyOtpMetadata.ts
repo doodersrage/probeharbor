@@ -9,10 +9,7 @@ export function getYubiKeyPublicIdsFromUser(
   const raw = user?.user_metadata?.[YUBIKEY_OTP_METADATA_KEY];
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter(
-      (id): id is string =>
-        typeof id === "string" && PUBLIC_ID_PATTERN.test(id.trim()),
-    )
+    .filter((id): id is string => typeof id === "string" && PUBLIC_ID_PATTERN.test(id.trim()))
     .map((id) => id.trim().toLowerCase());
 }
 

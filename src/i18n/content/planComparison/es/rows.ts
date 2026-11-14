@@ -40,7 +40,11 @@ export default {
     pro: sensors,
     portfolio: sensors,
   },
-  alerts_basic: { category: "Alertas", label: "Correo electrónico, Discord, Telegram, Slack", ...all },
+  alerts_basic: {
+    category: "Alertas",
+    label: "Correo electrónico, Discord, Telegram, Slack",
+    ...all,
+  },
   cold_risk: {
     category: "Alertas",
     label: "Alertas de congelación y frío",
@@ -85,7 +89,11 @@ export default {
   api_keys: { category: "Compartir", label: "Claves API del panel", ...paid },
   embed_widget: { category: "Compartir", label: "Widget en vivo insertable", ...paid },
   status_pages: { category: "Compartir", label: "Páginas de estado públicas + feed iCal", ...paid },
-  prometheus: { category: "Integraciones", label: "Métricas de Prometheus + JSON de Grafana", ...paid },
+  prometheus: {
+    category: "Integraciones",
+    label: "Métricas de Prometheus + JSON de Grafana",
+    ...paid,
+  },
   thermostat_integration: {
     category: "Integraciones",
     label: "Conexión con termostatos Nest / Ecobee",

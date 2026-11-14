@@ -2,16 +2,10 @@ import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../lib/households";
 import { getUserEntitlements } from "../../../lib/entitlements";
-import {
-  createHouseholdApiKey,
-  revokeHouseholdApiKey,
-} from "../../../lib/apiKeys";
+import { createHouseholdApiKey, revokeHouseholdApiKey } from "../../../lib/apiKeys";
 import { parseApiKeyScope } from "../../../lib/apiKeyScope";
 
-import {
-  redirectUnlessManager,
-  requireHouseholdManager,
-} from "../../../lib/householdAuth";
+import { redirectUnlessManager, requireHouseholdManager } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_API_KEY, setSecretFlash } from "../../../lib/secretFlash";
@@ -49,7 +43,9 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { error: "pro_required" }));
   }
 
-  const name = formData.get("name")?.toString() ?? apiMoreCommonMessages(apiLocale(context)).defaults.metricsKey;
+  const name =
+    formData.get("name")?.toString() ??
+    apiMoreCommonMessages(apiLocale(context)).defaults.metricsKey;
   // Only "read" or "write"; anything else (or nothing) is read-only. Only
   // household managers reach this point (checked above), for either scope.
   const scope = parseApiKeyScope(formData.get("scope")?.toString());

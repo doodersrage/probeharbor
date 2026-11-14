@@ -19,10 +19,10 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
 
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
   if (!household.householdId) {
-    return new Response(
-      JSON.stringify({ waiting: false, devices: [], latestCount: 0 }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ waiting: false, devices: [], latestCount: 0 }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const [{ devices }, latest] = await Promise.all([

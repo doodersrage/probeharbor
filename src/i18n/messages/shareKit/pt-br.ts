@@ -33,7 +33,8 @@ const ptBr: ShareKitMessages = {
     "Seja breve e abra com o gancho do risco de congelamento. Opcional: uma resposta em seguida com o simulador ou o mapa.",
   hnTitle: "Hacker News / Show HN",
   hnTitleHint: "Título sugerido (cole no campo de título do Show HN):",
-  hnBodyHint: "Corpo do comentário: primeiro a história, depois os links. No HN, detalhes concretos funcionam melhor que um slogan genérico.",
+  hnBodyHint:
+    "Corpo do comentário: primeiro a história, depois os links. No HN, detalhes concretos funcionam melhor que um slogan genérico.",
   discordTitle: "Discord / chat",
   discordCopy:
     "Serve para canais de projetos em Discords de ESPHome, DIY e makers e canais de “no que você está trabalhando”, não para DMs a frio. Prefira um tópico em que já se fale de congelamento, climatização ou hardware de sondas.",
@@ -75,7 +76,8 @@ const ptBr: ShareKitMessages = {
   operator:
     "tarefas do fundador/operador (Play Store, Nest/Ecobee, listagem padrão no HACS). Útil se você hospeda por conta própria ou contribui com a infraestrutura do lançamento; não é um texto para divulgar.",
   haDraftLabel: "Rascunho longo para o fórum do HA ↗",
-  haDraft: "mais longo que a caixa de texto acima, para quando você precisar de um post completo no fórum",
+  haDraft:
+    "mais longo que a caixa de texto acima, para quando você precisar de um post completo no fórum",
   discordDraftLabel: "Rascunho de anúncio para Discord / redes ↗",
   discordDraft: "texto alternativo mais longo para chats",
 };

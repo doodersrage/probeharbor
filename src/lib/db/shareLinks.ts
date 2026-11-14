@@ -19,13 +19,19 @@ export function listShareLinks(householdId: string): Promise<ShareLinkRow[]> {
 
 export async function deleteShareLink(householdId: string, id: string): Promise<void> {
   try {
-    await query("delete from public.share_links where id = $1 and household_id = $2", [id, householdId]);
+    await query("delete from public.share_links where id = $1 and household_id = $2", [
+      id,
+      householdId,
+    ]);
   } catch (error) {
     console.error("Failed to revoke share link:", message(error));
   }
 }
 
-export async function findShareLink(householdId: string, id: string): Promise<{ id: string; scope: string } | null> {
+export async function findShareLink(
+  householdId: string,
+  id: string,
+): Promise<{ id: string; scope: string } | null> {
   try {
     const [row] = await query<{ id: string; scope: string }>(
       "select id, scope from public.share_links where id = $1 and household_id = $2",
@@ -75,7 +81,15 @@ export async function insertShareLink(row: {
     await query(
       `insert into public.share_links (token, token_hash, token_preview, household_id, scope, label, expires_at, created_by)
        values (null, $1, $2, $3, $4, $5, $6, $7)`,
-      [row.token_hash, row.token_preview, row.household_id, row.scope, row.label, row.expires_at, row.created_by],
+      [
+        row.token_hash,
+        row.token_preview,
+        row.household_id,
+        row.scope,
+        row.label,
+        row.expires_at,
+        row.created_by,
+      ],
     );
     return { error: null };
   } catch (error) {
@@ -83,7 +97,13 @@ export async function insertShareLink(row: {
   }
 }
 
-export type ResolvedShare = { id: string; household_id: string; scope: string; label: string | null; expires_at: string | null };
+export type ResolvedShare = {
+  id: string;
+  household_id: string;
+  scope: string;
+  label: string | null;
+  expires_at: string | null;
+};
 
 /** Not past its expiry (no expiry = no limit). The caller checks again. */
 const SHARE_UNEXPIRED = "(expires_at is null or expires_at >= now())";
@@ -119,7 +139,9 @@ export async function insertChartShare(row: {
 }
 
 /** An unexpired chart share only. The caller checks again. */
-export async function findChartShare(token: string): Promise<{ r2_key: string; title: string | null; expires_at: string } | null> {
+export async function findChartShare(
+  token: string,
+): Promise<{ r2_key: string; title: string | null; expires_at: string } | null> {
   try {
     const [row] = await query<{ r2_key: string; title: string | null; expires_at: string }>(
       "select r2_key, title, expires_at from public.chart_share_tokens where token = $1 and expires_at >= now()",

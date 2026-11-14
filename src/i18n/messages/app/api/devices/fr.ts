@@ -17,7 +17,8 @@ const fr: ApiDevicesMessages = {
     notConfigured: "La récupération des clés n’est pas configurée sur ce serveur.",
     verifyMfa: "Validez à nouveau la MFA avant d’afficher les clés d’ingestion.",
     deviceNotFound: "Appareil introuvable.",
-    noRecoverableKey: "Aucune clé récupérable pour cet appareil. Régénérez-la pour en obtenir une nouvelle.",
+    noRecoverableKey:
+      "Aucune clé récupérable pour cet appareil. Régénérez-la pour en obtenir une nouvelle.",
     decryptFailed: "Impossible de déchiffrer la clé enregistrée.",
   },
   noSensorsProvided: "Aucun capteur fourni.",
@@ -26,7 +27,10 @@ const fr: ApiDevicesMessages = {
     tooMany: "Trop de tests de flux. Réessayez dans un instant.",
     invalidUrl: "Saisissez une URL de flux HTTPS valide.",
     requestFailed: "La requête vers le flux a échoué ({status}).",
-    found: { one: "{count} sonde trouvée (JSON {format}).", other: "{count} sondes trouvées (JSON {format})." },
+    found: {
+      one: "{count} sonde trouvée (JSON {format}).",
+      other: "{count} sondes trouvées (JSON {format}).",
+    },
     foundWithAverage: {
       one: "{count} sonde trouvée (JSON {format}), moyenne {average} °F.",
       other: "{count} sondes trouvées (JSON {format}), moyenne {average} °F.",

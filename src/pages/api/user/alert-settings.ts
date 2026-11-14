@@ -9,10 +9,7 @@ import {
 } from "../../../lib/alertSettingsForm";
 import { getAlertSettingsForUser } from "../../../lib/notify";
 import { getUserEntitlements } from "../../../lib/entitlements";
-import {
-  redirectUnlessEditor,
-  requireHouseholdEditor,
-} from "../../../lib/householdAuth";
+import { redirectUnlessEditor, requireHouseholdEditor } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { getUserHouseholdId } from "../../../lib/households";
 import { recordAlertSettingsChange } from "../../../lib/alertSettingsHistory";
@@ -37,11 +34,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     user.user_metadata as Record<string, unknown> | undefined,
   );
   const entitlements = await getUserEntitlements(user.id);
-  const settings = buildAlertSettingsFromFormData(
-    formData,
-    existing,
-    entitlements,
-  );
+  const settings = buildAlertSettingsFromFormData(formData, existing, entitlements);
 
   if (findInvalidAlertWebhookUrl(settings)) {
     return redirect(withQuery(redirectTo, { alert_error: "invalid_webhook_url" }));

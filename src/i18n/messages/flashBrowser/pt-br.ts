@@ -47,17 +47,25 @@ const ptBr: BrowserFlasherMessages = {
     liveWithSensor:
       "Primeira leitura recebida do seu {sensor}, com umidade. Está funcionando: você já pode desconectar e instalar.",
     live: "Primeira leitura recebida. A sonda está funcionando: você já pode desconectar e instalar.",
-    wifiFailed: "Falha no Wi‑Fi: confira o nome da rede e a senha. Placas ESP32 só se conectam a redes de 2,4 GHz.",
+    wifiFailed:
+      "Falha no Wi‑Fi: confira o nome da rede e a senha. Placas ESP32 só se conectam a redes de 2,4 GHz.",
     keyRejected: "Chave rejeitada: copie de novo a chave do dispositivo em Dashboard → Devices.",
-    configError: "A placa não aceitou as configurações. Preencha o nome da rede e a chave do dispositivo e envie de novo.",
-    noProbe: "Nenhuma sonda encontrada: confira a ligação (dados do DS18B20 ou DHT22 no GPIO {pin}, pull-up de 4,7 kΩ para 3,3 V).",
-    sensorNotReading: "O {sensor} foi encontrado, mas não deu leitura: confira os fios de 3,3 V, GND, SDA e SCL e tente de novo.",
-    postUnreachable: "A placa está no Wi‑Fi, mas não conseguiu alcançar o ProbeHarbor. Ela continua tentando; confira se esta rede permite HTTPS de saída (algumas redes de convidados bloqueiam).",
-    postConnectionLost: "A conexão da placa com o ProbeHarbor caiu durante o envio (erro {code}). Ela continua tentando; um sinal de Wi‑Fi fraco ou uma alimentação instável podem causar isso.",
-    postRejected: "O ProbeHarbor respondeu {code} à leitura da placa. Ela continua tentando; se continuar assim, veja o status do sistema ou tente de novo em alguns minutos.",
+    configError:
+      "A placa não aceitou as configurações. Preencha o nome da rede e a chave do dispositivo e envie de novo.",
+    noProbe:
+      "Nenhuma sonda encontrada: confira a ligação (dados do DS18B20 ou DHT22 no GPIO {pin}, pull-up de 4,7 kΩ para 3,3 V).",
+    sensorNotReading:
+      "O {sensor} foi encontrado, mas não deu leitura: confira os fios de 3,3 V, GND, SDA e SCL e tente de novo.",
+    postUnreachable:
+      "A placa está no Wi‑Fi, mas não conseguiu alcançar o ProbeHarbor. Ela continua tentando; confira se esta rede permite HTTPS de saída (algumas redes de convidados bloqueiam).",
+    postConnectionLost:
+      "A conexão da placa com o ProbeHarbor caiu durante o envio (erro {code}). Ela continua tentando; um sinal de Wi‑Fi fraco ou uma alimentação instável podem causar isso.",
+    postRejected:
+      "O ProbeHarbor respondeu {code} à leitura da placa. Ela continua tentando; se continuar assim, veja o status do sistema ou tente de novo em alguns minutos.",
     noReading:
       "A placa recebeu as configurações, mas nenhuma leitura chegou ainda. Confira a ligação do sensor (dados no GPIO 4, 4,7 kΩ para 3,3 V) e tente de novo.",
-    noAnswer: "A placa não respondeu. Verifique se a instalação do firmware terminou e tente de novo.",
+    noAnswer:
+      "A placa não respondeu. Verifique se a instalação do firmware terminou e tente de novo.",
     noPortSelected: "Nenhuma porta selecionada.",
     couldNotTalk: "Não foi possível se comunicar com a placa: {error}",
   },

@@ -106,9 +106,14 @@ describe("archiveOldReadings", () => {
     mockHouseholdIds.mockResolvedValue(["house-1", "house-2"]);
     const rowsByHousehold: Record<string, unknown[]> = {
       "house-1": [{ id: 1, sensor_id: "s1" }],
-      "house-2": [{ id: 2, sensor_id: "s2" }, { id: 3, sensor_id: "s2" }],
+      "house-2": [
+        { id: 2, sensor_id: "s2" },
+        { id: 3, sensor_id: "s2" },
+      ],
     };
-    mockOldReadings.mockImplementation(async (householdId: string) => rowsByHousehold[householdId] ?? []);
+    mockOldReadings.mockImplementation(
+      async (householdId: string) => rowsByHousehold[householdId] ?? [],
+    );
     const r2 = r2Bucket();
     const { archiveOldReadings } = await import("./archiveHistory");
 

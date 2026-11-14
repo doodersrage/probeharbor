@@ -2,7 +2,8 @@ import type { AlertMessages } from "./en";
 
 const ptBr: AlertMessages = {
   threshold: {
-    freezeDetail: "{label} está a {temp} {unit} (no limite de congelamento de {threshold} {unit} ou abaixo).",
+    freezeDetail:
+      "{label} está a {temp} {unit} (no limite de congelamento de {threshold} {unit} ou abaixo).",
     freezeDetailDwell:
       "{label} está a {temp} {unit} (no limite de congelamento de {threshold} {unit} ou abaixo há {minutes}+ min).",
     /** Appended to a freeze line when the reading is a few minutes old or more. */
@@ -22,11 +23,13 @@ const ptBr: AlertMessages = {
   power: {
     title: "Sem energia",
     detail: "{label} indica que a energia caiu.",
-    footer: "Aquecedores, cabos de aquecimento e bombas de drenagem nesse circuito também podem estar desligados.",
+    footer:
+      "Aquecedores, cabos de aquecimento e bombas de drenagem nesse circuito também podem estar desligados.",
   },
   forecast: {
     title: "Risco de congelamento previsto",
-    detail: "A previsão externa chega a {temp} {unit} em até {hours} h (limite de congelamento {threshold} {unit}).",
+    detail:
+      "A previsão externa chega a {temp} {unit} em até {hours} h (limite de congelamento {threshold} {unit}).",
   },
   rate: {
     title: "Mudança rápida de temperatura",
@@ -87,12 +90,15 @@ const ptBr: AlertMessages = {
     outageTitle: "Normalizado: os dispositivos voltaram a enviar dados",
     outageBody: "Todos os dispositivos voltaram a se comunicar. O alerta de queda foi encerrado.",
     stuckTitle: "Normalizado: as leituras da sonda voltaram a mudar",
-    stuckBody: "A sonda que parecia travada voltou a enviar temperaturas que variam. O alerta foi encerrado.",
+    stuckBody:
+      "A sonda que parecia travada voltou a enviar temperaturas que variam. O alerta foi encerrado.",
     doorTitle: "Recuperado: alerta de porta encerrado",
-    doorBody: "A regra de porta que alertou não corresponde mais (por exemplo, a porta foi fechada). O alerta está encerrado.",
+    doorBody:
+      "A regra de porta que alertou não corresponde mais (por exemplo, a porta foi fechada). O alerta está encerrado.",
   },
   context: {
-    doorOpen: "Um sensor de porta está aberto. Espere uma perda de calor mais rápida até que ela seja fechada.",
+    doorOpen:
+      "Um sensor de porta está aberto. Espere uma perda de calor mais rápida até que ela seja fechada.",
   },
   delivery: {
     smsLine: "{title}: {body}",
@@ -167,8 +173,10 @@ const ptBr: AlertMessages = {
     severity_filter: "filtrado pelo roteamento por gravidade",
   },
   channelErrors: {
-    smsNoPhone: "Nenhum telefone para SMS nas configurações de alertas nem no campo de substituição.",
-    smsSendFailed: "Falha no envio do SMS pelo Twilio. Verifique as credenciais do Twilio e o número de destino.",
+    smsNoPhone:
+      "Nenhum telefone para SMS nas configurações de alertas nem no campo de substituição.",
+    smsSendFailed:
+      "Falha no envio do SMS pelo Twilio. Verifique as credenciais do Twilio e o número de destino.",
     unknownKind: "Tipo de teste de canal desconhecido.",
   },
 };

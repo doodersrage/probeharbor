@@ -9,868 +9,2552 @@ export type AboutContentBlock =
 
 export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   "dht22-sensor-overview": [
-      { type: "p", html: "The DHT22 (also sold as AM2302) is the digital sensor at the heart of this garage build. It reports relative humidity and air temperature over a single data line, which keeps wiring simple when you need multiple zones. Understanding its behavior helps you interpret noisy readings and set realistic expectations compared with lab-grade equipment." },
-      { type: "h2", text: "What the DHT22 measures" },
-      { type: "p", html: "Each read returns humidity (0–100 %RH) and temperature (typically −40 to 80 °C spec range). The firmware converts values to Fahrenheit for JSON consumers while the LCD may show either scale. Readings represent the air pocket around the sensor body, not surface temperature of a pipe or concrete slab unless you mount the probe against that surface intentionally." },
-      { type: "p", html: "Datasheet accuracy is roughly ±0.5 °C and ±2–5 %RH under stable conditions. In drafty garages, rapid door openings can produce short spikes that are real air movement, not sensor failure. Compare with <a class=\"text-link\" href=\"/about/probe-mounting-enclosures\">probe placement guidance</a> before replacing hardware." },
-      { type: "h2", text: "Timing and bus behavior" },
-      { type: "p", html: "DHT22 sensors enforce a minimum interval between reads, often two seconds. The sketch polls on a timer and skips overlapping requests. Violating the interval returns stale or error values, which is why firmware includes retry logic described in <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">DHT22 read errors and retries</a>." },
-      { type: "ul", items: ["**Power:** 3.3–5 V DC; share ground with the Arduino.","**Data:** One GPIO per sensor with a pull-up resistor on the line.","**Cable length:** Keep runs modest; long unshielded wires pick up noise.","**Enclosure:** Ventilated housing avoids sun-heated stale air, see the mounting guide."] },
-      { type: "h2", text: "Where it fits in the stack" },
-      { type: "p", html: "Probes feed the <a class=\"text-link\" href=\"/about/arduino-sketches\">Arduino sketch</a>, which publishes JSON consumed by the website. Follow the <a class=\"text-link\" href=\"/about/data-flow\">end-to-end data flow</a> when debugging mismatches between LCD and web values. Pin-level wiring is documented in <a class=\"text-link\" href=\"/about/dht22-data-line-wiring\">DHT22 data line wiring</a>." }
+    {
+      type: "p",
+      html: "The DHT22 (also sold as AM2302) is the digital sensor at the heart of this garage build. It reports relative humidity and air temperature over a single data line, which keeps wiring simple when you need multiple zones. Understanding its behavior helps you interpret noisy readings and set realistic expectations compared with lab-grade equipment.",
+    },
+    { type: "h2", text: "What the DHT22 measures" },
+    {
+      type: "p",
+      html: "Each read returns humidity (0–100 %RH) and temperature (typically −40 to 80 °C spec range). The firmware converts values to Fahrenheit for JSON consumers while the LCD may show either scale. Readings represent the air pocket around the sensor body, not surface temperature of a pipe or concrete slab unless you mount the probe against that surface intentionally.",
+    },
+    {
+      type: "p",
+      html: 'Datasheet accuracy is roughly ±0.5 °C and ±2–5 %RH under stable conditions. In drafty garages, rapid door openings can produce short spikes that are real air movement, not sensor failure. Compare with <a class="text-link" href="/about/probe-mounting-enclosures">probe placement guidance</a> before replacing hardware.',
+    },
+    { type: "h2", text: "Timing and bus behavior" },
+    {
+      type: "p",
+      html: 'DHT22 sensors enforce a minimum interval between reads, often two seconds. The sketch polls on a timer and skips overlapping requests. Violating the interval returns stale or error values, which is why firmware includes retry logic described in <a class="text-link" href="/about/dht22-read-errors-retries">DHT22 read errors and retries</a>.',
+    },
+    {
+      type: "ul",
+      items: [
+        "**Power:** 3.3–5 V DC; share ground with the Arduino.",
+        "**Data:** One GPIO per sensor with a pull-up resistor on the line.",
+        "**Cable length:** Keep runs modest; long unshielded wires pick up noise.",
+        "**Enclosure:** Ventilated housing avoids sun-heated stale air, see the mounting guide.",
+      ],
+    },
+    { type: "h2", text: "Where it fits in the stack" },
+    {
+      type: "p",
+      html: 'Probes feed the <a class="text-link" href="/about/arduino-sketches">Arduino sketch</a>, which publishes JSON consumed by the website. Follow the <a class="text-link" href="/about/data-flow">end-to-end data flow</a> when debugging mismatches between LCD and web values. Pin-level wiring is documented in <a class="text-link" href="/about/dht22-data-line-wiring">DHT22 data line wiring</a>.',
+    },
   ],
 
   "probe-mounting-enclosures": [
-      { type: "p", html: "A perfect sensor in the wrong location lies. Garage probes should sample the air volume where stored goods and people actually experience conditions, not the hottest sun patch on the floor or the coldest air seeping under a door." },
-      { type: "h2", text: "Height and location" },
-      { type: "p", html: "Mount at roughly four to five feet on an interior wall, away from the garage door plane and direct sunlight through windows. North and west walls often track outdoor swings more slowly, which can be useful for freeze-risk monitoring. See <a class=\"text-link\" href=\"/about/multi-zone-garage-layout\">multi-zone layout</a> when placing more than one probe." },
-      { type: "h2", text: "Enclosures and airflow" },
-      { type: "ul", items: ["Use **ventilated project boxes** so the sensor breathes ambient air.","Avoid sealing probes inside waterproof cases without vents: humidity lags reality.","Route cables down from the box so condensation does not drip into electronics.","Label each cable at both ends before climbing a ladder twice."] },
-      { type: "h2", text: "Common mistakes" },
-      { type: "p", html: "Probes zip-tied to metal door tracks, sitting on freezers, or dangling in front of exhaust fans produce dramatic but misleading graphs. The <a class=\"text-link\" href=\"/about/probe-demo\">interactive probe demo</a> shows how door and sun inputs move zones differently, use it when validating placement. For seasonal context, read <a class=\"text-link\" href=\"/about/seasonal-garage-patterns\">seasonal garage patterns</a>." }
+    {
+      type: "p",
+      html: "A perfect sensor in the wrong location lies. Garage probes should sample the air volume where stored goods and people actually experience conditions, not the hottest sun patch on the floor or the coldest air seeping under a door.",
+    },
+    { type: "h2", text: "Height and location" },
+    {
+      type: "p",
+      html: 'Mount at roughly four to five feet on an interior wall, away from the garage door plane and direct sunlight through windows. North and west walls often track outdoor swings more slowly, which can be useful for freeze-risk monitoring. See <a class="text-link" href="/about/multi-zone-garage-layout">multi-zone layout</a> when placing more than one probe.',
+    },
+    { type: "h2", text: "Enclosures and airflow" },
+    {
+      type: "ul",
+      items: [
+        "Use **ventilated project boxes** so the sensor breathes ambient air.",
+        "Avoid sealing probes inside waterproof cases without vents: humidity lags reality.",
+        "Route cables down from the box so condensation does not drip into electronics.",
+        "Label each cable at both ends before climbing a ladder twice.",
+      ],
+    },
+    { type: "h2", text: "Common mistakes" },
+    {
+      type: "p",
+      html: 'Probes zip-tied to metal door tracks, sitting on freezers, or dangling in front of exhaust fans produce dramatic but misleading graphs. The <a class="text-link" href="/about/probe-demo">interactive probe demo</a> shows how door and sun inputs move zones differently, use it when validating placement. For seasonal context, read <a class="text-link" href="/about/seasonal-garage-patterns">seasonal garage patterns</a>.',
+    },
   ],
 
   "multi-zone-garage-layout": [
-      { type: "p", html: "Large garages behave like several microclimates. A single average hides the coldest corner where pipes run and the warmest bay under a sunny roof. Multiple probes turn one vague number into actionable zone data." },
-      { type: "h2", text: "Example zone map" },
-      { type: "ol", items: ["**Zone 0. Door-adjacent:** Captures infiltration when the door opens; expect wide swings.","**Zone 1. Interior workbench:** Represents where you stand and where tools live.","**Optional third. Ceiling or attic knee wall:** Spots hot air stratification in summer."] },
-      { type: "h2", text: "Firmware and dashboard alignment" },
-      { type: "p", html: "JSON keys <code>0</code>, <code>1</code>, and <code>avg</code> map to dashboard labels you configure after sign-in: see <a class=\"text-link\" href=\"/about/probe-mapping-labels\">probe mapping and labels</a>. The average is a convenience snapshot for history, not a substitute for checking each zone during cold snaps." },
-      { type: "p", html: "Dual-probe wiring and LCD layout are covered in <a class=\"text-link\" href=\"/about/arduino-dht22-lcd\">DHT22 sensors and LCD display</a> and <a class=\"text-link\" href=\"/about/dual-probe-averaging\">dual-probe averaging logic</a>." },
-      { type: "h2", text: "When to add another probe" },
-      { type: "ul", items: ["**Split-level garage:** Floor and loft can differ by 10 °F on calm winter nights.","**Shared wall with house:** Interior partition may stay warmer than the exterior bay.","**Workshop corner with heat gun use:** Isolate occasional spikes from whole-garage trends."] }
+    {
+      type: "p",
+      html: "Large garages behave like several microclimates. A single average hides the coldest corner where pipes run and the warmest bay under a sunny roof. Multiple probes turn one vague number into actionable zone data.",
+    },
+    { type: "h2", text: "Example zone map" },
+    {
+      type: "ol",
+      items: [
+        "**Zone 0. Door-adjacent:** Captures infiltration when the door opens; expect wide swings.",
+        "**Zone 1. Interior workbench:** Represents where you stand and where tools live.",
+        "**Optional third. Ceiling or attic knee wall:** Spots hot air stratification in summer.",
+      ],
+    },
+    { type: "h2", text: "Firmware and dashboard alignment" },
+    {
+      type: "p",
+      html: 'JSON keys <code>0</code>, <code>1</code>, and <code>avg</code> map to dashboard labels you configure after sign-in: see <a class="text-link" href="/about/probe-mapping-labels">probe mapping and labels</a>. The average is a convenience snapshot for history, not a substitute for checking each zone during cold snaps.',
+    },
+    {
+      type: "p",
+      html: 'Dual-probe wiring and LCD layout are covered in <a class="text-link" href="/about/arduino-dht22-lcd">DHT22 sensors and LCD display</a> and <a class="text-link" href="/about/dual-probe-averaging">dual-probe averaging logic</a>.',
+    },
+    { type: "h2", text: "When to add another probe" },
+    {
+      type: "ul",
+      items: [
+        "**Split-level garage:** Floor and loft can differ by 10 °F on calm winter nights.",
+        "**Shared wall with house:** Interior partition may stay warmer than the exterior bay.",
+        "**Workshop corner with heat gun use:** Isolate occasional spikes from whole-garage trends.",
+      ],
+    },
   ],
 
   "probe-mapping-labels": [
-      { type: "p", html: "Raw JSON exposes probes as numeric keys. The dashboard translates those keys into labels such as “North wall” or “Door bay” so visitors understand what they are reading without memorizing firmware indices." },
-      { type: "h2", text: "Configuring mappings" },
-      { type: "p", html: "Signed-in users add HTTPS feed URLs under dashboard temperature feed settings: detailed in <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">configuring temperature feeds</a>. Each enabled probe key gets a display name. Typos in keys silently hide readings even when the feed is healthy, so verify against curl output or <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON probe output schema</a>." },
-      { type: "h2", text: "Naming conventions" },
-      { type: "ul", items: ["Include **location and height** if zones are similar (“East wall, high”).","Keep names short for mobile stat cards.","Document GPIO-to-key mapping on the bench for future you.","Use the average key only for summary history, not as a zone label."] },
-      { type: "h2", text: "Related guides" },
-      { type: "p", html: "Start with <a class=\"text-link\" href=\"/about/temperature-probes\">temperature probes and their uses</a>, then follow <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page probe fetch</a> for how mappings reach the public home page." }
+    {
+      type: "p",
+      html: "Raw JSON exposes probes as numeric keys. The dashboard translates those keys into labels such as “North wall” or “Door bay” so visitors understand what they are reading without memorizing firmware indices.",
+    },
+    { type: "h2", text: "Configuring mappings" },
+    {
+      type: "p",
+      html: 'Signed-in users add HTTPS feed URLs under dashboard temperature feed settings: detailed in <a class="text-link" href="/about/configuring-temperature-feeds">configuring temperature feeds</a>. Each enabled probe key gets a display name. Typos in keys silently hide readings even when the feed is healthy, so verify against curl output or <a class="text-link" href="/about/json-probe-output-schema">JSON probe output schema</a>.',
+    },
+    { type: "h2", text: "Naming conventions" },
+    {
+      type: "ul",
+      items: [
+        "Include **location and height** if zones are similar (“East wall, high”).",
+        "Keep names short for mobile stat cards.",
+        "Document GPIO-to-key mapping on the bench for future you.",
+        "Use the average key only for summary history, not as a zone label.",
+      ],
+    },
+    { type: "h2", text: "Related guides" },
+    {
+      type: "p",
+      html: 'Start with <a class="text-link" href="/about/temperature-probes">temperature probes and their uses</a>, then follow <a class="text-link" href="/about/home-page-probe-fetch">home page probe fetch</a> for how mappings reach the public home page.',
+    },
   ],
 
   "garage-door-temperature-swings": [
-      { type: "p", html: "The garage door is the dominant hole in the thermal envelope. Opening it exchanges a large slab of indoor air with outdoor conditions in seconds, often faster than the rest of the structure responds. Probes near the door record this clearly; probes farther away may barely notice a single short opening." },
-      { type: "h2", text: "What probes show" },
-      { type: "p", html: "Expect sudden drops in winter or jumps in summer humidity when cold or humid outdoor air rolls in. Short spikes during brief errands are normal. Prolonged door-open work sessions can drive the entire bay toward outdoor dew point: watch for condensation on metal tools afterward." },
-      { type: "h2", text: "Separating signal from placement error" },
-      { type: "p", html: "If every daily spike aligns with commute times, your door-adjacent probe is doing its job. If the interior probe mirrors the same amplitude, consider relocating it: see <a class=\"text-link\" href=\"/about/probe-mounting-enclosures\">probe mounting</a>. Compare patterns with <a class=\"text-link\" href=\"/about/temperature-changes\">temperature changes overview</a> and the <a class=\"text-link\" href=\"/about/probe-demo\">probe demo</a> door toggle." },
-      { type: "h2", text: "Mitigation without new hardware" },
-      { type: "ul", items: ["**Weather stripping** on the door reduces idle infiltration between openings.","**Interior probe** on the opposite wall gives context for how far the wave travels.","**History charts** help distinguish one-off events from chronic heat loss: see <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history dashboard browsing</a>."] }
+    {
+      type: "p",
+      html: "The garage door is the dominant hole in the thermal envelope. Opening it exchanges a large slab of indoor air with outdoor conditions in seconds, often faster than the rest of the structure responds. Probes near the door record this clearly; probes farther away may barely notice a single short opening.",
+    },
+    { type: "h2", text: "What probes show" },
+    {
+      type: "p",
+      html: "Expect sudden drops in winter or jumps in summer humidity when cold or humid outdoor air rolls in. Short spikes during brief errands are normal. Prolonged door-open work sessions can drive the entire bay toward outdoor dew point: watch for condensation on metal tools afterward.",
+    },
+    { type: "h2", text: "Separating signal from placement error" },
+    {
+      type: "p",
+      html: 'If every daily spike aligns with commute times, your door-adjacent probe is doing its job. If the interior probe mirrors the same amplitude, consider relocating it: see <a class="text-link" href="/about/probe-mounting-enclosures">probe mounting</a>. Compare patterns with <a class="text-link" href="/about/temperature-changes">temperature changes overview</a> and the <a class="text-link" href="/about/probe-demo">probe demo</a> door toggle.',
+    },
+    { type: "h2", text: "Mitigation without new hardware" },
+    {
+      type: "ul",
+      items: [
+        "**Weather stripping** on the door reduces idle infiltration between openings.",
+        "**Interior probe** on the opposite wall gives context for how far the wave travels.",
+        '**History charts** help distinguish one-off events from chronic heat loss: see <a class="text-link" href="/about/history-dashboard-browsing">history dashboard browsing</a>.',
+      ],
+    },
   ],
 
   "sun-load-garage-walls": [
-      { type: "p", html: "Sun load heats opaque walls even when outdoor air temperature is moderate. Dark siding, uninsulated sheathing, and metal doors store heat that bleeds inward for hours after peak outdoor temps. Probes on sun-facing walls often peak later than the weather app suggests." },
-      { type: "h2", text: "Seasonal patterns" },
-      { type: "ul", items: ["**Summer:** Interior garage temps can exceed outdoor highs in late afternoon.","**Winter:** Low sun angle may still warm south walls on clear days.","**Shoulder seasons:** Large diurnal swing with delayed interior maximum."] },
-      { type: "h2", text: "Monitoring implications" },
-      { type: "p", html: "Pair wall-adjacent probes with a more sheltered interior zone to separate sun-driven drift from whole-garage trends. <a class=\"text-link\" href=\"/about/seasonal-garage-patterns\">Seasonal patterns</a> explains how to read multi-month history without overreacting to a single hot afternoon." },
-      { type: "h2", text: "Probe placement tips" },
-      { type: "p", html: "Avoid mounting directly on sun-baked drywall facing south or west. A few inches of standoff inside a ventilated box still tracks wall influence without baking the sensor. <a class=\"text-link\" href=\"/about/multi-zone-garage-layout\">Multi-zone layout</a> helps assign one probe to the sunny wall and another to a shaded reference." }
+    {
+      type: "p",
+      html: "Sun load heats opaque walls even when outdoor air temperature is moderate. Dark siding, uninsulated sheathing, and metal doors store heat that bleeds inward for hours after peak outdoor temps. Probes on sun-facing walls often peak later than the weather app suggests.",
+    },
+    { type: "h2", text: "Seasonal patterns" },
+    {
+      type: "ul",
+      items: [
+        "**Summer:** Interior garage temps can exceed outdoor highs in late afternoon.",
+        "**Winter:** Low sun angle may still warm south walls on clear days.",
+        "**Shoulder seasons:** Large diurnal swing with delayed interior maximum.",
+      ],
+    },
+    { type: "h2", text: "Monitoring implications" },
+    {
+      type: "p",
+      html: 'Pair wall-adjacent probes with a more sheltered interior zone to separate sun-driven drift from whole-garage trends. <a class="text-link" href="/about/seasonal-garage-patterns">Seasonal patterns</a> explains how to read multi-month history without overreacting to a single hot afternoon.',
+    },
+    { type: "h2", text: "Probe placement tips" },
+    {
+      type: "p",
+      html: 'Avoid mounting directly on sun-baked drywall facing south or west. A few inches of standoff inside a ventilated box still tracks wall influence without baking the sensor. <a class="text-link" href="/about/multi-zone-garage-layout">Multi-zone layout</a> helps assign one probe to the sunny wall and another to a shaded reference.',
+    },
   ],
 
   "infiltration-wind-drafts": [
-      { type: "p", html: "Air leaks and wind-driven pressure differences move garage air even when the big door stays shut. Gaps around the door, soffit vents, and poorly sealed service entries let outdoor air slip in along the floor and behind stored shelving." },
-      { type: "h2", text: "Wind versus door events" },
-      { type: "p", html: "Door openings produce sharp, short spikes tied to human activity. Steady wind on a cold night creates a slower drift, especially on probes near the door bottom or exterior wall. Compare with <a class=\"text-link\" href=\"/about/garage-door-temperature-swings\">garage door swings</a> to tell which driver dominates." },
-      { type: "h2", text: "What to watch in data" },
-      { type: "ul", items: ["**Overnight plateaus** colder than forecast often mean chronic infiltration.","**Humidity rises** when warm moist outdoor air replaces dry winter indoor air.","**Zone mismatch** between door and interior probes flags draft paths."] },
-      { type: "h2", text: "Next steps" },
-      { type: "p", html: "Use <a class=\"text-link\" href=\"/about/historical-data\">historical data</a> to correlate windy weeks with minimum temps. Freeze planning belongs in <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze protection thresholds</a> once you know your typical leak-driven floor." }
+    {
+      type: "p",
+      html: "Air leaks and wind-driven pressure differences move garage air even when the big door stays shut. Gaps around the door, soffit vents, and poorly sealed service entries let outdoor air slip in along the floor and behind stored shelving.",
+    },
+    { type: "h2", text: "Wind versus door events" },
+    {
+      type: "p",
+      html: 'Door openings produce sharp, short spikes tied to human activity. Steady wind on a cold night creates a slower drift, especially on probes near the door bottom or exterior wall. Compare with <a class="text-link" href="/about/garage-door-temperature-swings">garage door swings</a> to tell which driver dominates.',
+    },
+    { type: "h2", text: "What to watch in data" },
+    {
+      type: "ul",
+      items: [
+        "**Overnight plateaus** colder than forecast often mean chronic infiltration.",
+        "**Humidity rises** when warm moist outdoor air replaces dry winter indoor air.",
+        "**Zone mismatch** between door and interior probes flags draft paths.",
+      ],
+    },
+    { type: "h2", text: "Next steps" },
+    {
+      type: "p",
+      html: 'Use <a class="text-link" href="/about/historical-data">historical data</a> to correlate windy weeks with minimum temps. Freeze planning belongs in <a class="text-link" href="/about/freeze-protection-thresholds">freeze protection thresholds</a> once you know your typical leak-driven floor.',
+    },
   ],
 
   "seasonal-garage-patterns": [
-      { type: "p", html: "Garages follow the seasons with lag and damping. Unconditioned bays track outdoor extremes more closely in winter and lag behind peak summer heat when insulation and thermal mass buffer swings. Long history makes those rhythms obvious." },
-      { type: "h2", text: "Winter freeze risk" },
-      { type: "p", html: "Pipes and chemicals care about sustained lows, not a single cold hour. Review weekly minimums in the dashboard history rather than glancing at noon readings. Pair with <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze protection thresholds</a> for actionable cutoffs." },
-      { type: "h2", text: "Summer heat storage" },
-      { type: "ul", items: ["**Afternoon peaks** often arrive after outdoor highs when <a class=\"text-link\" href=\"/about/sun-load-garage-walls\">sun load</a> dominates.","**Overnight cooling** may stall if the bay never fully purges hot air.","**Humidity** can climb when warm air holds more moisture near stored goods."] },
-      { type: "h2", text: "Using history well" },
-      { type: "p", html: "Export CSV for year-over-year comparison: see <a class=\"text-link\" href=\"/about/csv-export-spreadsheet-analysis\">CSV export and spreadsheet analysis</a>. Seasonal planning beats reacting to every daily wiggle on the home page." }
+    {
+      type: "p",
+      html: "Garages follow the seasons with lag and damping. Unconditioned bays track outdoor extremes more closely in winter and lag behind peak summer heat when insulation and thermal mass buffer swings. Long history makes those rhythms obvious.",
+    },
+    { type: "h2", text: "Winter freeze risk" },
+    {
+      type: "p",
+      html: 'Pipes and chemicals care about sustained lows, not a single cold hour. Review weekly minimums in the dashboard history rather than glancing at noon readings. Pair with <a class="text-link" href="/about/freeze-protection-thresholds">freeze protection thresholds</a> for actionable cutoffs.',
+    },
+    { type: "h2", text: "Summer heat storage" },
+    {
+      type: "ul",
+      items: [
+        '**Afternoon peaks** often arrive after outdoor highs when <a class="text-link" href="/about/sun-load-garage-walls">sun load</a> dominates.',
+        "**Overnight cooling** may stall if the bay never fully purges hot air.",
+        "**Humidity** can climb when warm air holds more moisture near stored goods.",
+      ],
+    },
+    { type: "h2", text: "Using history well" },
+    {
+      type: "p",
+      html: 'Export CSV for year-over-year comparison: see <a class="text-link" href="/about/csv-export-spreadsheet-analysis">CSV export and spreadsheet analysis</a>. Seasonal planning beats reacting to every daily wiggle on the home page.',
+    },
   ],
 
   "history-dashboard-browsing": [
-      { type: "p", html: "Live readings answer “what is it now?” History answers “how bad was last week?” The signed-in dashboard charts readings stored in Postgres so you can zoom from recent hours to multi-month trends without re-querying the probe on every page load." },
-      { type: "h2", text: "What gets stored" },
-      { type: "p", html: "Each snapshot captures probe keys, temperature, humidity, and timestamps when the site polls your configured feeds. Inserts are described in <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>. Not every page view hits your probes: polling runs on a schedule server-side." },
-      { type: "h2", text: "Reading the charts" },
-      { type: "ul", items: ["**Compare zones** to see whether one corner always runs coldest.","**Look at nights** for freeze risk rather than daytime peaks.","**Spot gaps** that may indicate feed outages: see <a class=\"text-link\" href=\"/about/debugging-stale-readings\">debugging stale readings</a>."] },
-      { type: "h2", text: "Export for deeper analysis" },
-      { type: "p", html: "Subscribers unlock CSV export for spreadsheet pivot tables and custom graphs. Details: <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">Stripe CSV subscription</a> and <a class=\"text-link\" href=\"/about/csv-export-spreadsheet-analysis\">CSV export analysis</a>." }
+    {
+      type: "p",
+      html: "Live readings answer “what is it now?” History answers “how bad was last week?” The signed-in dashboard charts readings stored in Postgres so you can zoom from recent hours to multi-month trends without re-querying the probe on every page load.",
+    },
+    { type: "h2", text: "What gets stored" },
+    {
+      type: "p",
+      html: 'Each snapshot captures probe keys, temperature, humidity, and timestamps when the site polls your configured feeds. Inserts are described in <a class="text-link" href="/about/history-inserts">history inserts</a>. Not every page view hits your probes: polling runs on a schedule server-side.',
+    },
+    { type: "h2", text: "Reading the charts" },
+    {
+      type: "ul",
+      items: [
+        "**Compare zones** to see whether one corner always runs coldest.",
+        "**Look at nights** for freeze risk rather than daytime peaks.",
+        '**Spot gaps** that may indicate feed outages: see <a class="text-link" href="/about/debugging-stale-readings">debugging stale readings</a>.',
+      ],
+    },
+    { type: "h2", text: "Export for deeper analysis" },
+    {
+      type: "p",
+      html: 'Subscribers unlock CSV export for spreadsheet pivot tables and custom graphs. Details: <a class="text-link" href="/about/stripe-csv-subscription">Stripe CSV subscription</a> and <a class="text-link" href="/about/csv-export-spreadsheet-analysis">CSV export analysis</a>.',
+    },
   ],
 
   "csv-export-spreadsheet-analysis": [
-      { type: "p", html: "Charts in the browser are convenient; CSV export is for questions the built-in UI does not answer. Spreadsheet tools let you compute degree-hours, correlate with weather files, and share trimmed datasets with contractors or insurers." },
-      { type: "h2", text: "Typical export columns" },
-      { type: "p", html: "Exports include timestamps, probe identifiers, Fahrenheit and Celsius values, and humidity where available. Join on time buckets when merging with external weather CSVs. Subscription access is managed through <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">Stripe billing</a>." },
-      { type: "h2", text: "Analysis ideas" },
-      { type: "ol", items: ["**Weekly minimum temperature** by zone for freeze planning.","**Door-event detection** by pairing sharp drops with your own activity log.","**Before/after insulation** comparison using the same date range year over year."] },
-      { type: "h2", text: "Workflow tips" },
-      { type: "ul", items: ["Import into **LibreOffice Calc** or Excel; freeze panes on the timestamp column.","Use pivot tables to aggregate by **hour of day** and find chronic cold windows.","Keep raw exports archived: re-derive charts when questions change."] }
+    {
+      type: "p",
+      html: "Charts in the browser are convenient; CSV export is for questions the built-in UI does not answer. Spreadsheet tools let you compute degree-hours, correlate with weather files, and share trimmed datasets with contractors or insurers.",
+    },
+    { type: "h2", text: "Typical export columns" },
+    {
+      type: "p",
+      html: 'Exports include timestamps, probe identifiers, Fahrenheit and Celsius values, and humidity where available. Join on time buckets when merging with external weather CSVs. Subscription access is managed through <a class="text-link" href="/about/stripe-csv-subscription">Stripe billing</a>.',
+    },
+    { type: "h2", text: "Analysis ideas" },
+    {
+      type: "ol",
+      items: [
+        "**Weekly minimum temperature** by zone for freeze planning.",
+        "**Door-event detection** by pairing sharp drops with your own activity log.",
+        "**Before/after insulation** comparison using the same date range year over year.",
+      ],
+    },
+    { type: "h2", text: "Workflow tips" },
+    {
+      type: "ul",
+      items: [
+        "Import into **LibreOffice Calc** or Excel; freeze panes on the timestamp column.",
+        "Use pivot tables to aggregate by **hour of day** and find chronic cold windows.",
+        "Keep raw exports archived: re-derive charts when questions change.",
+      ],
+    },
   ],
 
   "freeze-protection-thresholds": [
-      { type: "p", html: "Freeze damage happens when air or pipe-adjacent zones stay below 32 °F long enough for water to expand. Garage probes measure air, which is usually a few degrees warmer than fluid in an exterior wall cavity, so build margin into any alert threshold." },
-      { type: "h2", text: "Choosing thresholds" },
-      { type: "p", html: "Many owners watch for sustained air temps below 35–38 °F rather than reacting to a single 31 °F blip during a door opening. Review <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history browsing</a> for overnight plateaus, not spikes." },
-      { type: "h2", text: "Zone-specific rules" },
-      { type: "ul", items: ["**Door-adjacent probe:** Expect brief dips; do not treat every spike as emergency.","**Interior / pipe-wall probe:** Tighter threshold; this zone best represents risk.","**Average key:** Useful summary but can hide a cold corner: check individual zones."] },
-      { type: "h2", text: "Related monitoring" },
-      { type: "p", html: "Understand drivers with <a class=\"text-link\" href=\"/about/seasonal-garage-patterns\">seasonal patterns</a> and <a class=\"text-link\" href=\"/about/infiltration-wind-drafts\">infiltration</a>. Hardware reliability matters too: <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">DHT22 retries</a> prevent false alarms from bad reads. Leak / flood sensors notify automatically when wet; door, motion, power, and air quality need a custom rule in Dashboard → Alerts. For remaining-hours runway before the probe crosses freeze, see <a class=\"text-link\" href=\"/about/time-to-freeze\">time-to-freeze</a>." }
+    {
+      type: "p",
+      html: "Freeze damage happens when air or pipe-adjacent zones stay below 32 °F long enough for water to expand. Garage probes measure air, which is usually a few degrees warmer than fluid in an exterior wall cavity, so build margin into any alert threshold.",
+    },
+    { type: "h2", text: "Choosing thresholds" },
+    {
+      type: "p",
+      html: 'Many owners watch for sustained air temps below 35–38 °F rather than reacting to a single 31 °F blip during a door opening. Review <a class="text-link" href="/about/history-dashboard-browsing">history browsing</a> for overnight plateaus, not spikes.',
+    },
+    { type: "h2", text: "Zone-specific rules" },
+    {
+      type: "ul",
+      items: [
+        "**Door-adjacent probe:** Expect brief dips; do not treat every spike as emergency.",
+        "**Interior / pipe-wall probe:** Tighter threshold; this zone best represents risk.",
+        "**Average key:** Useful summary but can hide a cold corner: check individual zones.",
+      ],
+    },
+    { type: "h2", text: "Related monitoring" },
+    {
+      type: "p",
+      html: 'Understand drivers with <a class="text-link" href="/about/seasonal-garage-patterns">seasonal patterns</a> and <a class="text-link" href="/about/infiltration-wind-drafts">infiltration</a>. Hardware reliability matters too: <a class="text-link" href="/about/dht22-read-errors-retries">DHT22 retries</a> prevent false alarms from bad reads. Leak / flood sensors notify automatically when wet; door, motion, power, and air quality need a custom rule in Dashboard → Alerts. For remaining-hours runway before the probe crosses freeze, see <a class="text-link" href="/about/time-to-freeze">time-to-freeze</a>.',
+    },
   ],
 
   "arduino-ide-setup": [
-      { type: "p", html: "Firmware development starts on the bench with USB power and serial logging. The Arduino IDE (or PlatformIO) compiles C++ sketches, flashes the Uno, and opens a serial monitor for the first sanity checks before the board moves to the monitored space." },
-      { type: "h2", text: "Board and libraries" },
-      { type: "ul", items: ["**Board:** Arduino Uno (or compatible) with sufficient flash for Ethernet + LCD stacks.","**Libraries:** DHT sensor library, LiquidCrystal, Ethernet/W5100 stack as used in the repo sketch.","**Port:** Select the correct USB serial port after plugging in the programming cable."] },
-      { type: "h2", text: "First flash checklist" },
-      { type: "ol", items: ["Verify compile with **no errors** before disconnecting bench wiring.","Open serial monitor at **9600 baud** (or sketch default) and confirm boot messages.","Confirm LCD shows live values: see <a class=\"text-link\" href=\"/about/lcd-local-display-format\">LCD display format</a>.","curl the JSON endpoint before mounting: schema in <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON probe output schema</a>."] },
-      { type: "h2", text: "Source and wiring context" },
-      { type: "p", html: "Reference firmware lives in the project GitHub repo linked from <a class=\"text-link\" href=\"/about/arduino-sketches\">Arduino sketches overview</a>. Wire the breadboard first using <a class=\"text-link\" href=\"/about/arduino-circuit-wiring\">circuit wiring</a> and <a class=\"text-link\" href=\"/about/arduino-pin-wiring\">pin wiring</a> guides." }
+    {
+      type: "p",
+      html: "Firmware development starts on the bench with USB power and serial logging. The Arduino IDE (or PlatformIO) compiles C++ sketches, flashes the Uno, and opens a serial monitor for the first sanity checks before the board moves to the monitored space.",
+    },
+    { type: "h2", text: "Board and libraries" },
+    {
+      type: "ul",
+      items: [
+        "**Board:** Arduino Uno (or compatible) with sufficient flash for Ethernet + LCD stacks.",
+        "**Libraries:** DHT sensor library, LiquidCrystal, Ethernet/W5100 stack as used in the repo sketch.",
+        "**Port:** Select the correct USB serial port after plugging in the programming cable.",
+      ],
+    },
+    { type: "h2", text: "First flash checklist" },
+    {
+      type: "ol",
+      items: [
+        "Verify compile with **no errors** before disconnecting bench wiring.",
+        "Open serial monitor at **9600 baud** (or sketch default) and confirm boot messages.",
+        'Confirm LCD shows live values: see <a class="text-link" href="/about/lcd-local-display-format">LCD display format</a>.',
+        'curl the JSON endpoint before mounting: schema in <a class="text-link" href="/about/json-probe-output-schema">JSON probe output schema</a>.',
+      ],
+    },
+    { type: "h2", text: "Source and wiring context" },
+    {
+      type: "p",
+      html: 'Reference firmware lives in the project GitHub repo linked from <a class="text-link" href="/about/arduino-sketches">Arduino sketches overview</a>. Wire the breadboard first using <a class="text-link" href="/about/arduino-circuit-wiring">circuit wiring</a> and <a class="text-link" href="/about/arduino-pin-wiring">pin wiring</a> guides.',
+    },
   ],
 
   "sketch-polling-main-loop": [
-      { type: "p", html: "The main loop balances sensor polling, LCD refresh, and HTTP service without blocking any one task for too long. DHT22 reads take hundreds of milliseconds; Ethernet handling must remain responsive enough that dashboard fetches do not time out." },
-      { type: "h2", text: "Typical loop structure" },
-      { type: "ol", items: ["**Check timer:** If the poll interval elapsed, read each DHT22 with retries.","**Update LCD:** Refresh lines for probe 0, probe 1, and optional average.","**Serve HTTP:** Parse incoming client requests and return cached JSON.","**Watchdog / reconnect:** Reset or re-init Ethernet if the link dropped."] },
-      { type: "h2", text: "Timing constraints" },
-      { type: "p", html: "Respect the two-second minimum between DHT22 reads per sensor. Stagger probes if needed. Averaging logic is documented in <a class=\"text-link\" href=\"/about/dual-probe-averaging\">dual-probe averaging</a>. When reads fail, skip updating that key rather than publishing NaN." },
-      { type: "h2", text: "Debugging on serial" },
-      { type: "p", html: "Log read failures and Ethernet state during development. After deployment, rely on <a class=\"text-link\" href=\"/about/debugging-stale-readings\">stale reading diagnostics</a> on the website side. Recovery paths: <a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">firmware watchdog recovery</a>." }
+    {
+      type: "p",
+      html: "The main loop balances sensor polling, LCD refresh, and HTTP service without blocking any one task for too long. DHT22 reads take hundreds of milliseconds; Ethernet handling must remain responsive enough that dashboard fetches do not time out.",
+    },
+    { type: "h2", text: "Typical loop structure" },
+    {
+      type: "ol",
+      items: [
+        "**Check timer:** If the poll interval elapsed, read each DHT22 with retries.",
+        "**Update LCD:** Refresh lines for probe 0, probe 1, and optional average.",
+        "**Serve HTTP:** Parse incoming client requests and return cached JSON.",
+        "**Watchdog / reconnect:** Reset or re-init Ethernet if the link dropped.",
+      ],
+    },
+    { type: "h2", text: "Timing constraints" },
+    {
+      type: "p",
+      html: 'Respect the two-second minimum between DHT22 reads per sensor. Stagger probes if needed. Averaging logic is documented in <a class="text-link" href="/about/dual-probe-averaging">dual-probe averaging</a>. When reads fail, skip updating that key rather than publishing NaN.',
+    },
+    { type: "h2", text: "Debugging on serial" },
+    {
+      type: "p",
+      html: 'Log read failures and Ethernet state during development. After deployment, rely on <a class="text-link" href="/about/debugging-stale-readings">stale reading diagnostics</a> on the website side. Recovery paths: <a class="text-link" href="/about/firmware-watchdog-recovery">firmware watchdog recovery</a>.',
+    },
   ],
 
   "json-probe-output-schema": [
-      { type: "p", html: "Downstream systems. Python relays, Astro fetch routes, and dashboard mappings, all assume a stable JSON shape. Changing keys without updating consumers breaks probe labels and history inserts silently." },
-      { type: "h2", text: "Canonical document" },
-      { type: "pre", code: "{\n  \"temp\": {\n    \"0\": { \"f\": 38.2, \"c\": 3.4, \"h\": 41.0 },\n    \"1\": { \"f\": 36.8, \"c\": 2.7, \"h\": 43.5 },\n    \"avg\": { \"f\": 37.5, \"c\": 3.1, \"h\": 42.2 }\n  }\n}" },
-      { type: "h2", text: "Field meanings" },
-      { type: "ul", items: ["**Numeric keys** match firmware probe indices and dashboard mapping entries.","**f / c:** Fahrenheit and Celsius for the same sample.","**h:** Relative humidity percent for that probe.","**avg:** Mean across healthy probes only; omit or freeze if one sensor is offline."] },
-      { type: "h2", text: "Alternate formats (auto-detected)" },
-      { type: "p", html: "Push ingest and pull feeds also accept <strong>SenML JSON</strong> (RFC 8428 array with <code>Cel</code> / <code>%RH</code> units) and <strong>Home Assistant REST</strong> responses (<code>state</code> + <code>attributes.unit_of_measurement</code>) when the native <code>temp</code> root is absent. Live samples: <a class=\"text-link\" href=\"/api/feeds/example?format=senml\">SenML</a>, <a class=\"text-link\" href=\"/api/feeds/example?format=homeassistant\">HA REST</a>. Details: <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">ingest &amp; webhooks</a>." },
-      { type: "h2", text: "Consumers" },
-      { type: "p", html: "The <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page fetch</a> reads this structure for public cards. <a class=\"text-link\" href=\"/about/python-feeds\">Python feeds</a> may cache the same payload. Map labels via <a class=\"text-link\" href=\"/about/probe-mapping-labels\">probe mapping</a>." }
+    {
+      type: "p",
+      html: "Downstream systems. Python relays, Astro fetch routes, and dashboard mappings, all assume a stable JSON shape. Changing keys without updating consumers breaks probe labels and history inserts silently.",
+    },
+    { type: "h2", text: "Canonical document" },
+    {
+      type: "pre",
+      code: '{\n  "temp": {\n    "0": { "f": 38.2, "c": 3.4, "h": 41.0 },\n    "1": { "f": 36.8, "c": 2.7, "h": 43.5 },\n    "avg": { "f": 37.5, "c": 3.1, "h": 42.2 }\n  }\n}',
+    },
+    { type: "h2", text: "Field meanings" },
+    {
+      type: "ul",
+      items: [
+        "**Numeric keys** match firmware probe indices and dashboard mapping entries.",
+        "**f / c:** Fahrenheit and Celsius for the same sample.",
+        "**h:** Relative humidity percent for that probe.",
+        "**avg:** Mean across healthy probes only; omit or freeze if one sensor is offline.",
+      ],
+    },
+    { type: "h2", text: "Alternate formats (auto-detected)" },
+    {
+      type: "p",
+      html: 'Push ingest and pull feeds also accept <strong>SenML JSON</strong> (RFC 8428 array with <code>Cel</code> / <code>%RH</code> units) and <strong>Home Assistant REST</strong> responses (<code>state</code> + <code>attributes.unit_of_measurement</code>) when the native <code>temp</code> root is absent. Live samples: <a class="text-link" href="/api/feeds/example?format=senml">SenML</a>, <a class="text-link" href="/api/feeds/example?format=homeassistant">HA REST</a>. Details: <a class="text-link" href="/about/ingest-and-webhooks">ingest &amp; webhooks</a>.',
+    },
+    { type: "h2", text: "Consumers" },
+    {
+      type: "p",
+      html: 'The <a class="text-link" href="/about/home-page-probe-fetch">home page fetch</a> reads this structure for public cards. <a class="text-link" href="/about/python-feeds">Python feeds</a> may cache the same payload. Map labels via <a class="text-link" href="/about/probe-mapping-labels">probe mapping</a>.',
+    },
   ],
 
   "firmware-watchdog-recovery": [
-      { type: "p", html: "Garage hardware runs unattended for months. Rare hangs. Ethernet driver stalls, memory fragmentation, or sensor bus lockups: are cheaper to recover with a watchdog reset than with a ladder trip. A timed reset reboots the MCU and reinitializes shields and sensors." },
-      { type: "h2", text: "When watchdog helps" },
-      { type: "ul", items: ["**Network stack freeze** after router power blips.","**Infinite retry loop** on a disconnected DHT22 data line.","**HTTP client backlog** on the W5100 after sustained polling from the cloud."] },
-      { type: "h2", text: "Implementation notes" },
-      { type: "p", html: "Pet the watchdog only when the main loop completes a full cycle: sensor read, LCD update, and HTTP housekeeping. Too-aggressive petting masks real deadlocks. Pair with DHCP renew and JSON serving logic in <a class=\"text-link\" href=\"/about/sketch-polling-main-loop\">sketch polling main loop</a>." },
-      { type: "h2", text: "Operational expectations" },
-      { type: "p", html: "Expect a brief JSON outage during reboot: seconds, not minutes. <a class=\"text-link\" href=\"/about/debugging-stale-readings\">Stale reading debug</a> distinguishes reboot gaps from feed misconfiguration. Ethernet stacking notes: <a class=\"text-link\" href=\"/about/ethernet-shield-stacking\">Ethernet shield stacking</a>." }
+    {
+      type: "p",
+      html: "Garage hardware runs unattended for months. Rare hangs. Ethernet driver stalls, memory fragmentation, or sensor bus lockups: are cheaper to recover with a watchdog reset than with a ladder trip. A timed reset reboots the MCU and reinitializes shields and sensors.",
+    },
+    { type: "h2", text: "When watchdog helps" },
+    {
+      type: "ul",
+      items: [
+        "**Network stack freeze** after router power blips.",
+        "**Infinite retry loop** on a disconnected DHT22 data line.",
+        "**HTTP client backlog** on the W5100 after sustained polling from the cloud.",
+      ],
+    },
+    { type: "h2", text: "Implementation notes" },
+    {
+      type: "p",
+      html: 'Pet the watchdog only when the main loop completes a full cycle: sensor read, LCD update, and HTTP housekeeping. Too-aggressive petting masks real deadlocks. Pair with DHCP renew and JSON serving logic in <a class="text-link" href="/about/sketch-polling-main-loop">sketch polling main loop</a>.',
+    },
+    { type: "h2", text: "Operational expectations" },
+    {
+      type: "p",
+      html: 'Expect a brief JSON outage during reboot: seconds, not minutes. <a class="text-link" href="/about/debugging-stale-readings">Stale reading debug</a> distinguishes reboot gaps from feed misconfiguration. Ethernet stacking notes: <a class="text-link" href="/about/ethernet-shield-stacking">Ethernet shield stacking</a>.',
+    },
   ],
 
   "breadboard-power-rails": [
-      { type: "p", html: "The solderless breadboard distributes 5 V and ground from the Arduino to the LCD, DHT22 pull-ups, contrast pot, and Ethernet shield support components. Clean power rails reduce mysterious LCD garbage and sensor timeouts." },
-      { type: "h2", text: "Rail layout" },
-      { type: "ul", items: ["**Red rail:** 5 V from Arduino 5V pin (USB or barrel power when installed).","**Blue rail:** Common ground tied to Arduino GND.","**Jumpers:** Short, same-length wires where possible; one ground star point at the board."] },
-      { type: "h2", text: "LCD and sensor power" },
-      { type: "p", html: "The 16×2 LCD draws modest current; DHT22 peaks during conversion. If cables run long to remote probes, consider a dedicated 5 V supply with common ground rather than starving the Uno regulator. Contrast pot wiring shares ground: see <a class=\"text-link\" href=\"/about/liquid-crystal-gpio-map\">LCD GPIO map</a>." },
-      { type: "h2", text: "Bench verification" },
-      { type: "p", html: "Measure rail voltage under load before sealing an enclosure. Troubleshooting steps live in <a class=\"text-link\" href=\"/about/circuit-wiring-troubleshooting\">circuit wiring troubleshooting</a>. Full overview: <a class=\"text-link\" href=\"/about/arduino-circuit-wiring\">Arduino circuit wiring</a>." }
+    {
+      type: "p",
+      html: "The solderless breadboard distributes 5 V and ground from the Arduino to the LCD, DHT22 pull-ups, contrast pot, and Ethernet shield support components. Clean power rails reduce mysterious LCD garbage and sensor timeouts.",
+    },
+    { type: "h2", text: "Rail layout" },
+    {
+      type: "ul",
+      items: [
+        "**Red rail:** 5 V from Arduino 5V pin (USB or barrel power when installed).",
+        "**Blue rail:** Common ground tied to Arduino GND.",
+        "**Jumpers:** Short, same-length wires where possible; one ground star point at the board.",
+      ],
+    },
+    { type: "h2", text: "LCD and sensor power" },
+    {
+      type: "p",
+      html: 'The 16×2 LCD draws modest current; DHT22 peaks during conversion. If cables run long to remote probes, consider a dedicated 5 V supply with common ground rather than starving the Uno regulator. Contrast pot wiring shares ground: see <a class="text-link" href="/about/liquid-crystal-gpio-map">LCD GPIO map</a>.',
+    },
+    { type: "h2", text: "Bench verification" },
+    {
+      type: "p",
+      html: 'Measure rail voltage under load before sealing an enclosure. Troubleshooting steps live in <a class="text-link" href="/about/circuit-wiring-troubleshooting">circuit wiring troubleshooting</a>. Full overview: <a class="text-link" href="/about/arduino-circuit-wiring">Arduino circuit wiring</a>.',
+    },
   ],
 
   "ethernet-shield-stacking": [
-      { type: "p", html: "The W5100-based Ethernet shield stacks on the Uno and consumes SPI pins plus a chip select line. Mechanical stacking is simple; electrically you must reserve those pins and route DHT22 and LCD wires around the tall assembly." },
-      { type: "h2", text: "Stack order and headers" },
-      { type: "ol", items: ["Seat the **Ethernet shield** fully on Uno headers, no bent pins behind the RJ45 jack.","Route jumper wires from the top of the stack or use a **protoboard wing** for LCD pins.","Keep Ethernet cable strain relief so RJ45 flex does not lift the shield off headers."] },
-      { type: "h2", text: "SPI sharing" },
-      { type: "p", html: "Only one SPI device should drive the bus at a time; the W5100 owns SPI during network I/O. GPIO for DHT22 and parallel LCD are separate: details in <a class=\"text-link\" href=\"/about/spi-pins-ethernet-reserved\">SPI pins and reserved lines</a>." },
-      { type: "h2", text: "Network path" },
-      { type: "p", html: "DHCP on a garage router assigns the board an IP; JSON is served over HTTP on the LAN. For HTTPS at the edge, terminate TLS on <a class=\"text-link\" href=\"/about/fastapi-relay-setup\">FastAPI relay</a> instead of the MCU. For <strong>push ingest</strong> from the same shield, use <code>ethernet_dht22_ingest</code> plus the LAN HTTP→HTTPS forwarder in <code>sketches/relay/</code>: see <a class=\"text-link\" href=\"/about/arduino-sketches\">Arduino sketches</a>." }
+    {
+      type: "p",
+      html: "The W5100-based Ethernet shield stacks on the Uno and consumes SPI pins plus a chip select line. Mechanical stacking is simple; electrically you must reserve those pins and route DHT22 and LCD wires around the tall assembly.",
+    },
+    { type: "h2", text: "Stack order and headers" },
+    {
+      type: "ol",
+      items: [
+        "Seat the **Ethernet shield** fully on Uno headers, no bent pins behind the RJ45 jack.",
+        "Route jumper wires from the top of the stack or use a **protoboard wing** for LCD pins.",
+        "Keep Ethernet cable strain relief so RJ45 flex does not lift the shield off headers.",
+      ],
+    },
+    { type: "h2", text: "SPI sharing" },
+    {
+      type: "p",
+      html: 'Only one SPI device should drive the bus at a time; the W5100 owns SPI during network I/O. GPIO for DHT22 and parallel LCD are separate: details in <a class="text-link" href="/about/spi-pins-ethernet-reserved">SPI pins and reserved lines</a>.',
+    },
+    { type: "h2", text: "Network path" },
+    {
+      type: "p",
+      html: 'DHCP on a garage router assigns the board an IP; JSON is served over HTTP on the LAN. For HTTPS at the edge, terminate TLS on <a class="text-link" href="/about/fastapi-relay-setup">FastAPI relay</a> instead of the MCU. For <strong>push ingest</strong> from the same shield, use <code>ethernet_dht22_ingest</code> plus the LAN HTTP→HTTPS forwarder in <code>sketches/relay/</code>: see <a class="text-link" href="/about/arduino-sketches">Arduino sketches</a>.',
+    },
   ],
 
   "circuit-wiring-troubleshooting": [
-      { type: "p", html: "Intermittent readings usually trace to power, ground, or loose jumpers, not bad luck. Work methodically from rails to sensors before swapping the Arduino." },
-      { type: "h2", text: "Symptom → likely cause" },
-      { type: "ul", items: ["**Blank LCD:** Contrast pot, missing Vo, or wrong RS/E/D pins.","**DHT22 timeout:** Missing pull-up, swapped data/ground, or read interval too fast.","**Ethernet dead:** Shield not seated, bad cable, or SPI pin conflict with LCD wiring.","**Garbled LCD:** Floating data line or 3.3 V LCD on 5 V logic without level consideration."] },
-      { type: "h2", text: "Tools" },
-      { type: "p", html: "Serial logging from <a class=\"text-link\" href=\"/about/arduino-ide-setup\">Arduino IDE setup</a> confirms firmware is alive. Multimeter checks on <a class=\"text-link\" href=\"/about/breadboard-power-rails\">power rails</a> confirm 5 V under load. Pin-by-pin review: <a class=\"text-link\" href=\"/about/arduino-pin-wiring\">pin wiring</a>." },
-      { type: "h2", text: "Sensor-specific help" },
-      { type: "p", html: "Persistent DHT22 failures after wiring checks: <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">DHT22 read errors and retries</a> and <a class=\"text-link\" href=\"/about/dht22-data-line-wiring\">data line wiring</a>." }
+    {
+      type: "p",
+      html: "Intermittent readings usually trace to power, ground, or loose jumpers, not bad luck. Work methodically from rails to sensors before swapping the Arduino.",
+    },
+    { type: "h2", text: "Symptom → likely cause" },
+    {
+      type: "ul",
+      items: [
+        "**Blank LCD:** Contrast pot, missing Vo, or wrong RS/E/D pins.",
+        "**DHT22 timeout:** Missing pull-up, swapped data/ground, or read interval too fast.",
+        "**Ethernet dead:** Shield not seated, bad cable, or SPI pin conflict with LCD wiring.",
+        "**Garbled LCD:** Floating data line or 3.3 V LCD on 5 V logic without level consideration.",
+      ],
+    },
+    { type: "h2", text: "Tools" },
+    {
+      type: "p",
+      html: 'Serial logging from <a class="text-link" href="/about/arduino-ide-setup">Arduino IDE setup</a> confirms firmware is alive. Multimeter checks on <a class="text-link" href="/about/breadboard-power-rails">power rails</a> confirm 5 V under load. Pin-by-pin review: <a class="text-link" href="/about/arduino-pin-wiring">pin wiring</a>.',
+    },
+    { type: "h2", text: "Sensor-specific help" },
+    {
+      type: "p",
+      html: 'Persistent DHT22 failures after wiring checks: <a class="text-link" href="/about/dht22-read-errors-retries">DHT22 read errors and retries</a> and <a class="text-link" href="/about/dht22-data-line-wiring">data line wiring</a>.',
+    },
   ],
 
   "liquid-crystal-gpio-map": [
-      { type: "p", html: "The 16×2 LCD uses parallel mode in 4-bit wiring: RS, E, and four data lines map to specific Uno GPIOs matching the LiquidCrystal constructor in firmware. Backlight may be on a transistor switch for dimming or power saving." },
-      { type: "h2", text: "Typical assignments" },
-      { type: "p", html: "Exact pins follow the repo sketch: document your build on paper. RS and E control command versus data mode; D4–D7 carry nibbles. Contrast on Vo uses a 10k pot between 5 V and ground." },
-      { type: "ul", items: ["**RS:** Register select: commands vs character data.","**E:** Enable strobe for each nibble transfer.","**D4–D7:** Upper four bits of the 8-bit interface in 4-bit mode.","**Backlight:** Often transistor-switched LED+ pin, not a GPIO data line."] },
-      { type: "h2", text: "Avoiding conflicts" },
-      { type: "p", html: "Do not assign LCD lines to <a class=\"text-link\" href=\"/about/spi-pins-ethernet-reserved\">SPI reserved pins</a> used by the Ethernet shield. DHT22 data pins must also stay clear: see <a class=\"text-link\" href=\"/about/dht22-data-line-wiring\">DHT22 data wiring</a>." },
-      { type: "h2", text: "Display content" },
-      { type: "p", html: "What appears on each row is firmware-defined in <a class=\"text-link\" href=\"/about/lcd-local-display-format\">LCD local display format</a>." }
+    {
+      type: "p",
+      html: "The 16×2 LCD uses parallel mode in 4-bit wiring: RS, E, and four data lines map to specific Uno GPIOs matching the LiquidCrystal constructor in firmware. Backlight may be on a transistor switch for dimming or power saving.",
+    },
+    { type: "h2", text: "Typical assignments" },
+    {
+      type: "p",
+      html: "Exact pins follow the repo sketch: document your build on paper. RS and E control command versus data mode; D4–D7 carry nibbles. Contrast on Vo uses a 10k pot between 5 V and ground.",
+    },
+    {
+      type: "ul",
+      items: [
+        "**RS:** Register select: commands vs character data.",
+        "**E:** Enable strobe for each nibble transfer.",
+        "**D4–D7:** Upper four bits of the 8-bit interface in 4-bit mode.",
+        "**Backlight:** Often transistor-switched LED+ pin, not a GPIO data line.",
+      ],
+    },
+    { type: "h2", text: "Avoiding conflicts" },
+    {
+      type: "p",
+      html: 'Do not assign LCD lines to <a class="text-link" href="/about/spi-pins-ethernet-reserved">SPI reserved pins</a> used by the Ethernet shield. DHT22 data pins must also stay clear: see <a class="text-link" href="/about/dht22-data-line-wiring">DHT22 data wiring</a>.',
+    },
+    { type: "h2", text: "Display content" },
+    {
+      type: "p",
+      html: 'What appears on each row is firmware-defined in <a class="text-link" href="/about/lcd-local-display-format">LCD local display format</a>.',
+    },
   ],
 
   "dht22-data-line-wiring": [
-      { type: "p", html: "Each DHT22 uses one digital GPIO for its single-wire protocol. Power and ground come from the breadboard rails; a 4.7k–10k pull-up from data to 5 V keeps the line idle high between reads." },
-      { type: "h2", text: "Per-sensor connections" },
-      { type: "ol", items: ["**VCC** to 5 V rail (some modules include onboard regulator for 3.3 V parts: check yours).","**DATA** to a unique GPIO with pull-up resistor.","**GND** to common ground at the Arduino."] },
-      { type: "h2", text: "Cable runs to remote probes" },
-      { type: "p", html: "Short twisted or paired wire reduces noise. Avoid running data parallel to AC power. If reads degrade at distance, retry logic in <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">DHT22 read errors</a> helps but physics still wins: relocate or shorten runs." },
-      { type: "h2", text: "Firmware mapping" },
-      { type: "p", html: "GPIO order defines JSON keys <code>0</code> and <code>1</code>. Document the mapping for <a class=\"text-link\" href=\"/about/probe-mapping-labels\">dashboard labels</a>. Sensor basics: <a class=\"text-link\" href=\"/about/dht22-sensor-overview\">DHT22 overview</a>." }
+    {
+      type: "p",
+      html: "Each DHT22 uses one digital GPIO for its single-wire protocol. Power and ground come from the breadboard rails; a 4.7k–10k pull-up from data to 5 V keeps the line idle high between reads.",
+    },
+    { type: "h2", text: "Per-sensor connections" },
+    {
+      type: "ol",
+      items: [
+        "**VCC** to 5 V rail (some modules include onboard regulator for 3.3 V parts: check yours).",
+        "**DATA** to a unique GPIO with pull-up resistor.",
+        "**GND** to common ground at the Arduino.",
+      ],
+    },
+    { type: "h2", text: "Cable runs to remote probes" },
+    {
+      type: "p",
+      html: 'Short twisted or paired wire reduces noise. Avoid running data parallel to AC power. If reads degrade at distance, retry logic in <a class="text-link" href="/about/dht22-read-errors-retries">DHT22 read errors</a> helps but physics still wins: relocate or shorten runs.',
+    },
+    { type: "h2", text: "Firmware mapping" },
+    {
+      type: "p",
+      html: 'GPIO order defines JSON keys <code>0</code> and <code>1</code>. Document the mapping for <a class="text-link" href="/about/probe-mapping-labels">dashboard labels</a>. Sensor basics: <a class="text-link" href="/about/dht22-sensor-overview">DHT22 overview</a>.',
+    },
   ],
 
   "spi-pins-ethernet-reserved": [
-      { type: "p", html: "The W5100 Ethernet shield uses hardware SPI on the Uno: MOSI, MISO, SCK, plus chip select on pin 10. Pins 10–13 and SPI lines must not be repurposed for LCD or sensors in standard layouts." },
-      { type: "h2", text: "Reserved lines" },
-      { type: "ul", items: ["**D10:** W5100 chip select (SS).","**D11–D13:** SPI MOSI, MISO, SCK on Uno.","**Interrupt pin:** Shield-specific; follow vendor silkscreen."] },
-      { type: "h2", text: "Planning GPIO budget" },
-      { type: "p", html: "LCD 4-bit mode consumes six GPIOs; two DHT22 lines consume two more: plan before adding features. Stacking details: <a class=\"text-link\" href=\"/about/ethernet-shield-stacking\">Ethernet shield stacking</a>." },
-      { type: "h2", text: "Alternative stacks" },
-      { type: "p", html: "If pins run out, consider I²C LCD modules or offloading HTTPS to <a class=\"text-link\" href=\"/about/python-feeds\">Python feeds</a> while keeping JSON on HTTP locally." }
+    {
+      type: "p",
+      html: "The W5100 Ethernet shield uses hardware SPI on the Uno: MOSI, MISO, SCK, plus chip select on pin 10. Pins 10–13 and SPI lines must not be repurposed for LCD or sensors in standard layouts.",
+    },
+    { type: "h2", text: "Reserved lines" },
+    {
+      type: "ul",
+      items: [
+        "**D10:** W5100 chip select (SS).",
+        "**D11–D13:** SPI MOSI, MISO, SCK on Uno.",
+        "**Interrupt pin:** Shield-specific; follow vendor silkscreen.",
+      ],
+    },
+    { type: "h2", text: "Planning GPIO budget" },
+    {
+      type: "p",
+      html: 'LCD 4-bit mode consumes six GPIOs; two DHT22 lines consume two more: plan before adding features. Stacking details: <a class="text-link" href="/about/ethernet-shield-stacking">Ethernet shield stacking</a>.',
+    },
+    { type: "h2", text: "Alternative stacks" },
+    {
+      type: "p",
+      html: 'If pins run out, consider I²C LCD modules or offloading HTTPS to <a class="text-link" href="/about/python-feeds">Python feeds</a> while keeping JSON on HTTP locally.',
+    },
   ],
 
   "dht22-read-errors-retries": [
-      { type: "p", html: "DHT22 reads fail occasionally: timing violations, electrical noise, or a momentary bus contention. Firmware should retry a few times with backoff before marking a probe unhealthy rather than publishing garbage values to JSON." },
-      { type: "h2", text: "Retry strategy" },
-      { type: "ol", items: ["On **checksum or timeout error**, wait at least two seconds and retry.","Cap retries at **three to five** attempts per poll cycle.","If all fail, **omit or hold last good value**: document your choice in schema notes."] },
-      { type: "h2", text: "Hardware fixes first" },
-      { type: "p", html: "Verify pull-ups and grounding in <a class=\"text-link\" href=\"/about/dht22-data-line-wiring\">data line wiring</a>. Long cables and motor noise from garage door openers aggravate errors. <a class=\"text-link\" href=\"/about/circuit-wiring-troubleshooting\">Circuit troubleshooting</a> covers bench checks." },
-      { type: "h2", text: "Downstream impact" },
-      { type: "p", html: "Bad reads affect <a class=\"text-link\" href=\"/about/dual-probe-averaging\">averaging</a> and dashboard history. <a class=\"text-link\" href=\"/about/debugging-stale-readings\">Debugging stale readings</a> on the site helps tell sensor faults from network issues." }
+    {
+      type: "p",
+      html: "DHT22 reads fail occasionally: timing violations, electrical noise, or a momentary bus contention. Firmware should retry a few times with backoff before marking a probe unhealthy rather than publishing garbage values to JSON.",
+    },
+    { type: "h2", text: "Retry strategy" },
+    {
+      type: "ol",
+      items: [
+        "On **checksum or timeout error**, wait at least two seconds and retry.",
+        "Cap retries at **three to five** attempts per poll cycle.",
+        "If all fail, **omit or hold last good value**: document your choice in schema notes.",
+      ],
+    },
+    { type: "h2", text: "Hardware fixes first" },
+    {
+      type: "p",
+      html: 'Verify pull-ups and grounding in <a class="text-link" href="/about/dht22-data-line-wiring">data line wiring</a>. Long cables and motor noise from garage door openers aggravate errors. <a class="text-link" href="/about/circuit-wiring-troubleshooting">Circuit troubleshooting</a> covers bench checks.',
+    },
+    { type: "h2", text: "Downstream impact" },
+    {
+      type: "p",
+      html: 'Bad reads affect <a class="text-link" href="/about/dual-probe-averaging">averaging</a> and dashboard history. <a class="text-link" href="/about/debugging-stale-readings">Debugging stale readings</a> on the site helps tell sensor faults from network issues.',
+    },
   ],
 
   "lcd-local-display-format": [
-      { type: "p", html: "The 16×2 LCD gives installers immediate feedback without Wi-Fi or a laptop. Two rows are tight: firmware usually rotates or splits probe 0, probe 1, and average across lines or timed pages." },
-      { type: "h2", text: "Typical layout" },
-      { type: "ul", items: ["**Row 0:** Probe 0 temp and humidity abbreviated (e.g. <code>P0 38F 41%</code>).","**Row 1:** Probe 1 or rolling average depending on sketch version.","**Backlight:** On during reads; optional timeout to reduce glare at night."] },
-      { type: "h2", text: "Units and refresh" },
-      { type: "p", html: "Match units to what you expect on the website or label the LCD. Refresh only when new valid reads arrive: avoid flicker from partial updates. GPIO wiring: <a class=\"text-link\" href=\"/about/liquid-crystal-gpio-map\">LCD GPIO map</a>." },
-      { type: "h2", text: "When LCD disagrees with web" },
-      { type: "p", html: "Compare against live JSON via curl: <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON schema</a>. Stale cache on <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis relay</a> can lag the LCD; local display is often fresher." }
+    {
+      type: "p",
+      html: "The 16×2 LCD gives installers immediate feedback without Wi-Fi or a laptop. Two rows are tight: firmware usually rotates or splits probe 0, probe 1, and average across lines or timed pages.",
+    },
+    { type: "h2", text: "Typical layout" },
+    {
+      type: "ul",
+      items: [
+        "**Row 0:** Probe 0 temp and humidity abbreviated (e.g. <code>P0 38F 41%</code>).",
+        "**Row 1:** Probe 1 or rolling average depending on sketch version.",
+        "**Backlight:** On during reads; optional timeout to reduce glare at night.",
+      ],
+    },
+    { type: "h2", text: "Units and refresh" },
+    {
+      type: "p",
+      html: 'Match units to what you expect on the website or label the LCD. Refresh only when new valid reads arrive: avoid flicker from partial updates. GPIO wiring: <a class="text-link" href="/about/liquid-crystal-gpio-map">LCD GPIO map</a>.',
+    },
+    { type: "h2", text: "When LCD disagrees with web" },
+    {
+      type: "p",
+      html: 'Compare against live JSON via curl: <a class="text-link" href="/about/json-probe-output-schema">JSON schema</a>. Stale cache on <a class="text-link" href="/about/redis-cache-for-feeds">Redis relay</a> can lag the LCD; local display is often fresher.',
+    },
   ],
 
   "dual-probe-averaging": [
-      { type: "p", html: "The <code>avg</code> key summarizes healthy probes for quick glances and compact history rows. Averaging should ignore failed reads and optionally weight only probes marked active in firmware." },
-      { type: "h2", text: "Algorithm sketch" },
-      { type: "ol", items: ["Collect **valid** temperature and humidity pairs for each probe index.","Compute **arithmetic mean** separately for °F, °C, and humidity.","If only one probe is healthy, **avg may equal that probe** or be omitted: pick one policy."] },
-      { type: "h2", text: "When not to trust avg" },
-      { type: "p", html: "Door-adjacent and interior zones can differ by ten degrees: blind averaging hides freeze risk in the cold corner. Use avg for trend lines; use per-zone keys for decisions. Layout: <a class=\"text-link\" href=\"/about/multi-zone-garage-layout\">multi-zone layout</a>." },
-      { type: "h2", text: "Related topics" },
-      { type: "p", html: "Polling cadence: <a class=\"text-link\" href=\"/about/sketch-polling-main-loop\">sketch main loop</a>. Output shape: <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON schema</a>." }
+    {
+      type: "p",
+      html: "The <code>avg</code> key summarizes healthy probes for quick glances and compact history rows. Averaging should ignore failed reads and optionally weight only probes marked active in firmware.",
+    },
+    { type: "h2", text: "Algorithm sketch" },
+    {
+      type: "ol",
+      items: [
+        "Collect **valid** temperature and humidity pairs for each probe index.",
+        "Compute **arithmetic mean** separately for °F, °C, and humidity.",
+        "If only one probe is healthy, **avg may equal that probe** or be omitted: pick one policy.",
+      ],
+    },
+    { type: "h2", text: "When not to trust avg" },
+    {
+      type: "p",
+      html: 'Door-adjacent and interior zones can differ by ten degrees: blind averaging hides freeze risk in the cold corner. Use avg for trend lines; use per-zone keys for decisions. Layout: <a class="text-link" href="/about/multi-zone-garage-layout">multi-zone layout</a>.',
+    },
+    { type: "h2", text: "Related topics" },
+    {
+      type: "p",
+      html: 'Polling cadence: <a class="text-link" href="/about/sketch-polling-main-loop">sketch main loop</a>. Output shape: <a class="text-link" href="/about/json-probe-output-schema">JSON schema</a>.',
+    },
   ],
 
   "fastapi-relay-setup": [
-      { type: "p", html: "A small FastAPI service on a home server or VPS can poll the Arduino over HTTP on the LAN, then expose a stable HTTPS URL to the internet. That keeps TLS and authentication off the microcontroller while preserving the JSON your dashboard already understands. If the Uno should <strong>push</strong> instead of waiting for a pull, run <code>sketches/relay/push_https_forward.py</code> and the <code>ethernet_dht22_ingest</code> sample: see <a class=\"text-link\" href=\"/about/python-feeds\">Python feeds</a>." },
-      { type: "h2", text: "Minimal architecture" },
-      { type: "ol", items: ["**Scheduler or on-demand fetch** hits <code>http://arduino.local/...</code> on the LAN.","**FastAPI route** returns the latest cached body with correct <code>Content-Type</code>.","**Reverse proxy** (Caddy, nginx) terminates TLS on a public hostname."] },
-      { type: "h2", text: "Configuration tips" },
-      { type: "ul", items: ["Set **reasonable timeouts**: garage uplink is slower than datacenter RTT.","Log **upstream errors** separately from client 404s.","Version the relay when <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON schema</a> changes."] },
-      { type: "h2", text: "Caching layer" },
-      { type: "p", html: "Add <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis cache</a> so Cloudflare Workers and the Astro site do not hammer your home IP on every page view. Security: <a class=\"text-link\" href=\"/about/relay-security-and-access\">relay security</a>." }
+    {
+      type: "p",
+      html: 'A small FastAPI service on a home server or VPS can poll the Arduino over HTTP on the LAN, then expose a stable HTTPS URL to the internet. That keeps TLS and authentication off the microcontroller while preserving the JSON your dashboard already understands. If the Uno should <strong>push</strong> instead of waiting for a pull, run <code>sketches/relay/push_https_forward.py</code> and the <code>ethernet_dht22_ingest</code> sample: see <a class="text-link" href="/about/python-feeds">Python feeds</a>.',
+    },
+    { type: "h2", text: "Minimal architecture" },
+    {
+      type: "ol",
+      items: [
+        "**Scheduler or on-demand fetch** hits <code>http://arduino.local/...</code> on the LAN.",
+        "**FastAPI route** returns the latest cached body with correct <code>Content-Type</code>.",
+        "**Reverse proxy** (Caddy, nginx) terminates TLS on a public hostname.",
+      ],
+    },
+    { type: "h2", text: "Configuration tips" },
+    {
+      type: "ul",
+      items: [
+        "Set **reasonable timeouts**: garage uplink is slower than datacenter RTT.",
+        "Log **upstream errors** separately from client 404s.",
+        'Version the relay when <a class="text-link" href="/about/json-probe-output-schema">JSON schema</a> changes.',
+      ],
+    },
+    { type: "h2", text: "Caching layer" },
+    {
+      type: "p",
+      html: 'Add <a class="text-link" href="/about/redis-cache-for-feeds">Redis cache</a> so Cloudflare Workers and the Astro site do not hammer your home IP on every page view. Security: <a class="text-link" href="/about/relay-security-and-access">relay security</a>.',
+    },
   ],
 
   "redis-cache-for-feeds": [
-      { type: "p", html: "Redis stores the last good JSON payload with a TTL so burst traffic to your public HTTPS endpoint reads memory instead of opening a new LAN fetch every time. That protects both the Arduino and your residential router." },
-      { type: "h2", text: "Cache policy" },
-      { type: "ul", items: ["**TTL 30–120 seconds** matches how “live” the home page needs to feel.","**Stale-while-revalidate:** Serve old JSON while async refresh runs if upstream is slow.","**Key per feed URL** when multiple garages or benches exist."] },
-      { type: "h2", text: "Failure modes" },
-      { type: "p", html: "If Redis is empty and Arduino is down, return 503 with a clear log line: better than inventing zeros. Site-side handling: <a class=\"text-link\" href=\"/about/debugging-stale-readings\">debugging stale readings</a>. Relay setup: <a class=\"text-link\" href=\"/about/fastapi-relay-setup\">FastAPI relay setup</a>." },
-      { type: "h2", text: "Data flow placement" },
-      { type: "p", html: "See step 2 in <a class=\"text-link\" href=\"/about/data-flow\">end-to-end data flow</a>. History still lands in Postgres via <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a> on the website schedule." }
+    {
+      type: "p",
+      html: "Redis stores the last good JSON payload with a TTL so burst traffic to your public HTTPS endpoint reads memory instead of opening a new LAN fetch every time. That protects both the Arduino and your residential router.",
+    },
+    { type: "h2", text: "Cache policy" },
+    {
+      type: "ul",
+      items: [
+        "**TTL 30–120 seconds** matches how “live” the home page needs to feel.",
+        "**Stale-while-revalidate:** Serve old JSON while async refresh runs if upstream is slow.",
+        "**Key per feed URL** when multiple garages or benches exist.",
+      ],
+    },
+    { type: "h2", text: "Failure modes" },
+    {
+      type: "p",
+      html: 'If Redis is empty and Arduino is down, return 503 with a clear log line: better than inventing zeros. Site-side handling: <a class="text-link" href="/about/debugging-stale-readings">debugging stale readings</a>. Relay setup: <a class="text-link" href="/about/fastapi-relay-setup">FastAPI relay setup</a>.',
+    },
+    { type: "h2", text: "Data flow placement" },
+    {
+      type: "p",
+      html: 'See step 2 in <a class="text-link" href="/about/data-flow">end-to-end data flow</a>. History still lands in Postgres via <a class="text-link" href="/about/history-inserts">history inserts</a> on the website schedule.',
+    },
   ],
 
   "relay-security-and-access": [
-      { type: "p", html: "Publishing garage telemetry to the internet invites scanning. Lock down who can read feeds, rate-limit public endpoints, and never expose the Arduino JSON port directly without understanding the risk." },
-      { type: "h2", text: "Hardening checklist" },
-      { type: "ul", items: ["**HTTPS only** on public URLs; HSTS at the reverse proxy.","**Optional API keys** or signed tokens for non-browser clients.","**Firewall** the Arduino to LAN-only; only the relay reaches it.","**No secrets** in firmware source committed to public repos."] },
-      { type: "h2", text: "Dashboard integration" },
-      { type: "p", html: "Users paste HTTPS feed URLs in <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">temperature feed settings</a>. The site stores URLs per account: pair with the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a> so feeds are not world-editable." },
-      { type: "h2", text: "Compare stacks" },
-      { type: "p", html: "Node and Next patterns for APIs: <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Node Express API patterns</a>. This project uses Astro fetch routes: <a class=\"text-link\" href=\"/about/astro-server-side-rendering\">Astro SSR</a>." }
+    {
+      type: "p",
+      html: "Publishing garage telemetry to the internet invites scanning. Lock down who can read feeds, rate-limit public endpoints, and never expose the Arduino JSON port directly without understanding the risk.",
+    },
+    { type: "h2", text: "Hardening checklist" },
+    {
+      type: "ul",
+      items: [
+        "**HTTPS only** on public URLs; HSTS at the reverse proxy.",
+        "**Optional API keys** or signed tokens for non-browser clients.",
+        "**Firewall** the Arduino to LAN-only; only the relay reaches it.",
+        "**No secrets** in firmware source committed to public repos.",
+      ],
+    },
+    { type: "h2", text: "Dashboard integration" },
+    {
+      type: "p",
+      html: 'Users paste HTTPS feed URLs in <a class="text-link" href="/about/configuring-temperature-feeds">temperature feed settings</a>. The site stores URLs per account: pair with the <a class="text-link" href="/about/sign-in-flow">sign-in flow</a> so feeds are not world-editable.',
+    },
+    { type: "h2", text: "Compare stacks" },
+    {
+      type: "p",
+      html: 'Node and Next patterns for APIs: <a class="text-link" href="/about/node-express-api-patterns">Node Express API patterns</a>. This project uses Astro fetch routes: <a class="text-link" href="/about/astro-server-side-rendering">Astro SSR</a>.',
+    },
   ],
 
   "astro-server-side-rendering": [
-      { type: "p", html: "Astro renders most pages on the server at request time or build time, shipping HTML with minimal client JavaScript. For a monitoring site, that means fast first paint for public probe cards and SEO-friendly about documentation without a heavy SPA bundle." },
-      { type: "h2", text: "SSR in this project" },
-      { type: "p", html: "The home page fetches live JSON during SSR via <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">server-side probe fetch</a>. About articles are static content with optional expanded blocks from generated TypeScript. API routes handle auth and history writes." },
-      { type: "h2", text: "Benefits for monitoring" },
-      { type: "ul", items: ["**Secrets stay server-side**: feed URLs and database credentials never ship to the browser wholesale.","**Edge deployment** on Cloudflare reduces latency: see <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Cloudflare Workers deployment</a>.","**Progressive enhancement** for dashboard features that need client state."] },
-      { type: "h2", text: "Related reading" },
-      { type: "p", html: "Interactive widgets use <a class=\"text-link\" href=\"/about/astro-islands-and-hydration\">Astro islands</a>. Compare with <a class=\"text-link\" href=\"/about/nextjs-monitoring-dashboards\">Next.js monitoring dashboards</a>." }
+    {
+      type: "p",
+      html: "Astro renders most pages on the server at request time or build time, shipping HTML with minimal client JavaScript. For a monitoring site, that means fast first paint for public probe cards and SEO-friendly about documentation without a heavy SPA bundle.",
+    },
+    { type: "h2", text: "SSR in this project" },
+    {
+      type: "p",
+      html: 'The home page fetches live JSON during SSR via <a class="text-link" href="/about/home-page-probe-fetch">server-side probe fetch</a>. About articles are static content with optional expanded blocks from generated TypeScript. API routes handle auth and history writes.',
+    },
+    { type: "h2", text: "Benefits for monitoring" },
+    {
+      type: "ul",
+      items: [
+        "**Secrets stay server-side**: feed URLs and database credentials never ship to the browser wholesale.",
+        '**Edge deployment** on Cloudflare reduces latency: see <a class="text-link" href="/about/cloudflare-workers-deployment">Cloudflare Workers deployment</a>.',
+        "**Progressive enhancement** for dashboard features that need client state.",
+      ],
+    },
+    { type: "h2", text: "Related reading" },
+    {
+      type: "p",
+      html: 'Interactive widgets use <a class="text-link" href="/about/astro-islands-and-hydration">Astro islands</a>. Compare with <a class="text-link" href="/about/nextjs-monitoring-dashboards">Next.js monitoring dashboards</a>.',
+    },
   ],
 
   "astro-islands-and-hydration": [
-      { type: "p", html: "Islands are interactive UI fragments hydrated with client-side JavaScript while the surrounding page stays static. Charts, auth forms, and feed editors hydrate; long-form about text does not." },
-      { type: "h2", text: "Where hydration helps" },
-      { type: "ul", items: ["**History charts** needing client-side zoom or tooltips.","**Dashboard forms** for <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">configuring feeds</a>.","**Probe demo** toggles on the <a class=\"text-link\" href=\"/about/probe-demo\">interactive demo</a> page."] },
-      { type: "h2", text: "Performance habit" },
-      { type: "p", html: "Default to zero JS; add <code>client:load</code> or <code>client:visible</code> only where necessary. Public visitors mostly read static SSR output from <a class=\"text-link\" href=\"/about/astro-server-side-rendering\">Astro SSR</a>." },
-      { type: "h2", text: "Stack context" },
-      { type: "p", html: "Full pipeline: <a class=\"text-link\" href=\"/about/data-flow\">data flow</a>. Admin tools: <a class=\"text-link\" href=\"/about/admin-dashboard-features\">admin dashboard features</a>." }
+    {
+      type: "p",
+      html: "Islands are interactive UI fragments hydrated with client-side JavaScript while the surrounding page stays static. Charts, auth forms, and feed editors hydrate; long-form about text does not.",
+    },
+    { type: "h2", text: "Where hydration helps" },
+    {
+      type: "ul",
+      items: [
+        "**History charts** needing client-side zoom or tooltips.",
+        '**Dashboard forms** for <a class="text-link" href="/about/configuring-temperature-feeds">configuring feeds</a>.',
+        '**Probe demo** toggles on the <a class="text-link" href="/about/probe-demo">interactive demo</a> page.',
+      ],
+    },
+    { type: "h2", text: "Performance habit" },
+    {
+      type: "p",
+      html: 'Default to zero JS; add <code>client:load</code> or <code>client:visible</code> only where necessary. Public visitors mostly read static SSR output from <a class="text-link" href="/about/astro-server-side-rendering">Astro SSR</a>.',
+    },
+    { type: "h2", text: "Stack context" },
+    {
+      type: "p",
+      html: 'Full pipeline: <a class="text-link" href="/about/data-flow">data flow</a>. Admin tools: <a class="text-link" href="/about/admin-dashboard-features">admin dashboard features</a>.',
+    },
   ],
 
   "cloudflare-workers-deployment": [
-      { type: "p", html: "This site targets Cloudflare Workers/Pages via the Astro adapter so HTML and API routes run at the edge close to visitors. Probe fetch latency improves versus a single-region VPS for a globally readable demo." },
-      { type: "h2", text: "Deployment considerations" },
-      { type: "ol", items: ["**Environment variables** for the database, Better Auth, and Stripe live in Cloudflare dashboard secrets.","**Fetch timeouts** to residential feed URLs must tolerate slow home uplinks.","**Cron or scheduled triggers** may drive <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>."] },
-      { type: "h2", text: "Caching interaction" },
-      { type: "p", html: "Do not cache authenticated dashboard HTML at the CDN edge. Public home page caching should respect how fresh probes need to be, often aligned with <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis TTL</a> upstream." },
-      { type: "h2", text: "Reliability for users" },
-      { type: "p", html: "Edge hosting is a trust signal, not a substitute for measured health. ProbeHarbor publishes cron and ingest status on <a class=\"text-link\" href=\"/system-status\">system status</a> (with optional email on degradation). Platform-wide Cloudflare incidents are tracked at <a class=\"text-link\" href=\"https://www.cloudflarestatus.com/\" target=\"_blank\" rel=\"noreferrer\">cloudflarestatus.com</a>: we do not repackage Cloudflare’s SLA as a ProbeHarbor uptime percentage." },
-      { type: "h2", text: "Alternatives" },
-      { type: "p", html: "<a class=\"text-link\" href=\"/about/comparing-full-stack-options\">Comparing full-stack options</a> covers Node hosting versus edge Astro." }
+    {
+      type: "p",
+      html: "This site targets Cloudflare Workers/Pages via the Astro adapter so HTML and API routes run at the edge close to visitors. Probe fetch latency improves versus a single-region VPS for a globally readable demo.",
+    },
+    { type: "h2", text: "Deployment considerations" },
+    {
+      type: "ol",
+      items: [
+        "**Environment variables** for the database, Better Auth, and Stripe live in Cloudflare dashboard secrets.",
+        "**Fetch timeouts** to residential feed URLs must tolerate slow home uplinks.",
+        '**Cron or scheduled triggers** may drive <a class="text-link" href="/about/history-inserts">history inserts</a>.',
+      ],
+    },
+    { type: "h2", text: "Caching interaction" },
+    {
+      type: "p",
+      html: 'Do not cache authenticated dashboard HTML at the CDN edge. Public home page caching should respect how fresh probes need to be, often aligned with <a class="text-link" href="/about/redis-cache-for-feeds">Redis TTL</a> upstream.',
+    },
+    { type: "h2", text: "Reliability for users" },
+    {
+      type: "p",
+      html: 'Edge hosting is a trust signal, not a substitute for measured health. ProbeHarbor publishes cron and ingest status on <a class="text-link" href="/system-status">system status</a> (with optional email on degradation). Platform-wide Cloudflare incidents are tracked at <a class="text-link" href="https://www.cloudflarestatus.com/" target="_blank" rel="noreferrer">cloudflarestatus.com</a>: we do not repackage Cloudflare’s SLA as a ProbeHarbor uptime percentage.',
+    },
+    { type: "h2", text: "Alternatives" },
+    {
+      type: "p",
+      html: '<a class="text-link" href="/about/comparing-full-stack-options">Comparing full-stack options</a> covers Node hosting versus edge Astro.',
+    },
   ],
 
   "nextjs-monitoring-dashboards": [
-      { type: "p", html: "Next.js excels at authenticated dashboards with React Server Components, API routes, and a vast component ecosystem. A garage monitor could be built entirely in Next: fetching probes in server components and charting in client charts." },
-      { type: "h2", text: "Typical Next layout" },
-      { type: "ul", items: ["**app/dashboard/page.tsx** server-fetches JSON feeds with cached revalidation.","**Route handlers** proxy probes to hide LAN URLs: similar to <a class=\"text-link\" href=\"/about/fastapi-relay-setup\">FastAPI relay</a>.","**Middleware** guards signed-in pages with session checks like the ones in this site's <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>."] },
-      { type: "h2", text: "Why this project uses Astro" },
-      { type: "p", html: "Documentation-heavy about pages and minimal JS for public visitors fit Astro’s content-first model. Edge deployment on Cloudflare is first-class: <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Workers deployment</a>." },
-      { type: "h2", text: "Further comparison" },
-      { type: "p", html: "See <a class=\"text-link\" href=\"/about/comparing-full-stack-options\">comparing full-stack options</a> and <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express API patterns</a>." }
+    {
+      type: "p",
+      html: "Next.js excels at authenticated dashboards with React Server Components, API routes, and a vast component ecosystem. A garage monitor could be built entirely in Next: fetching probes in server components and charting in client charts.",
+    },
+    { type: "h2", text: "Typical Next layout" },
+    {
+      type: "ul",
+      items: [
+        "**app/dashboard/page.tsx** server-fetches JSON feeds with cached revalidation.",
+        '**Route handlers** proxy probes to hide LAN URLs: similar to <a class="text-link" href="/about/fastapi-relay-setup">FastAPI relay</a>.',
+        '**Middleware** guards signed-in pages with session checks like the ones in this site\'s <a class="text-link" href="/about/sign-in-flow">sign-in flow</a>.',
+      ],
+    },
+    { type: "h2", text: "Why this project uses Astro" },
+    {
+      type: "p",
+      html: 'Documentation-heavy about pages and minimal JS for public visitors fit Astro’s content-first model. Edge deployment on Cloudflare is first-class: <a class="text-link" href="/about/cloudflare-workers-deployment">Workers deployment</a>.',
+    },
+    { type: "h2", text: "Further comparison" },
+    {
+      type: "p",
+      html: 'See <a class="text-link" href="/about/comparing-full-stack-options">comparing full-stack options</a> and <a class="text-link" href="/about/node-express-api-patterns">Express API patterns</a>.',
+    },
   ],
 
   "node-express-api-patterns": [
-      { type: "p", html: "Express (or Fastify) on Node remains a straightforward choice for JSON APIs, webhooks, and cron jobs. A monitoring stack might use Express to poll probes, write Postgres rows, and serve CSV export links." },
-      { type: "h2", text: "Common routes" },
-      { type: "ol", items: ["<code>GET /api/feeds/:id</code>: cached probe JSON for dashboards.","<code>POST /webhooks/stripe</code>: unlock <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">CSV subscription</a> features.","<code>GET /export/history.csv</code>: authenticated download."] },
-      { type: "h2", text: "Operational notes" },
-      { type: "ul", items: ["Run behind **HTTPS reverse proxy** with rate limits.","Use **connection pooling** for Postgres if querying directly.","Prefer **idempotent webhooks** for Stripe events."] },
-      { type: "h2", text: "Parallel in Astro" },
-      { type: "p", html: "This repo implements similar endpoints as Astro server routes: <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a> and <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">probe fetch</a>." }
+    {
+      type: "p",
+      html: "Express (or Fastify) on Node remains a straightforward choice for JSON APIs, webhooks, and cron jobs. A monitoring stack might use Express to poll probes, write Postgres rows, and serve CSV export links.",
+    },
+    { type: "h2", text: "Common routes" },
+    {
+      type: "ol",
+      items: [
+        "<code>GET /api/feeds/:id</code>: cached probe JSON for dashboards.",
+        '<code>POST /webhooks/stripe</code>: unlock <a class="text-link" href="/about/stripe-csv-subscription">CSV subscription</a> features.',
+        "<code>GET /export/history.csv</code>: authenticated download.",
+      ],
+    },
+    { type: "h2", text: "Operational notes" },
+    {
+      type: "ul",
+      items: [
+        "Run behind **HTTPS reverse proxy** with rate limits.",
+        "Use **connection pooling** for Postgres if querying directly.",
+        "Prefer **idempotent webhooks** for Stripe events.",
+      ],
+    },
+    { type: "h2", text: "Parallel in Astro" },
+    {
+      type: "p",
+      html: 'This repo implements similar endpoints as Astro server routes: <a class="text-link" href="/about/history-inserts">history inserts</a> and <a class="text-link" href="/about/home-page-probe-fetch">probe fetch</a>.',
+    },
   ],
 
   "comparing-full-stack-options": [
-      { type: "p", html: "Garage monitoring needs three things: periodic probe ingestion, authenticated storage, and a readable public face. Astro, Next.js, and plain Node each cover the triangle with different tradeoffs in JS payload, hosting, and developer ergonomics." },
-      { type: "h2", text: "Decision matrix" },
-      { type: "ul", items: ["**Astro + edge:** Best here for content, light public JS, Cloudflare deploy: <a class=\"text-link\" href=\"/about/astro-applications\">Astro applications</a>.","**Next.js:** Rich client dashboards, Vercel-native workflows: <a class=\"text-link\" href=\"/about/nextjs-monitoring-dashboards\">Next dashboards</a>.","**Node + Express:** Maximum control, long-running cron on a VPS: <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express patterns</a>.","**Python relay:** TLS and cache at home: <a class=\"text-link\" href=\"/about/python-feeds\">Python feeds</a>."] },
-      { type: "h2", text: "Shared backend" },
-      { type: "p", html: "Sign-in and Postgres history are stack-agnostic: <a class=\"text-link\" href=\"/about/accounts-and-dashboard\">accounts and dashboard</a>. Data pipeline: <a class=\"text-link\" href=\"/about/data-flow\">data flow</a>." }
+    {
+      type: "p",
+      html: "Garage monitoring needs three things: periodic probe ingestion, authenticated storage, and a readable public face. Astro, Next.js, and plain Node each cover the triangle with different tradeoffs in JS payload, hosting, and developer ergonomics.",
+    },
+    { type: "h2", text: "Decision matrix" },
+    {
+      type: "ul",
+      items: [
+        '**Astro + edge:** Best here for content, light public JS, Cloudflare deploy: <a class="text-link" href="/about/astro-applications">Astro applications</a>.',
+        '**Next.js:** Rich client dashboards, Vercel-native workflows: <a class="text-link" href="/about/nextjs-monitoring-dashboards">Next dashboards</a>.',
+        '**Node + Express:** Maximum control, long-running cron on a VPS: <a class="text-link" href="/about/node-express-api-patterns">Express patterns</a>.',
+        '**Python relay:** TLS and cache at home: <a class="text-link" href="/about/python-feeds">Python feeds</a>.',
+      ],
+    },
+    { type: "h2", text: "Shared backend" },
+    {
+      type: "p",
+      html: 'Sign-in and Postgres history are stack-agnostic: <a class="text-link" href="/about/accounts-and-dashboard">accounts and dashboard</a>. Data pipeline: <a class="text-link" href="/about/data-flow">data flow</a>.',
+    },
   ],
 
   "home-page-probe-fetch": [
-      { type: "p", html: "The public home page shows live probe cards by server-fetching configured HTTPS JSON feeds during Astro SSR. The browser receives HTML with numbers already resolved, no client-side CORS dance to residential IPs." },
-      { type: "h2", text: "Fetch sequence" },
-      { type: "ol", items: ["Load **enabled feed URLs** and probe mappings for the site owner or demo account.","Server **HTTP GET** each feed with timeout and error handling.","Parse **temp object** per <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON schema</a> and apply labels.","Render **stat cards** in HTML returned to the visitor."] },
-      { type: "h2", text: "Failure display" },
-      { type: "p", html: "Missing keys or timeout should degrade gracefully: show last error state or omit a card rather than 500 the whole page. Diagnosis: <a class=\"text-link\" href=\"/about/debugging-stale-readings\">debugging stale readings</a>." },
-      { type: "h2", text: "Configuration source" },
-      { type: "p", html: "Mappings come from <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">dashboard feed settings</a>. Upstream cache: <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis cache</a>. Broader pipeline: <a class=\"text-link\" href=\"/about/data-flow\">data flow overview</a>." }
+    {
+      type: "p",
+      html: "The public home page shows live probe cards by server-fetching configured HTTPS JSON feeds during Astro SSR. The browser receives HTML with numbers already resolved, no client-side CORS dance to residential IPs.",
+    },
+    { type: "h2", text: "Fetch sequence" },
+    {
+      type: "ol",
+      items: [
+        "Load **enabled feed URLs** and probe mappings for the site owner or demo account.",
+        "Server **HTTP GET** each feed with timeout and error handling.",
+        'Parse **temp object** per <a class="text-link" href="/about/json-probe-output-schema">JSON schema</a> and apply labels.',
+        "Render **stat cards** in HTML returned to the visitor.",
+      ],
+    },
+    { type: "h2", text: "Failure display" },
+    {
+      type: "p",
+      html: 'Missing keys or timeout should degrade gracefully: show last error state or omit a card rather than 500 the whole page. Diagnosis: <a class="text-link" href="/about/debugging-stale-readings">debugging stale readings</a>.',
+    },
+    { type: "h2", text: "Configuration source" },
+    {
+      type: "p",
+      html: 'Mappings come from <a class="text-link" href="/about/configuring-temperature-feeds">dashboard feed settings</a>. Upstream cache: <a class="text-link" href="/about/redis-cache-for-feeds">Redis cache</a>. Broader pipeline: <a class="text-link" href="/about/data-flow">data flow overview</a>.',
+    },
   ],
 
   "history-inserts": [
-      { type: "p", html: "Historical charts depend on rows stored in Postgres (Neon), not on the browser remembering prior values. The Worker writes them: push devices post readings to the ingest API, and server code polls pull feeds on a schedule. Each row is tied to a household and a sensor." },
-      { type: "h2", text: "Insert model" },
-      { type: "ul", items: ["**Household, sensor, and timestamp** identify each sample.","Store **numeric, on/off, or text values** in typed columns for fast chart queries.","Skip insert if **upstream fetch failed** to avoid flatlines at zero."] },
-      { type: "h2", text: "Auth boundary" },
-      { type: "p", html: "Every history query runs on the server and is scoped in SQL to the signed-in user's household: <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>. Only server code in the Worker writes rows, such as the ingest route and scheduled jobs; the browser never inserts history directly." },
-      { type: "h2", text: "Consumption" },
-      { type: "p", html: "Dashboard reads via <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history browsing</a>; export via <a class=\"text-link\" href=\"/about/csv-export-spreadsheet-analysis\">CSV export</a>. Live path: <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page fetch</a>." }
+    {
+      type: "p",
+      html: "Historical charts depend on rows stored in Postgres (Neon), not on the browser remembering prior values. The Worker writes them: push devices post readings to the ingest API, and server code polls pull feeds on a schedule. Each row is tied to a household and a sensor.",
+    },
+    { type: "h2", text: "Insert model" },
+    {
+      type: "ul",
+      items: [
+        "**Household, sensor, and timestamp** identify each sample.",
+        "Store **numeric, on/off, or text values** in typed columns for fast chart queries.",
+        "Skip insert if **upstream fetch failed** to avoid flatlines at zero.",
+      ],
+    },
+    { type: "h2", text: "Auth boundary" },
+    {
+      type: "p",
+      html: 'Every history query runs on the server and is scoped in SQL to the signed-in user\'s household: <a class="text-link" href="/about/sign-in-flow">sign-in flow</a>. Only server code in the Worker writes rows, such as the ingest route and scheduled jobs; the browser never inserts history directly.',
+    },
+    { type: "h2", text: "Consumption" },
+    {
+      type: "p",
+      html: 'Dashboard reads via <a class="text-link" href="/about/history-dashboard-browsing">history browsing</a>; export via <a class="text-link" href="/about/csv-export-spreadsheet-analysis">CSV export</a>. Live path: <a class="text-link" href="/about/home-page-probe-fetch">home page fetch</a>.',
+    },
   ],
 
   "debugging-stale-readings": [
-      { type: "p", html: "Stale readings mean the website shows an old temperature while the space has moved on, or shows nothing while the LCD still updates. Work from the sensor outward: hardware, JSON, cache, SSR fetch, then history." },
-      { type: "h2", text: "Checklist" },
-      { type: "ol", items: ["**curl the feed URL** from outside your LAN: is JSON fresh?","Compare **LCD vs JSON**, if LCD wins, fix relay or <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis TTL</a>.","Verify **probe keys** in dashboard match schema: <a class=\"text-link\" href=\"/about/probe-mapping-labels\">probe mapping</a>.","Inspect **Cloudflare / SSR logs** for timeout patterns."] },
-      { type: "h2", text: "Hardware-side causes" },
-      { type: "p", html: "<a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">Watchdog reboots</a> cause short gaps. <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">DHT22 errors</a> drop keys from JSON. Ethernet: <a class=\"text-link\" href=\"/about/circuit-wiring-troubleshooting\">wiring troubleshooting</a>." },
-      { type: "h2", text: "History vs live" },
-      { type: "p", html: "Charts can lag if inserts stop but home page still looks live: check <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a> separately from <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page fetch</a>." }
+    {
+      type: "p",
+      html: "Stale readings mean the website shows an old temperature while the space has moved on, or shows nothing while the LCD still updates. Work from the sensor outward: hardware, JSON, cache, SSR fetch, then history.",
+    },
+    { type: "h2", text: "Checklist" },
+    {
+      type: "ol",
+      items: [
+        "**curl the feed URL** from outside your LAN: is JSON fresh?",
+        'Compare **LCD vs JSON**, if LCD wins, fix relay or <a class="text-link" href="/about/redis-cache-for-feeds">Redis TTL</a>.',
+        'Verify **probe keys** in dashboard match schema: <a class="text-link" href="/about/probe-mapping-labels">probe mapping</a>.',
+        "Inspect **Cloudflare / SSR logs** for timeout patterns.",
+      ],
+    },
+    { type: "h2", text: "Hardware-side causes" },
+    {
+      type: "p",
+      html: '<a class="text-link" href="/about/firmware-watchdog-recovery">Watchdog reboots</a> cause short gaps. <a class="text-link" href="/about/dht22-read-errors-retries">DHT22 errors</a> drop keys from JSON. Ethernet: <a class="text-link" href="/about/circuit-wiring-troubleshooting">wiring troubleshooting</a>.',
+    },
+    { type: "h2", text: "History vs live" },
+    {
+      type: "p",
+      html: 'Charts can lag if inserts stop but home page still looks live: check <a class="text-link" href="/about/history-inserts">history inserts</a> separately from <a class="text-link" href="/about/home-page-probe-fetch">home page fetch</a>.',
+    },
   ],
 
   "sign-in-flow": [
-      { type: "p", html: "User accounts run on Better Auth inside the app: email and password, or Google, GitHub, and Discord, with an authenticator app (TOTP), YubiKey OTP, or passkey as extra protection. The web session is a signed HttpOnly cookie; the Android and desktop apps send the same session as a Bearer token. Every query for history and feed configuration runs on the server, scoped in SQL to the signed-in user or household. The Astro site validates sessions on protected routes before rendering dashboard HTML or API mutations." },
-      { type: "h2", text: "Session lifecycle" },
-      { type: "ol", items: ["User signs in through **Better Auth** on the same site (password or OAuth).","Signed, HttpOnly session **cookie** scoped to the site domain.","Server routes read the session and **query Postgres**, scoped to that user or household."] },
-      { type: "h2", text: "What auth protects" },
-      { type: "ul", items: ["**Feed URLs and probe labels**: <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">temperature feeds</a>.","**History rows**: <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history browsing</a>.","**CSV export**: <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">subscription gating</a>.","**Admin tools**: <a class=\"text-link\" href=\"/about/admin-dashboard-features\">admin features</a>."] },
-      { type: "h2", text: "Security notes" },
-      { type: "p", html: "Never expose the database connection string or auth secret to the browser. Relay security for public JSON: <a class=\"text-link\" href=\"/about/relay-security-and-access\">relay security</a>." }
+    {
+      type: "p",
+      html: "User accounts run on Better Auth inside the app: email and password, or Google, GitHub, and Discord, with an authenticator app (TOTP), YubiKey OTP, or passkey as extra protection. The web session is a signed HttpOnly cookie; the Android and desktop apps send the same session as a Bearer token. Every query for history and feed configuration runs on the server, scoped in SQL to the signed-in user or household. The Astro site validates sessions on protected routes before rendering dashboard HTML or API mutations.",
+    },
+    { type: "h2", text: "Session lifecycle" },
+    {
+      type: "ol",
+      items: [
+        "User signs in through **Better Auth** on the same site (password or OAuth).",
+        "Signed, HttpOnly session **cookie** scoped to the site domain.",
+        "Server routes read the session and **query Postgres**, scoped to that user or household.",
+      ],
+    },
+    { type: "h2", text: "What auth protects" },
+    {
+      type: "ul",
+      items: [
+        '**Feed URLs and probe labels**: <a class="text-link" href="/about/configuring-temperature-feeds">temperature feeds</a>.',
+        '**History rows**: <a class="text-link" href="/about/history-dashboard-browsing">history browsing</a>.',
+        '**CSV export**: <a class="text-link" href="/about/stripe-csv-subscription">subscription gating</a>.',
+        '**Admin tools**: <a class="text-link" href="/about/admin-dashboard-features">admin features</a>.',
+      ],
+    },
+    { type: "h2", text: "Security notes" },
+    {
+      type: "p",
+      html: 'Never expose the database connection string or auth secret to the browser. Relay security for public JSON: <a class="text-link" href="/about/relay-security-and-access">relay security</a>.',
+    },
   ],
 
   "stripe-csv-subscription": [
-      { type: "p", html: "CSV export of temperature history is a subscription feature billed through Stripe. Checkout creates a customer portal link; webhooks update the subscription record in Postgres so export buttons unlock without manual admin work." },
-      { type: "h2", text: "User flow" },
-      { type: "ol", items: ["Signed-in user opens **billing** from the dashboard.","Stripe **Checkout** completes payment method capture.","Webhook marks **subscription active**; user downloads CSV from history."] },
-      { type: "h2", text: "Export contents" },
-      { type: "p", html: "Files mirror stored history columns: see <a class=\"text-link\" href=\"/about/csv-export-spreadsheet-analysis\">CSV analysis guide</a>. Live data path remains separate: <a class=\"text-link\" href=\"/about/data-flow\">data flow</a>." },
-      { type: "h2", text: "Implementation peers" },
-      { type: "p", html: "Webhook handling patterns overlap with <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express webhooks</a>. Auth prerequisite: the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>." }
+    {
+      type: "p",
+      html: "CSV export of temperature history is a subscription feature billed through Stripe. Checkout creates a customer portal link; webhooks update the subscription record in Postgres so export buttons unlock without manual admin work.",
+    },
+    { type: "h2", text: "User flow" },
+    {
+      type: "ol",
+      items: [
+        "Signed-in user opens **billing** from the dashboard.",
+        "Stripe **Checkout** completes payment method capture.",
+        "Webhook marks **subscription active**; user downloads CSV from history.",
+      ],
+    },
+    { type: "h2", text: "Export contents" },
+    {
+      type: "p",
+      html: 'Files mirror stored history columns: see <a class="text-link" href="/about/csv-export-spreadsheet-analysis">CSV analysis guide</a>. Live data path remains separate: <a class="text-link" href="/about/data-flow">data flow</a>.',
+    },
+    { type: "h2", text: "Implementation peers" },
+    {
+      type: "p",
+      html: 'Webhook handling patterns overlap with <a class="text-link" href="/about/node-express-api-patterns">Express webhooks</a>. Auth prerequisite: the <a class="text-link" href="/about/sign-in-flow">sign-in flow</a>.',
+    },
   ],
 
   "configuring-temperature-feeds": [
-      { type: "p", html: "Pull feeds let ProbeHarbor fetch HTTPS JSON on a schedule when your probe already serves a public URL (or a TLS relay). For the full push <em>and</em> pull walkthrough that matches today’s Devices UI, start with <a class=\"text-link\" href=\"/about/adding-devices\">adding push and pull devices</a>." },
-      { type: "h2", text: "Setup steps" },
-      { type: "ol", items: ["Verify the feed with **curl**: nested probes under a root object (default <code>temp</code>).","Open <strong>Dashboard → Devices → Pull feeds</strong> tab.","Add the HTTPS URL and set <strong>JSON root key</strong> if your object is not named <code>temp</code> (e.g. <code>readings</code>).","Use <strong>Test feed URL</strong>, then <strong>Save pull setup</strong>: probe keys auto-import.","Rename labels on the same page or click <strong>Accept suggested names</strong>." ] },
-      { type: "h2", text: "JSON root key" },
-      { type: "p", html: "Pull parsing looks for <code>{ \"&lt;root&gt;\": { \"0\": { \"f\": …, \"h\": … }, … } }</code>. The root defaults to <code>temp</code>. Flat push-style keys and typed <code>sensors[]</code> are for <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">push ingest</a>, not the default pull path." },
-      { type: "h2", text: "SenML and Home Assistant REST" },
-      { type: "p", html: "When the configured root is missing, ProbeHarbor auto-detects <strong>SenML JSON</strong> (RFC 8428 array) and <strong>HA REST sensor</strong> JSON (<code>state</code> + <code>attributes</code>). Paste the HTTPS URL as-is, no JSON root override needed. Map probe keys from SenML names (e.g. <code>0</code>) or <code>state</code> for single-entity REST feeds. Try the public <a class=\"text-link\" href=\"/api/feeds/example?format=senml\">SenML example</a> or <a class=\"text-link\" href=\"/api/feeds/example?format=homeassistant\">HA REST example</a>." },
-      { type: "h2", text: "Multiple feeds" },
-      { type: "p", html: "You can add several pull URLs (plan limits apply). Document which URL is production vs demo. Security: <a class=\"text-link\" href=\"/about/relay-security-and-access\">relay security</a>. Fetch behavior: <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page probe fetch</a>." },
-      { type: "h2", text: "Troubleshooting" },
-      { type: "p", html: "Wrong root key or probe key typos hide cards even when the URL returns 200. See <a class=\"text-link\" href=\"/about/debugging-stale-readings\">debugging stale readings</a>." }
+    {
+      type: "p",
+      html: 'Pull feeds let ProbeHarbor fetch HTTPS JSON on a schedule when your probe already serves a public URL (or a TLS relay). For the full push <em>and</em> pull walkthrough that matches today’s Devices UI, start with <a class="text-link" href="/about/adding-devices">adding push and pull devices</a>.',
+    },
+    { type: "h2", text: "Setup steps" },
+    {
+      type: "ol",
+      items: [
+        "Verify the feed with **curl**: nested probes under a root object (default <code>temp</code>).",
+        "Open <strong>Dashboard → Devices → Pull feeds</strong> tab.",
+        "Add the HTTPS URL and set <strong>JSON root key</strong> if your object is not named <code>temp</code> (e.g. <code>readings</code>).",
+        "Use <strong>Test feed URL</strong>, then <strong>Save pull setup</strong>: probe keys auto-import.",
+        "Rename labels on the same page or click <strong>Accept suggested names</strong>.",
+      ],
+    },
+    { type: "h2", text: "JSON root key" },
+    {
+      type: "p",
+      html: 'Pull parsing looks for <code>{ "&lt;root&gt;": { "0": { "f": …, "h": … }, … } }</code>. The root defaults to <code>temp</code>. Flat push-style keys and typed <code>sensors[]</code> are for <a class="text-link" href="/about/ingest-and-webhooks">push ingest</a>, not the default pull path.',
+    },
+    { type: "h2", text: "SenML and Home Assistant REST" },
+    {
+      type: "p",
+      html: 'When the configured root is missing, ProbeHarbor auto-detects <strong>SenML JSON</strong> (RFC 8428 array) and <strong>HA REST sensor</strong> JSON (<code>state</code> + <code>attributes</code>). Paste the HTTPS URL as-is, no JSON root override needed. Map probe keys from SenML names (e.g. <code>0</code>) or <code>state</code> for single-entity REST feeds. Try the public <a class="text-link" href="/api/feeds/example?format=senml">SenML example</a> or <a class="text-link" href="/api/feeds/example?format=homeassistant">HA REST example</a>.',
+    },
+    { type: "h2", text: "Multiple feeds" },
+    {
+      type: "p",
+      html: 'You can add several pull URLs (plan limits apply). Document which URL is production vs demo. Security: <a class="text-link" href="/about/relay-security-and-access">relay security</a>. Fetch behavior: <a class="text-link" href="/about/home-page-probe-fetch">home page probe fetch</a>.',
+    },
+    { type: "h2", text: "Troubleshooting" },
+    {
+      type: "p",
+      html: 'Wrong root key or probe key typos hide cards even when the URL returns 200. See <a class="text-link" href="/about/debugging-stale-readings">debugging stale readings</a>.',
+    },
   ],
 
   "admin-dashboard-features": [
-      { type: "p", html: "Admin-only dashboard areas support operators who manage demo content, review user issues, or inspect system health. Role checks run server-side alongside the standard <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>, never gate solely with hidden client buttons." },
-      { type: "h2", text: "Typical admin capabilities" },
-      { type: "ul", items: ["**User lookup** for feed misconfiguration support tickets.","**Feature flags** for beta chart types or export limits.","**Audit logs** of webhook and insert failures tied to <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>."] },
-      { type: "h2", text: "Deployment" },
-      { type: "p", html: "Admin routes deploy with the same <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Cloudflare Workers</a> bundle as public pages: protect with role claims in JWT or a separate allowlist table." },
-      { type: "h2", text: "Related product docs" },
-      { type: "p", html: "End users see <a class=\"text-link\" href=\"/about/accounts-and-dashboard\">accounts and dashboard overview</a>, <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history</a>, and <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">Stripe subscription</a> flows." }
+    {
+      type: "p",
+      html: 'Admin-only dashboard areas support operators who manage demo content, review user issues, or inspect system health. Role checks run server-side alongside the standard <a class="text-link" href="/about/sign-in-flow">sign-in flow</a>, never gate solely with hidden client buttons.',
+    },
+    { type: "h2", text: "Typical admin capabilities" },
+    {
+      type: "ul",
+      items: [
+        "**User lookup** for feed misconfiguration support tickets.",
+        "**Feature flags** for beta chart types or export limits.",
+        '**Audit logs** of webhook and insert failures tied to <a class="text-link" href="/about/history-inserts">history inserts</a>.',
+      ],
+    },
+    { type: "h2", text: "Deployment" },
+    {
+      type: "p",
+      html: 'Admin routes deploy with the same <a class="text-link" href="/about/cloudflare-workers-deployment">Cloudflare Workers</a> bundle as public pages: protect with role claims in JWT or a separate allowlist table.',
+    },
+    { type: "h2", text: "Related product docs" },
+    {
+      type: "p",
+      html: 'End users see <a class="text-link" href="/about/accounts-and-dashboard">accounts and dashboard overview</a>, <a class="text-link" href="/about/history-dashboard-browsing">history</a>, and <a class="text-link" href="/about/stripe-csv-subscription">Stripe subscription</a> flows.',
+    },
   ],
 
   "humidity-condensation-basics": [
-      { type: "p", html: "Garage monitoring pairs temperature with relative humidity because both drive comfort, corrosion, and mold risk. Condensation appears when humid air contacts a surface colder than the dew point, not when a humidity percentage alone crosses an arbitrary line. Probes measure the air pocket around the sensor; they do not directly detect water on a concrete floor unless that surface heats or cools the nearby air measurably." },
-      { type: "figure", illustration: "humidity-condensation-basics.svg", alt: "Diagram showing warm humid air meeting a cold garage floor and releasing condensation", caption: "Condensation forms when air cools to its dew point against a colder surface such as an uninsulated slab." },
-      { type: "h2", text: "Relative humidity versus dew point" },
-      { type: "p", html: "A DHT22 reports **relative humidity (%RH)** at the current air temperature. The same moisture content feels “wetter” when air is cold because %RH rises as temperature drops. For freeze-season storage, track both temp and humidity together: <a class=\"text-link\" href=\"/about/dht22-sensor-overview\">DHT22 overview</a> explains accuracy limits." },
-      { type: "p", html: "After <a class=\"text-link\" href=\"/about/garage-door-temperature-swings\">door openings</a> on humid summer days, expect a humidity spike as outdoor air mixes in. If the slab stays cold from <a class=\"text-link\" href=\"/about/thermal-mass-concrete-slab\">thermal mass</a>, condensation can form even when the probe reads moderate %RH at chest height." },
-      { type: "h2", text: "What probes miss" },
-      { type: "ul", items: ["**Surface temperature** of tools, cars, and pipes, often colder than air at night.","**Microclimates** behind shelving where air stagnates: use <a class=\"text-link\" href=\"/about/multi-zone-garage-layout\">multi-zone layout</a>.","**Short spikes** during door events that averages smooth away in history."] },
-      { type: "h2", text: "Practical monitoring habits" },
-      { type: "p", html: "Compare door-adjacent and interior zones via <a class=\"text-link\" href=\"/about/probe-mapping-labels\">probe labels</a>. Review overnight minimums in <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history charts</a> during shoulder seasons when slab and air temps diverge most." }
+    {
+      type: "p",
+      html: "Garage monitoring pairs temperature with relative humidity because both drive comfort, corrosion, and mold risk. Condensation appears when humid air contacts a surface colder than the dew point, not when a humidity percentage alone crosses an arbitrary line. Probes measure the air pocket around the sensor; they do not directly detect water on a concrete floor unless that surface heats or cools the nearby air measurably.",
+    },
+    {
+      type: "figure",
+      illustration: "humidity-condensation-basics.svg",
+      alt: "Diagram showing warm humid air meeting a cold garage floor and releasing condensation",
+      caption:
+        "Condensation forms when air cools to its dew point against a colder surface such as an uninsulated slab.",
+    },
+    { type: "h2", text: "Relative humidity versus dew point" },
+    {
+      type: "p",
+      html: 'A DHT22 reports **relative humidity (%RH)** at the current air temperature. The same moisture content feels “wetter” when air is cold because %RH rises as temperature drops. For freeze-season storage, track both temp and humidity together: <a class="text-link" href="/about/dht22-sensor-overview">DHT22 overview</a> explains accuracy limits.',
+    },
+    {
+      type: "p",
+      html: 'After <a class="text-link" href="/about/garage-door-temperature-swings">door openings</a> on humid summer days, expect a humidity spike as outdoor air mixes in. If the slab stays cold from <a class="text-link" href="/about/thermal-mass-concrete-slab">thermal mass</a>, condensation can form even when the probe reads moderate %RH at chest height.',
+    },
+    { type: "h2", text: "What probes miss" },
+    {
+      type: "ul",
+      items: [
+        "**Surface temperature** of tools, cars, and pipes, often colder than air at night.",
+        '**Microclimates** behind shelving where air stagnates: use <a class="text-link" href="/about/multi-zone-garage-layout">multi-zone layout</a>.',
+        "**Short spikes** during door events that averages smooth away in history.",
+      ],
+    },
+    { type: "h2", text: "Practical monitoring habits" },
+    {
+      type: "p",
+      html: 'Compare door-adjacent and interior zones via <a class="text-link" href="/about/probe-mapping-labels">probe labels</a>. Review overnight minimums in <a class="text-link" href="/about/history-dashboard-browsing">history charts</a> during shoulder seasons when slab and air temps diverge most.',
+    },
   ],
 
   "probe-cable-length-limits": [
-      { type: "p", html: "The DHT22 uses a slow single-wire protocol sensitive to capacitance and electrical noise. Bench setups with six-inch jumpers behave differently than ten-foot runs draped along garage door tracks. This guide translates physics into practical length and routing rules for remote probe heads while the Arduino stays near the Ethernet jack." },
-      { type: "figure", illustration: "probe-cable-length-limits.svg", alt: "Side view of short versus long sensor cables with noise symbols on the long run", caption: "Long unshielded runs increase capacitance and pick up interference from door openers and fluorescent ballasts." },
-      { type: "h2", text: "Recommended run lengths" },
-      { type: "p", html: "Many installers treat **three to five meters** as a soft ceiling for unshielded three-wire cable (5 V, data, GND) with a proper pull-up at the MCU end. Beyond that, expect more checksum failures handled by <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">retry logic</a>." },
-      { type: "ul", items: ["**Twist data with ground** for the full run; leave power paired separately if convenient.","**Avoid parallel routing** with AC lines, door-opener high-voltage leads, and switching power supplies.","**One pull-up** near the Arduino: do not duplicate at the far end unless you know the bus requirements."] },
-      { type: "h2", text: "Symptoms of an overlong run" },
-      { type: "p", html: "Intermittent timeouts in serial logs, one probe key dropping from JSON while the other stays healthy, and humidity stuck at last good value often trace to cable issues, not bad sensors. Confirm wiring with <a class=\"text-link\" href=\"/about/dht22-data-line-wiring\">data line wiring</a> before swapping hardware." },
-      { type: "h2", text: "Alternatives when distance is fixed" },
-      { type: "p", html: "Relocate the MCU closer to probes inside a <a class=\"text-link\" href=\"/about/enclosure-ventilation\">ventilated enclosure</a>, use <a class=\"text-link\" href=\"/about/jumper-wire-standards\">quality jumpers</a> on the bench segment, and validate reads after <a class=\"text-link\" href=\"/about/sensor-warm-up-time\">sensor warm-up</a> before trusting long-term history." }
+    {
+      type: "p",
+      html: "The DHT22 uses a slow single-wire protocol sensitive to capacitance and electrical noise. Bench setups with six-inch jumpers behave differently than ten-foot runs draped along garage door tracks. This guide translates physics into practical length and routing rules for remote probe heads while the Arduino stays near the Ethernet jack.",
+    },
+    {
+      type: "figure",
+      illustration: "probe-cable-length-limits.svg",
+      alt: "Side view of short versus long sensor cables with noise symbols on the long run",
+      caption:
+        "Long unshielded runs increase capacitance and pick up interference from door openers and fluorescent ballasts.",
+    },
+    { type: "h2", text: "Recommended run lengths" },
+    {
+      type: "p",
+      html: 'Many installers treat **three to five meters** as a soft ceiling for unshielded three-wire cable (5 V, data, GND) with a proper pull-up at the MCU end. Beyond that, expect more checksum failures handled by <a class="text-link" href="/about/dht22-read-errors-retries">retry logic</a>.',
+    },
+    {
+      type: "ul",
+      items: [
+        "**Twist data with ground** for the full run; leave power paired separately if convenient.",
+        "**Avoid parallel routing** with AC lines, door-opener high-voltage leads, and switching power supplies.",
+        "**One pull-up** near the Arduino: do not duplicate at the far end unless you know the bus requirements.",
+      ],
+    },
+    { type: "h2", text: "Symptoms of an overlong run" },
+    {
+      type: "p",
+      html: 'Intermittent timeouts in serial logs, one probe key dropping from JSON while the other stays healthy, and humidity stuck at last good value often trace to cable issues, not bad sensors. Confirm wiring with <a class="text-link" href="/about/dht22-data-line-wiring">data line wiring</a> before swapping hardware.',
+    },
+    { type: "h2", text: "Alternatives when distance is fixed" },
+    {
+      type: "p",
+      html: 'Relocate the MCU closer to probes inside a <a class="text-link" href="/about/enclosure-ventilation">ventilated enclosure</a>, use <a class="text-link" href="/about/jumper-wire-standards">quality jumpers</a> on the bench segment, and validate reads after <a class="text-link" href="/about/sensor-warm-up-time">sensor warm-up</a> before trusting long-term history.',
+    },
   ],
 
   "thermal-mass-concrete-slab": [
-      { type: "p", html: "Unheated garages often sit on a thick concrete slab tied to the earth. That mass absorbs and releases heat slowly compared with lightweight wall air. Probes mounted low or near the floor track slab influence; probes at shoulder height respond faster to door and HVAC events. Understanding mass helps explain otherwise confusing dual-probe gaps." },
-      { type: "figure", illustration: "thermal-mass-concrete-slab.svg", alt: "Cross-section of garage showing slab heat storage and delayed air warming", caption: "Slab thermal mass stores daytime heat and releases it overnight, lagging behind air temperature swings." },
-      { type: "h2", text: "Day-night lag" },
-      { type: "p", html: "On sunny afternoons, <a class=\"text-link\" href=\"/about/sun-load-garage-walls\">sun load</a> may warm the bay while the slab still feels cool to the touch. After sunset, the slab can **radiate stored heat** for hours: interior air cools more slowly than forecast models predict. <a class=\"text-link\" href=\"/about/seasonal-garage-patterns\">Seasonal history</a> reveals your site-specific lag." },
-      { type: "h2", text: "Probe placement interaction" },
-      { type: "ul", items: ["**Low-mounted probes** track floor-adjacent air influenced by slab temperature.","**Chest-height probes** better represent where people breathe and tools sit on benches.","**Average JSON key** blends both: dangerous for freeze checks; see <a class=\"text-link\" href=\"/about/dual-probe-averaging\">dual-probe averaging</a>."] },
-      { type: "h2", text: "Condensation link" },
-      { type: "p", html: "Warm humid air over a cold slab drives surface moisture: pair with <a class=\"text-link\" href=\"/about/humidity-condensation-basics\">humidity basics</a>. Insulation and door sealing reduce but do not eliminate mass effects; <a class=\"text-link\" href=\"/about/infiltration-wind-drafts\">infiltration</a> still moves air across the floor plane." }
+    {
+      type: "p",
+      html: "Unheated garages often sit on a thick concrete slab tied to the earth. That mass absorbs and releases heat slowly compared with lightweight wall air. Probes mounted low or near the floor track slab influence; probes at shoulder height respond faster to door and HVAC events. Understanding mass helps explain otherwise confusing dual-probe gaps.",
+    },
+    {
+      type: "figure",
+      illustration: "thermal-mass-concrete-slab.svg",
+      alt: "Cross-section of garage showing slab heat storage and delayed air warming",
+      caption:
+        "Slab thermal mass stores daytime heat and releases it overnight, lagging behind air temperature swings.",
+    },
+    { type: "h2", text: "Day-night lag" },
+    {
+      type: "p",
+      html: 'On sunny afternoons, <a class="text-link" href="/about/sun-load-garage-walls">sun load</a> may warm the bay while the slab still feels cool to the touch. After sunset, the slab can **radiate stored heat** for hours: interior air cools more slowly than forecast models predict. <a class="text-link" href="/about/seasonal-garage-patterns">Seasonal history</a> reveals your site-specific lag.',
+    },
+    { type: "h2", text: "Probe placement interaction" },
+    {
+      type: "ul",
+      items: [
+        "**Low-mounted probes** track floor-adjacent air influenced by slab temperature.",
+        "**Chest-height probes** better represent where people breathe and tools sit on benches.",
+        '**Average JSON key** blends both: dangerous for freeze checks; see <a class="text-link" href="/about/dual-probe-averaging">dual-probe averaging</a>.',
+      ],
+    },
+    { type: "h2", text: "Condensation link" },
+    {
+      type: "p",
+      html: 'Warm humid air over a cold slab drives surface moisture: pair with <a class="text-link" href="/about/humidity-condensation-basics">humidity basics</a>. Insulation and door sealing reduce but do not eliminate mass effects; <a class="text-link" href="/about/infiltration-wind-drafts">infiltration</a> still moves air across the floor plane.',
+    },
   ],
 
   "hvac-duct-influence": [
-      { type: "p", html: "Some garages share a wall, ceiling, or chase with conditioned house ductwork. Even sealed runs radiate heat in winter; poorly sealed taps leak warm air into an otherwise cold bay. Probes near registers or flex duct can swing several degrees independently of the door or outdoor temperature: patterns that look like sensor faults until you map the HVAC path." },
-      { type: "figure", illustration: "hvac-duct-influence.svg", alt: "Garage ceiling cutaway with HVAC duct leaking warm air toward a wall-mounted probe", caption: "Duct leakage and radiant heat from nearby runs create probe zones decoupled from outdoor weather." },
-      { type: "h2", text: "Signatures in data" },
-      { type: "p", html: "Sudden rises when the house furnace cycles, especially at night with the garage door closed: suggest duct influence. Compare against <a class=\"text-link\" href=\"/about/garage-door-temperature-swings\">door-driven swings</a>, which align with human activity instead of 15-minute HVAC periods." },
-      { type: "h2", text: "Mapping zones" },
-      { type: "ol", items: ["Place one probe **away from known duct chases** as a reference.","Note **cycle times** in a spreadsheet alongside <a class=\"text-link\" href=\"/about/charting-with-spreadsheets\">exported history</a>.","Relabel mappings in <a class=\"text-link\" href=\"/about/probe-mapping-labels\">dashboard labels</a> after moves so history stays interpretable."] },
-      { type: "h2", text: "Mitigation and monitoring" },
-      { type: "p", html: "Sealing duct joints is a building fix; monitoring is still valuable to confirm improvement. Use <a class=\"text-link\" href=\"/about/multi-zone-garage-layout\">multi-zone layout</a> and <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze thresholds</a> on the coldest zone, not the duct-warmed corner." }
+    {
+      type: "p",
+      html: "Some garages share a wall, ceiling, or chase with conditioned house ductwork. Even sealed runs radiate heat in winter; poorly sealed taps leak warm air into an otherwise cold bay. Probes near registers or flex duct can swing several degrees independently of the door or outdoor temperature: patterns that look like sensor faults until you map the HVAC path.",
+    },
+    {
+      type: "figure",
+      illustration: "hvac-duct-influence.svg",
+      alt: "Garage ceiling cutaway with HVAC duct leaking warm air toward a wall-mounted probe",
+      caption:
+        "Duct leakage and radiant heat from nearby runs create probe zones decoupled from outdoor weather.",
+    },
+    { type: "h2", text: "Signatures in data" },
+    {
+      type: "p",
+      html: 'Sudden rises when the house furnace cycles, especially at night with the garage door closed: suggest duct influence. Compare against <a class="text-link" href="/about/garage-door-temperature-swings">door-driven swings</a>, which align with human activity instead of 15-minute HVAC periods.',
+    },
+    { type: "h2", text: "Mapping zones" },
+    {
+      type: "ol",
+      items: [
+        "Place one probe **away from known duct chases** as a reference.",
+        'Note **cycle times** in a spreadsheet alongside <a class="text-link" href="/about/charting-with-spreadsheets">exported history</a>.',
+        'Relabel mappings in <a class="text-link" href="/about/probe-mapping-labels">dashboard labels</a> after moves so history stays interpretable.',
+      ],
+    },
+    { type: "h2", text: "Mitigation and monitoring" },
+    {
+      type: "p",
+      html: 'Sealing duct joints is a building fix; monitoring is still valuable to confirm improvement. Use <a class="text-link" href="/about/multi-zone-garage-layout">multi-zone layout</a> and <a class="text-link" href="/about/freeze-protection-thresholds">freeze thresholds</a> on the coldest zone, not the duct-warmed corner.',
+    },
   ],
 
   "stored-vehicle-heat": [
-      { type: "p", html: "Parking a warm car in a closed garage after a drive dumps sensible heat into the air volume and warms nearby surfaces. Probes mounted on the same wall as the vehicle or above the hood can read high for one to three hours while the rest of the bay returns toward outdoor-influenced temps. This is real physics, not miscalibration." },
-      { type: "figure", illustration: "stored-vehicle-heat.svg", alt: "Top-down garage view with heat plume rising from a recently parked car near a probe", caption: "A warm vehicle acts as a localized heat source that elevates nearby probe readings for hours." },
-      { type: "h2", text: "Typical timeline" },
-      { type: "ul", items: ["**First 30 minutes:** Largest air-temperature bump near the vehicle.","**1–3 hours:** Gradual decay; metal hood still radiates after air mixes.","**Overnight:** Vehicle equilibrates; probes should match <a class=\"text-link\" href=\"/about/seasonal-garage-patterns\">seasonal baselines</a>."] },
-      { type: "h2", text: "Separating from other drivers" },
-      { type: "p", html: "Door openings cause **sharp simultaneous** zone moves; vehicle heat is **localized**, only nearby probes spike. <a class=\"text-link\" href=\"/about/sun-load-garage-walls\">Sun load</a> peaks in afternoon without tying to arrival times. Log arrival times when using <a class=\"text-link\" href=\"/about/csv-export-spreadsheet-analysis\">CSV export</a> for forensic charts." },
-      { type: "h2", text: "Placement guidance" },
-      { type: "p", html: "Mount a reference probe on the opposite wall from habitual parking via <a class=\"text-link\" href=\"/about/probe-mounting-enclosures\">probe mounting</a>. Avoid hanging sensors directly above engine bays if you need stable overnight freeze metrics." }
+    {
+      type: "p",
+      html: "Parking a warm car in a closed garage after a drive dumps sensible heat into the air volume and warms nearby surfaces. Probes mounted on the same wall as the vehicle or above the hood can read high for one to three hours while the rest of the bay returns toward outdoor-influenced temps. This is real physics, not miscalibration.",
+    },
+    {
+      type: "figure",
+      illustration: "stored-vehicle-heat.svg",
+      alt: "Top-down garage view with heat plume rising from a recently parked car near a probe",
+      caption:
+        "A warm vehicle acts as a localized heat source that elevates nearby probe readings for hours.",
+    },
+    { type: "h2", text: "Typical timeline" },
+    {
+      type: "ul",
+      items: [
+        "**First 30 minutes:** Largest air-temperature bump near the vehicle.",
+        "**1–3 hours:** Gradual decay; metal hood still radiates after air mixes.",
+        '**Overnight:** Vehicle equilibrates; probes should match <a class="text-link" href="/about/seasonal-garage-patterns">seasonal baselines</a>.',
+      ],
+    },
+    { type: "h2", text: "Separating from other drivers" },
+    {
+      type: "p",
+      html: 'Door openings cause **sharp simultaneous** zone moves; vehicle heat is **localized**, only nearby probes spike. <a class="text-link" href="/about/sun-load-garage-walls">Sun load</a> peaks in afternoon without tying to arrival times. Log arrival times when using <a class="text-link" href="/about/csv-export-spreadsheet-analysis">CSV export</a> for forensic charts.',
+    },
+    { type: "h2", text: "Placement guidance" },
+    {
+      type: "p",
+      html: 'Mount a reference probe on the opposite wall from habitual parking via <a class="text-link" href="/about/probe-mounting-enclosures">probe mounting</a>. Avoid hanging sensors directly above engine bays if you need stable overnight freeze metrics.',
+    },
   ],
 
   "spotting-data-gaps": [
-      { type: "p", html: "Saved history is only as complete as the polling pipeline. Power loss at the Arduino, relay downtime, auth misconfiguration, or database insert failures all leave gaps. Learning to distinguish **missing data** from **flat temperature** prevents false confidence during cold snaps and billing disputes over CSV completeness." },
-      { type: "figure", illustration: "spotting-data-gaps.svg", alt: "Chart with a visible gap versus a flat line segment labeled differently", caption: "True gaps show missing timestamps; flat segments may be valid stable readings: learn the visual difference." },
-      { type: "h2", text: "Common gap causes" },
-      { type: "ol", items: ["**Feed unreachable**: relay down or IP change; start with <a class=\"text-link\" href=\"/about/debugging-stale-readings\">stale reading debug</a>.","**MCU reboot**: short blank period after <a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">watchdog reset</a>.","**Insert skipped**: upstream fetch failed per <a class=\"text-link\" href=\"/about/history-inserts\">history insert rules</a>.","**Account/session**: signed-out loads do not save; see <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">session lifecycle</a>."] },
-      { type: "h2", text: "Visual patterns" },
-      { type: "ul", items: ["**Vertical whitespace** in charts when time axis jumps forward.","**Repeated identical values** can mean stuck cache: check <a class=\"text-link\" href=\"/about/caching-feed-responses\">feed caching</a>.","**Single-zone flat while others move** suggests mapping or sensor fault."] },
-      { type: "h2", text: "Workflow" },
-      { type: "p", html: "Cross-check live JSON with curl, then browse <a class=\"text-link\" href=\"/about/history-dashboard-browsing\">history dashboard</a>. Export via <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">CSV subscription</a> and filter timestamp column for discontinuities: techniques in <a class=\"text-link\" href=\"/about/charting-with-spreadsheets\">spreadsheet charting</a>." }
+    {
+      type: "p",
+      html: "Saved history is only as complete as the polling pipeline. Power loss at the Arduino, relay downtime, auth misconfiguration, or database insert failures all leave gaps. Learning to distinguish **missing data** from **flat temperature** prevents false confidence during cold snaps and billing disputes over CSV completeness.",
+    },
+    {
+      type: "figure",
+      illustration: "spotting-data-gaps.svg",
+      alt: "Chart with a visible gap versus a flat line segment labeled differently",
+      caption:
+        "True gaps show missing timestamps; flat segments may be valid stable readings: learn the visual difference.",
+    },
+    { type: "h2", text: "Common gap causes" },
+    {
+      type: "ol",
+      items: [
+        '**Feed unreachable**: relay down or IP change; start with <a class="text-link" href="/about/debugging-stale-readings">stale reading debug</a>.',
+        '**MCU reboot**: short blank period after <a class="text-link" href="/about/firmware-watchdog-recovery">watchdog reset</a>.',
+        '**Insert skipped**: upstream fetch failed per <a class="text-link" href="/about/history-inserts">history insert rules</a>.',
+        '**Account/session**: signed-out loads do not save; see <a class="text-link" href="/about/cookie-session-lifecycle">session lifecycle</a>.',
+      ],
+    },
+    { type: "h2", text: "Visual patterns" },
+    {
+      type: "ul",
+      items: [
+        "**Vertical whitespace** in charts when time axis jumps forward.",
+        '**Repeated identical values** can mean stuck cache: check <a class="text-link" href="/about/caching-feed-responses">feed caching</a>.',
+        "**Single-zone flat while others move** suggests mapping or sensor fault.",
+      ],
+    },
+    { type: "h2", text: "Workflow" },
+    {
+      type: "p",
+      html: 'Cross-check live JSON with curl, then browse <a class="text-link" href="/about/history-dashboard-browsing">history dashboard</a>. Export via <a class="text-link" href="/about/stripe-csv-subscription">CSV subscription</a> and filter timestamp column for discontinuities: techniques in <a class="text-link" href="/about/charting-with-spreadsheets">spreadsheet charting</a>.',
+    },
   ],
 
   "charting-with-spreadsheets": [
-      { type: "p", html: "The built-in dashboard charts answer everyday questions. Spreadsheet charting answers audit questions: “How many hours below 35 °F last January?” or “Did humidity correlate with door events?” Exported CSV from <a class=\"text-link\" href=\"/about/csv-export-spreadsheet-analysis\">CSV export</a> is the starting point; good column hygiene makes charts fast to rebuild when new data arrives." },
-      { type: "figure", illustration: "charting-with-spreadsheets.svg", alt: "Spreadsheet with timestamp column and line chart of two probe series", caption: "Pivot tables and line charts turn exported CSV rows into custom freeze and humidity analyses." },
-      { type: "h2", text: "Import hygiene" },
-      { type: "ul", items: ["Parse timestamps as **datetime**, not text: sort ascending before charting.","Split **probe_key** into separate series rather than one blended line.","Keep Fahrenheit and Celsius columns consistent; pick one axis unit."] },
-      { type: "h2", text: "Useful chart types" },
-      { type: "ol", items: ["**Rolling 24h minimum** temp per zone for <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze planning</a>.","**Dual-axis** temp and humidity to spot <a class=\"text-link\" href=\"/about/humidity-condensation-basics\">condensation risk</a> windows.","**Week-over-week** overlays after insulation upgrades."] },
-      { type: "h2", text: "Correlate external data" },
-      { type: "p", html: "Merge weather API CSV on aligned timestamps: see <a class=\"text-link\" href=\"/about/weather-api-parallel-path\">weather API parallel path</a>. Mark manual events (door open, car parked) in a helper column to explain spikes from <a class=\"text-link\" href=\"/about/garage-door-temperature-swings\">door swings</a> or <a class=\"text-link\" href=\"/about/stored-vehicle-heat\">vehicle heat</a>." }
+    {
+      type: "p",
+      html: 'The built-in dashboard charts answer everyday questions. Spreadsheet charting answers audit questions: “How many hours below 35 °F last January?” or “Did humidity correlate with door events?” Exported CSV from <a class="text-link" href="/about/csv-export-spreadsheet-analysis">CSV export</a> is the starting point; good column hygiene makes charts fast to rebuild when new data arrives.',
+    },
+    {
+      type: "figure",
+      illustration: "charting-with-spreadsheets.svg",
+      alt: "Spreadsheet with timestamp column and line chart of two probe series",
+      caption:
+        "Pivot tables and line charts turn exported CSV rows into custom freeze and humidity analyses.",
+    },
+    { type: "h2", text: "Import hygiene" },
+    {
+      type: "ul",
+      items: [
+        "Parse timestamps as **datetime**, not text: sort ascending before charting.",
+        "Split **probe_key** into separate series rather than one blended line.",
+        "Keep Fahrenheit and Celsius columns consistent; pick one axis unit.",
+      ],
+    },
+    { type: "h2", text: "Useful chart types" },
+    {
+      type: "ol",
+      items: [
+        '**Rolling 24h minimum** temp per zone for <a class="text-link" href="/about/freeze-protection-thresholds">freeze planning</a>.',
+        '**Dual-axis** temp and humidity to spot <a class="text-link" href="/about/humidity-condensation-basics">condensation risk</a> windows.',
+        "**Week-over-week** overlays after insulation upgrades.",
+      ],
+    },
+    { type: "h2", text: "Correlate external data" },
+    {
+      type: "p",
+      html: 'Merge weather API CSV on aligned timestamps: see <a class="text-link" href="/about/weather-api-parallel-path">weather API parallel path</a>. Mark manual events (door open, car parked) in a helper column to explain spikes from <a class="text-link" href="/about/garage-door-temperature-swings">door swings</a> or <a class="text-link" href="/about/stored-vehicle-heat">vehicle heat</a>.',
+    },
   ],
 
   "serial-debugging-tips": [
-      { type: "p", html: "USB serial is the fastest feedback loop while the Uno still sits on the bench. Thoughtful logging, without flooding the monitor: shows whether failed reads, DHCP delays, or JSON formatting happen before you blame the website. These habits complement <a class=\"text-link\" href=\"/about/arduino-ide-setup\">IDE setup</a> and reduce ladder trips after deployment." },
-      { type: "figure", illustration: "serial-debugging-tips.svg", alt: "Laptop connected to Arduino with serial monitor showing timestamped log lines", caption: "Serial monitor at matching baud rate reveals sensor errors and network state during development." },
-      { type: "h2", text: "What to log" },
-      { type: "ul", items: ["**DHT22 errors** with probe index and retry count.","**Ethernet link** up/down and assigned IP after DHCP.","**HTTP client** connect/disconnect, not full JSON every second.","**Watchdog pets** only in debug builds to verify loop health."] },
-      { type: "h2", text: "Timing and baud" },
-      { type: "p", html: "Match monitor baud to <code>Serial.begin</code> in firmware, often 9600. Remember <a class=\"text-link\" href=\"/about/sketch-polling-main-loop\">main loop</a> timing: verbose prints slow loops and can themselves cause DHT22 timeouts. Disable chatty logs in production builds." },
-      { type: "h2", text: "After deployment" },
-      { type: "p", html: "Serial is unavailable on the pole unless you USB again: switch to <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON curl checks</a> and <a class=\"text-link\" href=\"/about/debugging-stale-readings\">site-side stale debug</a>. For network issues compare <a class=\"text-link\" href=\"/about/static-ip-vs-dhcp\">static IP versus DHCP</a> logs from boot." }
+    {
+      type: "p",
+      html: 'USB serial is the fastest feedback loop while the Uno still sits on the bench. Thoughtful logging, without flooding the monitor: shows whether failed reads, DHCP delays, or JSON formatting happen before you blame the website. These habits complement <a class="text-link" href="/about/arduino-ide-setup">IDE setup</a> and reduce ladder trips after deployment.',
+    },
+    {
+      type: "figure",
+      illustration: "serial-debugging-tips.svg",
+      alt: "Laptop connected to Arduino with serial monitor showing timestamped log lines",
+      caption:
+        "Serial monitor at matching baud rate reveals sensor errors and network state during development.",
+    },
+    { type: "h2", text: "What to log" },
+    {
+      type: "ul",
+      items: [
+        "**DHT22 errors** with probe index and retry count.",
+        "**Ethernet link** up/down and assigned IP after DHCP.",
+        "**HTTP client** connect/disconnect, not full JSON every second.",
+        "**Watchdog pets** only in debug builds to verify loop health.",
+      ],
+    },
+    { type: "h2", text: "Timing and baud" },
+    {
+      type: "p",
+      html: 'Match monitor baud to <code>Serial.begin</code> in firmware, often 9600. Remember <a class="text-link" href="/about/sketch-polling-main-loop">main loop</a> timing: verbose prints slow loops and can themselves cause DHT22 timeouts. Disable chatty logs in production builds.',
+    },
+    { type: "h2", text: "After deployment" },
+    {
+      type: "p",
+      html: 'Serial is unavailable on the pole unless you USB again: switch to <a class="text-link" href="/about/json-probe-output-schema">JSON curl checks</a> and <a class="text-link" href="/about/debugging-stale-readings">site-side stale debug</a>. For network issues compare <a class="text-link" href="/about/static-ip-vs-dhcp">static IP versus DHCP</a> logs from boot.',
+    },
   ],
 
   "library-dependencies": [
-      { type: "p", html: "The garage sketch is not self-contained: it pulls in Adafruit or community DHT drivers, the stock LiquidCrystal library, and the legacy Ethernet stack for W5100 shields. Library major-version jumps have broken constructors and enum names in past bring-ups. Documenting dependencies makes rebuilds in five years possible when the original laptop is gone." },
-      { type: "figure", illustration: "library-dependencies.svg", alt: "Dependency boxes linking DHT, LiquidCrystal, and Ethernet libraries to the main sketch", caption: "Core third-party libraries supply sensor protocol, LCD driving, and W5100 network I/O." },
-      { type: "h2", text: "Core libraries" },
-      { type: "ul", items: ["**DHT sensor library**: single-wire reads with timing guards.","**LiquidCrystal**: parallel 4-bit LCD mode used locally.","**Ethernet**. W5100-compatible stack for HTTP serving."] },
-      { type: "h2", text: "Install workflow" },
-      { type: "ol", items: ["Use **Library Manager** or vendor ZIP with pinned version notes in your repo README.","Compile a **known example** for each library before merging into the probe sketch.","After updates, re-verify <a class=\"text-link\" href=\"/about/lcd-local-display-format\">LCD layout</a> and <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON schema</a>."] },
-      { type: "h2", text: "PlatformIO alternative" },
-      { type: "p", html: "PlatformIO locks versions in <code>platformio.ini</code>: excellent for reproducibility. Either path starts from <a class=\"text-link\" href=\"/about/arduino-ide-setup\">Arduino IDE setup</a>. Sensor behavior details: <a class=\"text-link\" href=\"/about/dht22-sensor-overview\">DHT22 overview</a>." }
+    {
+      type: "p",
+      html: "The garage sketch is not self-contained: it pulls in Adafruit or community DHT drivers, the stock LiquidCrystal library, and the legacy Ethernet stack for W5100 shields. Library major-version jumps have broken constructors and enum names in past bring-ups. Documenting dependencies makes rebuilds in five years possible when the original laptop is gone.",
+    },
+    {
+      type: "figure",
+      illustration: "library-dependencies.svg",
+      alt: "Dependency boxes linking DHT, LiquidCrystal, and Ethernet libraries to the main sketch",
+      caption:
+        "Core third-party libraries supply sensor protocol, LCD driving, and W5100 network I/O.",
+    },
+    { type: "h2", text: "Core libraries" },
+    {
+      type: "ul",
+      items: [
+        "**DHT sensor library**: single-wire reads with timing guards.",
+        "**LiquidCrystal**: parallel 4-bit LCD mode used locally.",
+        "**Ethernet**. W5100-compatible stack for HTTP serving.",
+      ],
+    },
+    { type: "h2", text: "Install workflow" },
+    {
+      type: "ol",
+      items: [
+        "Use **Library Manager** or vendor ZIP with pinned version notes in your repo README.",
+        "Compile a **known example** for each library before merging into the probe sketch.",
+        'After updates, re-verify <a class="text-link" href="/about/lcd-local-display-format">LCD layout</a> and <a class="text-link" href="/about/json-probe-output-schema">JSON schema</a>.',
+      ],
+    },
+    { type: "h2", text: "PlatformIO alternative" },
+    {
+      type: "p",
+      html: 'PlatformIO locks versions in <code>platformio.ini</code>: excellent for reproducibility. Either path starts from <a class="text-link" href="/about/arduino-ide-setup">Arduino IDE setup</a>. Sensor behavior details: <a class="text-link" href="/about/dht22-sensor-overview">DHT22 overview</a>.',
+    },
   ],
 
   "static-ip-vs-dhcp": [
-      { type: "p", html: "The Ethernet shield can request DHCP from the LAN router or use a fixed LAN address. DHCP is easier on first boot; static or DHCP reservation prevents the Arduino from jumping addresses after power outages: breaking hard-coded upstream URLs in <a class=\"text-link\" href=\"/about/fastapi-relay-setup\">FastAPI relays</a> until someone notices stale home page readings." },
-      { type: "figure", illustration: "static-ip-vs-dhcp.svg", alt: "Router diagram comparing DHCP lease churn versus reserved static IP for the Arduino", caption: "Reserved DHCP or static IP keeps the probe URL stable for relays and firewall rules." },
-      { type: "h2", text: "DHCP with reservation" },
-      { type: "p", html: "Many routers map **MAC address → fixed IP** while still using DHCP under the hood. This gives plug-and-play first install plus stability: preferred for most garage builds. Note the Uno MAC from serial boot logs during <a class=\"text-link\" href=\"/about/serial-debugging-tips\">serial debug</a>." },
-      { type: "h2", text: "True static in firmware" },
-      { type: "ul", items: ["Hard-code IP, gateway, subnet, and DNS in the sketch.","Document values on the enclosure lid: future you will forget.","Conflict risk if another device claims the same IP."] },
-      { type: "h2", text: "Downstream impact" },
-      { type: "p", html: "Relays and <a class=\"text-link\" href=\"/about/docker-relay-deployment\">Docker deployments</a> often store upstream LAN URLs. Pair stable IPs with <a class=\"text-link\" href=\"/about/health-check-endpoints\">health checks</a> and <a class=\"text-link\" href=\"/about/firmware-watchdog-recovery\">watchdog recovery</a> so brief reboots do not require config edits." }
+    {
+      type: "p",
+      html: 'The Ethernet shield can request DHCP from the LAN router or use a fixed LAN address. DHCP is easier on first boot; static or DHCP reservation prevents the Arduino from jumping addresses after power outages: breaking hard-coded upstream URLs in <a class="text-link" href="/about/fastapi-relay-setup">FastAPI relays</a> until someone notices stale home page readings.',
+    },
+    {
+      type: "figure",
+      illustration: "static-ip-vs-dhcp.svg",
+      alt: "Router diagram comparing DHCP lease churn versus reserved static IP for the Arduino",
+      caption:
+        "Reserved DHCP or static IP keeps the probe URL stable for relays and firewall rules.",
+    },
+    { type: "h2", text: "DHCP with reservation" },
+    {
+      type: "p",
+      html: 'Many routers map **MAC address → fixed IP** while still using DHCP under the hood. This gives plug-and-play first install plus stability: preferred for most garage builds. Note the Uno MAC from serial boot logs during <a class="text-link" href="/about/serial-debugging-tips">serial debug</a>.',
+    },
+    { type: "h2", text: "True static in firmware" },
+    {
+      type: "ul",
+      items: [
+        "Hard-code IP, gateway, subnet, and DNS in the sketch.",
+        "Document values on the enclosure lid: future you will forget.",
+        "Conflict risk if another device claims the same IP.",
+      ],
+    },
+    { type: "h2", text: "Downstream impact" },
+    {
+      type: "p",
+      html: 'Relays and <a class="text-link" href="/about/docker-relay-deployment">Docker deployments</a> often store upstream LAN URLs. Pair stable IPs with <a class="text-link" href="/about/health-check-endpoints">health checks</a> and <a class="text-link" href="/about/firmware-watchdog-recovery">watchdog recovery</a> so brief reboots do not require config edits.',
+    },
   ],
 
   "ground-loop-avoidance": [
-      { type: "p", html: "Ground is not “just connect all blacks together.” When USB programming ground, barrel jack return, Ethernet shield chassis, and remote probe grounds meet at multiple points, small circulating currents add noise to the DHT22 one-wire reference. A deliberate **single-star ground** at the Uno keeps digital reads stable and LCD contrast predictable." },
-      { type: "figure", illustration: "ground-loop-avoidance.svg", alt: "Wiring diagram showing star ground at Arduino versus problematic ground loops", caption: "Route all returns to one ground star at the MCU instead of chaining grounds through multiple paths." },
-      { type: "h2", text: "Bench versus installed power" },
-      { type: "p", html: "USB bench power shares ground with your laptop; adding a barrel supply without common planning can create loops. Before mount, verify <a class=\"text-link\" href=\"/about/breadboard-power-rails\">power rails</a> at one potential reference. After mount, disconnect USB when on barrel power if your enclosure design allows." },
-      { type: "h2", text: "Remote probe grounds" },
-      { type: "ul", items: ["Run **GND alongside data** from each probe: do not ground probes locally to building steel alone.","Avoid **grounding shields** at both ends of long runs unless using proper shielded cable practice.","See <a class=\"text-link\" href=\"/about/probe-cable-length-limits\">cable length limits</a> for run geometry."] },
-      { type: "h2", text: "Diagnosis" },
-      { type: "p", html: "If errors vanish when touching a wire, suspect reference issues. Cross-check <a class=\"text-link\" href=\"/about/circuit-wiring-troubleshooting\">circuit troubleshooting</a> and <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">DHT22 retries</a> after fixing grounds before replacing sensors." }
+    {
+      type: "p",
+      html: "Ground is not “just connect all blacks together.” When USB programming ground, barrel jack return, Ethernet shield chassis, and remote probe grounds meet at multiple points, small circulating currents add noise to the DHT22 one-wire reference. A deliberate **single-star ground** at the Uno keeps digital reads stable and LCD contrast predictable.",
+    },
+    {
+      type: "figure",
+      illustration: "ground-loop-avoidance.svg",
+      alt: "Wiring diagram showing star ground at Arduino versus problematic ground loops",
+      caption:
+        "Route all returns to one ground star at the MCU instead of chaining grounds through multiple paths.",
+    },
+    { type: "h2", text: "Bench versus installed power" },
+    {
+      type: "p",
+      html: 'USB bench power shares ground with your laptop; adding a barrel supply without common planning can create loops. Before mount, verify <a class="text-link" href="/about/breadboard-power-rails">power rails</a> at one potential reference. After mount, disconnect USB when on barrel power if your enclosure design allows.',
+    },
+    { type: "h2", text: "Remote probe grounds" },
+    {
+      type: "ul",
+      items: [
+        "Run **GND alongside data** from each probe: do not ground probes locally to building steel alone.",
+        "Avoid **grounding shields** at both ends of long runs unless using proper shielded cable practice.",
+        'See <a class="text-link" href="/about/probe-cable-length-limits">cable length limits</a> for run geometry.',
+      ],
+    },
+    { type: "h2", text: "Diagnosis" },
+    {
+      type: "p",
+      html: 'If errors vanish when touching a wire, suspect reference issues. Cross-check <a class="text-link" href="/about/circuit-wiring-troubleshooting">circuit troubleshooting</a> and <a class="text-link" href="/about/dht22-read-errors-retries">DHT22 retries</a> after fixing grounds before replacing sensors.',
+    },
   ],
 
   "enclosure-ventilation": [
-      { type: "p", html: "Sealing the Arduino in a NEMA box protects from dust but traps heat from the linear regulator and W5100 chip. Probes in a separate ventilated housing need holes for ambient air while keeping rain off. Confusing the two enclosure types causes overheated Ethernet resets and sluggish humidity readings: different problems with similar “boxed up” appearance." },
-      { type: "figure", illustration: "enclosure-ventilation.svg", alt: "Two enclosures side by side: ventilated probe box and louvered MCU box with fan arrow", caption: "Probe housings breathe ambient air; MCU enclosures exhaust heat while keeping dust out." },
-      { type: "h2", text: "MCU box guidelines" },
-      { type: "ul", items: ["**Louvers or slots** on opposing sides for cross-flow.","Keep **barrel jack and RJ45** accessible for service.","Do not seal **Ethernet shield** against a hot south wall without shade."] },
-      { type: "h2", text: "Probe box guidelines" },
-      { type: "p", html: "Match <a class=\"text-link\" href=\"/about/probe-mounting-enclosures\">probe mounting</a>: vents sized for air exchange, cable gland pointing down, sensor not in direct sun patch. Interior MCU heat must not share an unvented cavity with a DHT22: see <a class=\"text-link\" href=\"/about/multi-zone-garage-layout\">zone layout</a>." },
-      { type: "h2", text: "Thermal interaction" },
-      { type: "p", html: "Warm electronics raise nearby air if co-mounted: mount probes on exterior wall, MCU near the router run. <a class=\"text-link\" href=\"/about/ground-loop-avoidance\">Ground planning</a> still applies inside the box." }
+    {
+      type: "p",
+      html: "Sealing the Arduino in a NEMA box protects from dust but traps heat from the linear regulator and W5100 chip. Probes in a separate ventilated housing need holes for ambient air while keeping rain off. Confusing the two enclosure types causes overheated Ethernet resets and sluggish humidity readings: different problems with similar “boxed up” appearance.",
+    },
+    {
+      type: "figure",
+      illustration: "enclosure-ventilation.svg",
+      alt: "Two enclosures side by side: ventilated probe box and louvered MCU box with fan arrow",
+      caption:
+        "Probe housings breathe ambient air; MCU enclosures exhaust heat while keeping dust out.",
+    },
+    { type: "h2", text: "MCU box guidelines" },
+    {
+      type: "ul",
+      items: [
+        "**Louvers or slots** on opposing sides for cross-flow.",
+        "Keep **barrel jack and RJ45** accessible for service.",
+        "Do not seal **Ethernet shield** against a hot south wall without shade.",
+      ],
+    },
+    { type: "h2", text: "Probe box guidelines" },
+    {
+      type: "p",
+      html: 'Match <a class="text-link" href="/about/probe-mounting-enclosures">probe mounting</a>: vents sized for air exchange, cable gland pointing down, sensor not in direct sun patch. Interior MCU heat must not share an unvented cavity with a DHT22: see <a class="text-link" href="/about/multi-zone-garage-layout">zone layout</a>.',
+    },
+    { type: "h2", text: "Thermal interaction" },
+    {
+      type: "p",
+      html: 'Warm electronics raise nearby air if co-mounted: mount probes on exterior wall, MCU near the router run. <a class="text-link" href="/about/ground-loop-avoidance">Ground planning</a> still applies inside the box.',
+    },
   ],
 
   "backlight-pwm-options": [
-      { type: "p", html: "The parallel LCD interface uses RS, E, and D4–D7 for text: documented in <a class=\"text-link\" href=\"/about/liquid-crystal-gpio-map\">LCD GPIO map</a>. The LED backlight is a power circuit, often switched through a transistor because Arduino pins cannot supply backlight current directly. PWM or timed dimming keeps the display readable at night without an always-on glow heating the enclosure." },
-      { type: "figure", illustration: "backlight-pwm-options.svg", alt: "Circuit sketch of NPN transistor switching LCD backlight with optional PWM pin", caption: "A GPIO drives a transistor to PWM or gate the backlight LED circuit independently of data lines." },
-      { type: "h2", text: "Wiring patterns" },
-      { type: "ol", items: ["**Direct digital pin**: on/off only; simplest for bench tests.","**PWM pin**: smooth dimming via <code>analogWrite</code> on supported pins.","**Timer-based off**: firmware turns backlight off after idle minutes."] },
-      { type: "h2", text: "Firmware interaction" },
-      { type: "p", html: "Backlight changes do not require re-init of LiquidCrystal. Coordinate with <a class=\"text-link\" href=\"/about/lcd-local-display-format\">display format</a> refresh so dimming does not coincide with unreadable contrast. Vo pot still sets character visibility via <a class=\"text-link\" href=\"/about/breadboard-power-rails\">power rails</a>." },
-      { type: "h2", text: "Power budget" },
-      { type: "p", html: "Overnight off saves modest current but reduces heat in <a class=\"text-link\" href=\"/about/enclosure-ventilation\">sealed enclosures</a>. Ensure <a class=\"text-link\" href=\"/about/spi-pins-ethernet-reserved\">SPI pins</a> stay free if choosing PWM on timer-overlap pins: verify pinout chart for your board." }
+    {
+      type: "p",
+      html: 'The parallel LCD interface uses RS, E, and D4–D7 for text: documented in <a class="text-link" href="/about/liquid-crystal-gpio-map">LCD GPIO map</a>. The LED backlight is a power circuit, often switched through a transistor because Arduino pins cannot supply backlight current directly. PWM or timed dimming keeps the display readable at night without an always-on glow heating the enclosure.',
+    },
+    {
+      type: "figure",
+      illustration: "backlight-pwm-options.svg",
+      alt: "Circuit sketch of NPN transistor switching LCD backlight with optional PWM pin",
+      caption:
+        "A GPIO drives a transistor to PWM or gate the backlight LED circuit independently of data lines.",
+    },
+    { type: "h2", text: "Wiring patterns" },
+    {
+      type: "ol",
+      items: [
+        "**Direct digital pin**: on/off only; simplest for bench tests.",
+        "**PWM pin**: smooth dimming via <code>analogWrite</code> on supported pins.",
+        "**Timer-based off**: firmware turns backlight off after idle minutes.",
+      ],
+    },
+    { type: "h2", text: "Firmware interaction" },
+    {
+      type: "p",
+      html: 'Backlight changes do not require re-init of LiquidCrystal. Coordinate with <a class="text-link" href="/about/lcd-local-display-format">display format</a> refresh so dimming does not coincide with unreadable contrast. Vo pot still sets character visibility via <a class="text-link" href="/about/breadboard-power-rails">power rails</a>.',
+    },
+    { type: "h2", text: "Power budget" },
+    {
+      type: "p",
+      html: 'Overnight off saves modest current but reduces heat in <a class="text-link" href="/about/enclosure-ventilation">sealed enclosures</a>. Ensure <a class="text-link" href="/about/spi-pins-ethernet-reserved">SPI pins</a> stay free if choosing PWM on timer-overlap pins: verify pinout chart for your board.',
+    },
   ],
 
   "jumper-wire-standards": [
-      { type: "p", html: "Breadboard jumpers look interchangeable but garage vibration from door openers and compressors loosens cheap connections. Solid-core dupont wires suit bench work; finalized installs benefit from restrained routing, labeled colors, and occasional ferrules where wires leave the breadboard for remote probes." },
-      { type: "figure", illustration: "jumper-wire-standards.svg", alt: "Color-coded jumper set with solid versus stranded ends labeled", caption: "Standard color codes and mechanically secure terminations reduce intermittent connections." },
-      { type: "h2", text: "Color conventions" },
-      { type: "ul", items: ["**Red**: 5 V distribution.","**Black or green**: ground.","**Yellow/blue/green**: data lines per probe: document in <a class=\"text-link\" href=\"/about/dht22-data-line-wiring\">DHT22 wiring</a>.","**Contrast pot**: separate pair; do not share with sensor data colors."] },
-      { type: "h2", text: "Mechanical reliability" },
-      { type: "p", html: "Strain-relief tie points before cables exit the board; avoid tension on DHT22 sockets. Long runs transition to twisted pair per <a class=\"text-link\" href=\"/about/probe-cable-length-limits\">cable length guide</a>. Re-seat connections after transport to the monitored space." },
-      { type: "h2", text: "When to stop using breadboards" },
-      { type: "p", html: "Permanently mounted installs eventually deserve a protoboard or PCB: see <a class=\"text-link\" href=\"/about/arduino-circuit-wiring\">circuit wiring overview</a>. Until then, <a class=\"text-link\" href=\"/about/circuit-wiring-troubleshooting\">systematic troubleshooting</a> beats random jumper swaps." }
+    {
+      type: "p",
+      html: "Breadboard jumpers look interchangeable but garage vibration from door openers and compressors loosens cheap connections. Solid-core dupont wires suit bench work; finalized installs benefit from restrained routing, labeled colors, and occasional ferrules where wires leave the breadboard for remote probes.",
+    },
+    {
+      type: "figure",
+      illustration: "jumper-wire-standards.svg",
+      alt: "Color-coded jumper set with solid versus stranded ends labeled",
+      caption:
+        "Standard color codes and mechanically secure terminations reduce intermittent connections.",
+    },
+    { type: "h2", text: "Color conventions" },
+    {
+      type: "ul",
+      items: [
+        "**Red**: 5 V distribution.",
+        "**Black or green**: ground.",
+        '**Yellow/blue/green**: data lines per probe: document in <a class="text-link" href="/about/dht22-data-line-wiring">DHT22 wiring</a>.',
+        "**Contrast pot**: separate pair; do not share with sensor data colors.",
+      ],
+    },
+    { type: "h2", text: "Mechanical reliability" },
+    {
+      type: "p",
+      html: 'Strain-relief tie points before cables exit the board; avoid tension on DHT22 sockets. Long runs transition to twisted pair per <a class="text-link" href="/about/probe-cable-length-limits">cable length guide</a>. Re-seat connections after transport to the monitored space.',
+    },
+    { type: "h2", text: "When to stop using breadboards" },
+    {
+      type: "p",
+      html: 'Permanently mounted installs eventually deserve a protoboard or PCB: see <a class="text-link" href="/about/arduino-circuit-wiring">circuit wiring overview</a>. Until then, <a class="text-link" href="/about/circuit-wiring-troubleshooting">systematic troubleshooting</a> beats random jumper swaps.',
+    },
   ],
 
   "sensor-warm-up-time": [
-      { type: "p", html: "DHT22 humidity sensors equilibrate with surrounding air after power application. Temperature responds faster; humidity may drift toward true values over several minutes, especially if the sensor was stored in a cold truck before install. Firmware and installers should ignore or flag early samples so JSON and LCD do not alarm on transient RH." },
-      { type: "figure", illustration: "sensor-warm-up-time.svg", alt: "Timeline graph showing humidity settling after power-on versus faster temperature response", caption: "Humidity readings stabilize over minutes after cold storage or rapid temperature change." },
-      { type: "h2", text: "Boot behavior" },
-      { type: "p", html: "Skip publishing humidity for the first **one to three minutes** after reset, or mark reads as warming in serial logs via <a class=\"text-link\" href=\"/about/serial-debugging-tips\">serial debug</a>. Align with <a class=\"text-link\" href=\"/about/sketch-polling-main-loop\">main loop</a> timer so HTTP still serves temperature if needed." },
-      { type: "h2", text: "Environmental triggers" },
-      { type: "ul", items: ["**Cold snap** after warm storage: humidity lags real air.","**Door event** mixing humid outdoor air: wait one poll cycle before alerts.","**Vehicle heat** nearby: see <a class=\"text-link\" href=\"/about/stored-vehicle-heat\">stored vehicle heat</a>."] },
-      { type: "h2", text: "User-facing impact" },
-      { type: "p", html: "Dashboard history inherits warm-up blips if inserts run immediately: pair with <a class=\"text-link\" href=\"/about/dht22-read-errors-retries\">retry policy</a> and <a class=\"text-link\" href=\"/about/humidity-condensation-basics\">condensation basics</a> for interpretation, not panic." }
+    {
+      type: "p",
+      html: "DHT22 humidity sensors equilibrate with surrounding air after power application. Temperature responds faster; humidity may drift toward true values over several minutes, especially if the sensor was stored in a cold truck before install. Firmware and installers should ignore or flag early samples so JSON and LCD do not alarm on transient RH.",
+    },
+    {
+      type: "figure",
+      illustration: "sensor-warm-up-time.svg",
+      alt: "Timeline graph showing humidity settling after power-on versus faster temperature response",
+      caption:
+        "Humidity readings stabilize over minutes after cold storage or rapid temperature change.",
+    },
+    { type: "h2", text: "Boot behavior" },
+    {
+      type: "p",
+      html: 'Skip publishing humidity for the first **one to three minutes** after reset, or mark reads as warming in serial logs via <a class="text-link" href="/about/serial-debugging-tips">serial debug</a>. Align with <a class="text-link" href="/about/sketch-polling-main-loop">main loop</a> timer so HTTP still serves temperature if needed.',
+    },
+    { type: "h2", text: "Environmental triggers" },
+    {
+      type: "ul",
+      items: [
+        "**Cold snap** after warm storage: humidity lags real air.",
+        "**Door event** mixing humid outdoor air: wait one poll cycle before alerts.",
+        '**Vehicle heat** nearby: see <a class="text-link" href="/about/stored-vehicle-heat">stored vehicle heat</a>.',
+      ],
+    },
+    { type: "h2", text: "User-facing impact" },
+    {
+      type: "p",
+      html: 'Dashboard history inherits warm-up blips if inserts run immediately: pair with <a class="text-link" href="/about/dht22-read-errors-retries">retry policy</a> and <a class="text-link" href="/about/humidity-condensation-basics">condensation basics</a> for interpretation, not panic.',
+    },
   ],
 
   "lcd-i2c-alternative": [
-      { type: "p", html: "Parallel mode uses six GPIO lines plus backlight drive: tight on an Uno stacked with W5100. I²C backpacks (typically PCF8574) need SDA/SCL only, freeing pins for extra probes or <a class=\"text-link\" href=\"/about/backlight-pwm-options\">backlight PWM</a>. The tradeoff is another library, address jumpers, and shared bus timing with any future I²C sensors." },
-      { type: "figure", illustration: "lcd-i2c-alternative.svg", alt: "Parallel LCD versus I²C backpack pin count comparison on Arduino Uno", caption: "I²C backpacks reduce GPIO use to two data lines plus power: helpful when SPI pins are reserved." },
-      { type: "h2", text: "Pin budget math" },
-      { type: "p", html: "Review <a class=\"text-link\" href=\"/about/spi-pins-ethernet-reserved\">reserved SPI pins</a> and <a class=\"text-link\" href=\"/about/liquid-crystal-gpio-map\">parallel map</a>: two DHT22 lines plus six LCD lines leaves little headroom. I²C reclaims four to six pins depending on wiring." },
-      { type: "h2", text: "Migration notes" },
-      { type: "ol", items: ["Install **LiquidCrystal I²C** library and set backpack address (often 0x27).","Rewire **SDA/SCL**. Uno A4/A5 on classic boards.","Update display strings in <a class=\"text-link\" href=\"/about/lcd-local-display-format\">LCD format</a>: character width unchanged."] },
-      { type: "h2", text: "When to stay parallel" },
-      { type: "p", html: "If your shield stack already works and pins suffice, parallel mode remains simpler: <a class=\"text-link\" href=\"/about/arduino-dht22-lcd\">DHT22 and LCD overview</a>. Consider I²C when adding a third probe or <a class=\"text-link\" href=\"/about/backlight-pwm-options\">PWM backlight</a> on a crowded pin map." }
+    {
+      type: "p",
+      html: 'Parallel mode uses six GPIO lines plus backlight drive: tight on an Uno stacked with W5100. I²C backpacks (typically PCF8574) need SDA/SCL only, freeing pins for extra probes or <a class="text-link" href="/about/backlight-pwm-options">backlight PWM</a>. The tradeoff is another library, address jumpers, and shared bus timing with any future I²C sensors.',
+    },
+    {
+      type: "figure",
+      illustration: "lcd-i2c-alternative.svg",
+      alt: "Parallel LCD versus I²C backpack pin count comparison on Arduino Uno",
+      caption:
+        "I²C backpacks reduce GPIO use to two data lines plus power: helpful when SPI pins are reserved.",
+    },
+    { type: "h2", text: "Pin budget math" },
+    {
+      type: "p",
+      html: 'Review <a class="text-link" href="/about/spi-pins-ethernet-reserved">reserved SPI pins</a> and <a class="text-link" href="/about/liquid-crystal-gpio-map">parallel map</a>: two DHT22 lines plus six LCD lines leaves little headroom. I²C reclaims four to six pins depending on wiring.',
+    },
+    { type: "h2", text: "Migration notes" },
+    {
+      type: "ol",
+      items: [
+        "Install **LiquidCrystal I²C** library and set backpack address (often 0x27).",
+        "Rewire **SDA/SCL**. Uno A4/A5 on classic boards.",
+        'Update display strings in <a class="text-link" href="/about/lcd-local-display-format">LCD format</a>: character width unchanged.',
+      ],
+    },
+    { type: "h2", text: "When to stay parallel" },
+    {
+      type: "p",
+      html: 'If your shield stack already works and pins suffice, parallel mode remains simpler: <a class="text-link" href="/about/arduino-dht22-lcd">DHT22 and LCD overview</a>. Consider I²C when adding a third probe or <a class="text-link" href="/about/backlight-pwm-options">PWM backlight</a> on a crowded pin map.',
+    },
   ],
 
   "docker-relay-deployment": [
-      { type: "p", html: "Bare-metal systemd works, but Docker Compose bundles the <a class=\"text-link\" href=\"/about/fastapi-relay-setup\">FastAPI relay</a>, <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">Redis cache</a>, and reverse-proxy sidecars with one <code>docker compose up</code>. Images rebuild from locked requirements; volumes preserve Redis data across restarts: useful when the LAN router reboots and upstream Arduino needs a minute to return." },
-      { type: "figure", illustration: "docker-relay-deployment.svg", alt: "Docker Compose stack with relay, Redis, and reverse proxy containers", caption: "Compose services for FastAPI, Redis, and TLS proxy deploy as one reproducible stack." },
-      { type: "h2", text: "Typical compose services" },
-      { type: "ul", items: ["**relay**: uvicorn app polling LAN JSON.","**redis**: cache with persistent volume optional.","**caddy/nginx**. TLS termination per <a class=\"text-link\" href=\"/about/relay-security-and-access\">relay security</a>."] },
-      { type: "h2", text: "Configuration" },
-      { type: "p", html: "Mount env files read-only: details in <a class=\"text-link\" href=\"/about/environment-variables-relay\">environment variables</a>. Set upstream Arduino URL after <a class=\"text-link\" href=\"/about/static-ip-vs-dhcp\">IP planning</a>. Expose <a class=\"text-link\" href=\"/about/health-check-endpoints\">health endpoints</a> for uptime monitors." },
-      { type: "h2", text: "Operations" },
-      { type: "ol", items: ["Pin image tags; avoid `:latest` on production home servers.","Log rotation on the host disk. JSON polls are chatty at DEBUG.","After schema changes, verify <a class=\"text-link\" href=\"/about/json-probe-output-schema\">JSON schema</a> before redeploy."] }
+    {
+      type: "p",
+      html: 'Bare-metal systemd works, but Docker Compose bundles the <a class="text-link" href="/about/fastapi-relay-setup">FastAPI relay</a>, <a class="text-link" href="/about/redis-cache-for-feeds">Redis cache</a>, and reverse-proxy sidecars with one <code>docker compose up</code>. Images rebuild from locked requirements; volumes preserve Redis data across restarts: useful when the LAN router reboots and upstream Arduino needs a minute to return.',
+    },
+    {
+      type: "figure",
+      illustration: "docker-relay-deployment.svg",
+      alt: "Docker Compose stack with relay, Redis, and reverse proxy containers",
+      caption:
+        "Compose services for FastAPI, Redis, and TLS proxy deploy as one reproducible stack.",
+    },
+    { type: "h2", text: "Typical compose services" },
+    {
+      type: "ul",
+      items: [
+        "**relay**: uvicorn app polling LAN JSON.",
+        "**redis**: cache with persistent volume optional.",
+        '**caddy/nginx**. TLS termination per <a class="text-link" href="/about/relay-security-and-access">relay security</a>.',
+      ],
+    },
+    { type: "h2", text: "Configuration" },
+    {
+      type: "p",
+      html: 'Mount env files read-only: details in <a class="text-link" href="/about/environment-variables-relay">environment variables</a>. Set upstream Arduino URL after <a class="text-link" href="/about/static-ip-vs-dhcp">IP planning</a>. Expose <a class="text-link" href="/about/health-check-endpoints">health endpoints</a> for uptime monitors.',
+    },
+    { type: "h2", text: "Operations" },
+    {
+      type: "ol",
+      items: [
+        "Pin image tags; avoid `:latest` on production home servers.",
+        "Log rotation on the host disk. JSON polls are chatty at DEBUG.",
+        'After schema changes, verify <a class="text-link" href="/about/json-probe-output-schema">JSON schema</a> before redeploy.',
+      ],
+    },
   ],
 
   "environment-variables-relay": [
-      { type: "p", html: "Relays read configuration from the environment at startup: where the Arduino lives, how long to cache JSON, which Redis DB index to use, and how verbose logging should be. Hard-coding LAN IPs in source leads to git leaks and rebuilds for trivial changes: environment variables align with <a class=\"text-link\" href=\"/about/docker-relay-deployment\">Docker deployment</a> and production hygiene." },
-      { type: "figure", illustration: "environment-variables-relay.svg", alt: "Env file keys flowing into relay process configuration blocks", caption: "Environment variables supply upstream URL, Redis DSN, TTL, and log level at container start." },
-      { type: "h2", text: "Common variables" },
-      { type: "pre", code: "UPSTREAM_URL=http://192.168.1.50/\nREDIS_URL=redis://redis:6379/0\nCACHE_TTL_SECONDS=60\nLOG_LEVEL=info" },
-      { type: "h2", text: "Secrets handling" },
-      { type: "p", html: "Optional API keys for public relay auth belong in env, not committed files. Mirror patterns from <a class=\"text-link\" href=\"/about/env-secrets-cloudflare\">Cloudflare secrets</a> on the Astro side. Never store database credentials in the relay: it only needs to serve JSON, or push readings through the device ingest API." },
-      { type: "h2", text: "Validation on boot" },
-      { type: "p", html: "Fail fast when <code>UPSTREAM_URL</code> is missing; log resolved values once at INFO. Pair with <a class=\"text-link\" href=\"/about/health-check-endpoints\">health checks</a> so orchestrators restart unhealthy containers instead of serving blank JSON." }
+    {
+      type: "p",
+      html: 'Relays read configuration from the environment at startup: where the Arduino lives, how long to cache JSON, which Redis DB index to use, and how verbose logging should be. Hard-coding LAN IPs in source leads to git leaks and rebuilds for trivial changes: environment variables align with <a class="text-link" href="/about/docker-relay-deployment">Docker deployment</a> and production hygiene.',
+    },
+    {
+      type: "figure",
+      illustration: "environment-variables-relay.svg",
+      alt: "Env file keys flowing into relay process configuration blocks",
+      caption:
+        "Environment variables supply upstream URL, Redis DSN, TTL, and log level at container start.",
+    },
+    { type: "h2", text: "Common variables" },
+    {
+      type: "pre",
+      code: "UPSTREAM_URL=http://192.168.1.50/\nREDIS_URL=redis://redis:6379/0\nCACHE_TTL_SECONDS=60\nLOG_LEVEL=info",
+    },
+    { type: "h2", text: "Secrets handling" },
+    {
+      type: "p",
+      html: 'Optional API keys for public relay auth belong in env, not committed files. Mirror patterns from <a class="text-link" href="/about/env-secrets-cloudflare">Cloudflare secrets</a> on the Astro side. Never store database credentials in the relay: it only needs to serve JSON, or push readings through the device ingest API.',
+    },
+    { type: "h2", text: "Validation on boot" },
+    {
+      type: "p",
+      html: 'Fail fast when <code>UPSTREAM_URL</code> is missing; log resolved values once at INFO. Pair with <a class="text-link" href="/about/health-check-endpoints">health checks</a> so orchestrators restart unhealthy containers instead of serving blank JSON.',
+    },
   ],
 
   "health-check-endpoints": [
-      { type: "p", html: "A relay can hang with a 200 OK on stale JSON. Good health endpoints distinguish **process up**, **Redis reachable**, and **recent successful upstream poll**. Home-lab monitors and <a class=\"text-link\" href=\"/about/docker-relay-deployment\">Compose</a> restart policies depend on meaningful HTTP status codes, not just TCP open on port 443." },
-      { type: "figure", illustration: "health-check-endpoints.svg", alt: "Health check flow from monitor to relay to Redis and upstream Arduino", caption: "Liveness confirms the app runs; readiness verifies cache connectivity and fresh upstream data." },
-      { type: "h2", text: "Suggested routes" },
-      { type: "ul", items: ["<code>GET /health/live</code>: returns 200 if event loop responsive.","<code>GET /health/ready</code>: checks Redis ping and upstream fetch within TTL.","<code>GET /health/metrics</code>, optional Prometheus text for advanced users."] },
-      { type: "h2", text: "Status code policy" },
-      { type: "p", html: "Return **503** when last good upstream sample is older than two TTL windows: site logic in <a class=\"text-link\" href=\"/about/debugging-stale-readings\">stale reading debug</a> aligns. Log upstream errors separately from client traffic per <a class=\"text-link\" href=\"/about/relay-security-and-access\">relay security</a>." },
-      { type: "h2", text: "Website integration" },
-      { type: "p", html: "The Astro fetch layer may still show cached values briefly: see <a class=\"text-link\" href=\"/about/caching-feed-responses\">caching feed responses</a>. Health endpoints help operators, not end users; configure monitors outside the public home page." }
+    {
+      type: "p",
+      html: 'A relay can hang with a 200 OK on stale JSON. Good health endpoints distinguish **process up**, **Redis reachable**, and **recent successful upstream poll**. Home-lab monitors and <a class="text-link" href="/about/docker-relay-deployment">Compose</a> restart policies depend on meaningful HTTP status codes, not just TCP open on port 443.',
+    },
+    {
+      type: "figure",
+      illustration: "health-check-endpoints.svg",
+      alt: "Health check flow from monitor to relay to Redis and upstream Arduino",
+      caption:
+        "Liveness confirms the app runs; readiness verifies cache connectivity and fresh upstream data.",
+    },
+    { type: "h2", text: "Suggested routes" },
+    {
+      type: "ul",
+      items: [
+        "<code>GET /health/live</code>: returns 200 if event loop responsive.",
+        "<code>GET /health/ready</code>: checks Redis ping and upstream fetch within TTL.",
+        "<code>GET /health/metrics</code>, optional Prometheus text for advanced users.",
+      ],
+    },
+    { type: "h2", text: "Status code policy" },
+    {
+      type: "p",
+      html: 'Return **503** when last good upstream sample is older than two TTL windows: site logic in <a class="text-link" href="/about/debugging-stale-readings">stale reading debug</a> aligns. Log upstream errors separately from client traffic per <a class="text-link" href="/about/relay-security-and-access">relay security</a>.',
+    },
+    { type: "h2", text: "Website integration" },
+    {
+      type: "p",
+      html: 'The Astro fetch layer may still show cached values briefly: see <a class="text-link" href="/about/caching-feed-responses">caching feed responses</a>. Health endpoints help operators, not end users; configure monitors outside the public home page.',
+    },
   ],
 
   "middleware-auth-patterns": [
-      { type: "p", html: "Authenticated dashboard pages must not rely on hidden UI alone. Astro middleware on Cloudflare can inspect cookies, validate the Better Auth session, and redirect anonymous visitors to sign-in before expensive fetches run. The same layer protects API routes that mutate feed settings or trigger <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>." },
-      { type: "figure", illustration: "middleware-auth-patterns.svg", alt: "Request path through Astro middleware to auth check then dashboard render", caption: "Middleware intercepts protected routes, validates session, then allows SSR or redirects to sign-in." },
-      { type: "h2", text: "What to protect" },
-      { type: "ul", items: ["**/dashboard/**: settings, history, billing.","**POST API routes**: feed updates, contact submissions.","Leave **public about and home** unauthenticated unless A/B testing."] },
-      { type: "h2", text: "Session sources" },
-      { type: "p", html: "Read the HttpOnly session cookie set during the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>. Better Auth renews active sessions itself, so there is no separate refresh token to rotate before SSR: details overlap <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">cookie session lifecycle</a>." },
-      { type: "h2", text: "Edge considerations" },
-      { type: "p", html: "Middleware runs at the edge, keep calls fast; cache public keys. Admin routes need role checks via <a class=\"text-link\" href=\"/about/group-membership-model\">group membership</a>. Broader SSR context: <a class=\"text-link\" href=\"/about/astro-server-side-rendering\">Astro SSR</a>." }
+    {
+      type: "p",
+      html: 'Authenticated dashboard pages must not rely on hidden UI alone. Astro middleware on Cloudflare can inspect cookies, validate the Better Auth session, and redirect anonymous visitors to sign-in before expensive fetches run. The same layer protects API routes that mutate feed settings or trigger <a class="text-link" href="/about/history-inserts">history inserts</a>.',
+    },
+    {
+      type: "figure",
+      illustration: "middleware-auth-patterns.svg",
+      alt: "Request path through Astro middleware to auth check then dashboard render",
+      caption:
+        "Middleware intercepts protected routes, validates session, then allows SSR or redirects to sign-in.",
+    },
+    { type: "h2", text: "What to protect" },
+    {
+      type: "ul",
+      items: [
+        "**/dashboard/**: settings, history, billing.",
+        "**POST API routes**: feed updates, contact submissions.",
+        "Leave **public about and home** unauthenticated unless A/B testing.",
+      ],
+    },
+    { type: "h2", text: "Session sources" },
+    {
+      type: "p",
+      html: 'Read the HttpOnly session cookie set during the <a class="text-link" href="/about/sign-in-flow">sign-in flow</a>. Better Auth renews active sessions itself, so there is no separate refresh token to rotate before SSR: details overlap <a class="text-link" href="/about/cookie-session-lifecycle">cookie session lifecycle</a>.',
+    },
+    { type: "h2", text: "Edge considerations" },
+    {
+      type: "p",
+      html: 'Middleware runs at the edge, keep calls fast; cache public keys. Admin routes need role checks via <a class="text-link" href="/about/group-membership-model">group membership</a>. Broader SSR context: <a class="text-link" href="/about/astro-server-side-rendering">Astro SSR</a>.',
+    },
   ],
 
   "env-secrets-cloudflare": [
-      { type: "p", html: "Edge-deployed Astro reads configuration from Cloudflare Workers environment at runtime. Service role keys and Stripe webhook secrets must never appear in client bundles or public GitHub repos. Separating **public** anon keys from **server-only** secrets mirrors relay hygiene in <a class=\"text-link\" href=\"/about/environment-variables-relay\">relay env vars</a>." },
-      { type: "figure", illustration: "env-secrets-cloudflare.svg", alt: "Cloudflare dashboard secrets flowing to Worker runtime without appearing in client JS", caption: "Server-only secrets inject at deploy time; public anon keys may ship to the browser bundle." },
-      { type: "h2", text: "Variable classes" },
-      { type: "ul", items: ["**PUBLIC_** prefix: safe for client islands if truly public.","**Server secrets**. database URL, Better Auth secret, Stripe secret, webhook signing.","**Per-environment**: preview vs production values in separate namespaces."] },
-      { type: "h2", text: "Local development" },
-      { type: "p", html: "Use <code>.dev.vars</code> gitignored locally; never commit. Rotate after laptop loss. Pair with <a class=\"text-link\" href=\"/about/middleware-auth-patterns\">middleware auth</a> so mis-set keys fail closed on dashboard routes." },
-      { type: "h2", text: "Deployment pipeline" },
-      { type: "p", html: "CI sets secrets via wrangler or dashboard UI: document names in README without values. Related: <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Workers deployment</a> and <a class=\"text-link\" href=\"/about/tailwind-v4-setup\">Tailwind v4 setup</a> build env for CSS only." }
+    {
+      type: "p",
+      html: 'Edge-deployed Astro reads configuration from Cloudflare Workers environment at runtime. Service role keys and Stripe webhook secrets must never appear in client bundles or public GitHub repos. Separating **public** anon keys from **server-only** secrets mirrors relay hygiene in <a class="text-link" href="/about/environment-variables-relay">relay env vars</a>.',
+    },
+    {
+      type: "figure",
+      illustration: "env-secrets-cloudflare.svg",
+      alt: "Cloudflare dashboard secrets flowing to Worker runtime without appearing in client JS",
+      caption:
+        "Server-only secrets inject at deploy time; public anon keys may ship to the browser bundle.",
+    },
+    { type: "h2", text: "Variable classes" },
+    {
+      type: "ul",
+      items: [
+        "**PUBLIC_** prefix: safe for client islands if truly public.",
+        "**Server secrets**. database URL, Better Auth secret, Stripe secret, webhook signing.",
+        "**Per-environment**: preview vs production values in separate namespaces.",
+      ],
+    },
+    { type: "h2", text: "Local development" },
+    {
+      type: "p",
+      html: 'Use <code>.dev.vars</code> gitignored locally; never commit. Rotate after laptop loss. Pair with <a class="text-link" href="/about/middleware-auth-patterns">middleware auth</a> so mis-set keys fail closed on dashboard routes.',
+    },
+    { type: "h2", text: "Deployment pipeline" },
+    {
+      type: "p",
+      html: 'CI sets secrets via wrangler or dashboard UI: document names in README without values. Related: <a class="text-link" href="/about/cloudflare-workers-deployment">Workers deployment</a> and <a class="text-link" href="/about/tailwind-v4-setup">Tailwind v4 setup</a> build env for CSS only.',
+    },
   ],
 
   "tailwind-v4-setup": [
-      { type: "p", html: "This site uses Tailwind utility classes across cards, buttons, and about prose, including the <code>text-link</code> class referenced throughout expanded guides. Tailwind v4 shifts much configuration into CSS <code>@theme</code> blocks instead of JavaScript config files, which affects how custom colors align with brand plum and terracotta accents in diagrams and UI chrome." },
-      { type: "figure", illustration: "tailwind-v4-setup.svg", alt: "Astro page components importing Tailwind v4 CSS with theme token blocks", caption: "Tailwind v4 integrates via CSS imports and @theme tokens shared across Astro layouts." },
-      { type: "h2", text: "Project integration" },
-      { type: "p", html: "Global styles load from the layout entry CSS; components use utilities directly in Astro HTML. Islands hydrate with the same tokens when they mount: see <a class=\"text-link\" href=\"/about/astro-islands-and-hydration\">Astro islands</a>." },
-      { type: "h2", text: "About prose conventions" },
-      { type: "ul", items: ["**card**: section containers on about pages.","**text-link**: internal /about/ links in generated HTML blocks.","**about-figure**: illustration wrappers in <a class=\"text-link\" href=\"/about/astro-applications\">Astro applications</a> expanded pages."] },
-      { type: "h2", text: "Build pipeline" },
-      { type: "p", html: "Production builds run through the same Vite pipeline deployed via <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">Cloudflare Workers</a>. Env-specific asset hashing does not affect Tailwind class names: safe for static expanded content generation." }
+    {
+      type: "p",
+      html: "This site uses Tailwind utility classes across cards, buttons, and about prose, including the <code>text-link</code> class referenced throughout expanded guides. Tailwind v4 shifts much configuration into CSS <code>@theme</code> blocks instead of JavaScript config files, which affects how custom colors align with brand plum and terracotta accents in diagrams and UI chrome.",
+    },
+    {
+      type: "figure",
+      illustration: "tailwind-v4-setup.svg",
+      alt: "Astro page components importing Tailwind v4 CSS with theme token blocks",
+      caption:
+        "Tailwind v4 integrates via CSS imports and @theme tokens shared across Astro layouts.",
+    },
+    { type: "h2", text: "Project integration" },
+    {
+      type: "p",
+      html: 'Global styles load from the layout entry CSS; components use utilities directly in Astro HTML. Islands hydrate with the same tokens when they mount: see <a class="text-link" href="/about/astro-islands-and-hydration">Astro islands</a>.',
+    },
+    { type: "h2", text: "About prose conventions" },
+    {
+      type: "ul",
+      items: [
+        "**card**: section containers on about pages.",
+        "**text-link**: internal /about/ links in generated HTML blocks.",
+        '**about-figure**: illustration wrappers in <a class="text-link" href="/about/astro-applications">Astro applications</a> expanded pages.',
+      ],
+    },
+    { type: "h2", text: "Build pipeline" },
+    {
+      type: "p",
+      html: 'Production builds run through the same Vite pipeline deployed via <a class="text-link" href="/about/cloudflare-workers-deployment">Cloudflare Workers</a>. Env-specific asset hashing does not affect Tailwind class names: safe for static expanded content generation.',
+    },
   ],
 
   "websocket-live-updates": [
-      { type: "p", html: "Next.js and Node servers often pair monitoring dashboards with WebSockets or SSE for live tiles without full page reload. Garage probes change slowly: 30–120 second cadence, so aggressive push channels rarely justify complexity here. Understanding the pattern helps compare this stack with <a class=\"text-link\" href=\"/about/nextjs-monitoring-dashboards\">Next.js dashboards</a> you might build elsewhere." },
-      { type: "figure", illustration: "websocket-live-updates.svg", alt: "Browser dashboard receiving WebSocket push updates from Node server", caption: "WebSocket channels push probe JSON to browsers as soon as the server polls upstream hardware." },
-      { type: "h2", text: "Architecture sketch" },
-      { type: "ol", items: ["Node **polls Arduino** on an interval.","Server **broadcasts** JSON to connected WebSocket clients.","Browser **updates charts** without navigation."] },
-      { type: "h2", text: "Tradeoffs" },
-      { type: "ul", items: ["**Pros:** Instant feel for ops desks; multi-user fan-out.","**Cons:** Stateful servers, reconnect logic, harder edge deploy than <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">SSR fetch</a>.","**Garage reality:** DHT22 limits poll rate: push faster than reads is pointless."] },
-      { type: "h2", text: "Hybrid alternative" },
-      { type: "p", html: "This project uses SSR plus optional client refresh islands: <a class=\"text-link\" href=\"/about/astro-islands-and-hydration\">Astro islands</a>. For LAN-only live views, see <a class=\"text-link\" href=\"/about/websocket-live-updates\">local Node patterns</a> in <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express API patterns</a>." }
+    {
+      type: "p",
+      html: 'Next.js and Node servers often pair monitoring dashboards with WebSockets or SSE for live tiles without full page reload. Garage probes change slowly: 30–120 second cadence, so aggressive push channels rarely justify complexity here. Understanding the pattern helps compare this stack with <a class="text-link" href="/about/nextjs-monitoring-dashboards">Next.js dashboards</a> you might build elsewhere.',
+    },
+    {
+      type: "figure",
+      illustration: "websocket-live-updates.svg",
+      alt: "Browser dashboard receiving WebSocket push updates from Node server",
+      caption:
+        "WebSocket channels push probe JSON to browsers as soon as the server polls upstream hardware.",
+    },
+    { type: "h2", text: "Architecture sketch" },
+    {
+      type: "ol",
+      items: [
+        "Node **polls Arduino** on an interval.",
+        "Server **broadcasts** JSON to connected WebSocket clients.",
+        "Browser **updates charts** without navigation.",
+      ],
+    },
+    { type: "h2", text: "Tradeoffs" },
+    {
+      type: "ul",
+      items: [
+        "**Pros:** Instant feel for ops desks; multi-user fan-out.",
+        '**Cons:** Stateful servers, reconnect logic, harder edge deploy than <a class="text-link" href="/about/home-page-probe-fetch">SSR fetch</a>.',
+        "**Garage reality:** DHT22 limits poll rate: push faster than reads is pointless.",
+      ],
+    },
+    { type: "h2", text: "Hybrid alternative" },
+    {
+      type: "p",
+      html: 'This project uses SSR plus optional client refresh islands: <a class="text-link" href="/about/astro-islands-and-hydration">Astro islands</a>. For LAN-only live views, see <a class="text-link" href="/about/websocket-live-updates">local Node patterns</a> in <a class="text-link" href="/about/node-express-api-patterns">Express API patterns</a>.',
+    },
   ],
 
   "hosting-cost-comparison": [
-      { type: "p", html: "Total cost of ownership includes domain, hosting, Stripe fees, Neon database plan, electricity for the Arduino stack, and optional VPS for Python relays. Comparing <a class=\"text-link\" href=\"/about/comparing-full-stack-options\">full-stack options</a> without dollars hides why this repo chose Astro on Cloudflare with residential upstream JSON." },
-      { type: "figure", illustration: "hosting-cost-comparison.svg", alt: "Bar chart comparing monthly costs of edge, VPS, and home relay hosting options", caption: "Hobby monitoring costs split across edge hosting, database tier, and home relay power." },
-      { type: "h2", text: "Cloudflare + Neon path" },
-      { type: "ul", items: ["**Workers/Pages**, often free tier for modest traffic.","**Neon Postgres**: a small plan covers modest history; watch row growth.","**Home relay**: existing PC or Pi power only."] },
-      { type: "h2", text: "VPS Node/Next path" },
-      { type: "p", html: "$5–20/month VPS running <a class=\"text-link\" href=\"/about/node-express-api-patterns\">Express</a> or <a class=\"text-link\" href=\"/about/nextjs-monitoring-dashboards\">Next</a> with cron polling: predictable bill, you maintain OS patches. <a class=\"text-link\" href=\"/about/docker-relay-deployment\">Docker</a> on same VPS consolidates services." },
-      { type: "h2", text: "Hidden costs" },
-      { type: "p", html: "Developer time for <a class=\"text-link\" href=\"/about/relay-security-and-access\">TLS and security</a>, <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">billing webhooks</a>, and ladder trips to reboot firmware. Edge <a class=\"text-link\" href=\"/about/cloudflare-workers-deployment\">deployment</a> reduces ops time; hardware stays the same either way." }
+    {
+      type: "p",
+      html: 'Total cost of ownership includes domain, hosting, Stripe fees, Neon database plan, electricity for the Arduino stack, and optional VPS for Python relays. Comparing <a class="text-link" href="/about/comparing-full-stack-options">full-stack options</a> without dollars hides why this repo chose Astro on Cloudflare with residential upstream JSON.',
+    },
+    {
+      type: "figure",
+      illustration: "hosting-cost-comparison.svg",
+      alt: "Bar chart comparing monthly costs of edge, VPS, and home relay hosting options",
+      caption:
+        "Hobby monitoring costs split across edge hosting, database tier, and home relay power.",
+    },
+    { type: "h2", text: "Cloudflare + Neon path" },
+    {
+      type: "ul",
+      items: [
+        "**Workers/Pages**, often free tier for modest traffic.",
+        "**Neon Postgres**: a small plan covers modest history; watch row growth.",
+        "**Home relay**: existing PC or Pi power only.",
+      ],
+    },
+    { type: "h2", text: "VPS Node/Next path" },
+    {
+      type: "p",
+      html: '$5–20/month VPS running <a class="text-link" href="/about/node-express-api-patterns">Express</a> or <a class="text-link" href="/about/nextjs-monitoring-dashboards">Next</a> with cron polling: predictable bill, you maintain OS patches. <a class="text-link" href="/about/docker-relay-deployment">Docker</a> on same VPS consolidates services.',
+    },
+    { type: "h2", text: "Hidden costs" },
+    {
+      type: "p",
+      html: 'Developer time for <a class="text-link" href="/about/relay-security-and-access">TLS and security</a>, <a class="text-link" href="/about/stripe-csv-subscription">billing webhooks</a>, and ladder trips to reboot firmware. Edge <a class="text-link" href="/about/cloudflare-workers-deployment">deployment</a> reduces ops time; hardware stays the same either way.',
+    },
   ],
 
   "weather-api-parallel-path": [
-      { type: "p", html: "Garage probes tell you what happened inside. A parallel weather API path tells you what the atmosphere delivered: useful for correlating <a class=\"text-link\" href=\"/about/infiltration-wind-drafts\">wind infiltration</a>, expected lows, and spreadsheet joins in <a class=\"text-link\" href=\"/about/charting-with-spreadsheets\">charting with spreadsheets</a>. This path must not block probe SSR if the weather vendor is slow." },
-      { type: "figure", illustration: "weather-api-parallel-path.svg", alt: "Parallel fetch arrows from server to probe JSON and weather API merging in SSR", caption: "Server fetches probe feeds and weather API concurrently so slow forecasts do not block live temps." },
-      { type: "h2", text: "Fetch strategy" },
-      { type: "p", html: "Use <code>Promise.allSettled</code> or equivalent: probe fetch failure should still 200 the page with an error card; weather failure omits the sidebar forecast. Timeouts align with <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">home page probe fetch</a> patterns." },
-      { type: "h2", text: "Data use" },
-      { type: "ul", items: ["**Display only**: outdoor temp/humidity context on dashboard.","**CSV enrichment**: join on hour buckets during export analysis.","**Not for control**: do not drive freeze alerts from forecast alone."] },
-      { type: "h2", text: "Secrets and caching" },
-      { type: "p", html: "Weather API keys live in <a class=\"text-link\" href=\"/about/env-secrets-cloudflare\">Cloudflare secrets</a>. Cache responses longer than probe TTL: <a class=\"text-link\" href=\"/about/caching-feed-responses\">feed caching</a> doc contrasts freshness needs." }
+    {
+      type: "p",
+      html: 'Garage probes tell you what happened inside. A parallel weather API path tells you what the atmosphere delivered: useful for correlating <a class="text-link" href="/about/infiltration-wind-drafts">wind infiltration</a>, expected lows, and spreadsheet joins in <a class="text-link" href="/about/charting-with-spreadsheets">charting with spreadsheets</a>. This path must not block probe SSR if the weather vendor is slow.',
+    },
+    {
+      type: "figure",
+      illustration: "weather-api-parallel-path.svg",
+      alt: "Parallel fetch arrows from server to probe JSON and weather API merging in SSR",
+      caption:
+        "Server fetches probe feeds and weather API concurrently so slow forecasts do not block live temps.",
+    },
+    { type: "h2", text: "Fetch strategy" },
+    {
+      type: "p",
+      html: 'Use <code>Promise.allSettled</code> or equivalent: probe fetch failure should still 200 the page with an error card; weather failure omits the sidebar forecast. Timeouts align with <a class="text-link" href="/about/home-page-probe-fetch">home page probe fetch</a> patterns.',
+    },
+    { type: "h2", text: "Data use" },
+    {
+      type: "ul",
+      items: [
+        "**Display only**: outdoor temp/humidity context on dashboard.",
+        "**CSV enrichment**: join on hour buckets during export analysis.",
+        "**Not for control**: do not drive freeze alerts from forecast alone.",
+      ],
+    },
+    { type: "h2", text: "Secrets and caching" },
+    {
+      type: "p",
+      html: 'Weather API keys live in <a class="text-link" href="/about/env-secrets-cloudflare">Cloudflare secrets</a>. Cache responses longer than probe TTL: <a class="text-link" href="/about/caching-feed-responses">feed caching</a> doc contrasts freshness needs.',
+    },
   ],
 
   "cookie-session-lifecycle": [
-      { type: "p", html: "Authentication is not only the sign-in form: it is the HttpOnly cookie chain that lets server routes know which feed mappings and history rows belong to you. Expired sessions explain sudden “default demo feeds” on the home page and missing <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a> even when probes are healthy." },
-      { type: "figure", illustration: "cookie-session-lifecycle.svg", alt: "Sequence diagram from sign-in through cookie set, SSR fetch, and history insert", caption: "Sign-in establishes session cookies consumed by SSR routes and history insert logic." },
-      { type: "h2", text: "Lifecycle stages" },
-      { type: "ol", items: ["**Sign-in**. Better Auth creates a session; the server sets a signed HttpOnly cookie.","**SSR requests**: middleware validates before dashboard render.","**Refresh**: Better Auth extends active sessions; idle ones expire.","**Sign-out**: cookies cleared; subsequent loads are anonymous."] },
-      { type: "h2", text: "Impact on data pipeline" },
-      { type: "p", html: "History saves on authenticated home loads: see <a class=\"text-link\" href=\"/about/data-flow\">data flow overview</a>. Guest visitors read public demo feeds via <a class=\"text-link\" href=\"/about/home-page-probe-fetch\">probe fetch</a> without writing rows. Session bugs resemble <a class=\"text-link\" href=\"/about/spotting-data-gaps\">data gaps</a> in charts." },
-      { type: "h2", text: "Security pairing" },
-      { type: "p", html: "Combine with <a class=\"text-link\" href=\"/about/middleware-auth-patterns\">middleware auth</a> and the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>. Admin routes additionally check <a class=\"text-link\" href=\"/about/group-membership-model\">group membership</a>." }
+    {
+      type: "p",
+      html: 'Authentication is not only the sign-in form: it is the HttpOnly cookie chain that lets server routes know which feed mappings and history rows belong to you. Expired sessions explain sudden “default demo feeds” on the home page and missing <a class="text-link" href="/about/history-inserts">history inserts</a> even when probes are healthy.',
+    },
+    {
+      type: "figure",
+      illustration: "cookie-session-lifecycle.svg",
+      alt: "Sequence diagram from sign-in through cookie set, SSR fetch, and history insert",
+      caption:
+        "Sign-in establishes session cookies consumed by SSR routes and history insert logic.",
+    },
+    { type: "h2", text: "Lifecycle stages" },
+    {
+      type: "ol",
+      items: [
+        "**Sign-in**. Better Auth creates a session; the server sets a signed HttpOnly cookie.",
+        "**SSR requests**: middleware validates before dashboard render.",
+        "**Refresh**: Better Auth extends active sessions; idle ones expire.",
+        "**Sign-out**: cookies cleared; subsequent loads are anonymous.",
+      ],
+    },
+    { type: "h2", text: "Impact on data pipeline" },
+    {
+      type: "p",
+      html: 'History saves on authenticated home loads: see <a class="text-link" href="/about/data-flow">data flow overview</a>. Guest visitors read public demo feeds via <a class="text-link" href="/about/home-page-probe-fetch">probe fetch</a> without writing rows. Session bugs resemble <a class="text-link" href="/about/spotting-data-gaps">data gaps</a> in charts.',
+    },
+    { type: "h2", text: "Security pairing" },
+    {
+      type: "p",
+      html: 'Combine with <a class="text-link" href="/about/middleware-auth-patterns">middleware auth</a> and the <a class="text-link" href="/about/sign-in-flow">sign-in flow</a>. Admin routes additionally check <a class="text-link" href="/about/group-membership-model">group membership</a>.',
+    },
   ],
 
   "caching-feed-responses": [
-      { type: "p", html: "A single home page view could otherwise trigger a LAN fetch from Cloudflare to your residential relay on every request. Caching at the Python relay (Redis), optional edge cache headers, and short in-process memoization in Astro each reduce load. Mis-tuned TTL causes <a class=\"text-link\" href=\"/about/debugging-stale-readings\">stale readings</a> that look like hardware faults." },
-      { type: "figure", illustration: "caching-feed-responses.svg", alt: "Cache layers from browser to edge to relay Redis to Arduino", caption: "TTL settings at relay Redis and edge fetch boundaries balance freshness versus uplink load." },
-      { type: "h2", text: "Layer guide" },
-      { type: "ul", items: ["**Redis**: <a class=\"text-link\" href=\"/about/redis-cache-for-feeds\">primary TTL</a> 30–120s at relay.","**Astro fetch**, optional short memo during single SSR request.","**CDN**: avoid caching authenticated HTML; public home may cache briefly."] },
-      { type: "h2", text: "Stale-while-revalidate" },
-      { type: "p", html: "Serve last good JSON while async refresh runs if Arduino is slow: documented in <a class=\"text-link\" href=\"/about/health-check-endpoints\">health checks</a>. Do not cache error bodies. Probe insert logic should skip failed fetches per <a class=\"text-link\" href=\"/about/history-inserts\">history inserts</a>." },
-      { type: "h2", text: "Tuning workflow" },
-      { type: "ol", items: ["Measure **curl latency** from edge to relay.","Set TTL ≥ Arduino poll interval.","Verify LCD vs web after changes: <a class=\"text-link\" href=\"/about/lcd-local-display-format\">LCD is often fresher</a>."] }
+    {
+      type: "p",
+      html: 'A single home page view could otherwise trigger a LAN fetch from Cloudflare to your residential relay on every request. Caching at the Python relay (Redis), optional edge cache headers, and short in-process memoization in Astro each reduce load. Mis-tuned TTL causes <a class="text-link" href="/about/debugging-stale-readings">stale readings</a> that look like hardware faults.',
+    },
+    {
+      type: "figure",
+      illustration: "caching-feed-responses.svg",
+      alt: "Cache layers from browser to edge to relay Redis to Arduino",
+      caption:
+        "TTL settings at relay Redis and edge fetch boundaries balance freshness versus uplink load.",
+    },
+    { type: "h2", text: "Layer guide" },
+    {
+      type: "ul",
+      items: [
+        '**Redis**: <a class="text-link" href="/about/redis-cache-for-feeds">primary TTL</a> 30–120s at relay.',
+        "**Astro fetch**, optional short memo during single SSR request.",
+        "**CDN**: avoid caching authenticated HTML; public home may cache briefly.",
+      ],
+    },
+    { type: "h2", text: "Stale-while-revalidate" },
+    {
+      type: "p",
+      html: 'Serve last good JSON while async refresh runs if Arduino is slow: documented in <a class="text-link" href="/about/health-check-endpoints">health checks</a>. Do not cache error bodies. Probe insert logic should skip failed fetches per <a class="text-link" href="/about/history-inserts">history inserts</a>.',
+    },
+    { type: "h2", text: "Tuning workflow" },
+    {
+      type: "ol",
+      items: [
+        "Measure **curl latency** from edge to relay.",
+        "Set TTL ≥ Arduino poll interval.",
+        'Verify LCD vs web after changes: <a class="text-link" href="/about/lcd-local-display-format">LCD is often fresher</a>.',
+      ],
+    },
   ],
 
   "group-membership-model": [
-      { type: "p", html: "Users belong to one or more groups stored in Postgres: typically default registered users, paying members with CSV access, and admins who review contact submissions. Server routes check group membership before unlocking <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">CSV export</a> or <a class=\"text-link\" href=\"/about/admin-dashboard-features\">admin dashboard</a> tools rather than scattering email allowlists in code." },
-      { type: "figure", illustration: "group-membership-model.svg", alt: "User account linked to member and admin group nodes with feature flags", caption: "Group rows in Postgres determine CSV export, billing features, and admin route access." },
-      { type: "h2", text: "Common groups" },
-      { type: "ul", items: ["**default**: signed-in feeds and history browsing.","**member**: active Stripe subscription for CSV.","**admin**: user lookup and <a class=\"text-link\" href=\"/about/contact-form-admin-review\">contact review</a>."] },
-      { type: "h2", text: "Enforcement points" },
-      { type: "p", html: "Check groups in Astro middleware and API handlers: <a class=\"text-link\" href=\"/about/middleware-auth-patterns\">middleware patterns</a>. Webhooks add member group on successful checkout; cancellations remove it. Never trust client-side group claims." },
-      { type: "h2", text: "Auth foundation" },
-      { type: "p", html: "Registration, described in the <a class=\"text-link\" href=\"/about/sign-in-flow\">sign-in flow</a>, assigns the default group. The session cookie only identifies the user; server routes look up their groups in Postgres. See <a class=\"text-link\" href=\"/about/cookie-session-lifecycle\">session lifecycle</a>." }
+    {
+      type: "p",
+      html: 'Users belong to one or more groups stored in Postgres: typically default registered users, paying members with CSV access, and admins who review contact submissions. Server routes check group membership before unlocking <a class="text-link" href="/about/stripe-csv-subscription">CSV export</a> or <a class="text-link" href="/about/admin-dashboard-features">admin dashboard</a> tools rather than scattering email allowlists in code.',
+    },
+    {
+      type: "figure",
+      illustration: "group-membership-model.svg",
+      alt: "User account linked to member and admin group nodes with feature flags",
+      caption:
+        "Group rows in Postgres determine CSV export, billing features, and admin route access.",
+    },
+    { type: "h2", text: "Common groups" },
+    {
+      type: "ul",
+      items: [
+        "**default**: signed-in feeds and history browsing.",
+        "**member**: active Stripe subscription for CSV.",
+        '**admin**: user lookup and <a class="text-link" href="/about/contact-form-admin-review">contact review</a>.',
+      ],
+    },
+    { type: "h2", text: "Enforcement points" },
+    {
+      type: "p",
+      html: 'Check groups in Astro middleware and API handlers: <a class="text-link" href="/about/middleware-auth-patterns">middleware patterns</a>. Webhooks add member group on successful checkout; cancellations remove it. Never trust client-side group claims.',
+    },
+    { type: "h2", text: "Auth foundation" },
+    {
+      type: "p",
+      html: 'Registration, described in the <a class="text-link" href="/about/sign-in-flow">sign-in flow</a>, assigns the default group. The session cookie only identifies the user; server routes look up their groups in Postgres. See <a class="text-link" href="/about/cookie-session-lifecycle">session lifecycle</a>.',
+    },
   ],
 
   "contact-form-admin-review": [
-      { type: "p", html: "Public visitors submit questions through a hydrated contact island. Rows persist in Postgres for admins to review: separate from temperature telemetry. This workflow keeps support out of personal email folders and aligns permissions with <a class=\"text-link\" href=\"/about/group-membership-model\">group membership</a> instead of sharing one password." },
-      { type: "figure", illustration: "contact-form-admin-review.svg", alt: "Admin dashboard table listing contact submissions with status filters", caption: "Admins filter contact submissions by date and handled status from the dashboard queue." },
-      { type: "h2", text: "Submission path" },
-      { type: "ol", items: ["Visitor completes **contact form** island.","API route validates and **inserts row** with timestamp.","Admin views queue under **dashboard admin** section."] },
-      { type: "h2", text: "Review habits" },
-      { type: "ul", items: ["Mark **handled** to avoid duplicate replies.","Cross-link users to <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">feed configuration</a> docs when relevant.","Escalate billing issues to <a class=\"text-link\" href=\"/about/stripe-csv-subscription\">Stripe subscription</a> records."] },
-      { type: "h2", text: "Security" },
-      { type: "p", html: "Rate-limit public POST endpoints at the edge. Admin list routes require admin group: see <a class=\"text-link\" href=\"/about/admin-dashboard-features\">admin features</a> and <a class=\"text-link\" href=\"/about/env-secrets-cloudflare\">secrets hygiene</a>." }
+    {
+      type: "p",
+      html: 'Public visitors submit questions through a hydrated contact island. Rows persist in Postgres for admins to review: separate from temperature telemetry. This workflow keeps support out of personal email folders and aligns permissions with <a class="text-link" href="/about/group-membership-model">group membership</a> instead of sharing one password.',
+    },
+    {
+      type: "figure",
+      illustration: "contact-form-admin-review.svg",
+      alt: "Admin dashboard table listing contact submissions with status filters",
+      caption:
+        "Admins filter contact submissions by date and handled status from the dashboard queue.",
+    },
+    { type: "h2", text: "Submission path" },
+    {
+      type: "ol",
+      items: [
+        "Visitor completes **contact form** island.",
+        "API route validates and **inserts row** with timestamp.",
+        "Admin views queue under **dashboard admin** section.",
+      ],
+    },
+    { type: "h2", text: "Review habits" },
+    {
+      type: "ul",
+      items: [
+        "Mark **handled** to avoid duplicate replies.",
+        'Cross-link users to <a class="text-link" href="/about/configuring-temperature-feeds">feed configuration</a> docs when relevant.',
+        'Escalate billing issues to <a class="text-link" href="/about/stripe-csv-subscription">Stripe subscription</a> records.',
+      ],
+    },
+    { type: "h2", text: "Security" },
+    {
+      type: "p",
+      html: 'Rate-limit public POST endpoints at the edge. Admin list routes require admin group: see <a class="text-link" href="/about/admin-dashboard-features">admin features</a> and <a class="text-link" href="/about/env-secrets-cloudflare">secrets hygiene</a>.',
+    },
   ],
 
   "display-preferences-deep-dive": [
-      { type: "p", html: "Signed-in display preferences control which home panels appear, whether readings use Celsius, and which outdoor city backs weather context. They store on the account so every browser you use sees the same defaults." },
-      { type: "h2", text: "What you can change" },
-      { type: "ul", items: ["**Show probe panels** on the public home when signed in.","**Show weather** next to indoor readings for outdoor context.","**Prefer Celsius** for charts and cards.","**Theme** light, dark, or system."] },
-      { type: "h2", text: "Where to edit" },
-      { type: "p", html: "Open <a class=\"text-link\" href=\"/dashboard/settings\">Dashboard → Settings</a>. Changes apply on the next home load. Probe key labels and feed URLs live under Devices instead: see <a class=\"text-link\" href=\"/about/configuring-temperature-feeds\">configuring temperature feeds</a>." }
+    {
+      type: "p",
+      html: "Signed-in display preferences control which home panels appear, whether readings use Celsius, and which outdoor city backs weather context. They store on the account so every browser you use sees the same defaults.",
+    },
+    { type: "h2", text: "What you can change" },
+    {
+      type: "ul",
+      items: [
+        "**Show probe panels** on the public home when signed in.",
+        "**Show weather** next to indoor readings for outdoor context.",
+        "**Prefer Celsius** for charts and cards.",
+        "**Theme** light, dark, or system.",
+      ],
+    },
+    { type: "h2", text: "Where to edit" },
+    {
+      type: "p",
+      html: 'Open <a class="text-link" href="/dashboard/settings">Dashboard → Settings</a>. Changes apply on the next home load. Probe key labels and feed URLs live under Devices instead: see <a class="text-link" href="/about/configuring-temperature-feeds">configuring temperature feeds</a>.',
+    },
   ],
 
   "cold-snap-playbook": [
-      { type: "p", html: "A freeze alert only helps if someone knows what to do next. This playbook covers the night before a cold snap, the moment an alert fires, and the morning after, so ProbeHarbor becomes a response loop, not just a chart." },
-      { type: "h2", text: "Before the cold snap" },
-      { type: "ol", items: ["Confirm the <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze threshold</a> matches your coldest zone (often a few degrees above hard freeze).","Enable email under <a class=\"text-link\" href=\"/dashboard/alerts?tab=settings#alert-section-essentials\">Alerts → When to alert</a> (plus push, and SMS on Pro), see the <a class=\"text-link\" href=\"/about/alert-channel-cookbook\">channel cookbook</a>.","Turn on forecast / NWS freeze inputs so you get warning before indoor air drops.","Send a <strong>test alert</strong> from Alerts or Devices while you are awake."] },
-      { type: "h2", text: "When an alert fires" },
-      { type: "ul", items: ["**Acknowledge** it (“I’m on it”): repeat alerts stop until the space warms back above your threshold, and escalations pause if you use playbooks.","Check the coldest probe and whether a door has been open.","If you cannot respond, escalate to SMS/household members.","Keep quiet-hours bypass on for freeze/forecast so overnight alerts still arrive."] },
-      { type: "h2", text: "After the snap" },
-      { type: "p", html: "Review history for overnight lows, adjust the threshold if you were warned too late or too often, and read the <a class=\"text-link\" href=\"/about/temperature-probe-case-study\">probe case study</a> for placement lessons. Invite family with the <a class=\"text-link\" href=\"/about/household-sharing-walkthrough\">household sharing walkthrough</a> so one person is not the only responder. Watch melt and drip risk with the <a class=\"text-link\" href=\"/about/freeze-thaw-flood-playbook\">freeze → thaw flood playbook</a>." },
-      { type: "h2", text: "Product checklist" },
-      { type: "ul", items: ["Dashboard → Alerts → When to alert (freeze °F + email)","Dashboard → Alerts → Send a test now","Optional: playbook steps if unacked after N minutes","Optional: household invites + free family live share link","Optional: enable the <a class=\"text-link\" href=\"/about/time-to-freeze\">time-to-freeze</a> runway before sleep or travel"] }
+    {
+      type: "p",
+      html: "A freeze alert only helps if someone knows what to do next. This playbook covers the night before a cold snap, the moment an alert fires, and the morning after, so ProbeHarbor becomes a response loop, not just a chart.",
+    },
+    { type: "h2", text: "Before the cold snap" },
+    {
+      type: "ol",
+      items: [
+        'Confirm the <a class="text-link" href="/about/freeze-protection-thresholds">freeze threshold</a> matches your coldest zone (often a few degrees above hard freeze).',
+        'Enable email under <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-essentials">Alerts → When to alert</a> (plus push, and SMS on Pro), see the <a class="text-link" href="/about/alert-channel-cookbook">channel cookbook</a>.',
+        "Turn on forecast / NWS freeze inputs so you get warning before indoor air drops.",
+        "Send a <strong>test alert</strong> from Alerts or Devices while you are awake.",
+      ],
+    },
+    { type: "h2", text: "When an alert fires" },
+    {
+      type: "ul",
+      items: [
+        "**Acknowledge** it (“I’m on it”): repeat alerts stop until the space warms back above your threshold, and escalations pause if you use playbooks.",
+        "Check the coldest probe and whether a door has been open.",
+        "If you cannot respond, escalate to SMS/household members.",
+        "Keep quiet-hours bypass on for freeze/forecast so overnight alerts still arrive.",
+      ],
+    },
+    { type: "h2", text: "After the snap" },
+    {
+      type: "p",
+      html: 'Review history for overnight lows, adjust the threshold if you were warned too late or too often, and read the <a class="text-link" href="/about/temperature-probe-case-study">probe case study</a> for placement lessons. Invite family with the <a class="text-link" href="/about/household-sharing-walkthrough">household sharing walkthrough</a> so one person is not the only responder. Watch melt and drip risk with the <a class="text-link" href="/about/freeze-thaw-flood-playbook">freeze → thaw flood playbook</a>.',
+    },
+    { type: "h2", text: "Product checklist" },
+    {
+      type: "ul",
+      items: [
+        "Dashboard → Alerts → When to alert (freeze °F + email)",
+        "Dashboard → Alerts → Send a test now",
+        "Optional: playbook steps if unacked after N minutes",
+        "Optional: household invites + free family live share link",
+        'Optional: enable the <a class="text-link" href="/about/time-to-freeze">time-to-freeze</a> runway before sleep or travel',
+      ],
+    },
   ],
 
   "alert-channel-cookbook": [
-      { type: "p", html: "ProbeHarbor can reach you on email, chat apps, SMS, browser push, and webhooks. The right mix depends on how loud a freeze needs to be at 2 a.m., not on enabling every checkbox." },
-      { type: "h2", text: "Free vs Pro channels" },
-      { type: "ul", items: ["**Free:** email, browser and Android push, Discord, Telegram, Slack, Teams, ntfy, Pushover.","**Pro:** SMS, WhatsApp, outbound webhooks, timed playbooks."] },
-      { type: "h2", text: "Setup pattern" },
-      { type: "ol", items: ["Start with <strong>Alerts → When to alert</strong>: freeze °F + email, then open advanced channels if you need chat apps.","Fill each destination (email, phone, webhook URL, chat id).","Save alert settings.","Click <strong>Send test now</strong> and confirm delivery.","Add a second channel for escalation if the first is ignored."] },
-      { type: "h2", text: "Skipped channels" },
-      { type: "p", html: "A checked channel with an empty destination is skipped when alerts fire. The save flow warns when destinations are incomplete: fix them before trusting overnight coverage. For automation into Zapier or Make, see <a class=\"text-link\" href=\"/about/zapier-make-recipes\">Zapier and Make recipes</a>." },
-      { type: "h2", text: "Suggested starter stack" },
-      { type: "ul", items: ["**Email** for an audit trail.","**Discord or Slack** for household visibility.","**SMS (Pro)** for wake-up urgency.","**Push** after installing the <a class=\"text-link\" href=\"/about/install-pwa\">PWA</a>."] }
+    {
+      type: "p",
+      html: "ProbeHarbor can reach you on email, chat apps, SMS, browser push, and webhooks. The right mix depends on how loud a freeze needs to be at 2 a.m., not on enabling every checkbox.",
+    },
+    { type: "h2", text: "Free vs Pro channels" },
+    {
+      type: "ul",
+      items: [
+        "**Free:** email, browser and Android push, Discord, Telegram, Slack, Teams, ntfy, Pushover.",
+        "**Pro:** SMS, WhatsApp, outbound webhooks, timed playbooks.",
+      ],
+    },
+    { type: "h2", text: "Setup pattern" },
+    {
+      type: "ol",
+      items: [
+        "Start with <strong>Alerts → When to alert</strong>: freeze °F + email, then open advanced channels if you need chat apps.",
+        "Fill each destination (email, phone, webhook URL, chat id).",
+        "Save alert settings.",
+        "Click <strong>Send test now</strong> and confirm delivery.",
+        "Add a second channel for escalation if the first is ignored.",
+      ],
+    },
+    { type: "h2", text: "Skipped channels" },
+    {
+      type: "p",
+      html: 'A checked channel with an empty destination is skipped when alerts fire. The save flow warns when destinations are incomplete: fix them before trusting overnight coverage. For automation into Zapier or Make, see <a class="text-link" href="/about/zapier-make-recipes">Zapier and Make recipes</a>.',
+    },
+    { type: "h2", text: "Suggested starter stack" },
+    {
+      type: "ul",
+      items: [
+        "**Email** for an audit trail.",
+        "**Discord or Slack** for household visibility.",
+        "**SMS (Pro)** for wake-up urgency.",
+        '**Push** after installing the <a class="text-link" href="/about/install-pwa">PWA</a>.',
+      ],
+    },
   ],
 
   "household-sharing-walkthrough": [
-      { type: "p", html: "Freeze risk is a household problem. ProbeHarbor lets you invite people by email so everyone sees the same probes and alerts without sharing a single login password, and Free includes one family live share link for people who do not want an account." },
-      { type: "h2", text: "Invite flow" },
-      { type: "ol", items: ["Open Dashboard → Household.","Enter the invitee email and send the invite.","They create or sign into an account with that email and accept.","Confirm they appear under Members with the intended role."] },
-      { type: "h2", text: "Family live share link" },
-      { type: "ol", items: ["Open <a class=\"text-link\" href=\"/dashboard/share/links\">Dashboard → Share → Links</a>.","Create a <strong>family live</strong> link (included on Free).","Send the URL to anyone who should watch live temps without signing in.","Pro unlocks broader scopes (history/metrics) and guest expiries."] },
-      { type: "h2", text: "Roles" },
-      { type: "ul", items: ["**Owner / editor:** change devices, alerts, and sharing.","**View-only:** watch live data and history without changing settings."] },
-      { type: "h2", text: "Tips" },
-      { type: "p", html: "Keep alert destinations on channels the household actually checks. Pair sharing with the <a class=\"text-link\" href=\"/about/cold-snap-playbook\">cold-snap playbook</a> so the first person awake knows what to do. Groups and plan gating are covered in <a class=\"text-link\" href=\"/about/group-membership-model\">group membership model</a>." },
-      { type: "h2", text: "Multiple properties" },
-      { type: "p", html: "Pro portfolios can watch more than one property. Start with a single household space, prove alerts, then expand: see <a class=\"text-link\" href=\"/pricing\">pricing</a> for portfolio limits." }
+    {
+      type: "p",
+      html: "Freeze risk is a household problem. ProbeHarbor lets you invite people by email so everyone sees the same probes and alerts without sharing a single login password, and Free includes one family live share link for people who do not want an account.",
+    },
+    { type: "h2", text: "Invite flow" },
+    {
+      type: "ol",
+      items: [
+        "Open Dashboard → Household.",
+        "Enter the invitee email and send the invite.",
+        "They create or sign into an account with that email and accept.",
+        "Confirm they appear under Members with the intended role.",
+      ],
+    },
+    { type: "h2", text: "Family live share link" },
+    {
+      type: "ol",
+      items: [
+        'Open <a class="text-link" href="/dashboard/share/links">Dashboard → Share → Links</a>.',
+        "Create a <strong>family live</strong> link (included on Free).",
+        "Send the URL to anyone who should watch live temps without signing in.",
+        "Pro unlocks broader scopes (history/metrics) and guest expiries.",
+      ],
+    },
+    { type: "h2", text: "Roles" },
+    {
+      type: "ul",
+      items: [
+        "**Owner / editor:** change devices, alerts, and sharing.",
+        "**View-only:** watch live data and history without changing settings.",
+      ],
+    },
+    { type: "h2", text: "Tips" },
+    {
+      type: "p",
+      html: 'Keep alert destinations on channels the household actually checks. Pair sharing with the <a class="text-link" href="/about/cold-snap-playbook">cold-snap playbook</a> so the first person awake knows what to do. Groups and plan gating are covered in <a class="text-link" href="/about/group-membership-model">group membership model</a>.',
+    },
+    { type: "h2", text: "Multiple properties" },
+    {
+      type: "p",
+      html: 'Pro portfolios can watch more than one property. Start with a single household space, prove alerts, then expand: see <a class="text-link" href="/pricing">pricing</a> for portfolio limits.',
+    },
   ],
 
   "esphome-shelly-recipes": [
-      { type: "p", html: "Many garages already run <strong>ESPHome</strong> or <strong>Shelly</strong> modules for lights, doors, and climate. You do not need a custom Arduino sketch to feed ProbeHarbor. POST the same typed <code>sensors[]</code> JSON the ingest API accepts from any HTTPS client on your LAN." },
-      { type: "h2", text: "Before you wire YAML" },
-      { type: "ol", items: ["Create a <strong>push device</strong> under <a class=\"text-link\" href=\"/dashboard/devices\">Dashboard → Devices</a> (one click) and copy the ingest URL.","Send one test POST (curl or firmware): keys auto-import; rename later if you want.","Keep Mosquitto local if you want: see <a class=\"text-link\" href=\"/about/adding-devices\">MQTT bridge</a> or the <a class=\"text-link\" href=\"/integrations/home-assistant\">HACS integration</a> for dual-run."] },
-      { type: "h2", text: "ESPHome pattern" },
-      { type: "p", html: "Enable the <code>http_request</code> component, poll your DHT/BME probe on an interval, and POST a JSON body with <code>temperature</code> and <code>humidity</code> kinds. Store the ingest URL in <code>secrets.yaml</code>, never commit the device key." },
-      { type: "pre", code: "# secrets.yaml\nprobeharbor_ingest_url: https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY\n\n# interval action (simplified)\n# POST {\"sensors\":[\n#   {\"key\":\"garage_temp\",\"kind\":\"temperature\",\"value\":42.1,\"unit\":\"F\"},\n#   {\"key\":\"garage_rh\",\"kind\":\"humidity\",\"value\":38,\"unit\":\"%\"}\n# ]}" },
-      { type: "p", html: "Full YAML with lambda body: <a class=\"text-link\" href=\"https://probeharbor.dev/developers/integrations/esphome-shelly\">developer docs</a> · payload reference in <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">ingest and webhooks</a>." },
-      { type: "h2", text: "Shelly door contact" },
-      { type: "p", html: "On Shelly Plus / Gen2, fire an HTTP POST when the garage door input toggles. Use <code>kind: door</code> with <code>bool: true</code> when open and <code>false</code> when closed. Map the key (for example <code>garage_door</code>) under Devices." },
-      { type: "pre", code: "{\n  \"sensors\": [\n    { \"key\": \"garage_door\", \"kind\": \"door\", \"bool\": true }\n  ]\n}" },
-      { type: "h2", text: "What to do with door + temp data" },
-      { type: "p", html: "Combine a door sensor with freeze thresholds using Dashboard → Alerts → <strong>Rules</strong>. Walkthrough: <a class=\"text-link\" href=\"/about/garage-door-cold-playbook\">garage door + cold playbook</a>. Pair with the <a class=\"text-link\" href=\"/about/cold-snap-playbook\">cold-snap playbook</a> for household response steps." }
+    {
+      type: "p",
+      html: "Many garages already run <strong>ESPHome</strong> or <strong>Shelly</strong> modules for lights, doors, and climate. You do not need a custom Arduino sketch to feed ProbeHarbor. POST the same typed <code>sensors[]</code> JSON the ingest API accepts from any HTTPS client on your LAN.",
+    },
+    { type: "h2", text: "Before you wire YAML" },
+    {
+      type: "ol",
+      items: [
+        'Create a <strong>push device</strong> under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> (one click) and copy the ingest URL.',
+        "Send one test POST (curl or firmware): keys auto-import; rename later if you want.",
+        'Keep Mosquitto local if you want: see <a class="text-link" href="/about/adding-devices">MQTT bridge</a> or the <a class="text-link" href="/integrations/home-assistant">HACS integration</a> for dual-run.',
+      ],
+    },
+    { type: "h2", text: "ESPHome pattern" },
+    {
+      type: "p",
+      html: "Enable the <code>http_request</code> component, poll your DHT/BME probe on an interval, and POST a JSON body with <code>temperature</code> and <code>humidity</code> kinds. Store the ingest URL in <code>secrets.yaml</code>, never commit the device key.",
+    },
+    {
+      type: "pre",
+      code: '# secrets.yaml\nprobeharbor_ingest_url: https://probeharbor.dev/api/ingest/YOUR_DEVICE_KEY\n\n# interval action (simplified)\n# POST {"sensors":[\n#   {"key":"garage_temp","kind":"temperature","value":42.1,"unit":"F"},\n#   {"key":"garage_rh","kind":"humidity","value":38,"unit":"%"}\n# ]}',
+    },
+    {
+      type: "p",
+      html: 'Full YAML with lambda body: <a class="text-link" href="https://probeharbor.dev/developers/integrations/esphome-shelly">developer docs</a> · payload reference in <a class="text-link" href="/about/ingest-and-webhooks">ingest and webhooks</a>.',
+    },
+    { type: "h2", text: "Shelly door contact" },
+    {
+      type: "p",
+      html: "On Shelly Plus / Gen2, fire an HTTP POST when the garage door input toggles. Use <code>kind: door</code> with <code>bool: true</code> when open and <code>false</code> when closed. Map the key (for example <code>garage_door</code>) under Devices.",
+    },
+    {
+      type: "pre",
+      code: '{\n  "sensors": [\n    { "key": "garage_door", "kind": "door", "bool": true }\n  ]\n}',
+    },
+    { type: "h2", text: "What to do with door + temp data" },
+    {
+      type: "p",
+      html: 'Combine a door sensor with freeze thresholds using Dashboard → Alerts → <strong>Rules</strong>. Walkthrough: <a class="text-link" href="/about/garage-door-cold-playbook">garage door + cold playbook</a>. Pair with the <a class="text-link" href="/about/cold-snap-playbook">cold-snap playbook</a> for household response steps.',
+    },
   ],
 
   "garage-door-cold-playbook": [
-      { type: "p", html: "An open garage door on a cold night can drop indoor probe readings fast: sometimes before your main freeze threshold would have warned you on temperature alone. This playbook wires a <strong>door contact</strong> plus a <strong>combined alert rule</strong> so the household gets a clear signal to close the bay." },
-      { type: "h2", text: "Hardware options" },
-      { type: "ul", items: ["**Shelly door input**. HTTP POST on open/close (see <a class=\"text-link\" href=\"/about/esphome-shelly-recipes\">ESPHome & Shelly recipes</a>).","**ESPHome binary sensor**: include <code>door</code> in the same ingest POST as your temp probe.","**Home Assistant**: mirror an existing <code>binary_sensor</code> through the <a class=\"text-link\" href=\"/integrations/home-assistant\">HACS integration</a> or MQTT bridge."] },
-      { type: "h2", text: "Map sensors in Devices" },
-      { type: "ol", items: ["Confirm at least one **temperature** probe reports in Home.","Confirm the **door** key shows Open/Closed (bool kind).","Label probes clearly (for example “Garage door”, “Crawlspace”): rules can filter by label substring."] },
-      { type: "h2", text: "Create a combined rule" },
-      { type: "p", html: "Open <a class=\"text-link\" href=\"/dashboard/alerts\">Dashboard → Alerts</a>, expand <strong>Rules</strong>, and add a rule with <strong>all</strong> of these conditions:" },
-      { type: "ul", items: ["**Door open**: fires while the contact reads open.","**Temperature below threshold**: uses your freeze threshold (or set a custom °F value per condition).","Optional: **Door open longer than (minutes)** instead of instant door open: reduces noise from quick trips to the car."] },
-      { type: "p", html: "Example name: <em>Garage door open while cold</em>. Save alert settings, then send a <strong>test alert</strong> from the same page." },
-      { type: "h2", text: "When the alert fires" },
-      { type: "ol", items: ["Acknowledge the alert so escalations pause if you use playbooks.","Close the door: readings often recover within minutes.","If temperature keeps falling, follow the <a class=\"text-link\" href=\"/about/cold-snap-playbook\">cold-snap playbook</a> (space heaters, faucet drip, household SMS)."] },
-      { type: "h2", text: "Tuning tips" },
-      { type: "ul", items: ["Use **door open duration** (15–30 min) if short openings should not notify.","Add **rate drop** or forecast triggers for regional cold snaps without relying on the door alone.","Enable push, or SMS on Pro, when email is not loud enough at night: see <a class=\"text-link\" href=\"/about/alert-channel-cookbook\">alert channel cookbook</a>."] }
+    {
+      type: "p",
+      html: "An open garage door on a cold night can drop indoor probe readings fast: sometimes before your main freeze threshold would have warned you on temperature alone. This playbook wires a <strong>door contact</strong> plus a <strong>combined alert rule</strong> so the household gets a clear signal to close the bay.",
+    },
+    { type: "h2", text: "Hardware options" },
+    {
+      type: "ul",
+      items: [
+        '**Shelly door input**. HTTP POST on open/close (see <a class="text-link" href="/about/esphome-shelly-recipes">ESPHome & Shelly recipes</a>).',
+        "**ESPHome binary sensor**: include <code>door</code> in the same ingest POST as your temp probe.",
+        '**Home Assistant**: mirror an existing <code>binary_sensor</code> through the <a class="text-link" href="/integrations/home-assistant">HACS integration</a> or MQTT bridge.',
+      ],
+    },
+    { type: "h2", text: "Map sensors in Devices" },
+    {
+      type: "ol",
+      items: [
+        "Confirm at least one **temperature** probe reports in Home.",
+        "Confirm the **door** key shows Open/Closed (bool kind).",
+        "Label probes clearly (for example “Garage door”, “Crawlspace”): rules can filter by label substring.",
+      ],
+    },
+    { type: "h2", text: "Create a combined rule" },
+    {
+      type: "p",
+      html: 'Open <a class="text-link" href="/dashboard/alerts">Dashboard → Alerts</a>, expand <strong>Rules</strong>, and add a rule with <strong>all</strong> of these conditions:',
+    },
+    {
+      type: "ul",
+      items: [
+        "**Door open**: fires while the contact reads open.",
+        "**Temperature below threshold**: uses your freeze threshold (or set a custom °F value per condition).",
+        "Optional: **Door open longer than (minutes)** instead of instant door open: reduces noise from quick trips to the car.",
+      ],
+    },
+    {
+      type: "p",
+      html: "Example name: <em>Garage door open while cold</em>. Save alert settings, then send a <strong>test alert</strong> from the same page.",
+    },
+    { type: "h2", text: "When the alert fires" },
+    {
+      type: "ol",
+      items: [
+        "Acknowledge the alert so escalations pause if you use playbooks.",
+        "Close the door: readings often recover within minutes.",
+        'If temperature keeps falling, follow the <a class="text-link" href="/about/cold-snap-playbook">cold-snap playbook</a> (space heaters, faucet drip, household SMS).',
+      ],
+    },
+    { type: "h2", text: "Tuning tips" },
+    {
+      type: "ul",
+      items: [
+        "Use **door open duration** (15–30 min) if short openings should not notify.",
+        "Add **rate drop** or forecast triggers for regional cold snaps without relying on the door alone.",
+        'Enable push, or SMS on Pro, when email is not loud enough at night: see <a class="text-link" href="/about/alert-channel-cookbook">alert channel cookbook</a>.',
+      ],
+    },
   ],
 
   "freeze-thaw-flood-playbook": [
-      { type: "p", html: "Cold snaps crack fittings and thaw cycles dump melt water. Freeze alerts protect pipes; <strong>wet contacts</strong> catch the flood that follows. This playbook is the companion to the <a class=\"text-link\" href=\"/about/cold-snap-playbook\">cold-snap playbook</a>: where to place pads, how auto flood differs from Rules, and why vacation mode still wakes you for water." },
-      { type: "h2", text: "Where thaw floods show up" },
-      { type: "ul", items: ["**Water heater pan / garage heater**: slow drips after a hard freeze or pressure relief event.","**Laundry and utility sinks**: supply lines and drain backups when ice melts.","**Sump pits and crawlspace low spots**: melt and groundwater after outdoor thaw.","**Exterior wall cavities**: ice dams and pipe thaw that soak insulation before you see it upstairs."] },
-      { type: "h2", text: "Place wet contacts" },
-      { type: "ol", items: ["Use a water pad or probe that can POST a <code>flood</code> (or leak-named) bool: see the <a class=\"text-link\" href=\"/leak-puck\">leak contact puck</a> accessory page for the BOM pattern.","Seat the pad where water pools first (pan, floor low point), not on a dry shelf.","Push ingest from the same ESP device as your freeze probe when Wi‑Fi allows, or a second push device.","Confirm the key shows <strong>Dry</strong> on Home before you trust overnight coverage."] },
-      { type: "h2", text: "Auto flood vs Rules" },
-      { type: "ul", items: ["**Auto flood**: once alerts are enabled, wet flood/leak contacts notify on their own. You do not need a custom rule for “sensor wet.”","**Rules → flood**: use only when you want combinations (wet AND door open, wet AND cold, duration filters).","**Door / motion / power**: those kinds still need Rules; they never auto-fire like flood."] },
-      { type: "h2", text: "Vacation and snooze still fire flood" },
-      { type: "p", html: "A short snooze pauses threshold freeze alerts while you work in a cold bay. Vacation mode only mutes routine alerts (rate of change, rules, battery, digests): <strong>freeze, forecast/NWS, and flood alerts still deliver</strong>, so an empty house does not miss a freeze or a pad going wet." },
-      { type: "h2", text: "When a pad goes wet" },
-      { type: "ol", items: ["Acknowledge the alert so playbook escalations pause if you use them.","Shut the nearest supply valve; check the water heater T&amp;P and any ice-dam drip path.","Photograph the wet area and export a claims pack from history if you need carrier evidence: <a class=\"text-link\" href=\"/claims-pack\">claims pack</a>.","Reseat or dry the pad only after the leak is stopped so you do not clear the sensor while water is still flowing."] },
-      { type: "h2", text: "Product checklist" },
-      { type: "ul", items: ["Dashboard → Alerts enabled (freeze + auto flood)","At least one flood/leak key reporting Dry on Home","Test alert from Alerts while pads are dry","Optional: household SMS/push for overnight wet events","Optional: <a class=\"text-link\" href=\"/about/time-to-freeze\">time-to-freeze</a> so freeze runway and flood share the same channels"] }
+    {
+      type: "p",
+      html: 'Cold snaps crack fittings and thaw cycles dump melt water. Freeze alerts protect pipes; <strong>wet contacts</strong> catch the flood that follows. This playbook is the companion to the <a class="text-link" href="/about/cold-snap-playbook">cold-snap playbook</a>: where to place pads, how auto flood differs from Rules, and why vacation mode still wakes you for water.',
+    },
+    { type: "h2", text: "Where thaw floods show up" },
+    {
+      type: "ul",
+      items: [
+        "**Water heater pan / garage heater**: slow drips after a hard freeze or pressure relief event.",
+        "**Laundry and utility sinks**: supply lines and drain backups when ice melts.",
+        "**Sump pits and crawlspace low spots**: melt and groundwater after outdoor thaw.",
+        "**Exterior wall cavities**: ice dams and pipe thaw that soak insulation before you see it upstairs.",
+      ],
+    },
+    { type: "h2", text: "Place wet contacts" },
+    {
+      type: "ol",
+      items: [
+        'Use a water pad or probe that can POST a <code>flood</code> (or leak-named) bool: see the <a class="text-link" href="/leak-puck">leak contact puck</a> accessory page for the BOM pattern.',
+        "Seat the pad where water pools first (pan, floor low point), not on a dry shelf.",
+        "Push ingest from the same ESP device as your freeze probe when Wi‑Fi allows, or a second push device.",
+        "Confirm the key shows <strong>Dry</strong> on Home before you trust overnight coverage.",
+      ],
+    },
+    { type: "h2", text: "Auto flood vs Rules" },
+    {
+      type: "ul",
+      items: [
+        "**Auto flood**: once alerts are enabled, wet flood/leak contacts notify on their own. You do not need a custom rule for “sensor wet.”",
+        "**Rules → flood**: use only when you want combinations (wet AND door open, wet AND cold, duration filters).",
+        "**Door / motion / power**: those kinds still need Rules; they never auto-fire like flood.",
+      ],
+    },
+    { type: "h2", text: "Vacation and snooze still fire flood" },
+    {
+      type: "p",
+      html: "A short snooze pauses threshold freeze alerts while you work in a cold bay. Vacation mode only mutes routine alerts (rate of change, rules, battery, digests): <strong>freeze, forecast/NWS, and flood alerts still deliver</strong>, so an empty house does not miss a freeze or a pad going wet.",
+    },
+    { type: "h2", text: "When a pad goes wet" },
+    {
+      type: "ol",
+      items: [
+        "Acknowledge the alert so playbook escalations pause if you use them.",
+        "Shut the nearest supply valve; check the water heater T&amp;P and any ice-dam drip path.",
+        'Photograph the wet area and export a claims pack from history if you need carrier evidence: <a class="text-link" href="/claims-pack">claims pack</a>.',
+        "Reseat or dry the pad only after the leak is stopped so you do not clear the sensor while water is still flowing.",
+      ],
+    },
+    { type: "h2", text: "Product checklist" },
+    {
+      type: "ul",
+      items: [
+        "Dashboard → Alerts enabled (freeze + auto flood)",
+        "At least one flood/leak key reporting Dry on Home",
+        "Test alert from Alerts while pads are dry",
+        "Optional: household SMS/push for overnight wet events",
+        'Optional: <a class="text-link" href="/about/time-to-freeze">time-to-freeze</a> so freeze runway and flood share the same channels',
+      ],
+    },
   ],
 
   "time-to-freeze": [
-      { type: "p", html: "A threshold alert fires when a probe already crossed your freeze °F. The <strong>time-to-freeze clock</strong> estimates remaining hours until that space would hit the threshold, using how this unheated zone lags outdoor air. Use it after the kit is live, not as a wiring guide." },
-      { type: "h2", text: "Four layers of cold risk" },
-      { type: "ul", items: ["**Threshold**: probe °F at or below your freeze setting (every plan).","**Time-to-freeze clock**: remaining hours until the threshold at this space’s lag vs outdoor (every plan).","**Member outdoor forecast**: predictive freeze warnings from outdoor forecast inputs.","**Pro NWS**: official National Weather Service freeze and cold alerts for your area."] },
-      { type: "h2", text: "What the lag model uses" },
-      { type: "p", html: "The clock compares indoor probe history to outdoor context and estimates how fast this garage, crawlspace, or shop cools toward your threshold. Short door openings and sensor blips can move the estimate; treat it as a runway, not a stopwatch. Pair placement lessons with <a class=\"text-link\" href=\"/about/freeze-protection-thresholds\">freeze thresholds</a> and the <a class=\"text-link\" href=\"/about/cold-snap-playbook\">cold-snap playbook</a>." },
-      { type: "h2", text: "How to enable in Alerts" },
-      { type: "ol", items: ["Open <a class=\"text-link\" href=\"/dashboard/alerts\">Dashboard → Alerts → When to alert</a>.","Confirm a freeze threshold (°F) and at least one delivery channel (email on Free).","Keep alerts enabled so time-to-freeze warnings can fire before the probe crosses freeze.","Send a <strong>test alert</strong> while awake so the household trusts the channel stack."] },
-      { type: "h2", text: "When to act on the runway" },
-      { type: "ul", items: ["**Under ~4 hours**: treat like an imminent freeze: drip faucets, close doors, escalate SMS/household.","**Under ~12 hours**: prep before sleep or travel: verify channels, check the coldest zone.","**Longer runway**: useful planning signal; still confirm thresholds match the coldest pipe-adjacent probe."] },
-      { type: "h2", text: "Related" },
-      { type: "p", html: "After a thaw, watch wet contacts with the <a class=\"text-link\" href=\"/about/freeze-thaw-flood-playbook\">freeze → thaw flood playbook</a>. Plan comparison of forecast vs NWS layers lives on <a class=\"text-link\" href=\"/pricing\">pricing</a>." }
+    {
+      type: "p",
+      html: "A threshold alert fires when a probe already crossed your freeze °F. The <strong>time-to-freeze clock</strong> estimates remaining hours until that space would hit the threshold, using how this unheated zone lags outdoor air. Use it after the kit is live, not as a wiring guide.",
+    },
+    { type: "h2", text: "Four layers of cold risk" },
+    {
+      type: "ul",
+      items: [
+        "**Threshold**: probe °F at or below your freeze setting (every plan).",
+        "**Time-to-freeze clock**: remaining hours until the threshold at this space’s lag vs outdoor (every plan).",
+        "**Member outdoor forecast**: predictive freeze warnings from outdoor forecast inputs.",
+        "**Pro NWS**: official National Weather Service freeze and cold alerts for your area.",
+      ],
+    },
+    { type: "h2", text: "What the lag model uses" },
+    {
+      type: "p",
+      html: 'The clock compares indoor probe history to outdoor context and estimates how fast this garage, crawlspace, or shop cools toward your threshold. Short door openings and sensor blips can move the estimate; treat it as a runway, not a stopwatch. Pair placement lessons with <a class="text-link" href="/about/freeze-protection-thresholds">freeze thresholds</a> and the <a class="text-link" href="/about/cold-snap-playbook">cold-snap playbook</a>.',
+    },
+    { type: "h2", text: "How to enable in Alerts" },
+    {
+      type: "ol",
+      items: [
+        'Open <a class="text-link" href="/dashboard/alerts">Dashboard → Alerts → When to alert</a>.',
+        "Confirm a freeze threshold (°F) and at least one delivery channel (email on Free).",
+        "Keep alerts enabled so time-to-freeze warnings can fire before the probe crosses freeze.",
+        "Send a <strong>test alert</strong> while awake so the household trusts the channel stack.",
+      ],
+    },
+    { type: "h2", text: "When to act on the runway" },
+    {
+      type: "ul",
+      items: [
+        "**Under ~4 hours**: treat like an imminent freeze: drip faucets, close doors, escalate SMS/household.",
+        "**Under ~12 hours**: prep before sleep or travel: verify channels, check the coldest zone.",
+        "**Longer runway**: useful planning signal; still confirm thresholds match the coldest pipe-adjacent probe.",
+      ],
+    },
+    { type: "h2", text: "Related" },
+    {
+      type: "p",
+      html: 'After a thaw, watch wet contacts with the <a class="text-link" href="/about/freeze-thaw-flood-playbook">freeze → thaw flood playbook</a>. Plan comparison of forecast vs NWS layers lives on <a class="text-link" href="/pricing">pricing</a>.',
+    },
   ],
 
   "home-assistant-notify-recipes": [
-      { type: "p", html: "ProbeHarbor can wake the house through Home Assistant: mobile push, TTS on a speaker, or a light flash, while email/SMS stay as the out-of-band backup. Use these recipes when you already run HA on the LAN." },
-      { type: "h2", text: "Option A. HACS integration (share link)" },
-      { type: "ol", items: ["Create a <strong>family live</strong> or Pro share link under <a class=\"text-link\" href=\"/dashboard/share/links\">Dashboard → Share → Links</a>.","Install the <a class=\"text-link\" href=\"/integrations/home-assistant\">ProbeHarbor HACS integration</a> and point it at that URL.","Build an automation on <code>sensor.*_temperature</code> below your freeze threshold that calls <code>notify.mobile_app_…</code> or <code>tts.speak</code>."] },
-      { type: "h2", text: "Option B: outbound alert webhook (Pro)" },
-      { type: "ol", items: ["Enable the outbound webhook under Dashboard → Alerts (Pro).","In HA, create an automation triggered by <code>webhook</code> (or use the HA companion REST notify path).","Map ProbeHarbor JSON fields (<code>title</code>, <code>body</code>, <code>kind</code>) into <code>notify</code> or <code>tts.cloud_say</code>."] },
-      { type: "pre", code: "# Example: HA automation sketch (adapt entity ids)\nalias: ProbeHarbor freeze → phone + TTS\ntrigger:\n  - platform: webhook\n    webhook_id: probeharbor_freeze\naction:\n  - service: notify.mobile_app_phone\n    data:\n      title: \"{{ trigger.json.title }}\"\n      message: \"{{ trigger.json.body }}\"\n  - service: tts.speak\n    target:\n      entity_id: media_player.kitchen_display\n    data:\n      message: \"Freeze risk. {{ trigger.json.body }}\"" },
-      { type: "h2", text: "Option C: inbound snooze from HA" },
-      { type: "p", html: "When you are working in a cold bay, call the ProbeHarbor inbound webhook (<code>action=snooze</code> or <code>vacation</code>) from an HA script so threshold alerts pause while you work (snooze) or routine alerts pause while you travel (vacation), without opening the dashboard. Guide: <a class=\"text-link\" href=\"/about/ingest-and-webhooks\">ingest and webhooks</a>." },
-      { type: "h2", text: "Keep an out-of-band channel" },
-      { type: "p", html: "Local notify fails when the LAN or HA host is down. Keep ProbeHarbor email and push (and SMS on Pro) enabled so freeze risk still reaches a phone that is not on the same Wi‑Fi." }
+    {
+      type: "p",
+      html: "ProbeHarbor can wake the house through Home Assistant: mobile push, TTS on a speaker, or a light flash, while email/SMS stay as the out-of-band backup. Use these recipes when you already run HA on the LAN.",
+    },
+    { type: "h2", text: "Option A. HACS integration (share link)" },
+    {
+      type: "ol",
+      items: [
+        'Create a <strong>family live</strong> or Pro share link under <a class="text-link" href="/dashboard/share/links">Dashboard → Share → Links</a>.',
+        'Install the <a class="text-link" href="/integrations/home-assistant">ProbeHarbor HACS integration</a> and point it at that URL.',
+        "Build an automation on <code>sensor.*_temperature</code> below your freeze threshold that calls <code>notify.mobile_app_…</code> or <code>tts.speak</code>.",
+      ],
+    },
+    { type: "h2", text: "Option B: outbound alert webhook (Pro)" },
+    {
+      type: "ol",
+      items: [
+        "Enable the outbound webhook under Dashboard → Alerts (Pro).",
+        "In HA, create an automation triggered by <code>webhook</code> (or use the HA companion REST notify path).",
+        "Map ProbeHarbor JSON fields (<code>title</code>, <code>body</code>, <code>kind</code>) into <code>notify</code> or <code>tts.cloud_say</code>.",
+      ],
+    },
+    {
+      type: "pre",
+      code: '# Example: HA automation sketch (adapt entity ids)\nalias: ProbeHarbor freeze → phone + TTS\ntrigger:\n  - platform: webhook\n    webhook_id: probeharbor_freeze\naction:\n  - service: notify.mobile_app_phone\n    data:\n      title: "{{ trigger.json.title }}"\n      message: "{{ trigger.json.body }}"\n  - service: tts.speak\n    target:\n      entity_id: media_player.kitchen_display\n    data:\n      message: "Freeze risk. {{ trigger.json.body }}"',
+    },
+    { type: "h2", text: "Option C: inbound snooze from HA" },
+    {
+      type: "p",
+      html: 'When you are working in a cold bay, call the ProbeHarbor inbound webhook (<code>action=snooze</code> or <code>vacation</code>) from an HA script so threshold alerts pause while you work (snooze) or routine alerts pause while you travel (vacation), without opening the dashboard. Guide: <a class="text-link" href="/about/ingest-and-webhooks">ingest and webhooks</a>.',
+    },
+    { type: "h2", text: "Keep an out-of-band channel" },
+    {
+      type: "p",
+      html: "Local notify fails when the LAN or HA host is down. Keep ProbeHarbor email and push (and SMS on Pro) enabled so freeze risk still reaches a phone that is not on the same Wi‑Fi.",
+    },
   ],
 
   "personal-weather-stations": [
-      { type: "p", html: "OpenWeather city IDs are fine for a rough regional forecast. If you already run an <strong>Ambient Weather</strong> or <strong>WeatherFlow Tempest</strong> station in the yard, ProbeHarbor can read outdoor temp/humidity from <em>your</em> property, and use those coordinates for NWS and forecast freeze alerts." },
-      { type: "h2", text: "Dashboard → Settings" },
-      { type: "ol", items: ["Open <a class=\"text-link\" href=\"/dashboard/settings\">Dashboard → Settings</a> → Live display.","Under <strong>Outdoor weather source</strong>, choose Ambient or WeatherFlow.","Enter your station credentials (see below) and save.","Confirm the Live weather card shows your station name."] },
-      { type: "h2", text: "Ambient Weather" },
-      { type: "ul", items: ["**MAC address**: shown on the Ambient dashboard for your station.","**API key**, from ambientweather.net → Account → API keys (your personal key).","Site operator: set <code>AMBIENT_APPLICATION_KEY</code> in Worker secrets (developer application key)."] },
-      { type: "h2", text: "WeatherFlow Tempest" },
-      { type: "ul", items: ["**Station ID**: tempestwx.com → station settings.","**Personal access token**. Settings → Data Authorizations → Create token.","Readings use your Tempest outdoor air temperature and humidity."] },
-      { type: "h2", text: "What updates automatically" },
-      { type: "p", html: "Outdoor card on Home, indoor/outdoor delta on History, forecast freeze alerts, NWS freeze advisories, and cold-snap checklist context all use the configured source. OpenWeather remains the fallback if a personal fetch fails." },
-      { type: "h2", text: "Also mirror station data via ingest" },
-      { type: "p", html: "Prefer pushing every sensor into ProbeHarbor history? Use <a class=\"text-link\" href=\"/about/esphome-shelly-recipes\">ESPHome/Shelly recipes</a>, the <a class=\"text-link\" href=\"/nodered/mqtt-to-probeharbor.json\">Node-RED MQTT flow</a>, or Home Assistant HACS: separate from the outdoor weather card." }
+    {
+      type: "p",
+      html: "OpenWeather city IDs are fine for a rough regional forecast. If you already run an <strong>Ambient Weather</strong> or <strong>WeatherFlow Tempest</strong> station in the yard, ProbeHarbor can read outdoor temp/humidity from <em>your</em> property, and use those coordinates for NWS and forecast freeze alerts.",
+    },
+    { type: "h2", text: "Dashboard → Settings" },
+    {
+      type: "ol",
+      items: [
+        'Open <a class="text-link" href="/dashboard/settings">Dashboard → Settings</a> → Live display.',
+        "Under <strong>Outdoor weather source</strong>, choose Ambient or WeatherFlow.",
+        "Enter your station credentials (see below) and save.",
+        "Confirm the Live weather card shows your station name.",
+      ],
+    },
+    { type: "h2", text: "Ambient Weather" },
+    {
+      type: "ul",
+      items: [
+        "**MAC address**: shown on the Ambient dashboard for your station.",
+        "**API key**, from ambientweather.net → Account → API keys (your personal key).",
+        "Site operator: set <code>AMBIENT_APPLICATION_KEY</code> in Worker secrets (developer application key).",
+      ],
+    },
+    { type: "h2", text: "WeatherFlow Tempest" },
+    {
+      type: "ul",
+      items: [
+        "**Station ID**: tempestwx.com → station settings.",
+        "**Personal access token**. Settings → Data Authorizations → Create token.",
+        "Readings use your Tempest outdoor air temperature and humidity.",
+      ],
+    },
+    { type: "h2", text: "What updates automatically" },
+    {
+      type: "p",
+      html: "Outdoor card on Home, indoor/outdoor delta on History, forecast freeze alerts, NWS freeze advisories, and cold-snap checklist context all use the configured source. OpenWeather remains the fallback if a personal fetch fails.",
+    },
+    { type: "h2", text: "Also mirror station data via ingest" },
+    {
+      type: "p",
+      html: 'Prefer pushing every sensor into ProbeHarbor history? Use <a class="text-link" href="/about/esphome-shelly-recipes">ESPHome/Shelly recipes</a>, the <a class="text-link" href="/nodered/mqtt-to-probeharbor.json">Node-RED MQTT flow</a>, or Home Assistant HACS: separate from the outdoor weather card.',
+    },
   ],
 };
 
@@ -953,13 +2637,11 @@ export const EXPANDED_ABOUT_SLUGS: readonly string[] = [
   "freeze-thaw-flood-playbook",
   "time-to-freeze",
   "home-assistant-notify-recipes",
-  "personal-weather-stations"
+  "personal-weather-stations",
 ] as const;
 
 export const expandedAboutSlugs: Set<string> = new Set(EXPANDED_ABOUT_SLUGS);
 
-export function getExpandedAboutContent(
-  slug: string,
-): AboutContentBlock[] | undefined {
+export function getExpandedAboutContent(slug: string): AboutContentBlock[] | undefined {
   return expandedAboutContent[slug];
 }

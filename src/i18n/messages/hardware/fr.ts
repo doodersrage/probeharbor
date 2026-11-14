@@ -19,7 +19,8 @@ const fr: HardwareMessages = {
   setupLabel: "Installation : ",
   watchesLabel: "Surveille : ",
   labelsTitle: "Ce que signifient les étiquettes",
-  verifiedExplain: "nous avons fait tourner cette combinaison sur une vraie carte et vu les relevés arriver.",
+  verifiedExplain:
+    "nous avons fait tourner cette combinaison sur une vraie carte et vu les relevés arriver.",
   builtInExplain:
     "le firmware de l’outil de flashage le prend en charge, mais nous ne l’avons pas encore câblé nous-mêmes. Dites-nous si ça marche chez vous.",
   guideExplain:

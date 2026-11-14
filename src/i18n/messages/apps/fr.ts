@@ -6,7 +6,8 @@ import type { AppsMessages } from "./en";
 
 const fr: AppsMessages = {
   title: "Applications compagnons",
-  description: "Suivez {brand} sur Android, sur ordinateur, avec Bay Buddy ou la PWA. Ces clients se connectent à votre compte ; ils ne mesurent pas la température.",
+  description:
+    "Suivez {brand} sur Android, sur ordinateur, avec Bay Buddy ou la PWA. Ces clients se connectent à votre compte ; ils ne mesurent pas la température.",
   breadcrumbHome: "Accueil",
   breadcrumbApps: "Applications",
   kicker: "Applications",

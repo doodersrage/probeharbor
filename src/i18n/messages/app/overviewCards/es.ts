@@ -4,7 +4,8 @@ const es: OverviewCardsMessages = {
   garageRisk: {
     noDevices: {
       title: "Añade una sonda para empezar",
-      detail: "Crea un dispositivo push y envía una lectura con POST, o prueba el feed de demostración sin hardware.",
+      detail:
+        "Crea un dispositivo push y envía una lectura con POST, o prueba el feed de demostración sin hardware.",
       action: "Conectar un dispositivo",
     },
     waiting: {
@@ -44,7 +45,8 @@ const es: OverviewCardsMessages = {
     freezeLater: {
       title: "Congelación más tarde hoy",
       titleAt: "Congelación hacia las {time}",
-      detail: "Unas {hours} horas hasta {threshold} {unit}, según el desfase de este espacio respecto al exterior.",
+      detail:
+        "Unas {hours} horas hasta {threshold} {unit}, según el desfase de este espacio respecto al exterior.",
     },
     nightsAtRisk: {
       one: "{count} noche con riesgo de congelación",
@@ -52,10 +54,12 @@ const es: OverviewCardsMessages = {
     },
     coldSnap: {
       title: "Se acerca una ola de frío",
-      detail: "Hace frío fuera: repasa la lista de comprobación y confirma que las alertas de pronóstico están activadas.",
+      detail:
+        "Hace frío fuera: repasa la lista de comprobación y confirma que las alertas de pronóstico están activadas.",
     },
     nights: {
-      detail: "Hace frío fuera: confirma las sondas en En vivo y que las alertas de pronóstico están activadas.",
+      detail:
+        "Hace frío fuera: confirma las sondas en En vivo y que las alertas de pronóstico están activadas.",
     },
     finishAlerts: {
       title: "El espacio está bien: termina las alertas",
@@ -75,7 +79,8 @@ const es: OverviewCardsMessages = {
     },
     ok: {
       title: "Todo en orden",
-      detail: "Las sondas están enviando datos: nada en el umbral de congelación, ningún contacto de inundación mojado.",
+      detail:
+        "Las sondas están enviando datos: nada en el umbral de congelación, ningún contacto de inundación mojado.",
     },
     actions: {
       openLive: "Abrir En vivo",
@@ -172,7 +177,8 @@ const es: OverviewCardsMessages = {
     },
     coldSnap: {
       label: "Ola de frío en el exterior",
-      detail: "Exterior {outdoor} {unit}: {margin} {unit} de margen sobre tu alerta de congelación.",
+      detail:
+        "Exterior {outdoor} {unit}: {margin} {unit} de margen sobre tu alerta de congelación.",
     },
     condensation: {
       label: "Riesgo de condensación",
@@ -216,14 +222,16 @@ const es: OverviewCardsMessages = {
       tooClose: "Las lecturas están demasiado juntas para calcular una tendencia.",
       rising: "La temperatura está subiendo: la tendencia actual no indica riesgo de congelación.",
       stable: "La temperatura es estable: la tendencia no indica una congelación inminente.",
-      cooling: "Enfriándose ~{rate} {unit}/h: unas {duration} hasta {threshold} {unit} a este ritmo.",
+      cooling:
+        "Enfriándose ~{rate} {unit}/h: unas {duration} hasta {threshold} {unit} a este ritmo.",
     },
     forecastHit:
       "Llega a {threshold} hacia las {time} (en unas {duration}). Basado en el pronóstico y el desfase de este espacio respecto al exterior.",
     doorNote: " Hay una puerta abierta: perderá calor más rápido hasta que se cierre.",
     noFreeze:
       "Sin congelación en las próximas {hours} h con el desfase habitual de este espacio frente al pronóstico exterior.",
-    noFreezeColderNight: " Una noche {band} {unit} más fría de lo previsto llegaría hacia las {time}.",
+    noFreezeColderNight:
+      " Una noche {band} {unit} más fría de lo previsto llegaría hacia las {time}.",
     trendHit: "{message} Hacia las {time} si se mantiene este ritmo de enfriamiento.",
     reasons: {
       forecastLow: "Mínima exterior prevista de {temp} {unit} hacia las {time}.",
@@ -232,7 +240,8 @@ const es: OverviewCardsMessages = {
       offsetColder: "Este espacio suele estar unos {offset} {unit} más frío que el exterior.",
       couplingLearned: {
         one: "La rapidez con la que sigue al aire exterior se ha aprendido de {count} par de lecturas.",
-        other: "La rapidez con la que sigue al aire exterior se ha aprendido de {count} pares de lecturas.",
+        other:
+          "La rapidez con la que sigue al aire exterior se ha aprendido de {count} pares de lecturas.",
       },
       couplingDefault: {
         one: "La rapidez con la que sigue al aire exterior es un valor predeterminado hasta que haya más historial ({count} par de lecturas por ahora).",
@@ -263,8 +272,10 @@ const es: OverviewCardsMessages = {
     cooling: "enfriarse {rate} {unit}/h",
     notCooling: "no enfriarse",
     offset: "Su desfase aprendido respecto al aire exterior pasó de {from} {unit} a {to} {unit}.",
-    nowForecast: "La estimación ahora usa el pronóstico exterior, no solo el ritmo de enfriamiento.",
-    nowTrend: "Ahora no hay un pronóstico exterior utilizable, así que la estimación usa solo el ritmo de enfriamiento.",
+    nowForecast:
+      "La estimación ahora usa el pronóstico exterior, no solo el ritmo de enfriamiento.",
+    nowTrend:
+      "Ahora no hay un pronóstico exterior utilizable, así que la estimación usa solo el ritmo de enfriamiento.",
     noSingle: "Lecturas y horas de pronóstico más recientes; ningún dato cambió mucho por sí solo.",
   },
 
@@ -279,7 +290,8 @@ const es: OverviewCardsMessages = {
   timeToFreezeCard: {
     title: "Tiempo hasta congelación",
     subtitle: {
-      forecast_model: "Estimación con pronóstico para este espacio frente a tu umbral de {threshold}.",
+      forecast_model:
+        "Estimación con pronóstico para este espacio frente a tu umbral de {threshold}.",
       trend: "Estimación por ritmo de enfriamiento frente a tu umbral de {threshold}.",
       already_below: "En el umbral ahora, frente a tu umbral de {threshold}.",
       none: "Aún no hay datos suficientes frente a tu umbral de {threshold}.",
@@ -294,8 +306,10 @@ const es: OverviewCardsMessages = {
     window: "Intervalo: de {from} a {to}",
     windowEarliest: "Intervalo: desde las {from}; una noche más templada podría no llegar",
     basedOn: "En qué se basa",
-    estimateNote: "Una estimación a partir del historial de este espacio y del pronóstico exterior, no una medición.",
-    confidenceHelp: "Confianza alta: el modelo de pronóstico se ajusta con 24 o más lecturas emparejadas con el tiempo exterior. Media: 8 o más lecturas emparejadas, o una tendencia de enfriamiento de 2 horas o más. Baja: menos datos. La ventana se amplía cuanto menor es la confianza.",
+    estimateNote:
+      "Una estimación a partir del historial de este espacio y del pronóstico exterior, no una medición.",
+    confidenceHelp:
+      "Confianza alta: el modelo de pronóstico se ajusta con 24 o más lecturas emparejadas con el tiempo exterior. Media: 8 o más lecturas emparejadas, o una tendencia de enfriamiento de 2 horas o más. Baja: menos datos. La ventana se amplía cuanto menor es la confianza.",
     learnMore: "Cómo se estima el tiempo hasta la helada",
     cooling: "Enfriándose {rate} {unit}/h",
     offset: "Desfase típico {offset} {unit} frente al exterior",
@@ -319,7 +333,8 @@ const es: OverviewCardsMessages = {
     outdoorUnavailable: "La media exterior de esta semana no está disponible",
     colder: "Más frío que el año pasado",
     warmer: "Más cálido o similar",
-    noPriorStarts: "No hay datos de sondas de esta semana del año pasado. El historial empieza el {date}.",
+    noPriorStarts:
+      "No hay datos de sondas de esta semana del año pasado. El historial empieza el {date}.",
     noPrior: "Todavía no hay datos de sondas de esta semana del año pasado.",
   },
   heatingCard: {
@@ -345,8 +360,10 @@ const es: OverviewCardsMessages = {
     mapSettings: "Ajustes del mapa",
     yourRegion: "tu región",
     typical: "Similar a otros hogares de ProbeHarbor en {city} esta noche.",
-    colderMessage: "{delta} {unit} más frío que los hogares habituales de ProbeHarbor en {city} ahora mismo.",
-    warmerMessage: "{delta} {unit} más cálido que los hogares habituales de ProbeHarbor en {city} ahora mismo.",
+    colderMessage:
+      "{delta} {unit} más frío que los hogares habituales de ProbeHarbor en {city} ahora mismo.",
+    warmerMessage:
+      "{delta} {unit} más cálido que los hogares habituales de ProbeHarbor en {city} ahora mismo.",
   },
   nightsCard: {
     title: "Noches con riesgo esta semana",
@@ -374,7 +391,8 @@ const es: OverviewCardsMessages = {
     cardTitle: "Temperatura (últimos {days} días)",
     subtitleHtml:
       'Todas las sondas frente a tu línea de congelación.\n        <a class="text-link" href="/dashboard/history">Abre Historial</a> para filtros, exportaciones y comparación anual.',
-    empty: "El gráfico se completa a medida que llegan lecturas: dale una o dos horas después de tu primera lectura.",
+    empty:
+      "El gráfico se completa a medida que llegan lecturas: dale una o dos horas después de tu primera lectura.",
   },
   metricCard: {
     pin: "Fijar {label}",

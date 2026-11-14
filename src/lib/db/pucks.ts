@@ -121,7 +121,11 @@ export async function bindClaimedBay(
 }
 
 /** Set the mood on the household's puck(s) for a bay; false when no puck has that bay. */
-export async function setMoodOverride(householdId: string, bayId: string, mood: string): Promise<boolean | { error: string }> {
+export async function setMoodOverride(
+  householdId: string,
+  bayId: string,
+  mood: string,
+): Promise<boolean | { error: string }> {
   try {
     const rows = await query(
       `update public.pucks set mood_override = $3, mood_override_at = now(), updated_at = now()
@@ -137,9 +141,17 @@ export async function setMoodOverride(householdId: string, bayId: string, mood: 
 export async function bayPuck(
   householdId: string,
   bayId: string,
-): Promise<{ space_name: string | null; mood_override: string | null; mood_override_at: string | null } | null> {
+): Promise<{
+  space_name: string | null;
+  mood_override: string | null;
+  mood_override_at: string | null;
+} | null> {
   try {
-    const [row] = await query<{ space_name: string | null; mood_override: string | null; mood_override_at: string | null }>(
+    const [row] = await query<{
+      space_name: string | null;
+      mood_override: string | null;
+      mood_override_at: string | null;
+    }>(
       "select space_name, mood_override, mood_override_at from public.pucks where household_id = $1 and bay_id = $2 limit 1",
       [householdId, bayId],
     );
@@ -150,7 +162,9 @@ export async function bayPuck(
 }
 
 /** The household's first owner's alert settings row (or null). */
-export async function firstOwnerAlertSettings(householdId: string): Promise<Record<string, unknown> | null> {
+export async function firstOwnerAlertSettings(
+  householdId: string,
+): Promise<Record<string, unknown> | null> {
   try {
     const [row] = await query<Record<string, unknown>>(
       `select s.* from public.household_members m join public.alert_settings s on s.user_id = m.user_id

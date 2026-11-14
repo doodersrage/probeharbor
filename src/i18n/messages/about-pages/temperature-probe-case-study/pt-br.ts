@@ -1,4 +1,3 @@
-
 /** Body copy for /about/temperature-probe-case-study. Hrefs stay English; middleware localizes them. */
 const FIRMWARE_LINK =
   '<a class="text-link" target="_blank" rel="noreferrer" href="https://github.com/doodersrage/arduino-network-json-temperature-sever">arduino-network-json-temperature-sever</a>';
@@ -31,7 +30,8 @@ const ptBr: Messages = {
     'O posicionamento seguiu as regras do <a class="text-link" href="/about/temperature-probes">guia de sondas de temperatura</a>: longe de pontos de sol direto e exaustores, mais ou menos na altura dos ombros e com montagem ventilada para o ar passar pela cabeça do sensor. Rótulos no dashboard associam as chaves JSON <code>0</code> e <code>1</code> a nomes de zona legíveis.',
   ],
   rev1Alt: "Placa de sonda da primeira revisão em uma protoboard com sensores DHT22 e LCD",
-  rev1Caption: "A revisão um validou na bancada a ligação, os intervalos de leitura e o formato do JSON antes da instalação na garagem.",
+  rev1Caption:
+    "A revisão um validou na bancada a ligação, os intervalos de leitura e o formato do JSON antes da instalação na garagem.",
   timelineTitle: "Linha do tempo da montagem",
   timelineHtml: [
     "<strong>Primeiros testes na bancada:</strong> os logs na serial confirmaram as leituras do DHT22, a formatação do LCD e chaves JSON <code>temp</code> estáveis antes de a placa sair da mesa.",
@@ -41,7 +41,8 @@ const ptBr: Messages = {
     "<strong>Integração com o site:</strong> as páginas em Astro associam os feeds a cards; o histórico de quem está logado guarda snapshots para análise de tendências e exportação em CSV.",
   ],
   dataTitle: "O que os dados mostraram",
-  dataLede: "Depois de um ciclo completo de inverno e verão, as sondas valeram a pena de formas que uma única leitura teria deixado passar:",
+  dataLede:
+    "Depois de um ciclo completo de inverno e verão, as sondas valeram a pena de formas que uma única leitura teria deixado passar:",
   data: [
     "A temperatura perto do portão podia variar de 4 a 7 °C (8–12 °F) poucos minutos depois de abrir o portão basculante, enquanto a parede do fundo mudava pouco.",
     "As mínimas da madrugada perto da parede norte acompanhavam o risco de congelamento com mais confiabilidade do que apenas as previsões externas.",

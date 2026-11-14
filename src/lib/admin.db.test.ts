@@ -44,7 +44,10 @@ describe("admin checks and user manager (Neon)", () => {
     const listed = await fetchManagedUsers(admin);
     expect(listed.error).toBeNull();
     expect(listed.totalCount).toBe(2);
-    expect(listed.users.map((u) => u.email).sort()).toEqual(["admin@example.com", "user@example.com"]);
+    expect(listed.users.map((u) => u.email).sort()).toEqual([
+      "admin@example.com",
+      "user@example.com",
+    ]);
 
     const denied = await fetchManagedUsers(user);
     expect(denied.users).toEqual([]);
@@ -64,17 +67,20 @@ describe("contact submissions (Neon)", () => {
       ["Bob", "done"],
       ["Carol", "new"],
     ] as const) {
-      await sql("insert into public.contacts (name, email, message, status) values ($1, $2, 'hello', $3)", [
-        name,
-        `${name.toLowerCase()}@example.com`,
-        status,
-      ]);
+      await sql(
+        "insert into public.contacts (name, email, message, status) values ($1, $2, 'hello', $3)",
+        [name, `${name.toLowerCase()}@example.com`, status],
+      );
     }
     expect((await fetchContactSubmissions(1, 2)).totalPages).toBe(2);
     expect((await fetchContactSubmissions(1, 10, { status: "new" })).totalCount).toBe(2);
-    expect((await fetchContactSubmissions(1, 10, { search: "bob@" })).submissions.map((s) => s.name)).toEqual(["Bob"]);
+    expect(
+      (await fetchContactSubmissions(1, 10, { search: "bob@" })).submissions.map((s) => s.name),
+    ).toEqual(["Bob"]);
     // Text that would be filter syntax in PostgREST is just text here.
-    expect((await fetchContactSubmissions(1, 10, { search: "x,status.eq.new" })).totalCount).toBe(0);
+    expect((await fetchContactSubmissions(1, 10, { search: "x,status.eq.new" })).totalCount).toBe(
+      0,
+    );
 
     const bob = (await fetchAllContactSubmissions()).submissions.find((s) => s.name === "Bob")!;
     await updateContact(bob.id, { admin_notes: "called back" });
@@ -94,7 +100,10 @@ describe("ops logs (Neon)", () => {
 
   it("checkout analytics count recent checkout starts", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
-    const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [userId]);
+    const [m] = await sql<{ household_id: string }>(
+      "select household_id from public.household_members where user_id = $1",
+      [userId],
+    );
     await sql(
       `insert into public.household_activity (household_id, user_id, action, detail, created_at) values
        ($1, $2, 'checkout_started', 'pro|annual|pricing', now()),

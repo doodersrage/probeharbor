@@ -3,8 +3,22 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 vi.mock("./households", () => ({ getUserHouseholdId: async () => "hh-1" }));
 
 const sensors = [
-  { id: "t", key: "temp1", label: "Bay", kind: "temperature", offset_num: 0, devices: { name: "Garage ESP" } },
-  { id: "h", key: "humidity1", label: "Bay humidity", kind: "humidity", offset_num: 0, devices: { name: "Garage ESP" } },
+  {
+    id: "t",
+    key: "temp1",
+    label: "Bay",
+    kind: "temperature",
+    offset_num: 0,
+    devices: { name: "Garage ESP" },
+  },
+  {
+    id: "h",
+    key: "humidity1",
+    label: "Bay humidity",
+    kind: "humidity",
+    offset_num: 0,
+    devices: { name: "Garage ESP" },
+  },
 ];
 const mockListChartSensors = vi.fn();
 const mockSensorBucketSamples = vi.fn();
@@ -18,7 +32,11 @@ vi.mock("./db/history", () => ({
   rollupBucketAverages: async () => [],
 }));
 
-import { fetchGarageTempChartData, groupSensorsForSampling, sampleBucketCount } from "./garageTempsHistory";
+import {
+  fetchGarageTempChartData,
+  groupSensorsForSampling,
+  sampleBucketCount,
+} from "./garageTempsHistory";
 
 // The sample readings are dated 2026-10-29; pin "now" so they stay inside
 // the 7-day window. Only Date is faked, so promises and timers run normally.
@@ -107,6 +125,9 @@ describe("sampling sizes", () => {
       { id: "h2", kind: "humidity" },
     ];
     const groups = groupSensorsForSampling(list, 150); // temp 450 rows, humidity 150
-    expect(groups.map((g) => g.map((s) => s.id))).toEqual([["t1", "h1"], ["t2", "h2"]]);
+    expect(groups.map((g) => g.map((s) => s.id))).toEqual([
+      ["t1", "h1"],
+      ["t2", "h2"],
+    ]);
   });
 });

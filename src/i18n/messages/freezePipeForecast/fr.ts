@@ -12,8 +12,10 @@ const fr: PipeForecastMessages = {
   lede: "Consultez les cinq prochaines nuits dans votre secteur : la minimale, le nombre d’heures sous zéro, le vent et le risque pour les canalisations d’un garage, d’un vide sanitaire ou d’un grenier non chauffé.",
   getAlerts: "Recevoir gratuitement les alertes de gel par e-mail",
   whenGaragePipes: "Quand les canalisations du garage gèlent",
-  alertsConfirmed: "Les alertes de gel sont activées. Nous vous écrirons l’après-midi précédant une nuit de gel.",
-  alertsInvalid: "Ce lien de confirmation n’est plus valide. Recherchez votre secteur ci-dessous et inscrivez-vous à nouveau.",
+  alertsConfirmed:
+    "Les alertes de gel sont activées. Nous vous écrirons l’après-midi précédant une nuit de gel.",
+  alertsInvalid:
+    "Ce lien de confirmation n’est plus valide. Recherchez votre secteur ci-dessous et inscrivez-vous à nouveau.",
   levelsTitle: "Comprendre les niveaux de risque",
   levelsHtml: [
     "<strong>Risque élevé :</strong> la minimale extérieure est de −7 °C (20 °F) ou moins, le seuil le plus souvent cité à partir duquel les canalisations gèlent dans les espaces non chauffés.",
@@ -28,7 +30,8 @@ const fr: PipeForecastMessages = {
   startFree: "Commencer gratuitement",
   kitParts: "Pièces du kit gel ESP32",
   sourcesTitle: "Sources",
-  sourceKxan: "At what temperature do pipes freeze? (KXAN, en anglais, d’après des travaux de l’université de l’Illinois)",
+  sourceKxan:
+    "At what temperature do pipes freeze? (KXAN, en anglais, d’après des travaux de l’université de l’Illinois)",
   sourceFarmBureau: "How pipes freeze and burst (Farm Bureau Insurance, en anglais)",
   sourceNws: "API du National Weather Service",
   sourceNwsNote: " : données de prévision horaire",
@@ -63,11 +66,14 @@ const fr: PipeForecastMessages = {
     riskHigh: "Risque élevé",
     riskWatch: "Vigilance",
     riskLow: "Risque faible",
-    errorUsOnly: "Cette prévision utilise le National Weather Service et ne couvre donc que les États-Unis.",
+    errorUsOnly:
+      "Cette prévision utilise le National Weather Service et ne couvre donc que les États-Unis.",
     errorRateLimited: "Trop de recherches en une minute. Réessayez dans un instant.",
     errorService: "Le service de prévision n’a pas répondu. Réessayez dans une minute.",
-    errorNoGeolocation: "Ce navigateur ne peut pas partager sa position. Recherchez plutôt une ville ou un code ZIP.",
-    errorGeoDeclined: "L’accès à la position a été refusé. Recherchez plutôt une ville ou un code ZIP.",
+    errorNoGeolocation:
+      "Ce navigateur ne peut pas partager sa position. Recherchez plutôt une ville ou un code ZIP.",
+    errorGeoDeclined:
+      "L’accès à la position a été refusé. Recherchez plutôt une ville ou un code ZIP.",
     tonight: "Cette nuit",
     weekdayNight: "Nuit de {weekday}",
     headlineNone: "Aucune nuit de prévision reçue",
@@ -82,8 +88,10 @@ const fr: PipeForecastMessages = {
     describeWatchMany:
       "Sous zéro pendant environ {hours} heures, minimale {low}. Les canalisations exposées contre les murs extérieurs, près des portes de garage ou dans les vides sanitaires ventilés peuvent quand même geler lors d’une nuit longue ou venteuse.",
     describeAbove: "Reste au-dessus de zéro (minimale {low}).",
-    describeWind: "Un vent jusqu’à {wind} pendant le gel retire plus vite la chaleur des canalisations exposées.",
-    describeNextDay: "La journée suivante reste aussi sous zéro : les espaces non chauffés ne se réchaufferont pas.",
+    describeWind:
+      "Un vent jusqu’à {wind} pendant le gel retire plus vite la chaleur des canalisations exposées.",
+    describeNextDay:
+      "La journée suivante reste aussi sous zéro : les espaces non chauffés ne se réchaufferont pas.",
     signupTitle: "M’avertir par e-mail avant les nuits de gel à {place}",
     signupLede:
       "Gratuit, sans matériel. Un e-mail l’après-midi précédant la première nuit de gel d’une vague de froid, puis avant chaque nuit à {temp} ou moins. Désinscription en un clic.",

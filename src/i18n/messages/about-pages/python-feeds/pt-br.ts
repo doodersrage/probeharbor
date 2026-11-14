@@ -1,4 +1,3 @@
-
 /** /about/python-feeds body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 import type { PythonFeedsMessages } from "./en";
 
@@ -27,7 +26,8 @@ const ptBr: PythonFeedsMessages = {
     "A camada de consultas do site em Astro acessa a URL HTTPS que você configurou, lê o objeto <code>temp</code> (ou detecta automaticamente JSON SenML / Home Assistant REST quando essa raiz não existe) e associa as chaves às sondas do dashboard. A mesma URL pode alimentar scripts Node, plugins JSON do Grafana ou sensores REST do Home Assistant.",
   figureAlt:
     "Visualizador de JSON do navegador mostrando as chaves de sonda temp 0, 1 e avg com Fahrenheit, Celsius e umidade",
-  figureCaption: "Exemplo do formato de payload do relay que o site espera depois de armazenar em cache o JSON do Arduino.",
+  figureCaption:
+    "Exemplo do formato de payload do relay que o site espera depois de armazenar em cache o JSON do Arduino.",
   scriptsTitle: "Scripts operacionais",
   scriptsBody:
     "Além da API, pequenos utilitários em Python validam o schema JSON, completam arquivos CSV históricos ou comparam as médias das sondas com as previsões do OpenWeather. Como as sondas expõem JSON simples, você pode prototipar análises em um notebook antes de levar a lógica para serviços em produção.",

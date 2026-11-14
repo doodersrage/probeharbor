@@ -489,10 +489,12 @@ const diagrams = {
   <text x="365" y="190" text-anchor="middle" fill="${C.cream}" font-size="10" font-family="system-ui">SSR</text>
   <rect x="450" y="160" width="130" height="50" rx="4" fill="${C.terracotta}"/>
   <text x="515" y="190" text-anchor="middle" fill="${C.cream}" font-size="10" font-family="system-ui">History insert</text>
-  ${[0, 1, 2].map((i) => {
-    const x1 = 150 + i * 130;
-    return `<line x1="${x1}" y1="185" x2="${x1 + 40}" y2="185" stroke="${C.line}" stroke-width="2"/>`;
-  }).join("\n  ")}`,
+  ${[0, 1, 2]
+    .map((i) => {
+      const x1 = 150 + i * 130;
+      return `<line x1="${x1}" y1="185" x2="${x1 + 40}" y2="185" stroke="${C.line}" stroke-width="2"/>`;
+    })
+    .join("\n  ")}`,
     ),
 
   "caching-feed-responses": (slug) =>
@@ -510,10 +512,12 @@ const diagrams = {
   <text x="445" y="180" text-anchor="middle" fill="${C.cream}" font-size="9" font-family="system-ui">Relay</text>
   <rect x="520" y="150" width="90" height="50" rx="4" fill="${C.peach}"/>
   <text x="565" y="180" text-anchor="middle" fill="${C.ink}" font-size="9" font-family="system-ui">Arduino</text>
-  ${[0, 1, 2, 3].map((i) => {
-    const x1 = 130 + i * 120;
-    return `<line x1="${x1}" y1="175" x2="${x1 + 30}" y2="175" stroke="${C.line}" stroke-width="2"/>`;
-  }).join("\n  ")}
+  ${[0, 1, 2, 3]
+    .map((i) => {
+      const x1 = 130 + i * 120;
+      return `<line x1="${x1}" y1="175" x2="${x1 + 30}" y2="175" stroke="${C.line}" stroke-width="2"/>`;
+    })
+    .join("\n  ")}
   <text x="320" y="120" text-anchor="middle" fill="${C.ink}" font-size="12" font-family="system-ui">TTL decreases →</text>`,
     ),
 

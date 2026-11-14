@@ -74,7 +74,12 @@ describe("houseContext", () => {
   it("reads the house temperature in °C for °C users (ambientTempF stays °F)", () => {
     const thermostat = buildHouseContext(
       {
-        thermostatSnapshot: { provider: "nest", ambientTempF: 79, heatSetpointF: 80, hvacMode: "COOL" },
+        thermostatSnapshot: {
+          provider: "nest",
+          ambientTempF: 79,
+          heatSetpointF: 80,
+          hvacMode: "COOL",
+        },
         referenceSensorId: null,
         latest,
         devices,
@@ -86,7 +91,12 @@ describe("houseContext", () => {
     expect(thermostat?.metricValue).toBe("26°C");
     expect(thermostat?.metricDetail).toBe("Cool · set 27°C");
     const fThermostat = buildHouseContext({
-      thermostatSnapshot: { provider: "nest", ambientTempF: 79, heatSetpointF: 80, hvacMode: "COOL" },
+      thermostatSnapshot: {
+        provider: "nest",
+        ambientTempF: 79,
+        heatSetpointF: 80,
+        hvacMode: "COOL",
+      },
       referenceSensorId: null,
       latest,
       devices,

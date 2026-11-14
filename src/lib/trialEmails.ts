@@ -6,11 +6,7 @@ import { fmt } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { getUserLocale } from "../i18n/userLocale";
 import { trialEmailMessages } from "../i18n/messages/app/email/trial";
-import {
-  isMailerRecipientNotAllowed,
-  partitionMailErrors,
-  sendEmail,
-} from "./mailer";
+import { isMailerRecipientNotAllowed, partitionMailErrors, sendEmail } from "./mailer";
 
 const REMINDER_DAYS = [3, 1] as const;
 
@@ -94,14 +90,15 @@ export async function sendTrialRemindersForAllUsers(): Promise<{
       }
 
       const plan =
-        sub.plan_tier === "portfolio"
-          ? "Portfolio"
-          : sub.plan_tier === "pro"
-            ? "Pro"
-            : "Member";
-      const mail = buildTrialReminderEmail({ plan, remaining, siteUrl }, getUserLocale(userData.user));
+        sub.plan_tier === "portfolio" ? "Portfolio" : sub.plan_tier === "pro" ? "Pro" : "Member";
+      const mail = buildTrialReminderEmail(
+        { plan, remaining, siteUrl },
+        getUserLocale(userData.user),
+      );
       await sendEmail(email, mail.subject, mail.text, { html: mail.html });
-      await neonEmail.stampSettings(sub.user_id, "last_trial_reminder_at", { touchUpdatedAt: true });
+      await neonEmail.stampSettings(sub.user_id, "last_trial_reminder_at", {
+        touchUpdatedAt: true,
+      });
       sent += 1;
     } catch (error) {
       if (isMailerRecipientNotAllowed(error)) {
@@ -111,9 +108,7 @@ export async function sendTrialRemindersForAllUsers(): Promise<{
         );
         continue;
       }
-      errors.push(
-        `${sub.user_id}: ${error instanceof Error ? error.message : "unknown"}`,
-      );
+      errors.push(`${sub.user_id}: ${error instanceof Error ? error.message : "unknown"}`);
     }
   }
 

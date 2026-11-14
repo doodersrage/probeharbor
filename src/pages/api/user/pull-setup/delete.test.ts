@@ -88,9 +88,7 @@ describe("POST /api/user/pull-setup/delete", () => {
     const response = await POST(context);
 
     expect(mockDeleteUserTempFeed).toHaveBeenCalledWith("user-1", "feed-1");
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?feed_deleted=1&tab=pull",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?feed_deleted=1&tab=pull");
     expect(response.status).toBe(302);
   });
 
@@ -101,8 +99,6 @@ describe("POST /api/user/pull-setup/delete", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?feeds_error=1&tab=pull",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?feeds_error=1&tab=pull");
   });
 });

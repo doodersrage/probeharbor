@@ -38,7 +38,8 @@ export default {
   },
   webhooks: {
     title: "Webhooks de alertas y lecturas",
-    summary: "Los webhooks de Pro funcionan en ambos sentidos: configúralos en Dashboard → Alerts / Share.",
+    summary:
+      "Los webhooks de Pro funcionan en ambos sentidos: configúralos en Dashboard → Alerts / Share.",
     cta: "Guía en el sitio",
     bullets: [
       "Salientes: POST de alertas (HMAC opcional) y webhooks de lecturas de alto volumen en la ingesta",

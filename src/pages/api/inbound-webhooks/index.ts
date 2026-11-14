@@ -64,7 +64,9 @@ export const POST: APIRoute = async (context) => {
     if (!entitlements.canUseOutboundWebhook) {
       return redirect("/dashboard/share?inbound_error=pro");
     }
-    const name = formData.get("name")?.toString() || apiMoreCommonMessages(apiLocale(context)).defaults.inboundWebhook;
+    const name =
+      formData.get("name")?.toString() ||
+      apiMoreCommonMessages(apiLocale(context)).defaults.inboundWebhook;
     const { token, signingSecret, error } = await createInboundWebhook(householdId, user.id, name);
     if (error || !token) {
       return redirect(withQuery(redirectTo, { inbound_error: "1" }));

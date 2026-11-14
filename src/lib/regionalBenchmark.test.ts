@@ -39,9 +39,7 @@ describe("fetchRegionalBenchmark", () => {
   it("returns null for a non-finite yourTempF", async () => {
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
-    expect(
-      await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: NaN }),
-    ).toBeNull();
+    expect(await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: NaN })).toBeNull();
     expect(mockHouseholdFields).not.toHaveBeenCalled();
     expect(mockSnapshot).not.toHaveBeenCalled();
   });
@@ -50,18 +48,14 @@ describe("fetchRegionalBenchmark", () => {
     setupQueries(household({ freeze_map_opt_in: false }), null);
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
-    expect(
-      await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 }),
-    ).toBeNull();
+    expect(await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 })).toBeNull();
   });
 
   it("returns null when the household has no city id", async () => {
     setupQueries(household({ freeze_map_city_id: null }), null);
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
-    expect(
-      await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 }),
-    ).toBeNull();
+    expect(await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 })).toBeNull();
   });
 
   it("returns null when the aggregate key cannot be resolved", async () => {
@@ -69,38 +63,52 @@ describe("fetchRegionalBenchmark", () => {
     mockFreezeMapAggregateKey.mockReturnValue(null);
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
-    expect(
-      await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 }),
-    ).toBeNull();
+    expect(await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 })).toBeNull();
   });
 
   it("returns null when there is no usable snapshot", async () => {
-    setupQueries(household(), { city_label: "Denver", avg_temp_f: null, min_temp_f: null, sample_count: 5 });
+    setupQueries(household(), {
+      city_label: "Denver",
+      avg_temp_f: null,
+      min_temp_f: null,
+      sample_count: 5,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
-    expect(
-      await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 }),
-    ).toBeNull();
+    expect(await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 })).toBeNull();
   });
 
   it("returns null when the resolved city average is not finite", async () => {
-    setupQueries(household(), { city_label: "Denver", avg_temp_f: Infinity, min_temp_f: null, sample_count: 5 });
+    setupQueries(household(), {
+      city_label: "Denver",
+      avg_temp_f: Infinity,
+      min_temp_f: null,
+      sample_count: 5,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
-    expect(
-      await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 }),
-    ).toBeNull();
+    expect(await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 })).toBeNull();
   });
 
   it("returns null when fewer than 3 households report in the city", async () => {
-    setupQueries(household(), { city_label: "Denver", avg_temp_f: 30, min_temp_f: 28, sample_count: 2 });
+    setupQueries(household(), {
+      city_label: "Denver",
+      avg_temp_f: 30,
+      min_temp_f: 28,
+      sample_count: 2,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
     expect(await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 })).toBeNull();
   });
 
   it("falls back to min_temp_f when avg_temp_f is unavailable", async () => {
-    setupQueries(household(), { city_label: "Denver", avg_temp_f: null, min_temp_f: 28, sample_count: 5 });
+    setupQueries(household(), {
+      city_label: "Denver",
+      avg_temp_f: null,
+      min_temp_f: 28,
+      sample_count: 5,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
     const result = await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 28.5 });
@@ -109,17 +117,29 @@ describe("fetchRegionalBenchmark", () => {
   });
 
   it("reports 'about typical' within 1.5F of the city average", async () => {
-    setupQueries(household(), { city_label: "Denver", avg_temp_f: 30, min_temp_f: null, sample_count: 5 });
+    setupQueries(household(), {
+      city_label: "Denver",
+      avg_temp_f: 30,
+      min_temp_f: null,
+      sample_count: 5,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
     const result = await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30.9 });
 
     expect(mockSnapshot).toHaveBeenCalledWith("123");
-    expect(result?.message).toBe("About typical for other ProbeHarbor households in Denver tonight.");
+    expect(result?.message).toBe(
+      "About typical for other ProbeHarbor households in Denver tonight.",
+    );
   });
 
   it("reports colder-than-typical below the 1.5F band", async () => {
-    setupQueries(household(), { city_label: "Denver", avg_temp_f: 30, min_temp_f: null, sample_count: 5 });
+    setupQueries(household(), {
+      city_label: "Denver",
+      avg_temp_f: 30,
+      min_temp_f: null,
+      sample_count: 5,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
     const result = await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 25 });
@@ -131,7 +151,12 @@ describe("fetchRegionalBenchmark", () => {
   });
 
   it("reports warmer-than-typical above the 1.5F band", async () => {
-    setupQueries(household(), { city_label: "Denver", avg_temp_f: 30, min_temp_f: null, sample_count: 5 });
+    setupQueries(household(), {
+      city_label: "Denver",
+      avg_temp_f: 30,
+      min_temp_f: null,
+      sample_count: 5,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
     const result = await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 36 });
@@ -143,10 +168,12 @@ describe("fetchRegionalBenchmark", () => {
   });
 
   it("falls back from snapshot city_label to the household's label, then 'your region'", async () => {
-    setupQueries(
-      household({ freeze_map_label: "My Custom Label" }),
-      { city_label: null, avg_temp_f: 30, min_temp_f: null, sample_count: 5 },
-    );
+    setupQueries(household({ freeze_map_label: "My Custom Label" }), {
+      city_label: null,
+      avg_temp_f: 30,
+      min_temp_f: null,
+      sample_count: 5,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
     const result = await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 });
@@ -155,10 +182,12 @@ describe("fetchRegionalBenchmark", () => {
   });
 
   it("falls back all the way to 'your region' when no label exists anywhere", async () => {
-    setupQueries(
-      household({ freeze_map_label: null }),
-      { city_label: null, avg_temp_f: 30, min_temp_f: null, sample_count: 5 },
-    );
+    setupQueries(household({ freeze_map_label: null }), {
+      city_label: null,
+      avg_temp_f: 30,
+      min_temp_f: null,
+      sample_count: 5,
+    });
     const { fetchRegionalBenchmark } = await import("./regionalBenchmark");
 
     const result = await fetchRegionalBenchmark({ householdId: "house-1", yourTempF: 30 });

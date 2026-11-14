@@ -23,12 +23,14 @@ const de: AlertSettingsMessages = {
     outageHint:
       "Ein stummer Fühler kann dich nicht vor Frost warnen – deshalb ist das oft der nützlichste Alarm.",
     earlyWarnings: "Frühwarnungen",
-    runwayToggle: "Warnen, bevor ein Fühler die Frostgrenze erreicht – solange noch Zeit zum Handeln ist",
+    runwayToggle:
+      "Warnen, bevor ein Fühler die Frostgrenze erreicht – solange noch Zeit zum Handeln ist",
     runwayHint:
       "Schätzt anhand der Abkühlgeschwindigkeit (und der Außenvorhersage, wenn ein Wetterstandort eingestellt ist), wann jeder Bereich deine Frostgrenze erreicht, und warnt innerhalb des oben eingestellten Zeitfensters, damit du Wasserhähne tropfen lassen oder heizen kannst.",
     forecastToggle: "Warnen, wenn die Außenvorhersage unter den Gefrierpunkt fällt",
     forecastHours: "Wie weit im Voraus (Stunden)",
-    forecastHoursHint: "Gilt für beide Frühwarnungen: die Vorhersagewarnung und die Warnung „Zeit bis Frost“.",
+    forecastHoursHint:
+      "Gilt für beide Frühwarnungen: die Vorhersagewarnung und die Warnung „Zeit bis Frost“.",
     nwsSummary: "Luftfeuchte, schnelle Temperaturstürze und amtliche Frostwarnungen",
     humidityAbove: "Luftfeuchte über (%)",
     rateDrop: "Temperatursturz ({unit} / Stunde)",
@@ -59,7 +61,8 @@ const de: AlertSettingsMessages = {
     outboundWebhook: "Ausgehender Webhook",
     twilioMissing:
       "SMS ist in deinem Tarif enthalten, aber Twilio ist auf diesem Server nicht eingerichtet. Nachrichten werden übersprungen, bis die `TWILIO_*`-Secrets gesetzt sind.",
-    unlockProHtml: 'Schalte SMS und Webhooks mit <a class="text-link" href="/dashboard/plans">Pro</a> frei.',
+    unlockProHtml:
+      'Schalte SMS und Webhooks mit <a class="text-link" href="/dashboard/plans">Pro</a> frei.',
     webhookUrl: "Webhook-URL",
     botToken: "Bot-Token",
     chatId: "Chat-ID (für Befehle erforderlich)",
@@ -68,7 +71,8 @@ const de: AlertSettingsMessages = {
       "Ein Secret ist gespeichert. Es wird nicht erneut angezeigt: Gib ein neues ein, um es zu ersetzen, oder lass das Feld leer, um es zu behalten.",
     webhookSecretReplacePlaceholder: "Neues Secret eingeben, um es zu ersetzen",
     webhookSecretRemove: "Gespeichertes Secret entfernen",
-    webhookSecretRemoveHint: "Telegram-Befehle funktionieren erst wieder, wenn du ein neues Secret speicherst.",
+    webhookSecretRemoveHint:
+      "Telegram-Befehle funktionieren erst wieder, wenn du ein neues Secret speicherst.",
     telegramHintHtml:
       "Nutze bei Telegram <code>setWebhook</code> mit <code>secret_token</code>, damit Telegram <code>X-Telegram-Bot-Api-Secret-Token</code> sendet (der Parameter <code>?secret=</code> wird nicht akzeptiert). Speichere oben eine Chat-ID: Befehle funktionieren nur aus diesem Chat (/status [Name], /snooze [Stunden], /vacation [Tage]).",
     incomingWebhookUrl: "URL des eingehenden Webhooks",
@@ -82,14 +86,16 @@ const de: AlertSettingsMessages = {
     signingSecret: "Signatur-Secret (optional)",
     pushHintHtml:
       "Ein Kanal deckt <strong>diesen Browser</strong> (Web Push) und die <strong>ProbeHarbor-Android-App</strong> (FCM) ab. Aktiviere ihn unten für diesen Browser; die Android-App registriert sich automatisch, wenn du dich mit Pro anmeldest.",
-    pushNotConfigured: "Browser-Push ist auf dem Server noch nicht eingerichtet (VAPID-Schlüssel fehlen).",
+    pushNotConfigured:
+      "Browser-Push ist auf dem Server noch nicht eingerichtet (VAPID-Schlüssel fehlen).",
     pushChecking: "Push-Status wird geprüft…",
     pushEnable: "Browser-Push auf diesem Gerät aktivieren",
   },
 
   quiet: {
     title: "Alarme pausieren",
-    subtitle: "Ruhezeiten über Nacht oder pausieren und Urlaubsmodus, wenn du schon Bescheid weißt.",
+    subtitle:
+      "Ruhezeiten über Nacht oder pausieren und Urlaubsmodus, wenn du schon Bescheid weißt.",
     enable: "Ruhezeiten für Alarme aktivieren",
     bypassFreeze: "Frost-, Überflutungs- und Vorhersagealarme immer zustellen",
     smsCritical: "Kritische Frost-/Überflutungs-/Vorhersagealarme trotzdem per SMS senden (Pro)",
@@ -112,9 +118,12 @@ const de: AlertSettingsMessages = {
 
   reports: {
     title: "Zusammenfassungen per E-Mail",
-    subtitle: "Wöchentliche Zusammenfassung und ausführlichere Berichte. Nichts davon ist ein Alarm.",
-    weeklyDigest: "Wöchentliche E-Mail-Zusammenfassung (montags): kälteste Nacht, Lecks und Ausfälle",
-    portfolioDigest: "Zusammenfassung gefährdeter Objekte: E-Mail, sobald ein Objekt die Frostgrenze erreicht",
+    subtitle:
+      "Wöchentliche Zusammenfassung und ausführlichere Berichte. Nichts davon ist ein Alarm.",
+    weeklyDigest:
+      "Wöchentliche E-Mail-Zusammenfassung (montags): kälteste Nacht, Lecks und Ausfälle",
+    portfolioDigest:
+      "Zusammenfassung gefährdeter Objekte: E-Mail, sobald ein Objekt die Frostgrenze erreicht",
     monthlyReport: "Monatlicher Frostbericht (am 1. des Monats, HTML-Anhang)",
     quarterlyReport: "Vierteljährlicher Saisonbericht (Jan., Apr., Juli, Okt.)",
     dripEmails: "Tipps für den Einstieg (1, 3 und 7 Tage nach der Registrierung)",
@@ -128,11 +137,13 @@ const de: AlertSettingsMessages = {
     compositeRules: "Kombinierte Regeln",
     compositeHintHtml:
       'Lösen aus, wenn alle (oder eine) der Bedingungen einer Regel zutreffen, z. B. Leitung unter 3 °C (38 °F) UND draußen unter −7 °C (20 °F). Überflutung alarmiert bereits bei Nässe; füge hier nur dann eine Überflutungsbedingung hinzu, wenn du sie mit anderen Prüfungen kombinieren willst. Beispiel Tür + Kälte: <a class="text-link" href="/about/garage-door-cold-playbook">Leitfaden Garagentor</a>.',
-    doorDurationHint: "„Tür länger als N Minuten offen“ löst aus, sobald eine Tür N Minuten offen ist, und endet, wenn sie geschlossen wird – kurzes Öffnen alarmiert also nicht. Nutze „Tür offen“, um bei jedem Öffnen Bescheid zu bekommen.",
+    doorDurationHint:
+      "„Tür länger als N Minuten offen“ löst aus, sobald eine Tür N Minuten offen ist, und endet, wenn sie geschlossen wird – kurzes Öffnen alarmiert also nicht. Nutze „Tür offen“, um bei jedem Öffnen Bescheid zu bekommen.",
     addRule: "Regel hinzufügen",
     addHeatRule: "Hitzeregel hinzufügen ({threshold} {unit})",
     playbooks: "Alarm-Abläufe",
-    playbooksHint: "Folgeschritte nach dem ersten Alarm: z. B. 15 Minuten später eine SMS, wenn noch niemand bestätigt hat.",
+    playbooksHint:
+      "Folgeschritte nach dem ersten Alarm: z. B. 15 Minuten später eine SMS, wenn noch niemand bestätigt hat.",
     addStep: "Schritt hinzufügen",
     smsEscalation: "SMS-Eskalation",
     escalationToggle: "Schwellenwert-Alarme erneut per SMS senden",
@@ -141,12 +152,14 @@ const de: AlertSettingsMessages = {
 
   advanced: {
     title: "Erweitert",
-    subtitle: "Kanal-Routing pro Alarmart und pro Bereich, eigene Nachrichtentexte und Messwert-Webhooks.",
+    subtitle:
+      "Kanal-Routing pro Alarmart und pro Bereich, eigene Nachrichtentexte und Messwert-Webhooks.",
     severitySummary: "Routing nach Schweregrad (optional)",
     severityHint:
       "Leer lassen, um die allgemeinen Kanal-Kästchen zu nutzen. Sonst werden für diese Art nur die ausgewählten Kanäle verwendet.",
     spaceSummary: "Kanal-Routing pro Bereich",
-    spaceEmpty: "Weise deinen Geräten einen Bereich zu (Dashboard → Geräte), um Alarme nach Ort zu routen.",
+    spaceEmpty:
+      "Weise deinen Geräten einen Bereich zu (Dashboard → Geräte), um Alarme nach Ort zu routen.",
     spaceHint:
       "Wähle Kanäle pro Bereich und Alarmart. Nicht ausgewählte Arten nutzen das allgemeine bzw. das Schweregrad-Routing.",
     templatesSummary: "Eigene Alarmtexte",
@@ -156,13 +169,15 @@ const de: AlertSettingsMessages = {
     templatePlaceholder: "Leer lassen für den Standardtext",
     readingSummary: "Messwert-Webhooks (Pro)",
     readingUrl: "URL des Messwert-Webhooks",
-    readingHint: "POST bei jeder erfolgreichen Datenübermittlung eines Geräts, mit den neuesten Messwerten als JSON.",
+    readingHint:
+      "POST bei jeder erfolgreichen Datenübermittlung eines Geräts, mit den neuesten Messwerten als JSON.",
   },
 
   save: {
     button: "Alarmeinstellungen speichern",
     saveAndTest: "Speichern und Test senden",
-    incompleteHint: "Für einen ausgewählten Kanal fehlt das Ziel – sonst wird er beim Alarm übersprungen.",
+    incompleteHint:
+      "Für einen ausgewählten Kanal fehlt das Ziel – sonst wird er beim Alarm übersprungen.",
     notApplied: "Änderungen gelten erst nach dem Speichern.",
   },
 
@@ -214,7 +229,8 @@ const de: AlertSettingsMessages = {
 
   clientSubmit: {
     saving: "Wird gespeichert…",
-    saveBeforeTest: "Du hast ungespeicherte Alarmänderungen. Speichern und den Test mit den neuen Einstellungen senden?",
+    saveBeforeTest:
+      "Du hast ungespeicherte Alarmänderungen. Speichern und den Test mit den neuen Einstellungen senden?",
     saveButton: "Alarmeinstellungen speichern",
     saveFailed: "Alarmeinstellungen konnten nicht gespeichert werden.",
     pickVacationDate: "Wähle ein Rückkehrdatum für den Urlaub.",
@@ -258,7 +274,8 @@ const de: AlertSettingsMessages = {
     noVapidKeyServer: "Öffentlicher VAPID-Schlüssel ist auf dem Server nicht eingerichtet",
     permissionDenied: "Die Berechtigung für Benachrichtigungen wurde nicht erteilt",
     serverRejected: "Der Server hat das Abonnement abgelehnt",
-    subscribed: "In diesem Browser abonniert. Speichere die Alarmeinstellungen und sende dann einen Test.",
+    subscribed:
+      "In diesem Browser abonniert. Speichere die Alarmeinstellungen und sende dann einen Test.",
     subscribedHint:
       "Der Kanal „Push (Browser + Android)“ wurde ausgewählt: Klicke vor dem Testen auf „Alarmeinstellungen speichern“.",
     refresh: "Push erneut aktivieren / aktualisieren",
@@ -280,7 +297,8 @@ const de: AlertSettingsMessages = {
     notSubscribed: "Berechtigung erteilt, aber dieser Browser ist noch nicht abonniert.",
     notEnabled: "In diesem Browser noch nicht aktiviert.",
     enable: "Browser-Push auf diesem Gerät aktivieren",
-    vapidMissing: "Die VAPID-Schlüssel des Servers fehlen: Browser-Push kann erst nach der Einrichtung senden.",
+    vapidMissing:
+      "Die VAPID-Schlüssel des Servers fehlen: Browser-Push kann erst nach der Einrichtung senden.",
     androidRegistered:
       "Die Android-App ist registriert: Wähle „Push (Browser + Android)“, speichere und teste dann.",
     statusFailed: "Push-Status konnte nicht gelesen werden.",

@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../../lib/auth";
+import { executeAlertAckPlaybook, type AckPlaybookAction } from "../../../../lib/alertAckPlaybook";
 import {
-  executeAlertAckPlaybook,
-  type AckPlaybookAction,
-} from "../../../../lib/alertAckPlaybook";
-import { acknowledgeLatestUnackedAlert, acknowledgeAllUnackedAlerts } from "../../../../lib/alertEvents";
+  acknowledgeLatestUnackedAlert,
+  acknowledgeAllUnackedAlerts,
+} from "../../../../lib/alertEvents";
 import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
 import { getSiteUrl } from "../../../../lib/stripe";
 import { plural } from "../../../../i18n";
@@ -82,23 +82,32 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     const ack = await acknowledgeAllUnackedAlerts(user.id, undefined, locale);
     if (!ack.ok) {
       if (wantsJson(request)) {
-        return new Response(JSON.stringify({ error: ack.error ?? apiUserMessages(locale).ack.nothing }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: ack.error ?? apiUserMessages(locale).ack.nothing }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
       return redirect(
-        withQuery(redirectTo, { ack_error: "1", ack_msg: ack.error ?? apiUserMessages(locale).ack.nothing }),
+        withQuery(redirectTo, {
+          ack_error: "1",
+          ack_msg: ack.error ?? apiUserMessages(locale).ack.nothing,
+        }),
       );
     }
     if (wantsJson(request)) {
-      return new Response(
-        JSON.stringify({ ok: true, count: ack.count, action: "ack_all" }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ ok: true, count: ack.count, action: "ack_all" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
     return redirect(
-      withQuery(redirectTo, { ack_ok: "1", ack_msg: plural(apiUserMessages(locale).ack.handled, ack.count, locale) }),
+      withQuery(redirectTo, {
+        ack_ok: "1",
+        ack_msg: plural(apiUserMessages(locale).ack.handled, ack.count, locale),
+      }),
     );
   }
 
@@ -106,10 +115,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     const ack = await acknowledgeLatestUnackedAlert(user.id, locale);
     if (!ack.ok) {
       if (wantsJson(request)) {
-        return new Response(JSON.stringify({ error: ack.error ?? apiUserMessages(locale).ack.nothing }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: ack.error ?? apiUserMessages(locale).ack.nothing }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
       return redirect(withQuery(redirectTo, { ack_error: "1" }));
     }
@@ -149,9 +161,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
         headers: { "Content-Type": "application/json" },
       });
     }
-    return redirect(
-      withQuery(redirectTo, { ack_error: "1", ack_msg: result.message }),
-    );
+    return redirect(withQuery(redirectTo, { ack_error: "1", ack_msg: result.message }));
   }
 
   if (wantsJson(request)) {

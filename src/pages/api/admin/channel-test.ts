@@ -1,11 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { isUserAdmin } from "../../../lib/adminAccess";
-import {
-  getAlertSettingsForUser,
-  isTwilioConfigured,
-  sendTwilioSms,
-} from "../../../lib/notify";
+import { getAlertSettingsForUser, isTwilioConfigured, sendTwilioSms } from "../../../lib/notify";
 import { isVapidConfigured, sendWebPushToUser } from "../../../lib/webPush";
 import { getLocale } from "../../../i18n";
 import { adminMessages } from "../../../i18n/messages/app/admin";
@@ -38,16 +34,12 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       user.id,
       user.user_metadata as Record<string, unknown>,
     );
-    const phone =
-      formData?.get("phone")?.toString().trim() || settings.smsPhone || null;
+    const phone = formData?.get("phone")?.toString().trim() || settings.smsPhone || null;
     if (!phone) {
       return opsRedirect({ channel_error: "sms_no_phone" });
     }
 
-    const ok = await sendTwilioSms(
-      phone,
-      t.smsTest,
-    );
+    const ok = await sendTwilioSms(phone, t.smsTest);
     if (!ok) {
       return opsRedirect({ channel_error: "sms_send_failed" });
     }

@@ -46,10 +46,16 @@ async function setHold(
   return row ? Number(row.members) : null;
 }
 
-export function setHouseholdSnoozeUntil(householdId: string, until: string | null): Promise<number | null> {
+export function setHouseholdSnoozeUntil(
+  householdId: string,
+  until: string | null,
+): Promise<number | null> {
   return setHold("alerts_snoozed_until", householdId, until);
 }
 
-export function setHouseholdVacationUntil(householdId: string, until: string | null): Promise<number | null> {
+export function setHouseholdVacationUntil(
+  householdId: string,
+  until: string | null,
+): Promise<number | null> {
   return setHold("alerts_vacation_until", householdId, until);
 }

@@ -23,7 +23,8 @@ const en = {
   getAlerts: "Get free freeze alerts by email",
   whenGaragePipes: "When garage pipes freeze",
   alertsConfirmed: "Freeze alerts are on. We'll email you the afternoon before a freezing night.",
-  alertsInvalid: "That confirmation link isn't valid anymore. Look up your area below and sign up again.",
+  alertsInvalid:
+    "That confirmation link isn't valid anymore. Look up your area below and sign up again.",
   levelsTitle: "How to read the risk levels",
   levelsHtml: [
     "<strong>High risk:</strong> the outdoor low is 20°F or colder, the commonly cited point where pipes in unheated spaces freeze.",

@@ -48,7 +48,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze"],
     status: "verified",
     noCode: true,
-    notes: "Data to GPIO 4, resistor from data to 3.3 V. Clip the probe to the pipe, not the air. Several probes can share the wire.",
+    notes:
+      "Data to GPIO 4, resistor from data to 3.3 V. Clip the probe to the pipe, not the air. Several probes can share the wire.",
     links: [flash, { label: "ESP32 freeze kit", href: "/about/esp32-freeze-kit" }],
   },
   {
@@ -59,7 +60,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity"],
     status: "verified",
     noCode: true,
-    notes: "Same GPIO 4 as the DS18B20. Mount it away from the board; the ESP32 warms a sensor sitting next to it. A DHT11 is detected too, but isn't hardware-tested and reads coarser.",
+    notes:
+      "Same GPIO 4 as the DS18B20. Mount it away from the board; the ESP32 warms a sensor sitting next to it. A DHT11 is detected too, but isn't hardware-tested and reads coarser.",
     links: [flash, { label: "DHT22 wiring", href: "/about/dht22-data-line-wiring" }],
   },
   {
@@ -70,7 +72,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity", "air"],
     status: "verified",
     noCode: true,
-    notes: "Found automatically at boot: SDA to GPIO 21, SCL to GPIO 22, plus 3.3 V and GND. Reports air pressure as well. A BMP280 looks the same but has no humidity, so check the listing.",
+    notes:
+      "Found automatically at boot: SDA to GPIO 21, SCL to GPIO 22, plus 3.3 V and GND. Reports air pressure as well. A BMP280 looks the same but has no humidity, so check the listing.",
     links: [flash],
   },
   {
@@ -81,7 +84,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity"],
     status: "verified",
     noCode: true,
-    notes: "Found automatically at boot: SDA to GPIO 21, SCL to GPIO 22, plus 3.3 V and GND. Temperature and humidity only, no pressure.",
+    notes:
+      "Found automatically at boot: SDA to GPIO 21, SCL to GPIO 22, plus 3.3 V and GND. Temperature and humidity only, no pressure.",
     links: [flash],
   },
   {
@@ -92,7 +96,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity"],
     status: "verified",
     noCode: true,
-    notes: "Found automatically at boot. Run on an ESP32-S3 (SDA 8, SCL 9) and on a classic ESP32, wired like the BME280 and SHT31 (SDA 21, SCL 22).",
+    notes:
+      "Found automatically at boot. Run on an ESP32-S3 (SDA 8, SCL 9) and on a classic ESP32, wired like the BME280 and SHT31 (SDA 21, SCL 22).",
     links: [flash],
   },
   {
@@ -103,7 +108,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["door"],
     status: "verified",
     noCode: true,
-    notes: "Tick Door in the flasher's extras. On a classic ESP32 the reed switch goes from GPIO 26 to GND; magnet away reads Open. Mount the magnet on the door and the switch on the frame.",
+    notes:
+      "Tick Door in the flasher's extras. On a classic ESP32 the reed switch goes from GPIO 26 to GND; magnet away reads Open. Mount the magnet on the door and the switch on the frame.",
     links: [flash],
   },
   {
@@ -114,7 +120,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["leak"],
     status: "built-in",
     noCode: true,
-    notes: "Tick Leak in the flasher's extras. On a classic ESP32 the contact goes from GPIO 27 to GND. A wet contact raises a leak alert with no other setup.",
+    notes:
+      "Tick Leak in the flasher's extras. On a classic ESP32 the contact goes from GPIO 27 to GND. A wet contact raises a leak alert with no other setup.",
     links: [flash],
   },
   {
@@ -125,7 +132,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["battery"],
     status: "built-in",
     noCode: true,
-    notes: "Reports battery percentage so Devices can warn before it dies. Expect weeks, not months, on Wi-Fi.",
+    notes:
+      "Reports battery percentage so Devices can warn before it dies. Expect weeks, not months, on Wi-Fi.",
     links: [flash],
   },
   {
@@ -136,7 +144,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity"],
     status: "verified",
     noCode: true,
-    notes: "Run on hardware with an AHT20 on SDA 8, SCL 9. Settings go over either USB port (firmware 1.2.4 or later). A DS18B20 or DHT22 goes on GPIO 4, as on a classic ESP32.",
+    notes:
+      "Run on hardware with an AHT20 on SDA 8, SCL 9. Settings go over either USB port (firmware 1.2.4 or later). A DS18B20 or DHT22 goes on GPIO 4, as on a classic ESP32.",
     links: [flash],
   },
   {
@@ -147,7 +156,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity"],
     status: "verified",
     noCode: true,
-    notes: "Run on hardware with a DHT22 on GPIO 4. Settings go over either USB port (firmware 1.2.5 or later).",
+    notes:
+      "Run on hardware with a DHT22 on GPIO 4. Settings go over either USB port (firmware 1.2.5 or later).",
     links: [flash],
   },
   {
@@ -158,7 +168,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity", "leak", "door"],
     status: "guide",
     noCode: false,
-    notes: "An automation pushes entity states to ProbeHarbor, so alerts still reach you when Home Assistant or the power is down. Needs a little YAML.",
+    notes:
+      "An automation pushes entity states to ProbeHarbor, so alerts still reach you when Home Assistant or the power is down. Needs a little YAML.",
     links: [
       { label: "Home Assistant", href: "/integrations/home-assistant" },
       { label: "Notify recipes", href: "/about/home-assistant-notify-recipes" },
@@ -172,7 +183,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity", "leak"],
     status: "guide",
     noCode: false,
-    notes: "Point the device's HTTP action at your ingest URL. Copy the ESPHome snippet from your device's page.",
+    notes:
+      "Point the device's HTTP action at your ingest URL. Copy the ESPHome snippet from your device's page.",
     links: [{ label: "ESPHome & Shelly recipes", href: "/about/esphome-shelly-recipes" }, checker],
   },
   {
@@ -183,7 +195,8 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     goals: ["freeze", "humidity", "leak", "door", "air"],
     status: "guide",
     noCode: false,
-    notes: "Forward topics to the ingest endpoint. Check one message with the payload checker before wiring the flow.",
+    notes:
+      "Forward topics to the ingest endpoint. Check one message with the payload checker before wiring the flow.",
     links: [
       { label: "MQTT bridge", href: "/about/mqtt-bridge" },
       { label: "Node-RED", href: "/integrations/node-red" },
@@ -221,7 +234,10 @@ export const HARDWARE_RECIPES: HardwareRecipe[] = [
     status: "guide",
     noCode: false,
     notes: "Add the URL under Devices → Pull feeds; we fetch it on a schedule.",
-    links: [{ label: "Python feeds", href: "/about/python-feeds" }, { label: "Adding devices", href: "/about/adding-devices" }],
+    links: [
+      { label: "Python feeds", href: "/about/python-feeds" },
+      { label: "Adding devices", href: "/about/adding-devices" },
+    ],
   },
   {
     id: "cellular",

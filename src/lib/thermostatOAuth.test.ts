@@ -11,10 +11,8 @@ vi.mock("./runtimeEnv", () => ({
 const mockGetConnectionForHousehold = vi.fn();
 const mockUpdateTokensAfterRefresh = vi.fn();
 vi.mock("./thermostatConnections", () => ({
-  getConnectionForHousehold: (...args: unknown[]) =>
-    mockGetConnectionForHousehold(...args),
-  updateTokensAfterRefresh: (...args: unknown[]) =>
-    mockUpdateTokensAfterRefresh(...args),
+  getConnectionForHousehold: (...args: unknown[]) => mockGetConnectionForHousehold(...args),
+  updateTokensAfterRefresh: (...args: unknown[]) => mockUpdateTokensAfterRefresh(...args),
 }));
 
 beforeEach(() => {
@@ -33,12 +31,14 @@ describe("refreshNestTokens", () => {
   it("returns tokens on success", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 3600 }),
-          { status: 200 },
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 3600 }),
+            { status: 200 },
+          ),
         ),
-      ),
     );
     const { refreshNestTokens } = await import("./thermostatOAuth");
     const result = await refreshNestTokens("cid", "csecret", "rt-old");
@@ -57,12 +57,14 @@ describe("refreshEcobeeTokens", () => {
   it("returns tokens on success", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 3600 }),
-          { status: 200 },
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 3600 }),
+            { status: 200 },
+          ),
         ),
-      ),
     );
     const { refreshEcobeeTokens } = await import("./thermostatOAuth");
     const result = await refreshEcobeeTokens("cid", "rt-old");
@@ -74,9 +76,9 @@ describe("exchangeNestCode / exchangeEcobeeCode", () => {
   it("requires both an access_token and refresh_token in the response", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ access_token: "at" }), { status: 200 }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(new Response(JSON.stringify({ access_token: "at" }), { status: 200 })),
     );
     const { exchangeNestCode, exchangeEcobeeCode } = await import("./thermostatOAuth");
     expect(await exchangeNestCode("cid", "secret", "code", "https://x/cb")).toBeNull();
@@ -86,26 +88,24 @@ describe("exchangeNestCode / exchangeEcobeeCode", () => {
   it("returns tokens when both are present", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 1800 }),
-          { status: 200 },
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 1800 }),
+            { status: 200 },
+          ),
         ),
-      ),
     );
     const { exchangeEcobeeCode } = await import("./thermostatOAuth");
     const result = await exchangeEcobeeCode("cid", "code", "https://x/cb");
-    expect(result).toEqual(
-      expect.objectContaining({ accessToken: "at", refreshToken: "rt" }),
-    );
+    expect(result).toEqual(expect.objectContaining({ accessToken: "at", refreshToken: "rt" }));
   });
 });
 
 describe("buildNestAuthorizeUrl / buildEcobeeAuthorizeUrl", () => {
   it("returns null when required env vars are missing", async () => {
-    const { buildNestAuthorizeUrl, buildEcobeeAuthorizeUrl } = await import(
-      "./thermostatOAuth"
-    );
+    const { buildNestAuthorizeUrl, buildEcobeeAuthorizeUrl } = await import("./thermostatOAuth");
     expect(buildNestAuthorizeUrl("state", "https://x/cb")).toBeNull();
     expect(buildEcobeeAuthorizeUrl("state", "https://x/cb")).toBeNull();
   });
@@ -114,9 +114,7 @@ describe("buildNestAuthorizeUrl / buildEcobeeAuthorizeUrl", () => {
     runtimeEnvStore.set("NEST_CLIENT_ID", "nest-cid");
     runtimeEnvStore.set("NEST_PROJECT_ID", "proj-1");
     runtimeEnvStore.set("ECOBEE_CLIENT_ID", "ecobee-cid");
-    const { buildNestAuthorizeUrl, buildEcobeeAuthorizeUrl } = await import(
-      "./thermostatOAuth"
-    );
+    const { buildNestAuthorizeUrl, buildEcobeeAuthorizeUrl } = await import("./thermostatOAuth");
     const nestUrl = buildNestAuthorizeUrl("state-1", "https://x/cb");
     expect(nestUrl).toContain("https://nestservices.google.com/partnerconnections/proj-1/auth");
     expect(nestUrl).toContain("state=state-1");
@@ -129,11 +127,8 @@ describe("buildNestAuthorizeUrl / buildEcobeeAuthorizeUrl", () => {
 
 describe("listConfiguredThermostatProviders", () => {
   it("returns empty when no OAuth env vars are set", async () => {
-    const {
-      isNestOAuthConfigured,
-      isEcobeeOAuthConfigured,
-      listConfiguredThermostatProviders,
-    } = await import("./thermostatOAuth");
+    const { isNestOAuthConfigured, isEcobeeOAuthConfigured, listConfiguredThermostatProviders } =
+      await import("./thermostatOAuth");
     expect(isNestOAuthConfigured()).toBe(false);
     expect(isEcobeeOAuthConfigured()).toBe(false);
     expect(listConfiguredThermostatProviders()).toEqual([]);
@@ -200,12 +195,14 @@ describe("resolveAccessTokenForHousehold", () => {
     runtimeEnvStore.set("ECOBEE_CLIENT_ID", "ecobee-cid");
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({ access_token: "fresh-at", refresh_token: "rt-new", expires_in: 3600 }),
-          { status: 200 },
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({ access_token: "fresh-at", refresh_token: "rt-new", expires_in: 3600 }),
+            { status: 200 },
+          ),
         ),
-      ),
     );
     const { resolveAccessTokenForHousehold } = await import("./thermostatOAuth");
     const result = await resolveAccessTokenForHousehold("house-1", "ecobee");

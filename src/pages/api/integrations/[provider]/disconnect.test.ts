@@ -39,10 +39,9 @@ function fakeRedirect(path: string): Response {
   return new Response(null, { status: 302, headers: { Location: path } });
 }
 
-function makeContext(options: {
-  provider?: string;
-  fields?: Record<string, string>;
-} = {}): APIContext {
+function makeContext(
+  options: { provider?: string; fields?: Record<string, string> } = {},
+): APIContext {
   const form = new FormData();
   for (const [key, value] of Object.entries(options.fields ?? {})) form.set(key, value);
   const request = { formData: () => Promise.resolve(form) } as unknown as Request;
@@ -82,7 +81,9 @@ describe("POST /api/integrations/[provider]/disconnect", () => {
 
     const response = await POST(makeContext({ provider: "honeywell" }));
 
-    expect(response.headers.get("Location")).toBe("/dashboard/devices?view=setup&tab=thermostat&thermostat_error=1#thermostat-connect");
+    expect(response.headers.get("Location")).toBe(
+      "/dashboard/devices?view=setup&tab=thermostat&thermostat_error=1#thermostat-connect",
+    );
     expect(mockDeleteConnection).not.toHaveBeenCalled();
   });
 
@@ -92,9 +93,7 @@ describe("POST /api/integrations/[provider]/disconnect", () => {
 
     const response = await POST(makeContext());
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/devices?error=manager_required",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/devices?error=manager_required");
     expect(mockDeleteConnection).not.toHaveBeenCalled();
   });
 

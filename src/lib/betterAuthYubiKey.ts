@@ -26,31 +26,48 @@ export function yubikeyTwoFactorPlugin(verify: YubiKeyVerifier | undefined) {
   return {
     id: "probeharbor-yubikey-two-factor",
     endpoints: {
-      verifyYubiKeyTwoFactor: createAuthEndpoint("/two-factor/verify-yubikey", { method: "POST" }, async (ctx) => {
-        if (!verify) throw new APIError("SERVICE_UNAVAILABLE", { code: "YUBIKEY_NOT_CONFIGURED", message: "YubiKey OTP is not configured" });
-        const otp = typeof (ctx.body as { otp?: unknown } | undefined)?.otp === "string" ? (ctx.body as { otp: string }).otp.trim() : "";
-        if (otp.length < 32 || otp.length > 64) throw fail("INVALID_OTP");
+      verifyYubiKeyTwoFactor: createAuthEndpoint(
+        "/two-factor/verify-yubikey",
+        { method: "POST" },
+        async (ctx) => {
+          if (!verify)
+            throw new APIError("SERVICE_UNAVAILABLE", {
+              code: "YUBIKEY_NOT_CONFIGURED",
+              message: "YubiKey OTP is not configured",
+            });
+          const otp =
+            typeof (ctx.body as { otp?: unknown } | undefined)?.otp === "string"
+              ? (ctx.body as { otp: string }).otp.trim()
+              : "";
+          if (otp.length < 32 || otp.length > 64) throw fail("INVALID_OTP");
 
-        const cookie = ctx.context.createAuthCookie("two_factor");
-        const identifier = await ctx.getSignedCookie(cookie.name, ctx.context.secret);
-        if (!identifier) throw fail("INVALID_TWO_FACTOR_COOKIE");
-        const pending = await ctx.context.internalAdapter.findVerificationValue(identifier);
-        if (!pending || new Date(pending.expiresAt) < new Date()) throw fail("INVALID_TWO_FACTOR_COOKIE");
+          const cookie = ctx.context.createAuthCookie("two_factor");
+          const identifier = await ctx.getSignedCookie(cookie.name, ctx.context.secret);
+          if (!identifier) throw fail("INVALID_TWO_FACTOR_COOKIE");
+          const pending = await ctx.context.internalAdapter.findVerificationValue(identifier);
+          if (!pending || new Date(pending.expiresAt) < new Date())
+            throw fail("INVALID_TWO_FACTOR_COOKIE");
 
-        const result = await verify(pending.value, otp);
-        if (result !== "ok") throw fail(result.toUpperCase());
+          const result = await verify(pending.value, otp);
+          if (result !== "ok") throw fail(result.toUpperCase());
 
-        // Use the challenge up first, so one challenge gives one session.
-        const consumed = await ctx.context.internalAdapter.consumeVerificationValue(identifier);
-        if (!consumed || consumed.value !== pending.value) throw fail("INVALID_TWO_FACTOR_COOKIE");
-        const user = await ctx.context.internalAdapter.findUserById(consumed.value);
-        if (!user) throw fail("INVALID_TWO_FACTOR_COOKIE");
-        const session = await ctx.context.internalAdapter.createSession(user.id);
-        if (!session) throw new APIError("INTERNAL_SERVER_ERROR", { code: "FAILED_TO_CREATE_SESSION", message: "failed to create session" });
-        await setSessionCookie(ctx, { session, user });
-        expireCookie(ctx, cookie);
-        return ctx.json({ ok: true, userId: user.id });
-      }),
+          // Use the challenge up first, so one challenge gives one session.
+          const consumed = await ctx.context.internalAdapter.consumeVerificationValue(identifier);
+          if (!consumed || consumed.value !== pending.value)
+            throw fail("INVALID_TWO_FACTOR_COOKIE");
+          const user = await ctx.context.internalAdapter.findUserById(consumed.value);
+          if (!user) throw fail("INVALID_TWO_FACTOR_COOKIE");
+          const session = await ctx.context.internalAdapter.createSession(user.id);
+          if (!session)
+            throw new APIError("INTERNAL_SERVER_ERROR", {
+              code: "FAILED_TO_CREATE_SESSION",
+              message: "failed to create session",
+            });
+          await setSessionCookie(ctx, { session, user });
+          expireCookie(ctx, cookie);
+          return ctx.json({ ok: true, userId: user.id });
+        },
+      ),
     },
   } satisfies BetterAuthPlugin;
 }

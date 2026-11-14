@@ -66,7 +66,11 @@ export async function createPushDevice(
 }
 
 /** Run an UPDATE ... RETURNING id; "not found" (wrong id or household) when nothing matched. */
-async function updateOne(text: string, params: unknown[], notFound: string): Promise<{ error: string | null }> {
+async function updateOne(
+  text: string,
+  params: unknown[],
+  notFound: string,
+): Promise<{ error: string | null }> {
   try {
     const rows = await query(text, params);
     return rows.length > 0 ? { error: null } : { error: notFound };
@@ -75,7 +79,12 @@ async function updateOne(text: string, params: unknown[], notFound: string): Pro
   }
 }
 
-export function renamePushDevice(householdId: string, deviceId: string, name: string, notFound: string) {
+export function renamePushDevice(
+  householdId: string,
+  deviceId: string,
+  name: string,
+  notFound: string,
+) {
   return updateOne(
     `update public.devices set name = $3
      where id = $1 and household_id = $2 and source = 'push' returning id`,
@@ -84,7 +93,12 @@ export function renamePushDevice(householdId: string, deviceId: string, name: st
   );
 }
 
-export function updateDeviceSpace(householdId: string, deviceId: string, space: string | null, notFound: string) {
+export function updateDeviceSpace(
+  householdId: string,
+  deviceId: string,
+  space: string | null,
+  notFound: string,
+) {
   return updateOne(
     `update public.devices set space = $3, updated_at = now()
      where id = $1 and household_id = $2 returning id`,
@@ -93,7 +107,12 @@ export function updateDeviceSpace(householdId: string, deviceId: string, space: 
   );
 }
 
-export function rotatePushDeviceKey(householdId: string, deviceId: string, hash: string, prefix: string) {
+export function rotatePushDeviceKey(
+  householdId: string,
+  deviceId: string,
+  hash: string,
+  prefix: string,
+) {
   return updateOne(
     `update public.devices set ingest_key_hash = $3, ingest_key_prefix = $4
      where id = $1 and household_id = $2 and source = 'push' returning id`,
@@ -102,7 +121,10 @@ export function rotatePushDeviceKey(householdId: string, deviceId: string, hash:
   );
 }
 
-export async function getDeviceSource(householdId: string, deviceId: string): Promise<string | null> {
+export async function getDeviceSource(
+  householdId: string,
+  deviceId: string,
+): Promise<string | null> {
   const [row] = await query<{ source: string }>(
     "select source from public.devices where id = $1 and household_id = $2",
     [deviceId, householdId],
@@ -143,7 +165,14 @@ export async function updateDeviceSensor(
   householdId: string,
   sensorId: string,
   deviceId: string,
-  patch: { key: string; label: string; kind: SensorKind; unit: string | null; offsetNum: number; visible?: boolean },
+  patch: {
+    key: string;
+    label: string;
+    kind: SensorKind;
+    unit: string | null;
+    offsetNum: number;
+    visible?: boolean;
+  },
 ): Promise<{ error: string | null }> {
   try {
     await query(
@@ -311,7 +340,15 @@ export async function savePullDevicesForHousehold(
           `update public.devices
            set name = $2, pull_url = $3, enabled = $4, sort_order = $5, meta = $6::jsonb, updated_at = now()
            where id = $1 and household_id = $7`,
-          [device.id, feed.name, feed.url, feed.enabled, index, JSON.stringify(pullDeviceMeta(current, feed)), householdId],
+          [
+            device.id,
+            feed.name,
+            feed.url,
+            feed.enabled,
+            index,
+            JSON.stringify(pullDeviceMeta(current, feed)),
+            householdId,
+          ],
         );
       }
 
@@ -326,13 +363,15 @@ export async function savePullDevicesForHousehold(
       const existingSensors: DeviceSensor[] = device.sensors ?? [];
 
       const stale = existingSensors
-        .filter((s) => (s.kind === "temperature" || s.kind === "humidity") && !desiredKeys.has(s.key))
+        .filter(
+          (s) => (s.kind === "temperature" || s.kind === "humidity") && !desiredKeys.has(s.key),
+        )
         .map((s) => s.id);
       if (stale.length > 0) {
-        await query("delete from public.device_sensors where device_id = $1 and id = any($2::uuid[])", [
-          deviceId,
-          stale,
-        ]);
+        await query(
+          "delete from public.device_sensors where device_id = $1 and id = any($2::uuid[])",
+          [deviceId, stale],
+        );
       }
 
       for (const [probeIndex, probe] of feedProbes.entries()) {
@@ -361,7 +400,9 @@ export async function savePullDevicesForHousehold(
 
     const removedIds = pullDevices.filter((d) => !keptDeviceIds.has(d.id)).map((d) => d.id);
     if (removedIds.length > 0) {
-      await query("delete from public.device_sensors where device_id = any($1::uuid[])", [removedIds]);
+      await query("delete from public.device_sensors where device_id = any($1::uuid[])", [
+        removedIds,
+      ]);
       await query("delete from public.devices where household_id = $1 and id = any($2::uuid[])", [
         householdId,
         removedIds,

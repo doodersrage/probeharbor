@@ -12,7 +12,12 @@ import { requestLocale } from "./_locale";
 import { getUserMetadata, mergeUserMetadata } from "../../../lib/db/userMetadata";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
 import { betterAuthErrorCode } from "../../../lib/betterAuthResponse";
-import { getTotpState, isElevated, jsonWithAuthCookies, totpFactors } from "../../../lib/betterAuthMfa";
+import {
+  getTotpState,
+  isElevated,
+  jsonWithAuthCookies,
+  totpFactors,
+} from "../../../lib/betterAuthMfa";
 import { renderIngestQrDataUrl } from "../../../lib/qrSvg";
 
 /** Factor list for the settings screen. */
@@ -44,19 +49,33 @@ async function manageBetterAuth(
   const elevated = () => isElevated(state, request, cookies, userId);
   const password = body.password ?? "";
   const failed = async (res: Response, fallback: string) =>
-    json({ error: (await betterAuthErrorCode(res)) === "INVALID_PASSWORD" ? t.passwordIncorrect : fallback }, 400);
+    json(
+      {
+        error:
+          (await betterAuthErrorCode(res)) === "INVALID_PASSWORD" ? t.passwordIncorrect : fallback,
+      },
+      400,
+    );
 
   if (action === "enroll") {
     if (state.enabled) return json({ error: t.totpAlreadyEnabled }, 400);
     if (hasAnyMfa && !(await elevated())) return json({ error: t.verifyBeforeAdding }, 401);
     if (state.hasPassword && !password) return json({ error: t.passwordIncorrect }, 400);
     const res = await withBetterAuth(request, (auth) =>
-      auth.api.enableTwoFactor({ body: state.hasPassword ? { password } : {}, headers: request.headers, asResponse: true }),
+      auth.api.enableTwoFactor({
+        body: state.hasPassword ? { password } : {},
+        headers: request.headers,
+        asResponse: true,
+      }),
     );
     if (!res.ok) return failed(res, t.verificationFailed);
     const { totpURI } = (await res.clone().json()) as { totpURI?: string };
     if (!totpURI) return json({ error: t.verificationFailed }, 400);
-    return jsonWithAuthCookies({ factorId: "totp", qrCode: renderIngestQrDataUrl(totpURI, 180) }, 200, res);
+    return jsonWithAuthCookies(
+      { factorId: "totp", qrCode: renderIngestQrDataUrl(totpURI, 180) },
+      200,
+      res,
+    );
   }
 
   if (action === "verify") {
@@ -74,13 +93,21 @@ async function manageBetterAuth(
     if (!(await elevated())) return json({ error: t.verifyBeforeRemoving }, 401);
     if (state.hasPassword && !password) return json({ error: t.passwordIncorrect }, 400);
     const res = await withBetterAuth(request, (auth) =>
-      auth.api.disableTwoFactor({ body: state.hasPassword ? { password } : {}, headers: request.headers, asResponse: true }),
+      auth.api.disableTwoFactor({
+        body: state.hasPassword ? { password } : {},
+        headers: request.headers,
+        asResponse: true,
+      }),
     );
     if (!res.ok) return failed(res, t.verificationFailed);
     return jsonWithAuthCookies({ ok: true }, 200, res);
   }
 
-  if (action === "webauthn_enroll" || action === "webauthn_challenge" || action === "webauthn_verify") {
+  if (
+    action === "webauthn_enroll" ||
+    action === "webauthn_challenge" ||
+    action === "webauthn_verify"
+  ) {
     return json({ error: t.securityKeysMoved }, 400);
   }
 
@@ -106,7 +133,8 @@ async function manageBetterAuth(
       if (!isYubiKeyOtpConfigured()) return json({ error: t.verifyBeforeRemovingYubikeys }, 401);
       if (!otp) return json({ error: t.tapYubikeyToRemove }, 400);
       const verified = await verifyYubiKeyOtpWithYubiCloud(otp);
-      if (!verified.ok || verified.publicId !== publicId) return json({ error: t.yubikeyConfirmFailed }, 400);
+      if (!verified.ok || verified.publicId !== publicId)
+        return json({ error: t.yubikeyConfirmFailed }, 400);
     }
     await mergeUserMetadata(userId, buildYubiKeyMetadataRemove(yubikeys, publicId));
     return json({ ok: true });

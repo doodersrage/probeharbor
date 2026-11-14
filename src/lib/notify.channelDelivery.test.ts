@@ -23,7 +23,9 @@ vi.mock("./alertEvents", () => ({
 }));
 vi.mock("./alertAckTokens", () => ({ buildUserAckUrl: vi.fn().mockResolvedValue(null) }));
 vi.mock("./siteUrl", () => ({ buildSiteUrl: () => "https://probeharbor.test" }));
-vi.mock("./db/alertExtras", () => ({ recordWebhookDelivery: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("./db/alertExtras", () => ({
+  recordWebhookDelivery: vi.fn().mockResolvedValue(undefined),
+}));
 const sendMail = vi.fn();
 vi.mock("./mailer", () => ({ sendEmail: (...a: unknown[]) => sendMail(...a) }));
 const sendPush = vi.fn();
@@ -57,7 +59,11 @@ afterEach(() => {
 });
 
 const base: AlertSettings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, channelEmail: false };
-const payload = { title: "Garage is 31°F", body: "Pipe probe below freezing", kind: "threshold" as const };
+const payload = {
+  title: "Garage is 31°F",
+  body: "Pipe probe below freezing",
+  kind: "threshold" as const,
+};
 
 async function notify(settings: AlertSettings, email: string | null = null) {
   const { notifyUser } = await import("./notify");
@@ -95,7 +101,11 @@ const webhookCases: WebhookCase[] = [
     unsafe: { channelTeams: true, teamsWebhookUrl: "http://example.webhook.office.com/hook" },
     check: ({ init }) => {
       const card = JSON.parse(init.body as string);
-      expect(card).toMatchObject({ "@type": "MessageCard", title: payload.title, text: payload.body });
+      expect(card).toMatchObject({
+        "@type": "MessageCard",
+        title: payload.title,
+        text: payload.body,
+      });
     },
   },
   {
@@ -132,7 +142,10 @@ const webhookCases: WebhookCase[] = [
     unconfigured: { channelTelegram: true, telegramBotToken: "123:abc", telegramChatId: "" },
     check: ({ url, init }) => {
       expect(url).toBe("https://api.telegram.org/bot123%3Aabc/sendMessage");
-      expect(JSON.parse(init.body as string)).toEqual({ chat_id: "-100", text: `${payload.title}\n${payload.body}` });
+      expect(JSON.parse(init.body as string)).toEqual({
+        chat_id: "-100",
+        text: `${payload.title}\n${payload.body}`,
+      });
     },
   },
 ];
@@ -200,7 +213,11 @@ describe("email", () => {
 
 describe("SMS (Twilio)", () => {
   const smsOn: AlertSettings = { ...base, channelSms: true, smsPhone: "+15551230000" };
-  const twilio = { TWILIO_ACCOUNT_SID: "AC1", TWILIO_AUTH_TOKEN: "tok", TWILIO_FROM_NUMBER: "+15550001111" };
+  const twilio = {
+    TWILIO_ACCOUNT_SID: "AC1",
+    TWILIO_AUTH_TOKEN: "tok",
+    TWILIO_FROM_NUMBER: "+15550001111",
+  };
 
   it("posts to Twilio with basic auth and counts as sent when accepted", async () => {
     entitlements.value = { ...entitlements.value, canUseSms: true };
@@ -241,7 +258,11 @@ describe("WhatsApp (Twilio)", () => {
 
   it("prefixes both numbers with whatsapp: and falls back to the SMS sender", async () => {
     entitlements.value = { ...entitlements.value, canUseSms: true };
-    env.values = { TWILIO_ACCOUNT_SID: "AC1", TWILIO_AUTH_TOKEN: "tok", TWILIO_FROM_NUMBER: "+15550001111" };
+    env.values = {
+      TWILIO_ACCOUNT_SID: "AC1",
+      TWILIO_AUTH_TOKEN: "tok",
+      TWILIO_FROM_NUMBER: "+15550001111",
+    };
     fetchMock.mockResolvedValue(ok());
     expect((await notify(waOn)).sent).toEqual(["whatsapp"]);
     const form = Object.fromEntries(lastRequest().init.body as URLSearchParams);
@@ -295,7 +316,14 @@ describe("one failing channel", () => {
 
     expect(result.sent).toEqual(["slack"]);
     expect(result.skipped).toEqual(["email", "discord"]);
-    expect(recordAlertEvent).toHaveBeenCalledWith(expect.objectContaining({ userId: "user-1", kind: "threshold" }));
-    expect(updateAlertEventChannels).toHaveBeenCalledWith(1, "user-1", ["slack"], ["email", "discord"]);
+    expect(recordAlertEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: "user-1", kind: "threshold" }),
+    );
+    expect(updateAlertEventChannels).toHaveBeenCalledWith(
+      1,
+      "user-1",
+      ["slack"],
+      ["email", "discord"],
+    );
   });
 });

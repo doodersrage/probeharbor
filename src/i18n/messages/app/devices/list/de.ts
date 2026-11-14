@@ -3,13 +3,15 @@ import type { DevicesListMessages } from "./en";
 const de: DevicesListMessages = {
   list: {
     title: "Geräte ({count})",
-    subtitle: "Die kritischsten zuerst. Öffne ein Gerät, um es umzubenennen, seinen Bereich festzulegen oder seine Sensoren zu korrigieren.",
+    subtitle:
+      "Die kritischsten zuerst. Öffne ein Gerät, um es umzubenennen, seinen Bereich festzulegen oder seine Sensoren zu korrigieren.",
     addDevice: "Gerät hinzufügen",
     warmHint:
       "misst {gap}{unit} mehr als deine anderen Fühler. Wenn der Sensor direkt neben seiner Platine sitzt, setz ihn an seinen Kabeln ein paar Zentimeter weg: ESP32-Platinen werden warm und verfälschen den Messwert.",
     unplaced: {
       one: "{count} Gerät hat keinen Bereich, daher können Abdeckung und Alarme nicht sagen, wo es ist.",
-      other: "{count} Geräte haben keinen Bereich, daher können Abdeckung und Alarme nicht sagen, wo sie sind.",
+      other:
+        "{count} Geräte haben keinen Bereich, daher können Abdeckung und Alarme nicht sagen, wo sie sind.",
     },
     unplacedBulk: "Mit „Mehrere auswählen“ unten kannst du mehrere auf einmal zuordnen.",
     unplacedSingle: "Öffne es, um einen festzulegen.",
@@ -76,11 +78,14 @@ const de: DevicesListMessages = {
       "✓ meldet · ! Sensor vorhanden, hat sich aber länger nicht gemeldet · — nicht überwacht. Die Bereiche stammen aus der Bereichseinstellung jedes Geräts.",
     unassigned: "Kein Bereich festgelegt",
     gaps: {
-      unassigned: "Leg für diese Geräte einen Bereich fest, damit die Abdeckung pro Raum erfasst wird.",
+      unassigned:
+        "Leg für diese Geräte einen Bereich fest, damit die Abdeckung pro Raum erfasst wird.",
       noTemperature: "Kein Temperaturfühler: Frostalarme können diesen Bereich nicht abdecken.",
-      staleTemperature: "Der Temperaturfühler hat sich länger nicht gemeldet, daher können hier keine Frostalarme ausgelöst werden.",
+      staleTemperature:
+        "Der Temperaturfühler hat sich länger nicht gemeldet, daher können hier keine Frostalarme ausgelöst werden.",
       staleLeak: "Der Lecksensor hat sich länger nicht gemeldet.",
-      noLeakWetSpace: "Hier gibt es keinen Lecksensor, und in dieser Art von Bereich liegen meist Wasserleitungen.",
+      noLeakWetSpace:
+        "Hier gibt es keinen Lecksensor, und in dieser Art von Bereich liegen meist Wasserleitungen.",
       staleDoor: "Der Türsensor hat sich länger nicht gemeldet.",
       stalePower: "Der Stromsensor hat sich länger nicht gemeldet.",
     },

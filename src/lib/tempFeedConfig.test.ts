@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  parseFeedDeviceMeta,
-  parseTempFeedPayload,
-  sanitizeJsonRoot,
-} from "./tempFeedConfig";
+import { parseFeedDeviceMeta, parseTempFeedPayload, sanitizeJsonRoot } from "./tempFeedConfig";
 
 describe("sanitizeJsonRoot", () => {
   it("defaults to temp and rejects invalid keys", () => {
@@ -35,9 +31,9 @@ describe("parseTempFeedPayload", () => {
   });
 
   it("errors when the configured root is missing", () => {
-    expect(() =>
-      parseTempFeedPayload({ temp: { "0": { f: 40 } } }, "readings"),
-    ).toThrow(/missing a "readings" object/);
+    expect(() => parseTempFeedPayload({ temp: { "0": { f: 40 } } }, "readings")).toThrow(
+      /missing a "readings" object/,
+    );
   });
 });
 

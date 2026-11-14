@@ -66,7 +66,8 @@ const es: HomeMessages = {
     title: "1 °C (34 °F). Ahí es cuando la alerta importa.",
     copyHtml:
       'Imagina un garaje adosado donde una esquina baja de 1 °C (34 °F) cada noche despejada. La alerta te dice que algo va mal; el gráfico del historial te muestra dónde, apuntando a un burlete con corrientes antes de que se congelen las tuberías. Es justo el tipo de cronología que documentaría un <a class="text-link" href="/claims-pack">paquete de pruebas para reclamaciones</a> si los daños por congelación acabaran en una conversación con el seguro.',
-    shotCaption: "La misma línea de congelación que cada hogar define en Alertas, visible en las curvas del Historial.",
+    shotCaption:
+      "La misma línea de congelación que cada hogar define en Alertas, visible en las curvas del Historial.",
     read: "Leer el escenario",
     more: "Más escenarios",
   },

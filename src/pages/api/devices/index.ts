@@ -34,13 +34,8 @@ import { FLASH_INGEST_KEY, setSecretFlash } from "../../../lib/secretFlash";
 import { persistEncryptedIngestKey } from "../../../lib/persistIngestKey";
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function randomKey(): string {
@@ -177,11 +172,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (!deviceId) {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
-    const result = await updateDeviceSpace(
-      householdId,
-      deviceId,
-      space,
-    );
+    const result = await updateDeviceSpace(householdId, deviceId, space);
     if (result.error) {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
@@ -197,12 +188,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const rawKey = randomKey();
     const hash = await sha256Hex(rawKey);
     const prefix = rawKey.slice(0, 8);
-    const result = await rotatePushDeviceKey(
-      householdId,
-      deviceId,
-      hash,
-      prefix,
-    );
+    const result = await rotatePushDeviceKey(householdId, deviceId, hash, prefix);
 
     if (result.error) {
       return redirect(withQuery(redirectTo, { error: "1" }));
@@ -270,9 +256,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const kindRaw = formData.get("kind")?.toString() ?? "generic";
     const kind = isSensorKind(kindRaw) ? kindRaw : "generic";
     const unit = formData.get("unit")?.toString().trim() || defaultUnitForKind(kind);
-    const offsetNum = Number.parseFloat(
-      formData.get("offset_num")?.toString() ?? "0",
-    );
+    const offsetNum = Number.parseFloat(formData.get("offset_num")?.toString() ?? "0");
     const visible = formData.has("visible");
 
     if (!sensorId || !deviceId || !key || !label) {
@@ -340,7 +324,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     // A Delete button inside the sensors form names the one sensor to remove.
     const deleteId = formData.get("delete_sensor_id")?.toString();
     if (deleteId) {
-      if (!device.sensors.some((s) => s.id === deleteId)) return redirect(withQuery(redirectTo, { error: "1" }));
+      if (!device.sensors.some((s) => s.id === deleteId))
+        return redirect(withQuery(redirectTo, { error: "1" }));
       await deleteDeviceSensor(householdId, deleteId, deviceId);
       return redirect(withQuery(redirectTo, { sensor_deleted: "1" }));
     }
@@ -383,7 +368,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return redirect(withQuery(redirectTo, { replace_error: "failed" }));
     }
     const owned = await listHouseholdDevices(householdId);
-    const sensors = owned.devices.flatMap((d) => d.sensors.map((s) => ({ ...s, deviceName: d.name })));
+    const sensors = owned.devices.flatMap((d) =>
+      d.sensors.map((s) => ({ ...s, deviceName: d.name })),
+    );
     const oldSensor = sensors.find((s) => s.id === oldSensorId);
     const newSensor = sensors.find((s) => s.id === newSensorId);
     const result = await replaceDeviceSensor(householdId, oldSensorId, newSensorId);

@@ -69,7 +69,8 @@ describe("claimsPack", () => {
           sensors: [{ label: "Garage", kind: "temperature" }],
         },
       ],
-      readingsCsvUrl: "https://example.com/api/garage-temps/export.csv?from=2026-01-14&to=2026-01-16",
+      readingsCsvUrl:
+        "https://example.com/api/garage-temps/export.csv?from=2026-01-14&to=2026-01-16",
       alertsCsvUrl: "https://example.com/api/alerts/export.csv?from=2026-01-14&to=2026-01-16",
     });
 

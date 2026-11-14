@@ -73,9 +73,7 @@ describe("createClaimsPackExport", () => {
   it("inserts a row and returns a token + matching content hash", async () => {
     mockInsert.mockResolvedValueOnce({ error: null });
 
-    const { createClaimsPackExport, computeClaimsPackHash } = await import(
-      "./claimsPackExports"
-    );
+    const { createClaimsPackExport, computeClaimsPackHash } = await import("./claimsPackExports");
     const expectedHash = await computeClaimsPackHash(basePack);
     const { token, contentHash, error } = await createClaimsPackExport(
       "house-1",

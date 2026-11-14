@@ -58,9 +58,7 @@ describe("GET /api/ical/outlook", () => {
     await GET(makeContext());
 
     expect(mockGetAlertSettingsForUser).toHaveBeenCalledWith("user-1", {});
-    expect(mockGetUserPreferences).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "user-1" }),
-    );
+    expect(mockGetUserPreferences).toHaveBeenCalledWith(expect.objectContaining({ id: "user-1" }));
     expect(mockFetchNightsAtRisk).toHaveBeenCalledWith({
       cityId: "1234",
       freezeThresholdF: 32,
@@ -68,7 +66,9 @@ describe("GET /api/ical/outlook", () => {
   });
 
   it("returns the built ical body with calendar headers", async () => {
-    mockFetchNightsAtRisk.mockResolvedValue([{ date: "2024-01-01", dateLabel: "Mon", minTempF: 20, atRisk: true }]);
+    mockFetchNightsAtRisk.mockResolvedValue([
+      { date: "2024-01-01", dateLabel: "Mon", minTempF: 20, atRisk: true },
+    ]);
     mockBuildFreezeOutlookIcal.mockReturnValue("BEGIN:VCALENDAR\nSUMMARY:Freeze\nEND:VCALENDAR");
     const { GET } = await import("./outlook");
 

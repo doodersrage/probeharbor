@@ -36,7 +36,9 @@ vi.mock("../../../../lib/mfaStepUpProof", () => ({
 }));
 
 function makeContext(): APIContext {
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return {
     cookies: {},
     request: new Request("https://example.com/api/auth/companion/complete"),
@@ -54,7 +56,9 @@ beforeEach(() => {
   mockNeedsStepUp.mockReset().mockResolvedValue(false);
   mockCreateAppSessionToken.mockReset().mockResolvedValue("app-token");
   mockHasValidMfaStepUpProof.mockReset().mockResolvedValue(true);
-  mockBuildMfaChallengeUrl.mockReset().mockReturnValue("/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fcomplete");
+  mockBuildMfaChallengeUrl
+    .mockReset()
+    .mockReturnValue("/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fcomplete");
   mockMaybeRedirectMobileOAuth.mockReset().mockResolvedValue(null);
 });
 
@@ -104,7 +108,11 @@ describe("GET /api/auth/companion/complete", () => {
 
     await GET(context);
 
-    expect(mockHasValidMfaStepUpProof).toHaveBeenCalledWith(context.request, context.cookies, "user-1");
+    expect(mockHasValidMfaStepUpProof).toHaveBeenCalledWith(
+      context.request,
+      context.cookies,
+      "user-1",
+    );
     expect(mockMaybeRedirectMobileOAuth).toHaveBeenCalled();
   });
 
@@ -115,7 +123,12 @@ describe("GET /api/auth/companion/complete", () => {
     await GET(context);
 
     expect(mockCreateAppSessionToken).toHaveBeenCalledWith(context.request, "user-1");
-    expect(mockMaybeRedirectMobileOAuth).toHaveBeenCalledWith(context.cookies, "app-token", "app-token", context.site);
+    expect(mockMaybeRedirectMobileOAuth).toHaveBeenCalledWith(
+      context.cookies,
+      "app-token",
+      "app-token",
+      context.site,
+    );
   });
 
   it("returns the mobile handoff response when one is produced", async () => {

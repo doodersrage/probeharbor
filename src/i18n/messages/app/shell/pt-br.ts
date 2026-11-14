@@ -46,7 +46,8 @@ const ptBr: ShellMessages = {
     switchError: "Não foi possível trocar de imóvel. Tente novamente.",
   },
   billing: {
-    paymentFailed: "Seu último pagamento não foi concluído. Seu plano continua ativo enquanto a Stripe tenta cobrar o cartão de novo; atualize sua forma de pagamento para não perder os recursos pagos.",
+    paymentFailed:
+      "Seu último pagamento não foi concluído. Seu plano continua ativo enquanto a Stripe tenta cobrar o cartão de novo; atualize sua forma de pagamento para não perder os recursos pagos.",
     updatePayment: "Atualizar forma de pagamento",
   },
   kiosk: {
@@ -180,7 +181,8 @@ const ptBr: ShellMessages = {
     title: "Instale o app web (PWA)",
     body: "O ProbeHarbor já funciona: adicione à tela inicial pelo Chrome ou Safari. Mesma conta, leituras ao vivo e alertas. O app nativo para Android está em acesso antecipado no GitHub enquanto a revisão do Google Play termina; não precisa esperar pelo Play.",
     step1: "Abra probeharbor.dev no Chrome (Android) ou Safari (iPhone).",
-    step2Html: "Use <strong>Instalar app</strong> ou Compartilhar → <strong>Adicionar à Tela de Início</strong>.",
+    step2Html:
+      "Use <strong>Instalar app</strong> ou Compartilhar → <strong>Adicionar à Tela de Início</strong>.",
     step3: "Abra o ícone; ative as notificações push depois em Painel → Alertas.",
     installApp: "Instalar app",
     guide: "Passos para instalar o PWA",

@@ -9,7 +9,10 @@ const allEvents = [
   "customer.subscription.deleted",
 ];
 
-function endpoint(url: string, overrides: Partial<{ status: string; enabled_events: string[] }> = {}) {
+function endpoint(
+  url: string,
+  overrides: Partial<{ status: string; enabled_events: string[] }> = {},
+) {
   return {
     id: "we_1",
     url,
@@ -20,7 +23,9 @@ function endpoint(url: string, overrides: Partial<{ status: string; enabled_even
 
 describe("webhookEndpointProblems", () => {
   it("accepts an enabled canonical endpoint with every event", () => {
-    expect(webhookEndpointProblems([endpoint("https://probeharbor.dev/api/stripe/webhook")])).toEqual([]);
+    expect(
+      webhookEndpointProblems([endpoint("https://probeharbor.dev/api/stripe/webhook")]),
+    ).toEqual([]);
   });
 
   it("flags a legacy host, which the site redirects", () => {
@@ -48,7 +53,9 @@ describe("webhookEndpointProblems", () => {
 });
 
 describe("checkStripeWebhookHealth", () => {
-  function fakeStripe(overrides: { endpoints?: Stripe.WebhookEndpoint[]; failed?: unknown[] } = {}) {
+  function fakeStripe(
+    overrides: { endpoints?: Stripe.WebhookEndpoint[]; failed?: unknown[] } = {},
+  ) {
     // Real signing/verification (web crypto), fake network calls.
     const real = new Stripe("sk_test_dummy", { httpClient: Stripe.createFetchHttpClient() });
     return {
@@ -65,7 +72,10 @@ describe("checkStripeWebhookHealth", () => {
   }
 
   it("passes when the secret verifies and the endpoint is healthy", async () => {
-    const result = await checkStripeWebhookHealth({ stripe: fakeStripe(), webhookSecret: "whsec_test" });
+    const result = await checkStripeWebhookHealth({
+      stripe: fakeStripe(),
+      webhookSecret: "whsec_test",
+    });
     expect(result).toEqual({ ok: true, problems: [] });
   });
 

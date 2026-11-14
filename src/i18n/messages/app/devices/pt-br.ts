@@ -5,7 +5,8 @@ const ptBr: DevicesMessages = {
   subtitle: {
     ops: "Todos os dispositivos, do pior para o melhor. Abra um para gerenciá-lo.",
     pull: "Feeds JSON via HTTPS que buscamos de forma programada.",
-    thermostat: "O termostato da sua casa e a referência interna, como contexto ao lado das suas sondas.",
+    thermostat:
+      "O termostato da sua casa e a referência interna, como contexto ao lado das suas sondas.",
     push: "Conecte um dispositivo novo ou termine de configurar um.",
   },
   indoorRefError: {
@@ -36,15 +37,18 @@ const ptBr: DevicesMessages = {
     feedDeleted: "Feed excluído.",
     probeDeleted: "Sonda excluída.",
     saveFailed: "Não foi possível salvar as alterações. Tente de novo.",
-    deviceLimit: "Limite de dispositivos push atingido ({max} por imóvel). Faça upgrade para adicionar mais.",
+    deviceLimit:
+      "Limite de dispositivos push atingido ({max} por imóvel). Faça upgrade para adicionar mais.",
     viewer: "Acesso somente leitura: você não pode alterar dispositivos nem feeds.",
-    deviceActionFailed: "Não foi possível concluir essa ação no dispositivo. Confira o formulário e tente de novo.",
+    deviceActionFailed:
+      "Não foi possível concluir essa ação no dispositivo. Confira o formulário e tente de novo.",
     actionFailed: "Não foi possível concluir essa ação ({code}). Tente de novo.",
     viewPlans: "Ver planos",
     /** At the device limit with push devices that never reported; device links follow. */
     neverReported: {
       one: "{count} dos seus dispositivos nunca enviou uma leitura. Exclua-o se não precisar dele, ou reutilize-o para o hardware que você está configurando (Trocar chave na página dele gera uma chave nova):",
-      other: "{count} dos seus dispositivos nunca enviaram uma leitura. Exclua um que você não precisa, ou reutilize um para o hardware que você está configurando (Trocar chave na página dele gera uma chave nova):",
+      other:
+        "{count} dos seus dispositivos nunca enviaram uma leitura. Exclua um que você não precisa, ou reutilize um para o hardware que você está configurando (Trocar chave na página dele gera uma chave nova):",
     },
   },
   tabs: {
@@ -105,13 +109,15 @@ const ptBr: DevicesMessages = {
     kitGuide: "Guia de QR do kit de hardware",
     checkNow: "Verificar agora",
     metaAuto: "Verificando automaticamente a cada 5 segundos enquanto esta página estiver aberta.",
-    metaManual: "Quando seu dispositivo enviar uma leitura, clique em Verificar agora ou recarregue.",
+    metaManual:
+      "Quando seu dispositivo enviar uma leitura, clique em Verificar agora ou recarregue.",
     help: {
       title: "Nada aparecendo?",
       lede: "A maioria das primeiras leituras chega em até um minuto depois que o dispositivo entra no Wi-Fi. Se nada chegou ainda, confira:",
       wifi: "Wi-Fi: a maioria das placas (ESP32, Pico W) só se conecta a redes de 2,4 GHz, não de 5 GHz. Confira o nome da rede e a senha que você deu ao dispositivo.",
       key: "Chave: se você digitou ou colou a chave, ela precisa ser exatamente igual à sua chave, sem espaços extras. Perdeu? Use Trocar chave no cartão do dispositivo e atualize o dispositivo.",
-      network: "Rede: o dispositivo precisa acessar a internet por HTTPS (porta 443). Redes de convidados e Wi-Fi que pede login em uma página costumam bloquear isso.",
+      network:
+        "Rede: o dispositivo precisa acessar a internet por HTTPS (porta 443). Redes de convidados e Wi-Fi que pede login em uma página costumam bloquear isso.",
       payloadChecker: "Verificar um payload",
       staleGuide: "Depurar leituras ausentes",
       troubleshooting: "Guia de solução de problemas",
@@ -126,7 +132,8 @@ const ptBr: DevicesMessages = {
     showAll: "Mostrar todas as configurações do dispositivo",
   },
   client: {
-    stillWaiting: "Ainda aguardando: última verificação {time}. Verificando automaticamente a cada 5 segundos.",
+    stillWaiting:
+      "Ainda aguardando: última verificação {time}. Verificando automaticamente a cada 5 segundos.",
     lastCheck: "Última verificação {time}.",
     received: ": recebido!",
     listening: ": aguardando…",

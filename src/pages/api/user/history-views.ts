@@ -16,7 +16,9 @@ async function updateDefaultHistoryViewId(
   refreshToken: string,
   viewId: string | null,
 ): Promise<{ error: Error | null }> {
-  const { error } = await updateSessionUserMetadata(accessToken, refreshToken, { default_history_view_id: viewId });
+  const { error } = await updateSessionUserMetadata(accessToken, refreshToken, {
+    default_history_view_id: viewId,
+  });
   return { error: error ?? null };
 }
 

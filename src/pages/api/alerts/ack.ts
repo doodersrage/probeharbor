@@ -11,7 +11,8 @@ async function ownerLocale(userId: string, fallback: Locale | undefined): Promis
   let locale: Locale = fallback ?? "en";
   try {
     const data = { user: await getUserRecord(userId) };
-    if (data.user) locale = localeFromMetadata(data.user.user_metadata as Record<string, unknown> | undefined);
+    if (data.user)
+      locale = localeFromMetadata(data.user.user_metadata as Record<string, unknown> | undefined);
   } catch {
     // Keep the request language.
   }
@@ -26,7 +27,11 @@ function parseEventId(raw: string | null): number | null | undefined {
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 async function handleAck(url: URL, requestLocale: Locale | undefined): Promise<Response> {
@@ -50,10 +55,7 @@ async function handleAck(url: URL, requestLocale: Locale | undefined): Promise<R
     ack_msg: result.message,
   });
   if (!result.ok) params.set("ack_error", "1");
-  return Response.redirect(
-    new URL(`/dashboard/alerts?${params.toString()}`, url.origin),
-    302,
-  );
+  return Response.redirect(new URL(`/dashboard/alerts?${params.toString()}`, url.origin), 302);
 }
 
 /** Prefer POST so email prefetchers / CSRF GETs cannot acknowledge. */

@@ -14,8 +14,7 @@ const ptBr: ProbeDemoMessages = {
   reset: "Reiniciar demo",
   updated: "Atualização simulada a cada 2 segundos · Última atualização {time}",
   statusEyebrow: "Status do espaço (simulado)",
-  coldestLine:
-    "Sonda mais fria {coldest} · limite {threshold} · externa {outdoor}",
+  coldestLine: "Sonda mais fria {coldest} · limite {threshold} · externa {outdoor}",
   riskNote:
     "No app de verdade, isso dispararia seus alertas essenciais de congelamento (por e-mail, por padrão), com a mesma lógica do cartão de status do espaço no Overview.",
   readingsTitle: "Leituras das sondas ao vivo",
@@ -57,7 +56,10 @@ const ptBr: ProbeDemoMessages = {
   essentials: "Alertas essenciais de congelamento + e-mail",
   presets: {
     mild: { label: "Dia ameno", hint: "Leituras típicas com o espaço fechado" },
-    coldSnap: { label: "Onda de frio", hint: "Abaixo do limite de congelamento na sonda mais fria" },
+    coldSnap: {
+      label: "Onda de frio",
+      hint: "Abaixo do limite de congelamento na sonda mais fria",
+    },
     doorDraft: {
       label: "Corrente de ar na porta",
       hint: "A porta aberta puxa ar externo para uma zona: veja a barra da porta/entrada cair em relação às outras",
@@ -96,8 +98,7 @@ const ptBr: ProbeDemoMessages = {
   },
   status: {
     freezeRiskTitle: "Risco de congelamento agora",
-    freezeRiskDetail:
-      "A sonda mais fria marca {coldest}; limite: {threshold}.",
+    freezeRiskDetail: "A sonda mais fria marca {coldest}; limite: {threshold}.",
     coldSnapTitle: "Onda de frio a caminho",
     nightsTitleOne: "{n} noite com risco de congelamento",
     nightsTitleOther: "{n} noites com risco de congelamento",
@@ -106,10 +107,10 @@ const ptBr: ProbeDemoMessages = {
     nightsDetail:
       "As condições externas estão frias: confira as sondas no Live e confirme que os alertas de previsão estão ativados.",
     nearTitle: "Perto do limite de congelamento",
-    nearDetail:
-      "Sonda mais fria em {coldest}, a menos de 2,8 °C (5 °F) de {threshold}.",
+    nearDetail: "Sonda mais fria em {coldest}, a menos de 2,8 °C (5 °F) de {threshold}.",
     okTitle: "Tudo certo",
-    okDetail: "As sondas estão enviando dados: nada no limite de congelamento, nenhum contato de inundação molhado.",
+    okDetail:
+      "As sondas estão enviando dados: nada no limite de congelamento, nenhum contato de inundação molhado.",
   },
 };
 

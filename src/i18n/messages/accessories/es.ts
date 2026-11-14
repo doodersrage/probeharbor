@@ -32,7 +32,8 @@ const es: AccessoriesMessages = {
   },
   hub: {
     title: "Accesorios de hardware",
-    description: "Dispositivos complementarios y piezas de kit para ProbeHarbor: luces de estado, contactos de puerta y de fugas, etiquetas y soportes.",
+    description:
+      "Dispositivos complementarios y piezas de kit para ProbeHarbor: luces de estado, contactos de puerta y de fugas, etiquetas y soportes.",
     kicker: "Hardware",
     lede: "Dispositivos complementarios y piezas de kit para ProbeHarbor. Las sondas de temperatura siguen en la ruta del kit de heladas: estos accesorios confirman presencia, muestran estados de ánimo, envían contactos por POST o rematan una instalación en el garaje.",
     freezeKitBom: "Lista de piezas del kit",
@@ -72,7 +73,8 @@ const es: AccessoriesMessages = {
   },
   claimPuckCase: {
     title: "Carcasa del Claim puck",
-    description: "Carcasa, botón de claim y difusor LED opcional para el claim puck RP2040-Zero de ProbeHarbor: termina el montaje de la placa desnuda.",
+    description:
+      "Carcasa, botón de claim y difusor LED opcional para el claim puck RP2040-Zero de ProbeHarbor: termina el montaje de la placa desnuda.",
     firmware: "Firmware ↗",
     doesHtml:
       "Convierte la Waveshare RP2040-Zero + el botón en GP4 en una llave de presencia apta para el escritorio, con un brillo de estado más suave.",
@@ -81,7 +83,8 @@ const es: AccessoriesMessages = {
     caption: "Piezas de la carcasa del Claim puck",
     zeroWhy: "MCU del Claim puck.",
     casePart: "Carcasa impresa en 3D o cortada con láser",
-    caseWhy: "Hueco para el USB, orificio para el botón y ventana para el LED. Si compartes tu STL, publícalo junto al repositorio del firmware.",
+    caseWhy:
+      "Hueco para el USB, orificio para el botón y ventana para el LED. Si compartes tu STL, publícalo junto al repositorio del firmware.",
     caseBuy: "Hazlo tú mismo / imprenta 3D local.",
     diffuserPart: "Difusor LED (opcional)",
     diffuserWhy: "Color de estado más suave para el RGB integrado.",
@@ -95,9 +98,11 @@ const es: AccessoriesMessages = {
   },
   alertBeacon: {
     title: "Alert beacon",
-    description: "Luz de escritorio o pasillo que refleja los estados de heladas e inundación de ProbeHarbor. Misma API de Bay Buddy que el claim puck; no es una sonda.",
+    description:
+      "Luz de escritorio o pasillo que refleja los estados de heladas e inundación de ProbeHarbor. Misma API de Bay Buddy que el claim puck; no es una sonda.",
     moodApi: "API de estado",
-    doesHtml: "Muestra en directo el estado del espacio (cozy, drafty, shiver, panic, offline, hero) en una tira o anillo NeoPixel más brillante, controlado desde <code>GET /api/bays/&lt;bay&gt;/mood</code> a través de Bay Buddy.",
+    doesHtml:
+      "Muestra en directo el estado del espacio (cozy, drafty, shiver, panic, offline, hero) en una tira o anillo NeoPixel más brillante, controlado desde <code>GET /api/bays/&lt;bay&gt;/mood</code> a través de Bay Buddy.",
     doesNotHtml:
       'Medir la temperatura, sustituir los SMS/correos de Alerts ni hacer el claim de un espacio por sí solo. Combínalo con una sonda de heladas y, si quieres, con un <a class="text-link" href="/claim-puck">claim puck</a> para la presencia.',
     caption: "Piezas del Alert beacon",
@@ -106,7 +111,8 @@ const es: AccessoriesMessages = {
     zeroBuy: "RP2040-Zero en Amazon",
     picoBuy: "Pico W de Adafruit",
     neopixelPart: "Tira / anillo NeoPixel",
-    neopixelWhy: "Un estado más brillante, visible desde el pasillo, que el diminuto LED de la Zero.",
+    neopixelWhy:
+      "Un estado más brillante, visible desde el pasillo, que el diminuto LED de la Zero.",
     stickBuy: "Tira de Adafruit",
     powerPart: "Alimentación USB de 5 V",
     powerWhy: "De escritorio o de enchufe; mantén corto el cable de datos.",
@@ -119,7 +125,8 @@ const es: AccessoriesMessages = {
   },
   doorPuck: {
     title: "Door puck (contacto de puerta)",
-    description: "Contacto magnético reed o de botón que envía por POST la puerta abierta/cerrada a ProbeHarbor. Activa el estado drafty y alertas a medida; no es una sonda.",
+    description:
+      "Contacto magnético reed o de botón que envía por POST la puerta abierta/cerrada a ProbeHarbor. Activa el estado drafty y alertas a medida; no es una sonda.",
     addingDevices: "Añadir dispositivos",
     doesHtml:
       'Envía por POST <code>{ "door1": true }</code> (abierta) / <code>false</code> (cerrada) a tu URL de ingesta push más o menos una vez por minuto o al cambiar.',
@@ -139,7 +146,8 @@ const es: AccessoriesMessages = {
   },
   leakPuck: {
     title: "Leak puck (contacto de fugas)",
-    description: "Placas de contacto con agua que envían por POST sensores de inundación mojado/seco a ProbeHarbor. Con las alertas activas, avisan al mojarse; no es una sonda.",
+    description:
+      "Placas de contacto con agua que envían por POST sensores de inundación mojado/seco a ProbeHarbor. Con las alertas activas, avisan al mojarse; no es una sonda.",
     doesHtml:
       'Envía por POST <code>{ "leak1": true }</code> cuando hay agua (o <code>flood1</code>). Las claves que contienen leak/flood se importan como sensores de inundación.',
     doesNotHtml:
@@ -158,7 +166,8 @@ const es: AccessoriesMessages = {
   },
   powerNudge: {
     title: "Power nudge (corte de luz)",
-    description: "Contacto de detección de red/USB o SAI que envía por POST la pérdida y vuelta de la luz a ProbeHarbor. Sabrás cuándo se quedó a oscuras; no es una sonda.",
+    description:
+      "Contacto de detección de red/USB o SAI que envía por POST la pérdida y vuelta de la luz a ProbeHarbor. Sabrás cuándo se quedó a oscuras; no es una sonda.",
     staleReadings: "Lecturas obsoletas",
     doesHtml:
       'Envía por POST <code>{ "power1": true }</code> mientras hay red/USB, y <code>false</code> cuando se pierde (las claves con power/relay se importan como sensores de alimentación).',
@@ -168,7 +177,8 @@ const es: AccessoriesMessages = {
     esp32Part: "ESP32 con SAI / siempre encendido",
     esp32Why: "Debe seguir en marcha para avisar de la caída de red en otro circuito.",
     sensePart: "Entrada de detección USB / red",
-    senseWhy: "Optoacoplador o módulo de relé: GPIO4 a nivel bajo = hay corriente (activo en bajo en el ejemplo).",
+    senseWhy:
+      "Optoacoplador o módulo de relé: GPIO4 a nivel bajo = hay corriente (activo en bajo en el ejemplo).",
     senseBuy: "Tienda de electrónica; módulo aislado de detección USB o de red.",
     stepsHtml: [
       "Graba <code>sketches/arduino/power_sense_ingest/</code> con el Wi‑Fi y la URL de ingesta.",
@@ -178,7 +188,8 @@ const es: AccessoriesMessages = {
   },
   kitLabels: {
     title: "Etiquetas QR y NFC del kit",
-    description: "Pegatinas QR imprimibles y etiquetas NFC opcionales con tu URL de ingesta push de ProbeHarbor: configura el firmware sin teclear la clave.",
+    description:
+      "Pegatinas QR imprimibles y etiquetas NFC opcionales con tu URL de ingesta push de ProbeHarbor: configura el firmware sin teclear la clave.",
     kitQrGuide: "Guía del QR del kit",
     claimsPack: "Paquete para reclamaciones",
     doesHtml:
@@ -201,7 +212,8 @@ const es: AccessoriesMessages = {
   },
   probeMountKit: {
     title: "Kit de montaje de sondas",
-    description: "Bridas, abrazaderas para tubo, almohadillas adhesivas, pull-up de 4,7k y notas para montar un DS18B20 impermeable: una sonda de heladas ProbeHarbor fiable.",
+    description:
+      "Bridas, abrazaderas para tubo, almohadillas adhesivas, pull-up de 4,7k y notas para montar un DS18B20 impermeable: una sonda de heladas ProbeHarbor fiable.",
     mountingGuide: "Guía de montaje",
     picoIngest: "Ingesta con Pico W",
     doesHtml:
@@ -211,7 +223,8 @@ const es: AccessoriesMessages = {
     bom: "Lista de piezas",
     caption: "Lista de piezas del kit de montaje de sondas",
     ds18b20Part: "DS18B20 impermeable",
-    ds18b20Why: "Cable de 1 m o más y punta de acero inoxidable para tuberías o forjados sanitarios.",
+    ds18b20Why:
+      "Cable de 1 m o más y punta de acero inoxidable para tuberías o forjados sanitarios.",
     ds18b20Buy: "DS18B20 de Adafruit",
     resistorPart: "Resistencia de 4,7 kΩ",
     resistorWhy: "Pull-up de 1-Wire a 3,3 V.",

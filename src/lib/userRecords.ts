@@ -7,7 +7,10 @@
 import type { User } from "./appUser";
 import { query } from "./db/client";
 
-export type UserRecord = Pick<User, "id" | "email" | "created_at" | "email_confirmed_at" | "user_metadata" | "app_metadata"> & {
+export type UserRecord = Pick<
+  User,
+  "id" | "email" | "created_at" | "email_confirmed_at" | "user_metadata" | "app_metadata"
+> & {
   /** TOTP is on for this account (a Better Auth session then only exists after the code). */
   two_factor_enabled?: boolean;
 };

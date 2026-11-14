@@ -5,7 +5,13 @@
 import { fmt, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { alertsMessages } from "../i18n/messages/app/alerts";
-import { displayTempInputValue, formatTempBand, tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
+import {
+  displayTempInputValue,
+  formatTempBand,
+  tempUnitLabel,
+  toDisplayDelta,
+  toDisplayTemp,
+} from "./temperatureFormat";
 
 /** "False alarm + raise threshold" adds this many °F (lib/alertAckPlaybook). */
 export const RAISE_THRESHOLD_STEP_F = 2;
@@ -158,7 +164,9 @@ export function formatAlertWhyMeta(
     });
   const parts: string[] = [];
   if (meta.probeLabel && meta.probeTempF != null) {
-    parts.push(fmt(t.probeAt, { probe: meta.probeLabel, temp: fixed(temp(meta.probeTempF), 1), unit }));
+    parts.push(
+      fmt(t.probeAt, { probe: meta.probeLabel, temp: fixed(temp(meta.probeTempF), 1), unit }),
+    );
   } else if (meta.probeTempF != null) {
     parts.push(fmt(t.probeAtUnnamed, { temp: fixed(temp(meta.probeTempF), 1), unit }));
   }

@@ -30,8 +30,7 @@ const de: DeviceSetupFirmwareMessages = {
     pic18: "PIC18F67J60 MLA Ethernet (HTTP-Relay)",
     particle: "Particle Boron Mobilfunk (Console-Webhook)",
   },
-  otherBoards:
-    "Weitere Boards: Pico W, STM32, CH32V, AVR, Teensy, PIC18, Mobilfunk",
+  otherBoards: "Weitere Boards: Pico W, STM32, CH32V, AVR, Teensy, PIC18, Mobilfunk",
   pico: {
     heading: "Pico W flashen",
     ledeHtml:

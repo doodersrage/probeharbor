@@ -7,10 +7,7 @@ export const SIGNIN_ERROR_MESSAGES = signinEn.errors;
 
 export type SignInErrorCode = keyof typeof SIGNIN_ERROR_MESSAGES;
 
-export function getSignInErrorMessage(
-  code: string | null,
-  locale: Locale = "en",
-): string | null {
+export function getSignInErrorMessage(code: string | null, locale: Locale = "en"): string | null {
   if (!code) {
     return null;
   }

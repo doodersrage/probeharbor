@@ -50,7 +50,10 @@ describe("getTenantNotifySettings", () => {
     const { getTenantNotifySettings } = await import("./tenantRelay");
 
     expect(await getTenantNotifySettings("house-1")).toEqual({ email: "a@b.com", name: "Bo" });
-    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", ["tenant_notify_email", "tenant_notify_name"]);
+    expect(mockGetHouseholdFields).toHaveBeenCalledWith("house-1", [
+      "tenant_notify_email",
+      "tenant_notify_name",
+    ]);
   });
 
   it("returns nulls when there is no row or fields are blank", async () => {
@@ -72,7 +75,10 @@ describe("updateTenantNotifySettings", () => {
   it("rejects an invalid email without touching the database", async () => {
     const { updateTenantNotifySettings } = await import("./tenantRelay");
 
-    const result = await updateTenantNotifySettings("house-1", { email: "not-an-email", name: null });
+    const result = await updateTenantNotifySettings("house-1", {
+      email: "not-an-email",
+      name: null,
+    });
 
     expect(result).toEqual({ error: "Invalid email address." });
     expect(mockUpdateHouseholdFields).not.toHaveBeenCalled();
@@ -108,9 +114,9 @@ describe("updateTenantNotifySettings", () => {
     mockUpdateHouseholdFields.mockResolvedValue({ error: "not allowed" });
     const { updateTenantNotifySettings } = await import("./tenantRelay");
 
-    expect(
-      await updateTenantNotifySettings("house-1", { email: "a@b.com", name: null }),
-    ).toEqual({ error: "not allowed" });
+    expect(await updateTenantNotifySettings("house-1", { email: "a@b.com", name: null })).toEqual({
+      error: "not allowed",
+    });
   });
 });
 

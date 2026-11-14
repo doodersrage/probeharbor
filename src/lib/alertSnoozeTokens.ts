@@ -11,13 +11,8 @@ import { plural } from "../i18n/format";
 import { alertJobsMessages } from "../i18n/messages/app/alertJobs";
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /**
@@ -47,10 +42,7 @@ function randomSnoozeToken(): string {
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export async function createSnoozeToken(
-  userId: string,
-  hours = 24,
-): Promise<string> {
+export async function createSnoozeToken(userId: string, hours = 24): Promise<string> {
   const token = randomSnoozeToken();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   await neonExtras.insertSnoozeToken(await sha256Hex(token), userId, hours, expiresAt);
@@ -70,7 +62,10 @@ export async function applySnoozeToken(
     return { ok: false, message: expired ? t.resultExpired : t.resultInvalid };
   }
   const current = await getAlertSettingsForUser(claimed.user_id);
-  await saveAlertSettingsForUser(claimed.user_id, { ...current, snoozeUntil: snoozeUntilFromHours(claimed.hours) });
+  await saveAlertSettingsForUser(claimed.user_id, {
+    ...current,
+    snoozeUntil: snoozeUntilFromHours(claimed.hours),
+  });
   return { ok: true, message: plural(t.resultSnoozed, claimed.hours, locale) };
 }
 
@@ -170,11 +165,15 @@ export async function clearVacationForHouseholdMembers(householdId: string): Pro
 // 0 if the household no longer exists.
 
 export async function applyHouseholdSnooze(householdId: string, hours: number): Promise<number> {
-  return (await householdHolds.setHouseholdSnoozeUntil(householdId, snoozeUntilFromHours(hours))) ?? 0;
+  return (
+    (await householdHolds.setHouseholdSnoozeUntil(householdId, snoozeUntilFromHours(hours))) ?? 0
+  );
 }
 
 export async function applyHouseholdVacation(householdId: string, days: number): Promise<number> {
-  return (await householdHolds.setHouseholdVacationUntil(householdId, vacationUntilFromDays(days))) ?? 0;
+  return (
+    (await householdHolds.setHouseholdVacationUntil(householdId, vacationUntilFromDays(days))) ?? 0
+  );
 }
 
 export async function clearHouseholdSnooze(householdId: string): Promise<number> {
@@ -195,7 +194,9 @@ export function getHouseholdAlertHold(householdId: string): Promise<HouseholdAle
  * alerts go out as if there were none (an unwanted routine alert beats a
  * missed one).
  */
-export async function loadHouseholdAlertHold(householdId: string): Promise<HouseholdAlertHold | null> {
+export async function loadHouseholdAlertHold(
+  householdId: string,
+): Promise<HouseholdAlertHold | null> {
   try {
     return await householdHolds.getHouseholdAlertHold(householdId);
   } catch (error) {

@@ -41,7 +41,12 @@ export default function PasskeySignIn({ next, text: t }: Props) {
 
   return (
     <div class="mt-3">
-      <button type="button" class="btn-secondary w-full" disabled={busy} onClick={() => void signIn()}>
+      <button
+        type="button"
+        class="btn-secondary w-full"
+        disabled={busy}
+        onClick={() => void signIn()}
+      >
         {t.passkeySignIn}
       </button>
       {failed && (

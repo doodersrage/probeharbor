@@ -31,8 +31,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "DIY MQTT / Node-RED",
     summary:
       "DIY MQTT is powerful if you enjoy running brokers, dashboards, and alert scripts. ProbeHarbor is the same outcome, live probes, freeze and leak alerts, history, without babysitting the stack at 2 a.m.",
-    lede:
-      "A Mosquitto broker, Node-RED flows, and a cron job can freeze-alert a garage. The cost is patching, TLS, Twilio, and a Pi that has to stay up. ProbeHarbor is the hosted alerts and history layer: keep MQTT on the LAN if you want, bridge readings over HTTPS, and let household freeze and leak channels live in the cloud.",
+    lede: "A Mosquitto broker, Node-RED flows, and a cron job can freeze-alert a garage. The cost is patching, TLS, Twilio, and a Pi that has to stay up. ProbeHarbor is the hosted alerts and history layer: keep MQTT on the LAN if you want, bridge readings over HTTPS, and let household freeze and leak channels live in the cloud.",
     photoId: "ethernet-cable",
     whenProbeHarbor: [
       "You want freeze and leak SMS/email/push without wiring Twilio yourself",
@@ -45,11 +44,31 @@ export const compareGuides: CompareGuide[] = [
       "You need custom industrial protocols ProbeHarbor does not speak",
     ],
     rows: [
-      { capability: "Broker / server upkeep", probeharbor: "Hosted (no Mosquitto to patch)", other: "You patch Mosquitto/HA" },
-      { capability: "Freeze and leak alerts", probeharbor: "Built-in channels + remaining-hours freeze clock", other: "Node-RED + Twilio/email" },
-      { capability: "ESP ingest", probeharbor: "HTTPS device key or MQTT bridge", other: "MQTT topic design" },
-      { capability: "History & CSV", probeharbor: "On paid plans", other: "Influx/Postgres you manage" },
-      { capability: "Share with family", probeharbor: "Household invites", other: "VPN or reverse proxy" },
+      {
+        capability: "Broker / server upkeep",
+        probeharbor: "Hosted (no Mosquitto to patch)",
+        other: "You patch Mosquitto/HA",
+      },
+      {
+        capability: "Freeze and leak alerts",
+        probeharbor: "Built-in channels + remaining-hours freeze clock",
+        other: "Node-RED + Twilio/email",
+      },
+      {
+        capability: "ESP ingest",
+        probeharbor: "HTTPS device key or MQTT bridge",
+        other: "MQTT topic design",
+      },
+      {
+        capability: "History & CSV",
+        probeharbor: "On paid plans",
+        other: "Influx/Postgres you manage",
+      },
+      {
+        capability: "Share with family",
+        probeharbor: "Household invites",
+        other: "VPN or reverse proxy",
+      },
     ],
     faqs: [
       {
@@ -80,8 +99,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "Govee",
     summary:
       "Govee, and consumer hubs like SmartThings: are great for cheap room sensors and a polished phone app. ProbeHarbor is built for freeze and leak workflows in garages, workshops, attics, and shops: your own ESP probes, household alerts, and history you can export.",
-    lede:
-      "Govee hygrometers (and SmartThings-style hubs that absorb the same class of Bluetooth/Wi-Fi pods) win on price and a friendly phone app for bedrooms and closets. They are weaker in a detached garage or shop: Bluetooth range, vendor lock-in, and alerts that mostly stay in-app. ProbeHarbor assumes you bring an ESP32, then gives household freeze and leak routing and a season of exportable history.",
+    lede: "Govee hygrometers (and SmartThings-style hubs that absorb the same class of Bluetooth/Wi-Fi pods) win on price and a friendly phone app for bedrooms and closets. They are weaker in a detached garage or shop: Bluetooth range, vendor lock-in, and alerts that mostly stay in-app. ProbeHarbor assumes you bring an ESP32, then gives household freeze and leak routing and a season of exportable history.",
     photoId: "garage-workbench",
     whenProbeHarbor: [
       "You want ESP, Pico W, STM32, CH32V, or Arduino probes you control (not only vendor pods)",
@@ -95,11 +113,31 @@ export const compareGuides: CompareGuide[] = [
     ],
     rows: [
       { capability: "Hardware", probeharbor: "BYO ESP / Pico / Arduino", other: "Govee pods" },
-      { capability: "Garage / detached spaces", probeharbor: "Designed for it", other: "Hit-or-miss range" },
-      { capability: "Alert channels", probeharbor: "Email, SMS, push, chat, webhooks + time-to-freeze clock", other: "Mostly app push" },
-      { capability: "Price", probeharbor: "About $25 in parts per probe; Free plan, Member $4/mo, Pro $10/mo", other: "Roughly $35–50 for a Wi-Fi gateway + sensor; no subscription" },
-      { capability: "Data export", probeharbor: "CSV (Member+) and API (Pro)", other: "Export from the app; 2 years of stored data on some models" },
-      { capability: "Multi-user household", probeharbor: "Included", other: "Account sharing awkward" },
+      {
+        capability: "Garage / detached spaces",
+        probeharbor: "Designed for it",
+        other: "Hit-or-miss range",
+      },
+      {
+        capability: "Alert channels",
+        probeharbor: "Email, SMS, push, chat, webhooks + time-to-freeze clock",
+        other: "Mostly app push",
+      },
+      {
+        capability: "Price",
+        probeharbor: "About $25 in parts per probe; Free plan, Member $4/mo, Pro $10/mo",
+        other: "Roughly $35–50 for a Wi-Fi gateway + sensor; no subscription",
+      },
+      {
+        capability: "Data export",
+        probeharbor: "CSV (Member+) and API (Pro)",
+        other: "Export from the app; 2 years of stored data on some models",
+      },
+      {
+        capability: "Multi-user household",
+        probeharbor: "Included",
+        other: "Account sharing awkward",
+      },
     ],
     faqs: [
       {
@@ -121,8 +159,14 @@ export const compareGuides: CompareGuide[] = [
     sources: {
       checkedOn: "September 2026",
       links: [
-        { label: "GoveeLife Smart Thermometer R1 (gateway + sensor)", url: "https://us.govee.com/products/goveelife-smart-thermometer-r1" },
-        { label: "Govee Wi-Fi Thermo-Hygrometer", url: "https://us.govee.com/products/wi-fi-temperature-humidity-sensor" },
+        {
+          label: "GoveeLife Smart Thermometer R1 (gateway + sensor)",
+          url: "https://us.govee.com/products/goveelife-smart-thermometer-r1",
+        },
+        {
+          label: "Govee Wi-Fi Thermo-Hygrometer",
+          url: "https://us.govee.com/products/wi-fi-temperature-humidity-sensor",
+        },
       ],
     },
   },
@@ -137,8 +181,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "WeatherFlow Tempest",
     summary:
       "Tempest shines at yard weather: wind, rain, outdoor temp. Pipe freeze risk lives indoors. ProbeHarbor watches the garage, crawlspace, or shop where the plumbing is.",
-    lede:
-      "A Tempest on the roof tells you outdoor air, wind, and rain with excellent fidelity. Pipes freeze where the water is, usually a garage, crawlspace, or shop the station never sees. Use Tempest for yard weather and ProbeHarbor for the indoor probe that sits by the plumbing.",
+    lede: "A Tempest on the roof tells you outdoor air, wind, and rain with excellent fidelity. Pipes freeze where the water is, usually a garage, crawlspace, or shop the station never sees. Use Tempest for yard weather and ProbeHarbor for the indoor probe that sits by the plumbing.",
     photoId: "cold-weather-road",
     whenProbeHarbor: [
       "You need indoor / unheated-space probe temps for pipe risk",
@@ -151,11 +194,27 @@ export const compareGuides: CompareGuide[] = [
       "You do not have indoor plumbing freeze risk",
     ],
     rows: [
-      { capability: "Primary job", probeharbor: "Indoor freeze / space monitoring", other: "Outdoor weather" },
-      { capability: "Probe location", probeharbor: "Garage, crawlspace, closet", other: "Roof / yard" },
-      { capability: "Freeze alerts on pipes", probeharbor: "Direct + hours-until-freeze clock", other: "Infer from outdoor only" },
+      {
+        capability: "Primary job",
+        probeharbor: "Indoor freeze / space monitoring",
+        other: "Outdoor weather",
+      },
+      {
+        capability: "Probe location",
+        probeharbor: "Garage, crawlspace, closet",
+        other: "Roof / yard",
+      },
+      {
+        capability: "Freeze alerts on pipes",
+        probeharbor: "Direct + hours-until-freeze clock",
+        other: "Infer from outdoor only",
+      },
       { capability: "DIY ESP ingest", probeharbor: "Yes", other: "N/A" },
-      { capability: "Complements the other?", probeharbor: "Yes, use both", other: "Yes: outdoor context" },
+      {
+        capability: "Complements the other?",
+        probeharbor: "Yes, use both",
+        other: "Yes: outdoor context",
+      },
     ],
     faqs: [
       {
@@ -186,8 +245,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "Nest Thermostat",
     summary:
       "Nest is excellent at running your HVAC and reporting the temperature where it (or a Nest Temperature Sensor) is installed -- almost never the garage, crawlspace, or shop where pipes actually freeze. ProbeHarbor watches that space directly, and if you connect your Nest account, pulls its reading and heating status into every freeze alert for context.",
-    lede:
-      "Nest does one job very well: run the furnace and track the temperature of the room it's in. An unheated garage, crawlspace, or workshop is unconditioned by design, so Nest has no reading from it at all -- there's nothing to alert on. ProbeHarbor puts a dedicated probe in that space, and if you connect your Nest account (Pro), every freeze alert shows your house's indoor temperature and whether it's actively heating, so you can tell at a glance whether the cold is expected (garage is unconditioned, house is fine) or something's actually wrong.",
+    lede: "Nest does one job very well: run the furnace and track the temperature of the room it's in. An unheated garage, crawlspace, or workshop is unconditioned by design, so Nest has no reading from it at all -- there's nothing to alert on. ProbeHarbor puts a dedicated probe in that space, and if you connect your Nest account (Pro), every freeze alert shows your house's indoor temperature and whether it's actively heating, so you can tell at a glance whether the cold is expected (garage is unconditioned, house is fine) or something's actually wrong.",
     photoId: "crawlspace",
     whenProbeHarbor: [
       "You have a garage, crawlspace, basement, or shop that isn't on Nest's heating loop",
@@ -200,12 +258,32 @@ export const compareGuides: CompareGuide[] = [
       "You don't have a separate unconditioned space that needs its own probe",
     ],
     rows: [
-      { capability: "Primary job", probeharbor: "Freeze/leak monitoring for any space", other: "HVAC control for conditioned space" },
-      { capability: "Sees an unheated garage/crawlspace", probeharbor: "Yes: dedicated probe", other: "No: unconditioned spaces aren't on the loop" },
-      { capability: "Freeze/leak alerts (SMS, push, email)", probeharbor: "Yes, plus remaining-hours time-to-freeze", other: "No" },
-      { capability: "Shows thermostat reading on freeze alerts", probeharbor: "Yes, if connected (Pro)", other: "N/A" },
+      {
+        capability: "Primary job",
+        probeharbor: "Freeze/leak monitoring for any space",
+        other: "HVAC control for conditioned space",
+      },
+      {
+        capability: "Sees an unheated garage/crawlspace",
+        probeharbor: "Yes: dedicated probe",
+        other: "No: unconditioned spaces aren't on the loop",
+      },
+      {
+        capability: "Freeze/leak alerts (SMS, push, email)",
+        probeharbor: "Yes, plus remaining-hours time-to-freeze",
+        other: "No",
+      },
+      {
+        capability: "Shows thermostat reading on freeze alerts",
+        probeharbor: "Yes, if connected (Pro)",
+        other: "N/A",
+      },
       { capability: "Controls heating schedules", probeharbor: "No", other: "Yes" },
-      { capability: "Complements the other?", probeharbor: "Yes: connect both", other: "Yes: connect both" },
+      {
+        capability: "Complements the other?",
+        probeharbor: "Yes: connect both",
+        other: "Yes: connect both",
+      },
     ],
     faqs: [
       {
@@ -236,8 +314,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "Ecobee Thermostat",
     summary:
       "Ecobee is excellent at running your HVAC and reporting the temperature where it (or an Ecobee SmartSensor) is installed -- almost never the garage, crawlspace, or shop where pipes actually freeze. ProbeHarbor watches that space directly, and if you connect your Ecobee account, pulls its reading and heating status into every freeze alert for context.",
-    lede:
-      "Ecobee does one job very well: run the furnace and track the temperature of the room it's in. An unheated garage, crawlspace, or workshop is unconditioned by design, so Ecobee has no reading from it at all -- there's nothing to alert on. ProbeHarbor puts a dedicated probe in that space, and if you connect your Ecobee account (Pro), every freeze alert shows your house's indoor temperature and whether it's actively heating, so you can tell at a glance whether the cold is expected (garage is unconditioned, house is fine) or something's actually wrong.",
+    lede: "Ecobee does one job very well: run the furnace and track the temperature of the room it's in. An unheated garage, crawlspace, or workshop is unconditioned by design, so Ecobee has no reading from it at all -- there's nothing to alert on. ProbeHarbor puts a dedicated probe in that space, and if you connect your Ecobee account (Pro), every freeze alert shows your house's indoor temperature and whether it's actively heating, so you can tell at a glance whether the cold is expected (garage is unconditioned, house is fine) or something's actually wrong.",
     photoId: "basement-pex-pipes",
     whenProbeHarbor: [
       "You have a garage, crawlspace, basement, or shop that isn't on Ecobee's heating loop",
@@ -250,12 +327,32 @@ export const compareGuides: CompareGuide[] = [
       "You don't have a separate unconditioned space that needs its own probe",
     ],
     rows: [
-      { capability: "Primary job", probeharbor: "Freeze/leak monitoring for any space", other: "HVAC control for conditioned space" },
-      { capability: "Sees an unheated garage/crawlspace", probeharbor: "Yes: dedicated probe", other: "No: unconditioned spaces aren't on the loop" },
-      { capability: "Freeze/leak alerts (SMS, push, email)", probeharbor: "Yes, plus remaining-hours time-to-freeze", other: "No" },
-      { capability: "Shows thermostat reading on freeze alerts", probeharbor: "Yes, if connected (Pro)", other: "N/A" },
+      {
+        capability: "Primary job",
+        probeharbor: "Freeze/leak monitoring for any space",
+        other: "HVAC control for conditioned space",
+      },
+      {
+        capability: "Sees an unheated garage/crawlspace",
+        probeharbor: "Yes: dedicated probe",
+        other: "No: unconditioned spaces aren't on the loop",
+      },
+      {
+        capability: "Freeze/leak alerts (SMS, push, email)",
+        probeharbor: "Yes, plus remaining-hours time-to-freeze",
+        other: "No",
+      },
+      {
+        capability: "Shows thermostat reading on freeze alerts",
+        probeharbor: "Yes, if connected (Pro)",
+        other: "N/A",
+      },
       { capability: "Controls heating schedules", probeharbor: "No", other: "Yes" },
-      { capability: "Complements the other?", probeharbor: "Yes: connect both", other: "Yes: connect both" },
+      {
+        capability: "Complements the other?",
+        probeharbor: "Yes: connect both",
+        other: "Yes: connect both",
+      },
     ],
     faqs: [
       {
@@ -286,8 +383,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "Temp Stick",
     summary:
       "Temp Stick is the easier choice for one or two spaces: a finished battery sensor, no subscription, and free text, email, and app alerts. ProbeHarbor is cheaper per sensor and more flexible (several probes, leak contacts, Home Assistant), but you build the sensor and SMS needs Pro.",
-    lede:
-      "Temp Stick sells finished Wi‑Fi sensors: $149 for the standard model or about $199 for the PRO with a pipe clamp probe, with free text, email, and app alerts and no subscription. That is hard to beat if you want one sensor with zero setup. ProbeHarbor suits people who want several probes, a leak contact under the water heater, or readings inside Home Assistant: an ESP32 and probe cost about $25, email and chat alerts are free, and SMS is on Pro.",
+    lede: "Temp Stick sells finished Wi‑Fi sensors: $149 for the standard model or about $199 for the PRO with a pipe clamp probe, with free text, email, and app alerts and no subscription. That is hard to beat if you want one sensor with zero setup. ProbeHarbor suits people who want several probes, a leak contact under the water heater, or readings inside Home Assistant: an ESP32 and probe cost about $25, email and chat alerts are free, and SMS is on Pro.",
     photoId: "frozen-thermometer",
     whenProbeHarbor: [
       "You want probes in several spots (pipes, door side, crawlspace) without buying a $149+ sensor for each",
@@ -302,15 +398,51 @@ export const compareGuides: CompareGuide[] = [
       "One or two sensors cover everything you need",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22", other: "Finished battery or AC sensor" },
-      { capability: "Up-front cost", probeharbor: "About $25 in parts per probe", other: "$149 standard; about $199 PRO with pipe clamp" },
-      { capability: "Ongoing cost", probeharbor: "Free plan; Member $4/mo; Pro $10/mo for SMS", other: "None" },
-      { capability: "Pipe-mounted probe", probeharbor: "Yes (waterproof DS18B20 on the pipe)", other: "Yes on PRO (pipe clamp)" },
-      { capability: "Leak / flood contacts", probeharbor: "Yes, alert automatically when wet", other: "Not listed on the pipe-clamp model" },
-      { capability: "Alert channels", probeharbor: "Email, push, chat apps free; SMS, webhooks on Pro", other: "SMS, email, app, all free" },
-      { capability: "Sharing and data", probeharbor: "Household invites, CSV (Member+), API (Pro)", other: "Up to 10 alert contacts, CSV export, public API" },
-      { capability: "Home Assistant", probeharbor: "Official HACS integration + push from HA", other: "Via their API" },
-      { capability: "Forecast warnings", probeharbor: "Forecast freeze (Member+), NWS alerts (Pro)", other: "Not listed; threshold alerts" },
+      {
+        capability: "Hardware",
+        probeharbor: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22",
+        other: "Finished battery or AC sensor",
+      },
+      {
+        capability: "Up-front cost",
+        probeharbor: "About $25 in parts per probe",
+        other: "$149 standard; about $199 PRO with pipe clamp",
+      },
+      {
+        capability: "Ongoing cost",
+        probeharbor: "Free plan; Member $4/mo; Pro $10/mo for SMS",
+        other: "None",
+      },
+      {
+        capability: "Pipe-mounted probe",
+        probeharbor: "Yes (waterproof DS18B20 on the pipe)",
+        other: "Yes on PRO (pipe clamp)",
+      },
+      {
+        capability: "Leak / flood contacts",
+        probeharbor: "Yes, alert automatically when wet",
+        other: "Not listed on the pipe-clamp model",
+      },
+      {
+        capability: "Alert channels",
+        probeharbor: "Email, push, chat apps free; SMS, webhooks on Pro",
+        other: "SMS, email, app, all free",
+      },
+      {
+        capability: "Sharing and data",
+        probeharbor: "Household invites, CSV (Member+), API (Pro)",
+        other: "Up to 10 alert contacts, CSV export, public API",
+      },
+      {
+        capability: "Home Assistant",
+        probeharbor: "Official HACS integration + push from HA",
+        other: "Via their API",
+      },
+      {
+        capability: "Forecast warnings",
+        probeharbor: "Forecast freeze (Member+), NWS alerts (Pro)",
+        other: "Not listed; threshold alerts",
+      },
     ],
     faqs: [
       {
@@ -337,9 +469,18 @@ export const compareGuides: CompareGuide[] = [
     sources: {
       checkedOn: "September 2026",
       links: [
-        { label: "Temp Stick Wi‑Fi sensor ($149)", url: "https://tempstick.com/product/tempstick-wifi-temperature-humidity-sensor/" },
-        { label: "Temp Stick PRO with pipe clamp", url: "https://tempstick.com/product/temp-stick-pro-for-frozen-pipe-prevention/" },
-        { label: "Temp Stick common questions (fees, contacts, export, API)", url: "https://tempstick.com/common-questions/" },
+        {
+          label: "Temp Stick Wi‑Fi sensor ($149)",
+          url: "https://tempstick.com/product/tempstick-wifi-temperature-humidity-sensor/",
+        },
+        {
+          label: "Temp Stick PRO with pipe clamp",
+          url: "https://tempstick.com/product/temp-stick-pro-for-frozen-pipe-prevention/",
+        },
+        {
+          label: "Temp Stick common questions (fees, contacts, export, API)",
+          url: "https://tempstick.com/common-questions/",
+        },
       ],
     },
   },
@@ -354,8 +495,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "YoLink",
     summary:
       "YoLink is the easier and often cheaper choice for finished sensors: a hub and two battery sensors cost $59.99 and alert by push, email, and SMS. ProbeHarbor fits if you want a probe taped to the pipe, no hub, your own hardware, or readings in an open system.",
-    lede:
-      "YoLink sells a hub with two battery temperature and humidity sensors for $59.99. The sensors are rated from −22°F to 140°F, run two or more years on a pair of batteries, and send push, email, and SMS alerts. For most people who want a finished product in a cold garage, that is a strong option. ProbeHarbor is the better fit when you want a waterproof probe directly on the pipe, leak contacts and freeze alerts in one place, no proprietary hub, or software you can read and self-host: an ESP32 and probe cost about $25, email and chat alerts are free, and SMS is on Pro.",
+    lede: "YoLink sells a hub with two battery temperature and humidity sensors for $59.99. The sensors are rated from −22°F to 140°F, run two or more years on a pair of batteries, and send push, email, and SMS alerts. For most people who want a finished product in a cold garage, that is a strong option. ProbeHarbor is the better fit when you want a waterproof probe directly on the pipe, leak contacts and freeze alerts in one place, no proprietary hub, or software you can read and self-host: an ESP32 and probe cost about $25, email and chat alerts are free, and SMS is on Pro.",
     whenProbeHarbor: [
       "You want a waterproof probe taped to the pipe itself rather than a room sensor on the wall",
       "You already run Home Assistant, ESPHome, or MQTT and want one more destination, not another hub",
@@ -369,15 +509,47 @@ export const compareGuides: CompareGuide[] = [
       "The space is far from your Wi‑Fi and a long-range hub suits it better",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22", other: "Finished battery sensor; YoLink hub required" },
-      { capability: "Up-front cost", probeharbor: "About $25 in parts per probe", other: "$59.99 for a hub and two sensors" },
-      { capability: "Ongoing cost", probeharbor: "Free plan; Member $4/mo; Pro $10/mo for SMS", other: "Not stated on the product page" },
-      { capability: "Rated for freezing spaces", probeharbor: "Yes (DS18B20 probe: −67°F to 257°F)", other: "Yes (−22°F to 140°F)" },
-      { capability: "Power", probeharbor: "USB power at the board", other: "Two batteries, 2+ years expected" },
-      { capability: "Pipe-mounted probe", probeharbor: "Yes (waterproof DS18B20 on the pipe)", other: "Separate outdoor sensor with probe (YS8005)" },
-      { capability: "Alert channels", probeharbor: "Email, push, chat apps free; SMS, webhooks on Pro", other: "Push, email, SMS" },
+      {
+        capability: "Hardware",
+        probeharbor: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22",
+        other: "Finished battery sensor; YoLink hub required",
+      },
+      {
+        capability: "Up-front cost",
+        probeharbor: "About $25 in parts per probe",
+        other: "$59.99 for a hub and two sensors",
+      },
+      {
+        capability: "Ongoing cost",
+        probeharbor: "Free plan; Member $4/mo; Pro $10/mo for SMS",
+        other: "Not stated on the product page",
+      },
+      {
+        capability: "Rated for freezing spaces",
+        probeharbor: "Yes (DS18B20 probe: −67°F to 257°F)",
+        other: "Yes (−22°F to 140°F)",
+      },
+      {
+        capability: "Power",
+        probeharbor: "USB power at the board",
+        other: "Two batteries, 2+ years expected",
+      },
+      {
+        capability: "Pipe-mounted probe",
+        probeharbor: "Yes (waterproof DS18B20 on the pipe)",
+        other: "Separate outdoor sensor with probe (YS8005)",
+      },
+      {
+        capability: "Alert channels",
+        probeharbor: "Email, push, chat apps free; SMS, webhooks on Pro",
+        other: "Push, email, SMS",
+      },
       { capability: "Data export", probeharbor: "CSV (Member+), API (Pro)", other: "CSV export" },
-      { capability: "Home Assistant", probeharbor: "Official HACS integration + push from HA", other: "Listed as compatible" },
+      {
+        capability: "Home Assistant",
+        probeharbor: "Official HACS integration + push from HA",
+        other: "Listed as compatible",
+      },
     ],
     faqs: [
       {
@@ -404,8 +576,14 @@ export const compareGuides: CompareGuide[] = [
     sources: {
       checkedOn: "October 2026",
       links: [
-        { label: "YoLink hub with two temperature and humidity sensors ($59.99)", url: "https://shop.yosmart.com/products/ys1603-2ys8003" },
-        { label: "YoLink YS8003 datasheet (range, battery, alerts)", url: "https://www.yosmart.com/wp-content/uploads/YOLINK-YS8003-TEMPERATURE-HUMIDITY-SENSOR-DATASHEET-091622.pdf" },
+        {
+          label: "YoLink hub with two temperature and humidity sensors ($59.99)",
+          url: "https://shop.yosmart.com/products/ys1603-2ys8003",
+        },
+        {
+          label: "YoLink YS8003 datasheet (range, battery, alerts)",
+          url: "https://www.yosmart.com/wp-content/uploads/YOLINK-YS8003-TEMPERATURE-HUMIDITY-SENSOR-DATASHEET-091622.pdf",
+        },
       ],
     },
   },
@@ -420,8 +598,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "SensorPush",
     summary:
       "SensorPush makes small, accurate Bluetooth sensors with a polished app and no monthly fee, but alerts away from home need the $99.95 Wi‑Fi gateway. ProbeHarbor probes report over Wi‑Fi directly and can sit on the pipe; you build them, and SMS needs Pro.",
-    lede:
-      "SensorPush sensors are compact and accurate: the HT1 is $54.95 and the water-resistant HT.w is $69.99, both rated from −40°F to 140°F with a year or more of battery life. They are Bluetooth sensors, so your phone has to be in range unless you add the $99.95 G1 Wi‑Fi Gateway, which includes cloud access with no monthly fee and in-app and email alerts. ProbeHarbor starts from the other end: an ESP32 with a waterproof probe (about $25 in parts) reports over Wi‑Fi on its own, email and chat alerts are free, and leak contacts, forecast warnings, and Home Assistant are built in. SMS is on Pro.",
+    lede: "SensorPush sensors are compact and accurate: the HT1 is $54.95 and the water-resistant HT.w is $69.99, both rated from −40°F to 140°F with a year or more of battery life. They are Bluetooth sensors, so your phone has to be in range unless you add the $99.95 G1 Wi‑Fi Gateway, which includes cloud access with no monthly fee and in-app and email alerts. ProbeHarbor starts from the other end: an ESP32 with a waterproof probe (about $25 in parts) reports over Wi‑Fi on its own, email and chat alerts are free, and leak contacts, forecast warnings, and Home Assistant are built in. SMS is on Pro.",
     whenProbeHarbor: [
       "You want remote alerts without buying a gateway",
       "You want a waterproof probe on the pipe, or several probes from one board",
@@ -435,14 +612,46 @@ export const compareGuides: CompareGuide[] = [
       "You prefer a one-time purchase with no plan to think about",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22", other: "Finished Bluetooth sensor" },
-      { capability: "Up-front cost", probeharbor: "About $25 in parts per probe", other: "$54.95 (HT1) or $69.99 (HT.w) per sensor" },
-      { capability: "Alerts away from home", probeharbor: "Yes, sensors report over Wi‑Fi", other: "Needs the G1 Wi‑Fi Gateway ($99.95)" },
-      { capability: "Ongoing cost", probeharbor: "Free plan; Member $4/mo; Pro $10/mo for SMS", other: "None; gateway cloud has no monthly fee" },
-      { capability: "Rated for freezing spaces", probeharbor: "Yes (DS18B20 probe: −67°F to 257°F)", other: "Yes (−40°F to 140°F)" },
-      { capability: "Alert channels", probeharbor: "Email, push, chat apps free; SMS, webhooks on Pro", other: "In-app and email; SMS not listed" },
-      { capability: "Power", probeharbor: "USB power at the board", other: "Battery: over 1 year (HT1), over 2 years (HT.w)" },
-      { capability: "API", probeharbor: "HTTP ingest on every plan; API keys on Pro", other: "API for the gateway cloud" },
+      {
+        capability: "Hardware",
+        probeharbor: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22",
+        other: "Finished Bluetooth sensor",
+      },
+      {
+        capability: "Up-front cost",
+        probeharbor: "About $25 in parts per probe",
+        other: "$54.95 (HT1) or $69.99 (HT.w) per sensor",
+      },
+      {
+        capability: "Alerts away from home",
+        probeharbor: "Yes, sensors report over Wi‑Fi",
+        other: "Needs the G1 Wi‑Fi Gateway ($99.95)",
+      },
+      {
+        capability: "Ongoing cost",
+        probeharbor: "Free plan; Member $4/mo; Pro $10/mo for SMS",
+        other: "None; gateway cloud has no monthly fee",
+      },
+      {
+        capability: "Rated for freezing spaces",
+        probeharbor: "Yes (DS18B20 probe: −67°F to 257°F)",
+        other: "Yes (−40°F to 140°F)",
+      },
+      {
+        capability: "Alert channels",
+        probeharbor: "Email, push, chat apps free; SMS, webhooks on Pro",
+        other: "In-app and email; SMS not listed",
+      },
+      {
+        capability: "Power",
+        probeharbor: "USB power at the board",
+        other: "Battery: over 1 year (HT1), over 2 years (HT.w)",
+      },
+      {
+        capability: "API",
+        probeharbor: "HTTP ingest on every plan; API keys on Pro",
+        other: "API for the gateway cloud",
+      },
     ],
     faqs: [
       {
@@ -469,9 +678,18 @@ export const compareGuides: CompareGuide[] = [
     sources: {
       checkedOn: "October 2026",
       links: [
-        { label: "SensorPush HT1 sensor ($54.95)", url: "https://www.sensorpush.com/products/p/ht1" },
-        { label: "SensorPush HT.w water-resistant sensor ($69.99)", url: "https://www.sensorpush.com/products/p/ht-w" },
-        { label: "SensorPush G1 Wi‑Fi Gateway ($99.95; cloud, alerts, API)", url: "https://www.sensorpush.com/products/p/g1-gateway" },
+        {
+          label: "SensorPush HT1 sensor ($54.95)",
+          url: "https://www.sensorpush.com/products/p/ht1",
+        },
+        {
+          label: "SensorPush HT.w water-resistant sensor ($69.99)",
+          url: "https://www.sensorpush.com/products/p/ht-w",
+        },
+        {
+          label: "SensorPush G1 Wi‑Fi Gateway ($99.95; cloud, alerts, API)",
+          url: "https://www.sensorpush.com/products/p/g1-gateway",
+        },
       ],
     },
   },
@@ -486,8 +704,7 @@ export const compareGuides: CompareGuide[] = [
     competitor: "Shelly H&T",
     summary:
       "The Shelly H&T Gen3 is a tidy $40.99 Wi‑Fi room sensor with a display, MQTT, and webhooks. Shelly rates it for 32°F to 105°F, though, which rules it out for spaces that actually freeze. ProbeHarbor uses a probe rated far below freezing, mounted on the pipe.",
-    lede:
-      "The Shelly H&T Gen3 costs $40.99, runs about a year on four AA batteries or from USB‑C, shows temperature and humidity on an e-paper display, and speaks Wi‑Fi, MQTT, and webhooks. It is a good sensor for a heated room. Shelly lists its ambient working temperature as 0°C to 40°C (32°F to 105°F) and 30–70% humidity, so an unheated garage or crawlspace in a cold snap is outside what it is rated for. ProbeHarbor is built for those spaces: a waterproof DS18B20 probe rated to −67°F on the pipe, with freeze, leak, and outage alerts and forecast warnings. If you already run Shelly gear indoors, its readings can reach ProbeHarbor through Home Assistant or MQTT.",
+    lede: "The Shelly H&T Gen3 costs $40.99, runs about a year on four AA batteries or from USB‑C, shows temperature and humidity on an e-paper display, and speaks Wi‑Fi, MQTT, and webhooks. It is a good sensor for a heated room. Shelly lists its ambient working temperature as 0°C to 40°C (32°F to 105°F) and 30–70% humidity, so an unheated garage or crawlspace in a cold snap is outside what it is rated for. ProbeHarbor is built for those spaces: a waterproof DS18B20 probe rated to −67°F on the pipe, with freeze, leak, and outage alerts and forecast warnings. If you already run Shelly gear indoors, its readings can reach ProbeHarbor through Home Assistant or MQTT.",
     whenProbeHarbor: [
       "The space can drop below 32°F, which is outside the Shelly H&T's rated range",
       "You want the reading at the pipe, under the insulation, not the air in the room",
@@ -501,13 +718,37 @@ export const compareGuides: CompareGuide[] = [
       "Humidity in a conditioned space matters more than pipe temperature",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22", other: "Finished Wi‑Fi sensor with e-paper display" },
+      {
+        capability: "Hardware",
+        probeharbor: "DIY: ESP32 / Pico / Arduino + DS18B20 or DHT22",
+        other: "Finished Wi‑Fi sensor with e-paper display",
+      },
       { capability: "Up-front cost", probeharbor: "About $25 in parts per probe", other: "$40.99" },
-      { capability: "Rated working temperature", probeharbor: "DS18B20 probe: −67°F to 257°F", other: "32°F to 105°F (0°C to 40°C)" },
-      { capability: "Pipe-mounted probe", probeharbor: "Yes (waterproof DS18B20 on the pipe)", other: "No; measures air at the device" },
-      { capability: "Power", probeharbor: "USB power at the board", other: "4 AA batteries (about 1 year) or USB‑C" },
-      { capability: "Local integrations", probeharbor: "Home Assistant (HACS), ESPHome, MQTT bridge", other: "MQTT and webhooks (URL actions)" },
-      { capability: "Leak / flood contacts", probeharbor: "Yes, alert automatically when wet", other: "Not on this device" },
+      {
+        capability: "Rated working temperature",
+        probeharbor: "DS18B20 probe: −67°F to 257°F",
+        other: "32°F to 105°F (0°C to 40°C)",
+      },
+      {
+        capability: "Pipe-mounted probe",
+        probeharbor: "Yes (waterproof DS18B20 on the pipe)",
+        other: "No; measures air at the device",
+      },
+      {
+        capability: "Power",
+        probeharbor: "USB power at the board",
+        other: "4 AA batteries (about 1 year) or USB‑C",
+      },
+      {
+        capability: "Local integrations",
+        probeharbor: "Home Assistant (HACS), ESPHome, MQTT bridge",
+        other: "MQTT and webhooks (URL actions)",
+      },
+      {
+        capability: "Leak / flood contacts",
+        probeharbor: "Yes, alert automatically when wet",
+        other: "Not on this device",
+      },
     ],
     faqs: [
       {
@@ -529,8 +770,14 @@ export const compareGuides: CompareGuide[] = [
     sources: {
       checkedOn: "October 2026",
       links: [
-        { label: "Shelly H&T Gen3 product page and specifications ($40.99)", url: "https://us.shelly.com/products/shelly-h-t-gen3-matte-white" },
-        { label: "Waterproof DS18B20 technical specs (Adafruit)", url: "https://www.adafruit.com/product/381" },
+        {
+          label: "Shelly H&T Gen3 product page and specifications ($40.99)",
+          url: "https://us.shelly.com/products/shelly-h-t-gen3-matte-white",
+        },
+        {
+          label: "Waterproof DS18B20 technical specs (Adafruit)",
+          url: "https://www.adafruit.com/product/381",
+        },
       ],
     },
   },

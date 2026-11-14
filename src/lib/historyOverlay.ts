@@ -27,10 +27,7 @@ export function findColdestUtcDay(points: ChartPoint[]): string | null {
   return bestDay;
 }
 
-export function extractUtcDayPoints(
-  points: ChartPoint[],
-  dayKey: string,
-): ChartPoint[] {
+export function extractUtcDayPoints(points: ChartPoint[], dayKey: string): ChartPoint[] {
   return points
     .filter((p) => utcDayKey(p.timestamp) === dayKey)
     .sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
@@ -70,10 +67,7 @@ export function buildColdestDayOverlay(
     return { overlay: [], coldestDay: null, minTempF: null };
   }
   const dayPoints = extractUtcDayPoints(priorYearPoints, coldestDay);
-  const minTempF = dayPoints.reduce(
-    (min, p) => (p.tempf < min ? p.tempf : min),
-    Infinity,
-  );
+  const minTempF = dayPoints.reduce((min, p) => (p.tempf < min ? p.tempf : min), Infinity);
   const anchorDay =
     currentPoints.length > 0
       ? utcDayKey(currentPoints[currentPoints.length - 1]!.timestamp)

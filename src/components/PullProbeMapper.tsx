@@ -53,23 +53,26 @@ export default function PullProbeMapper({
   const probesRef = useRef(probes);
   probesRef.current = probes;
 
-  const feedsWithUrls = useMemo(
-    () => feeds.filter((feed) => Boolean(feed.url)),
-    [feeds],
-  );
+  const feedsWithUrls = useMemo(() => feeds.filter((feed) => Boolean(feed.url)), [feeds]);
   const autoDiscoverStarted = useRef(false);
 
-  function readFeedFormValues(
-    feed: TempFeedConfig,
-  ): { url: string; jsonRoot: string; rootInput: HTMLInputElement | null } {
-    const idInputs = document.querySelectorAll<HTMLInputElement>('input[name^="feed_"][name$="_id"]');
+  function readFeedFormValues(feed: TempFeedConfig): {
+    url: string;
+    jsonRoot: string;
+    rootInput: HTMLInputElement | null;
+  } {
+    const idInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[name^="feed_"][name$="_id"]',
+    );
     for (const input of idInputs) {
       if (input.value !== feed.id) continue;
       const match = input.name.match(/^feed_(\d+)_id$/);
       if (!match) continue;
       const index = match[1];
       const urlInput = document.getElementById(`feed_${index}_url`) as HTMLInputElement | null;
-      const rootInput = document.getElementById(`feed_${index}_json_root`) as HTMLInputElement | null;
+      const rootInput = document.getElementById(
+        `feed_${index}_json_root`,
+      ) as HTMLInputElement | null;
       return {
         url: urlInput?.value.trim() || feed.url,
         jsonRoot: rootInput?.value.trim() || feed.jsonRoot || "temp",
@@ -111,11 +114,7 @@ export default function PullProbeMapper({
           if (rootInput && data.jsonRoot && data.jsonRoot !== jsonRoot) {
             rootInput.value = data.jsonRoot;
           }
-          merged = mergeDiscoveredProbes(
-            merged,
-            feed.id,
-            data.probes as DiscoveredProbe[],
-          );
+          merged = mergeDiscoveredProbes(merged, feed.id, data.probes as DiscoveredProbe[]);
         } catch {
           // Ignore unreachable feeds during auto-setup.
         } finally {
@@ -156,23 +155,15 @@ export default function PullProbeMapper({
         rootInput.value = data.jsonRoot;
       }
 
-      const merged = mergeDiscoveredProbes(
-        probes,
-        feed.id,
-        data.probes as DiscoveredProbe[],
-      );
-      const readingByKey = new Map(
-        data.probes.map((probe) => [probe.key, probe.reading]),
-      );
+      const merged = mergeDiscoveredProbes(probes, feed.id, data.probes as DiscoveredProbe[]);
+      const readingByKey = new Map(data.probes.map((probe) => [probe.key, probe.reading]));
       setProbes(
         merged.map((probe) => ({
           ...probe,
           reading: probe.feedId === feed.id ? readingByKey.get(probe.key) : undefined,
         })),
       );
-      setStatus(
-        data.message ?? plural(text.imported, data.probes.length, locale),
-      );
+      setStatus(data.message ?? plural(text.imported, data.probes.length, locale));
     } catch {
       setStatus(text.unableRead);
     } finally {
@@ -182,9 +173,7 @@ export default function PullProbeMapper({
 
   function updateProbe(index: number, patch: Partial<EditableProbe>) {
     setProbes((current) =>
-      current.map((probe, probeIndex) =>
-        probeIndex === index ? { ...probe, ...patch } : probe,
-      ),
+      current.map((probe, probeIndex) => (probeIndex === index ? { ...probe, ...patch } : probe)),
     );
   }
 
@@ -255,9 +244,7 @@ export default function PullProbeMapper({
 
   function hideAverageProbes() {
     setProbes((current) =>
-      current.map((probe) =>
-        probe.key === "avg" ? { ...probe, visible: false } : probe,
-      ),
+      current.map((probe) => (probe.key === "avg" ? { ...probe, visible: false } : probe)),
     );
     setStatus(text.hiddenAvg);
   }
@@ -305,9 +292,7 @@ export default function PullProbeMapper({
       window.location.href = data.redirect ?? `${redirectTo}?pull_saved=1&tab=pull`;
     } catch {
       setStatus(text.unableSave);
-      window.dispatchEvent(
-        new CustomEvent("pull-setup:save-error", { detail: text.unableSave }),
-      );
+      window.dispatchEvent(new CustomEvent("pull-setup:save-error", { detail: text.unableSave }));
     } finally {
       setSaving(false);
     }
@@ -326,13 +311,8 @@ export default function PullProbeMapper({
     return () => window.removeEventListener("pull-setup:save", handler);
   });
 
-
   if (feedsWithUrls.length === 0) {
-    return (
-      <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-        {text.saveFeedFirst}
-      </p>
-    );
+    return <p class="mb-0 text-sm text-[var(--color-text-muted)]">{text.saveFeedFirst}</p>;
   }
 
   return (
@@ -411,11 +391,7 @@ export default function PullProbeMapper({
                       />
                       <span>{text.showOnHome}</span>
                     </label>
-                    <button
-                      type="button"
-                      class="btn-ghost"
-                      onClick={() => removeProbe(index)}
-                    >
+                    <button type="button" class="btn-ghost" onClick={() => removeProbe(index)}>
                       {text.remove}
                     </button>
                   </div>
@@ -426,15 +402,19 @@ export default function PullProbeMapper({
         </div>
       ) : (
         <p class="mb-0 text-sm text-[var(--color-text-muted)]">
-          {loadingFeedId
-            ? text.importing
-            : text.emptyHint}
+          {loadingFeedId ? text.importing : text.emptyHint}
         </p>
       )}
 
       <div class="flex flex-wrap items-center gap-3">
         {/* Saving is the "Save pull setup" bar below; this keeps Enter-to-save in the form. */}
-        <button type="submit" class="sr-only" id="pull-setup-save-btn" disabled={saving} tabIndex={-1}>
+        <button
+          type="submit"
+          class="sr-only"
+          id="pull-setup-save-btn"
+          disabled={saving}
+          tabIndex={-1}
+        >
           {text.savePullSetup}
         </button>
         {probes.length > 0 ? (
@@ -457,7 +437,5 @@ function humanizeKey(key: string): string {
   const trimmed = key.trim();
   if (!trimmed) return "Probe";
   if (/^\d+$/.test(trimmed)) return `Probe ${trimmed}`;
-  return trimmed
-    .replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return trimmed.replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }

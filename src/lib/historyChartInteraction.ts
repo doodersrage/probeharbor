@@ -113,7 +113,10 @@ export function collectHoverHits(options: {
       humidity: nearest.humidity,
       timestamp: nearest.timestamp,
       dewPointF:
-        dewPointF && nearest.humidity != null && Number.isFinite(nearest.humidity) && nearest.humidity > 0
+        dewPointF &&
+        nearest.humidity != null &&
+        Number.isFinite(nearest.humidity) &&
+        nearest.humidity > 0
           ? dewPointF(nearest.tempf, nearest.humidity)
           : null,
     });
@@ -156,9 +159,7 @@ export function formatHoverTime(iso: string, locale?: string): string {
   });
 }
 
-export function timeDomainFromPoints(
-  points: Array<{ timestamp: string }>,
-): TimeWindow | null {
+export function timeDomainFromPoints(points: Array<{ timestamp: string }>): TimeWindow | null {
   if (points.length === 0) return null;
   let minTs = Number.POSITIVE_INFINITY;
   let maxTs = Number.NEGATIVE_INFINITY;
@@ -218,11 +219,7 @@ export function zoomTimeWindow(
   return clampTimeWindow(next, domain, minSpanMs);
 }
 
-export function panTimeWindow(
-  view: TimeWindow,
-  domain: TimeWindow,
-  deltaTs: number,
-): TimeWindow {
+export function panTimeWindow(view: TimeWindow, domain: TimeWindow, deltaTs: number): TimeWindow {
   return clampTimeWindow(
     {
       minTs: view.minTs + deltaTs,
@@ -277,10 +274,7 @@ export function presetNarrowsDomain(
 }
 
 /** Trailing window ending at domain.maxTs, clamped to available data. */
-export function windowForTrailingSpan(
-  domain: TimeWindow,
-  spanMs: number,
-): TimeWindow {
+export function windowForTrailingSpan(domain: TimeWindow, spanMs: number): TimeWindow {
   const domainSpan = Math.max(domain.maxTs - domain.minTs, 1);
   const safeSpan = Math.max(1, Math.min(spanMs, domainSpan));
   return clampTimeWindow(
@@ -339,16 +333,10 @@ export function brushPixelsToWindow(
   const t0 = xToTimestamp(left, bounds);
   const t1 = xToTimestamp(right, bounds);
   if (t0 == null || t1 == null) return null;
-  return clampTimeWindow(
-    { minTs: Math.min(t0, t1), maxTs: Math.max(t0, t1) },
-    domain,
-  );
+  return clampTimeWindow({ minTs: Math.min(t0, t1), maxTs: Math.max(t0, t1) }, domain);
 }
 
-export function downloadCanvasPng(
-  canvas: HTMLCanvasElement,
-  filename: string,
-): boolean {
+export function downloadCanvasPng(canvas: HTMLCanvasElement, filename: string): boolean {
   try {
     const href = canvas.toDataURL("image/png");
     if (!href || href === "data:,") return false;

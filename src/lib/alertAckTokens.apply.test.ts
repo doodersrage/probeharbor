@@ -19,7 +19,13 @@ describe("applyAckToken", () => {
     const { applyAckToken, signAckPayload } = await import("./alertAckTokens");
     const exp = Date.now() + 60_000;
 
-    const result = await applyAckToken("user-1", exp, await signAckPayload("user-1", exp, 42), "en", 42);
+    const result = await applyAckToken(
+      "user-1",
+      exp,
+      await signAckPayload("user-1", exp, 42),
+      "en",
+      42,
+    );
 
     expect(result.ok).toBe(true);
     expect(mockAcknowledgeAlertEvent).toHaveBeenCalledWith("user-1", 42);
@@ -30,7 +36,13 @@ describe("applyAckToken", () => {
     const { applyAckToken, signAckPayload } = await import("./alertAckTokens");
     const exp = Date.now() + 60_000;
 
-    const result = await applyAckToken("user-1", exp, await signAckPayload("user-1", exp, 42), "en", 43);
+    const result = await applyAckToken(
+      "user-1",
+      exp,
+      await signAckPayload("user-1", exp, 42),
+      "en",
+      43,
+    );
 
     expect(result.ok).toBe(false);
     expect(mockAcknowledgeAlertEvent).not.toHaveBeenCalled();

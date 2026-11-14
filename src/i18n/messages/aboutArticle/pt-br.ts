@@ -16,7 +16,8 @@ const ptBr: AboutArticleMessages = {
   backToOverview: "Voltar à visão geral",
   convertBar: {
     label: "Experimente o ProbeHarbor",
-    copyHtml: "<strong>Demo ao vivo</strong>, sem conta. Pronto para conectar suas sondas? Grátis para sempre, sem cartão.",
+    copyHtml:
+      "<strong>Demo ao vivo</strong>, sem conta. Pronto para conectar suas sondas? Grátis para sempre, sem cartão.",
     demo: "Testar a demo ao vivo",
     startFree: "Comece grátis",
   },

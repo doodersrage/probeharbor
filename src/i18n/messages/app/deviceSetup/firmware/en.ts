@@ -29,8 +29,7 @@ const en = {
     pic18: "PIC18F67J60 MLA Ethernet (HTTP relay)",
     particle: "Particle Boron cellular (Console webhook)",
   },
-  otherBoards:
-    "Other boards: Pico W, STM32, CH32V, AVR, Teensy, PIC18, cellular",
+  otherBoards: "Other boards: Pico W, STM32, CH32V, AVR, Teensy, PIC18, cellular",
   pico: {
     heading: "Flash a Pico W",
     ledeHtml:

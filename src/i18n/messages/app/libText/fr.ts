@@ -8,15 +8,20 @@ const fr: LibTextMessages = {
     averageTitle: "Moyenne sur {days} jours",
     tempOn: "{temp} {unit} le {time} ({probe})",
     humidityOn: "{humidity} % le {time} ({probe})",
-    averageDetail: { one: "{temp} {unit} sur {count} mesure", other: "{temp} {unit} sur {count} mesures" },
+    averageDetail: {
+      one: "{temp} {unit} sur {count} mesure",
+      other: "{temp} {unit} sur {count} mesures",
+    },
     warmerThan: "{warmer} est en moyenne {delta} {unit} plus chaud que {cooler} sur cette période.",
     yoyTitle: "D’une année sur l’autre",
-    yoyDetail: "Cette période affiche en moyenne {current} {unit} contre {prior} {unit} l’an dernier ({delta} {unit}).",
+    yoyDetail:
+      "Cette période affiche en moyenne {current} {unit} contre {prior} {unit} l’an dernier ({delta} {unit}).",
     outdoorEstimate: "{detail} (estimation extérieure).",
     outdoorEstimateAt: "{detail} (estimation extérieure à {location}).",
   },
   coldSnap: {
-    reached: "{probe} a atteint {temp} {unit}, au niveau du seuil de {threshold} {unit} ou en dessous.",
+    reached:
+      "{probe} a atteint {temp} {unit}, au niveau du seuil de {threshold} {unit} ou en dessous.",
     lowest: "Minimum : {temp} {unit}.",
     backAbove: "De nouveau au-dessus de {threshold} {unit}.",
     alertSent: "Alerte envoyée : {title} ({channels}).",
@@ -48,7 +53,10 @@ const fr: LibTextMessages = {
     },
     stale: "Données de la sonde obsolètes, vérifiez l’alimentation et le Wi‑Fi",
     batteryLow: "Batterie à {pct} % — à remplacer bientôt",
-    batteryDays: { one: "Batterie : ~{count} jour restant", other: "Batterie : ~{count} jours restants" },
+    batteryDays: {
+      one: "Batterie : ~{count} jour restant",
+      other: "Batterie : ~{count} jours restants",
+    },
     weakRssi: "RSSI faible ({rssi} dBm)",
     healthy: "Transmet normalement, contacts inondation secs",
     etaReplaceSoon: "À remplacer bientôt",
@@ -117,7 +125,8 @@ const fr: LibTextMessages = {
     partUnknown: "{count} inconnues",
   },
   lowBattery: {
-    single: "La batterie de {name} est à {pct} % : rechargez-la ou remplacez-la avant qu’elle cesse d’envoyer des données.",
+    single:
+      "La batterie de {name} est à {pct} % : rechargez-la ou remplacez-la avant qu’elle cesse d’envoyer des données.",
     item: "{name} ({pct} %)",
     list: "Batterie faible sur {count} appareils : {names}.",
     listMore: "Batterie faible sur {count} appareils : {names} et {more} autres.",

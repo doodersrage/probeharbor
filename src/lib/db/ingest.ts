@@ -31,16 +31,20 @@ export const SENSOR_JSON = `json_build_object(
   'id', s.id, 'device_id', s.device_id, 'key', s.key, 'label', s.label, 'kind', s.kind,
   'unit', s.unit, 'visible', s.visible, 'sort_order', s.sort_order, 'offset_num', s.offset_num)`;
 
-export const SENSOR_COLUMNS = "id, device_id, key, label, kind, unit, visible, sort_order, offset_num";
+export const SENSOR_COLUMNS =
+  "id, device_id, key, label, kind, unit, visible, sort_order, offset_num";
 /** SENSOR_COLUMNS of device_sensors alias s. */
-const SENSOR_COLUMNS_S = "s.id, s.device_id, s.key, s.label, s.kind, s.unit, s.visible, s.sort_order, s.offset_num";
+const SENSOR_COLUMNS_S =
+  "s.id, s.device_id, s.key, s.label, s.kind, s.unit, s.visible, s.sort_order, s.offset_num";
 
 /**
  * Enabled device with this ingest-key hash, with its sensors. Null when there
  * is none, or (never expected) more than one: an ambiguous key must not pick
  * a household at random.
  */
-export async function findDeviceByIngestKeyHash(keyHash: string): Promise<DeviceWithSensors | null> {
+export async function findDeviceByIngestKeyHash(
+  keyHash: string,
+): Promise<DeviceWithSensors | null> {
   let rows: DeviceWithSensors[];
   try {
     rows = await query<DeviceWithSensors>(
@@ -149,7 +153,11 @@ export async function insertSensorReadings(
 ): Promise<{ error: string | null; inserted: number }> {
   if (rows.length === 0) return { error: null, inserted: 0 };
   try {
-    const [result] = await query<{ rejected: number; rejected_sensor_ids: string[] | null; inserted: number }>(
+    const [result] = await query<{
+      rejected: number;
+      rejected_sensor_ids: string[] | null;
+      inserted: number;
+    }>(
       `with input as (
          select r.sensor_id, r.household_id, coalesce(r.recorded_at, now()) as recorded_at, r.value_num,
                 r.value_bool, r.value_text, coalesce(r.meta, '{}'::jsonb) as meta,
@@ -228,7 +236,10 @@ export async function recordIngestStat(
   }
 }
 
-export async function listIngestStatsForHousehold(householdId: string, sinceDay: string): Promise<IngestStatRow[]> {
+export async function listIngestStatsForHousehold(
+  householdId: string,
+  sinceDay: string,
+): Promise<IngestStatRow[]> {
   try {
     return await query<IngestStatRow>(
       `select s.device_id, s.day, s.success_count, s.error_count, d.name as device_name

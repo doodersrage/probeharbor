@@ -20,7 +20,8 @@ const de: PortfolioMessages = {
   viewHeatmap: "Heatmap",
   healthTitle: "Zustand des Portfolios",
   healthHowSummary: "So wird der Wert berechnet",
-  healthHow: "Der Wert jeder Immobilie zeigt ihr schwerwiegendstes Problem: keine Geräte (20) oder noch keine Messwerte (30); ein nasser Wassersensor (10–20); auf oder unter der Frostgrenze (15–25); Messwerte älter als 2 Stunden (45); einige Geräte stumm (50); weniger als {band} über der Frostgrenze (70); sonst gesund (95). Der niedrigere Wert eines Bereichs gilt, wenn die Messwerte zusätzlich veraltet sind. Der Durchschnitt ist der Mittelwert über alle Immobilien.",
+  healthHow:
+    "Der Wert jeder Immobilie zeigt ihr schwerwiegendstes Problem: keine Geräte (20) oder noch keine Messwerte (30); ein nasser Wassersensor (10–20); auf oder unter der Frostgrenze (15–25); Messwerte älter als 2 Stunden (45); einige Geräte stumm (50); weniger als {band} über der Frostgrenze (70); sonst gesund (95). Der niedrigere Wert eines Bereichs gilt, wenn die Messwerte zusätzlich veraltet sind. Der Durchschnitt ist der Mittelwert über alle Immobilien.",
   healthSummary:
     "Durchschnittlicher Wert {score} % · {atRisk} mit Frost-/Wasserschadenrisiko{wet} · die kältesten stehen unten",
   healthSummaryWet: " · {count} nass",
@@ -42,7 +43,8 @@ const de: PortfolioMessages = {
   addPropertyBody:
     "Portfolio lohnt sich ab zwei Haushalten. Lege unter Haushalt ein zweites Objekt an (Mietobjekt, Ferienhaus, Werkstatt) und wechsle hier zwischen ihnen.",
   addPropertyButton: "Objekt unter Haushalt hinzufügen",
-  emptyPortfolio: "Noch keine Objekte in diesem Portfolio. Öffne Haushalt, um eines anzulegen oder beizutreten.",
+  emptyPortfolio:
+    "Noch keine Objekte in diesem Portfolio. Öffne Haushalt, um eines anzulegen oder beizutreten.",
   searchLabel: "Suche",
   searchPlaceholder: "Objektname oder ID",
   statusLabel: "Status",
@@ -67,7 +69,8 @@ const de: PortfolioMessages = {
   },
   apply: "Anwenden",
   clear: "Zurücksetzen",
-  filterHint: "Die Zustandsübersicht oben gilt für das ganze Portfolio. Diese Tabelle filtert und sortiert die Objektliste.",
+  filterHint:
+    "Die Zustandsübersicht oben gilt für das ganze Portfolio. Diese Tabelle filtert und sortiert die Objektliste.",
   noMatches: "Keine Objekte passen zu diesen Filtern.",
   noProperties: "Noch keine Objekte in diesem Portfolio.",
   heatmapTitle: "{name}: {score} % · {detail}",
@@ -98,7 +101,8 @@ const de: PortfolioMessages = {
   previous: "Zurück",
   next: "Weiter",
   pageOf: "Seite {page} von {pages}",
-  notAvailable: "Die Portfolio-Ansicht zeigt das Frostrisiko aller deiner Objekte. Verfügbar mit Pro.",
+  notAvailable:
+    "Die Portfolio-Ansicht zeigt das Frostrisiko aller deiner Objekte. Verfügbar mit Pro.",
   health: {
     noDevices: "Keine Geräte, füge einen Fühler hinzu",
     waitingFirstReading: "Warte auf ersten Messwert",

@@ -27,13 +27,18 @@ const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString(
 
 async function home(email: string) {
   const userId = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [
-    userId,
-  ]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [userId],
+  );
   return m!.household_id;
 }
 
-async function device(householdId: string, name: string, extra: { enabled?: boolean; meta?: object } = {}) {
+async function device(
+  householdId: string,
+  name: string,
+  extra: { enabled?: boolean; meta?: object } = {},
+) {
   const [d] = await sql<{ id: string }>(
     "insert into public.devices (household_id, name, source, enabled, meta) values ($1, $2, 'push', $3, $4) returning id",
     [householdId, name, extra.enabled ?? true, JSON.stringify(extra.meta ?? {})],
@@ -41,15 +46,42 @@ async function device(householdId: string, name: string, extra: { enabled?: bool
   return d!.id;
 }
 
-async function sensor(deviceId: string, key: string, kind: "temperature" | "humidity" | "door" = "temperature") {
-  const [d] = await sql<{ household_id: string }>("select household_id from public.devices where id = $1", [deviceId]);
-  return (await upsertDeviceSensor(d!.household_id, deviceId, key, key, kind, kind === "temperature" ? "F" : null)).sensor!.id;
+async function sensor(
+  deviceId: string,
+  key: string,
+  kind: "temperature" | "humidity" | "door" = "temperature",
+) {
+  const [d] = await sql<{ household_id: string }>(
+    "select household_id from public.devices where id = $1",
+    [deviceId],
+  );
+  return (
+    await upsertDeviceSensor(
+      d!.household_id,
+      deviceId,
+      key,
+      key,
+      kind,
+      kind === "temperature" ? "F" : null,
+    )
+  ).sensor!.id;
 }
 
-async function reading(sensorId: string, householdId: string, at: string, value: number | boolean | null) {
+async function reading(
+  sensorId: string,
+  householdId: string,
+  at: string,
+  value: number | boolean | null,
+) {
   await sql(
     "insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num, value_bool) values ($1, $2, $3, $4, $5)",
-    [sensorId, householdId, at, typeof value === "number" ? value : null, typeof value === "boolean" ? value : null],
+    [
+      sensorId,
+      householdId,
+      at,
+      typeof value === "number" ? value : null,
+      typeof value === "boolean" ? value : null,
+    ],
   );
 }
 
@@ -137,8 +169,12 @@ describe("reading series (Neon)", () => {
     await reading(s, a, minutesAgo(120), 31);
     await reading(s, a, minutesAgo(30), 36);
 
-    await expect(getNumericReadingInWindow(a, s, minutesAgo(200), minutesAgo(100))).resolves.toMatchObject({ value: 31 });
-    await expect(getNumericReadingInWindow(a, s, minutesAgo(90), minutesAgo(60))).resolves.toBeNull();
+    await expect(
+      getNumericReadingInWindow(a, s, minutesAgo(200), minutesAgo(100)),
+    ).resolves.toMatchObject({ value: 31 });
+    await expect(
+      getNumericReadingInWindow(a, s, minutesAgo(90), minutesAgo(60)),
+    ).resolves.toBeNull();
     await expect(hasNumericReadingAboveSince(a, s, minutesAgo(60), 35)).resolves.toBe(true);
     await expect(hasNumericReadingAboveSince(a, s, minutesAgo(60), 36)).resolves.toBe(false);
   });
@@ -161,7 +197,10 @@ describe("reading series (Neon)", () => {
     await reading(s, a, minutesAgo(30), true);
     await reading(s, a, minutesAgo(20), null);
     await reading(s, a, minutesAgo(10), false);
-    expect((await fetchRecentBoolReadings(a, s, minutesAgo(60))).map((r) => r.value)).toEqual([true, false]);
+    expect((await fetchRecentBoolReadings(a, s, minutesAgo(60))).map((r) => r.value)).toEqual([
+      true,
+      false,
+    ]);
   });
 });
 
@@ -208,7 +247,9 @@ describe("numeric readings in time buckets (Neon)", () => {
     await reading(other, a, at(3), 50);
     await reading(theirs, b, at(4), 60);
 
-    expect(await getRecentNumericReadingBuckets(a, s, at(0), 600)).toEqual([{ at: at(1), tempF: 10 }]);
+    expect(await getRecentNumericReadingBuckets(a, s, at(0), 600)).toEqual([
+      { at: at(1), tempF: 10 },
+    ]);
     expect(await getRecentNumericReadingBuckets(b, s, at(0), 600)).toEqual([]);
   });
 });

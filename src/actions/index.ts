@@ -2,10 +2,7 @@ import { getHouseholdFields } from "../lib/householdRecord";
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
 import { getAuthFromCookies } from "../lib/auth";
-import {
-  updateUserDisplayPreferences,
-  parseDisplayPreferencesInput,
-} from "../lib/userPreferences";
+import { updateUserDisplayPreferences, parseDisplayPreferencesInput } from "../lib/userPreferences";
 import { updateUserAlertSettings } from "../lib/alertNotifications";
 import {
   alertChannelsIncomplete,
@@ -13,10 +10,7 @@ import {
   findInvalidAlertWebhookUrl,
   isWeakTelegramSecret,
 } from "../lib/alertSettingsForm";
-import {
-  getAlertSettingsForUser,
-  saveAlertSettingsForUser,
-} from "../lib/notify";
+import { getAlertSettingsForUser, saveAlertSettingsForUser } from "../lib/notify";
 import {
   snoozeUntilFromHours,
   vacationUntilFromDate,
@@ -30,11 +24,7 @@ import {
 } from "../lib/householdAuth";
 import { recordHouseholdActivity } from "../lib/householdActivity";
 import { recordAlertSettingsChange } from "../lib/alertSettingsHistory";
-import {
-  getOwnedHouseholdId,
-  getUserHouseholdId,
-  updateHouseholdName,
-} from "../lib/households";
+import { getOwnedHouseholdId, getUserHouseholdId, updateHouseholdName } from "../lib/households";
 import {
   createHouseholdInvite,
   parseHouseholdInviteRole,
@@ -57,7 +47,10 @@ import { fmt, type Locale } from "../i18n";
 import { apiLocale, apiMoreCommonMessages } from "../i18n/messages/app/apiMore/common";
 import { apiMoreActionsMessages } from "../i18n/messages/app/apiMore/actions";
 
-async function requireAuthed(cookies: Parameters<typeof getAuthFromCookies>[0], locale: Locale = "en") {
+async function requireAuthed(
+  cookies: Parameters<typeof getAuthFromCookies>[0],
+  locale: Locale = "en",
+) {
   const { session, user } = await getAuthFromCookies(cookies);
   if (!session || !user) {
     throw new ActionError({
@@ -74,10 +67,7 @@ async function requireEditor(userId: string, locale: Locale = "en") {
     const t = apiMoreActionsMessages(locale);
     throw new ActionError({
       code: "FORBIDDEN",
-      message:
-        editor.error === "viewer"
-          ? t.viewOnly
-          : t.noHousehold,
+      message: editor.error === "viewer" ? t.viewOnly : t.noHousehold,
     });
   }
   return householdEditorCtx(editor);
@@ -162,11 +152,7 @@ export const server = {
         user.user_metadata as Record<string, unknown> | undefined,
       );
       const entitlements = await getUserEntitlements(user.id);
-      const settings = buildAlertSettingsFromFormData(
-        formData,
-        existing,
-        entitlements,
-      );
+      const settings = buildAlertSettingsFromFormData(formData, existing, entitlements);
 
       const invalidWebhookField = findInvalidAlertWebhookUrl(settings);
       if (invalidWebhookField) {
@@ -316,9 +302,7 @@ export const server = {
     accept: "form",
     input: z.object({
       email: z.string().email("Enter a valid email."),
-      role: z
-        .enum(["member", "viewer", "alert_only", "property_manager"])
-        .optional(),
+      role: z.enum(["member", "viewer", "alert_only", "property_manager"]).optional(),
       redirect: z.string().optional(),
       action: z.string().optional(),
     }),
@@ -344,8 +328,7 @@ export const server = {
         if (entitlements.tier !== "portfolio" && entitlements.tier !== "admin") {
           throw new ActionError({
             code: "FORBIDDEN",
-            message:
-              t.portfolioRequired,
+            message: t.portfolioRequired,
           });
         }
       }
@@ -363,7 +346,9 @@ export const server = {
         });
       }
 
-      const { data: householdRow } = (await getHouseholdFields(manageId, ["name"])) as { data: { name: string } | null };
+      const { data: householdRow } = (await getHouseholdFields(manageId, ["name"])) as {
+        data: { name: string } | null;
+      };
 
       const acceptUrl = buildSiteUrl(context.request, `/invite/${token}`);
       // Only the hash is stored: show the link once after the page reloads.
@@ -445,8 +430,7 @@ export const server = {
       const lat = latRaw ? Number(latRaw) : null;
       const lon = lonRaw ? Number(lonRaw) : null;
       const result = await updateHouseholdFreezeMapSettings(ownedId, {
-        optIn:
-          input.freeze_map_opt_in === "true" || input.freeze_map_opt_in === "on",
+        optIn: input.freeze_map_opt_in === "true" || input.freeze_map_opt_in === "on",
         cityId: input.freeze_map_city_id?.trim() || null,
         lat: Number.isFinite(lat) ? lat : null,
         lon: Number.isFinite(lon) ? lon : null,

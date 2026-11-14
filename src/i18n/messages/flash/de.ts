@@ -68,7 +68,8 @@ const de: FlashMessages = {
   beforeTitle: "Bevor du anfängst",
   wireHtml:
     'Verkable den Sensor: Versorgung an 3,3 V, Masse an GND, Daten an GPIO 4, mit einem 4,7-kΩ-Widerstand zwischen Daten und 3,3 V (<a class="text-link" href="/about/esp32-freeze-kit">Schaltplan</a>). Das gilt für einen DS18B20-Fühler (rote, schwarze, gelbe Ader) genauso wie für einen DHT22; die Firmware erkennt, welcher angeschlossen ist.',
-  extrasIntro: "Optionale Extras an diesen Pins (jeder Schalter oder Kontakt kommt zwischen Pin und GND):",
+  extrasIntro:
+    "Optionale Extras an diesen Pins (jeder Schalter oder Kontakt kommt zwischen Pin und GND):",
   pinTable: {
     connect: "Anschluss",
     data: "DS18B20- oder DHT22-Daten",
@@ -87,7 +88,7 @@ const de: FlashMessages = {
   buyIntro:
     "Teile, die zu den Pins oben passen. Ein normaler ESP32, ein ESP32-S3 oder ein ESP32-C3 ist eine getestete Wahl. Die S3- und C3-Links führen zu Espressifs eigenen Entwicklerboards, für die die Firmware gebaut ist; sind sie ausverkauft, sollte auch ein anderes ESP32-S3-DevKitC-1- oder ESP32-C3-DevKitM-1-Board (oder ein Klon mit derselben Pinbelegung) funktionieren.",
   leakHtml:
-    '<strong>Lecksensor:</strong> Die einfachste günstige Lösung ist ein LM393-Modul „Regen-/Wassersensor“ (gibt es in vielen Shops): VCC an den 3,3-V-Pin des Boards (nie 5 V, damit sein Ausgang für den ESP32 sicher bleibt), GND an GND, DO an den Leck-Pin. Dreh am Poti, bis ein Wassertropfen „nass“ ergibt, und prüfe dann, dass er wieder „trocken“ meldet. Die offenen Kontaktflächen korrodieren, wenn sie nass bleiben, also sieh ihn als Einsteigerteil. Für eine langlebigere Installation nimm zwei Edelstahlschrauben oder -spitzen im Abstand von etwa 5&nbsp;mm, eine an den Leck-Pin und eine an GND. So oder so: Teste mit deinem eigenen Wasser, denn sehr sauberes Wasser oder ein dünner Film lösen ihn eventuell nicht aus. Sensoren, deren Ausgang bei Nässe auf High geht, etwa der Wassersensor von Adafruit, brauchen einen anderen Eingang und funktionieren mit dieser Firmware nicht.',
+    "<strong>Lecksensor:</strong> Die einfachste günstige Lösung ist ein LM393-Modul „Regen-/Wassersensor“ (gibt es in vielen Shops): VCC an den 3,3-V-Pin des Boards (nie 5 V, damit sein Ausgang für den ESP32 sicher bleibt), GND an GND, DO an den Leck-Pin. Dreh am Poti, bis ein Wassertropfen „nass“ ergibt, und prüfe dann, dass er wieder „trocken“ meldet. Die offenen Kontaktflächen korrodieren, wenn sie nass bleiben, also sieh ihn als Einsteigerteil. Für eine langlebigere Installation nimm zwei Edelstahlschrauben oder -spitzen im Abstand von etwa 5&nbsp;mm, eine an den Leck-Pin und eine an GND. So oder so: Teste mit deinem eigenen Wasser, denn sehr sauberes Wasser oder ein dünner Film lösen ihn eventuell nicht aus. Sensoren, deren Ausgang bei Nässe auf High geht, etwa der Wassersensor von Adafruit, brauchen einen anderen Eingang und funktionieren mit dieser Firmware nicht.",
   afterTitle: "Wenn er läuft",
   afterHtml:
     'Messwerte kommen einmal pro Minute an. Befestige den Fühler am kältesten Rohr, stell unter <a class="text-link" href="/dashboard/alerts">Dashboard → Alerts</a> eine Frostschwelle von 1–3 °C (34–38 °F) ein und sende einen Testalarm. Lies, <a class="text-link" href="/answers/crawlspace-freeze-sensor-placement">wo der Sensor hingehört</a> und <a class="text-link" href="/answers/freeze-alarm-temperature-setting">bei welcher Temperatur du alarmieren solltest</a>. Du bearbeitest den Code lieber selbst? Die <a class="text-link" href="/about/esp32-web-flash">anderen Flash-Optionen</a> decken Arduino, PlatformIO, MicroPython und ESPHome ab.',

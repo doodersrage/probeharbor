@@ -55,7 +55,9 @@ beforeEach(() => {
   });
   mockGetUserHouseholdId.mockReset().mockResolvedValue("house-session");
   mockGetUserHouseholdRole.mockReset().mockResolvedValue("owner");
-  mockGetHouseholdAlertHold.mockReset().mockResolvedValue({ snoozeUntil: FUTURE, vacationUntil: FUTURE });
+  mockGetHouseholdAlertHold
+    .mockReset()
+    .mockResolvedValue({ snoozeUntil: FUTURE, vacationUntil: FUTURE });
   mockClearHouseholdSnooze.mockReset().mockResolvedValue(2);
   mockClearHouseholdVacation.mockReset().mockResolvedValue(2);
   mockRecordHouseholdActivity.mockReset().mockResolvedValue(undefined);
@@ -69,20 +71,23 @@ describe("POST /api/user/household-alert-hold", () => {
     expect(mockClearHouseholdSnooze).not.toHaveBeenCalled();
   });
 
-  it.each(["owner", "member", "property_manager"])("%s can resume the household snooze", async (role) => {
-    mockGetUserHouseholdRole.mockResolvedValue(role);
-    const response = await POST(makeContext({ action: "clear_snooze", redirect: "/dashboard" }));
+  it.each(["owner", "member", "property_manager"])(
+    "%s can resume the household snooze",
+    async (role) => {
+      mockGetUserHouseholdRole.mockResolvedValue(role);
+      const response = await POST(makeContext({ action: "clear_snooze", redirect: "/dashboard" }));
 
-    expect(mockClearHouseholdSnooze).toHaveBeenCalledWith("house-session");
-    expect(mockClearHouseholdVacation).not.toHaveBeenCalled();
-    expect(mockRecordHouseholdActivity).toHaveBeenCalledWith({
-      householdId: "house-session",
-      userId: "user-1",
-      action: "household_snooze_cleared",
-      detail: null,
-    });
-    expect(location(response)).toBe("/dashboard?snooze_cleared=1");
-  });
+      expect(mockClearHouseholdSnooze).toHaveBeenCalledWith("house-session");
+      expect(mockClearHouseholdVacation).not.toHaveBeenCalled();
+      expect(mockRecordHouseholdActivity).toHaveBeenCalledWith({
+        householdId: "house-session",
+        userId: "user-1",
+        action: "household_snooze_cleared",
+        detail: null,
+      });
+      expect(location(response)).toBe("/dashboard?snooze_cleared=1");
+    },
+  );
 
   it("ends the household vacation", async () => {
     const response = await POST(makeContext({ action: "clear_vacation" }));
@@ -90,7 +95,10 @@ describe("POST /api/user/household-alert-hold", () => {
     expect(mockClearHouseholdVacation).toHaveBeenCalledWith("house-session");
     expect(mockClearHouseholdSnooze).not.toHaveBeenCalled();
     expect(mockRecordHouseholdActivity).toHaveBeenCalledWith(
-      expect.objectContaining({ householdId: "house-session", action: "household_vacation_cleared" }),
+      expect.objectContaining({
+        householdId: "house-session",
+        action: "household_vacation_cleared",
+      }),
     );
     expect(location(response)).toBe("/dashboard/alerts?vacation_cleared=1");
   });
@@ -114,7 +122,11 @@ describe("POST /api/user/household-alert-hold", () => {
 
   it("acts on the session's household, never a household id from the form", async () => {
     await POST(
-      makeContext({ action: "clear_snooze", household_id: "house-other", householdId: "house-other" }),
+      makeContext({
+        action: "clear_snooze",
+        household_id: "house-other",
+        householdId: "house-other",
+      }),
     );
     expect(mockGetUserHouseholdRole).toHaveBeenCalledWith("user-1", "house-session");
     expect(mockClearHouseholdSnooze).toHaveBeenCalledWith("house-session");
@@ -148,7 +160,9 @@ describe("POST /api/user/household-alert-hold", () => {
   });
 
   it("an off-site redirect falls back to a local path", async () => {
-    const response = await POST(makeContext({ action: "clear_snooze", redirect: "https://evil.example/x" }));
+    const response = await POST(
+      makeContext({ action: "clear_snooze", redirect: "https://evil.example/x" }),
+    );
     expect(location(response)).toMatch(/^\/[^/]/);
   });
 });

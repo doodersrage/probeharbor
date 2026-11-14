@@ -69,7 +69,12 @@ describe("POST /api/devices/sensors-batch", () => {
     const { POST } = await import("./sensors-batch");
 
     const response = await POST(
-      makeContext({ sensors: [{ id: "", label: "New" }, { id: "s1", label: "" }] }),
+      makeContext({
+        sensors: [
+          { id: "", label: "New" },
+          { id: "s1", label: "" },
+        ],
+      }),
     );
 
     expect(mockUpdateDeviceSensor).not.toHaveBeenCalled();

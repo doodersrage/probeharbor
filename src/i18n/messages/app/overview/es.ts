@@ -8,7 +8,8 @@ const es: OverviewMessages = {
     devices: "Dispositivos",
     debugGuide: "Guía de diagnóstico",
   },
-  offlineBanner: "Mostrando el último estado conocido del panel (sin conexión o caché desactualizada).",
+  offlineBanner:
+    "Mostrando el último estado conocido del panel (sin conexión o caché desactualizada).",
   viewOnly:
     "Acceso de solo lectura: puedes ver los datos en vivo, pero no cambiar dispositivos, alertas ni el uso compartido.",
   attentionTitle: "Requiere atención",
@@ -24,7 +25,8 @@ const es: OverviewMessages = {
   },
   glance: {
     title: "De un vistazo",
-    firstRunDesc: "Solo lo básico hasta que configures congelación + correo y envíes una alerta de prueba.",
+    firstRunDesc:
+      "Solo lo básico hasta que configures congelación + correo y envíes una alerta de prueba.",
     descHtml:
       'Cifras clave de esta propiedad. Toca ★ en una tarjeta para fijarla. La lectura de cada sonda está en <a class="text-link" href="/dashboard/live">En vivo</a>.',
     pinMetrics: "Fijar métricas",
@@ -48,12 +50,18 @@ const es: OverviewMessages = {
   },
   metricsHow: {
     summary: "Cómo se calculan estas cifras",
-    freezeHours: "Horas de helada: tiempo en los últimos 7 días en que una sonda marcó tu límite de helada de {threshold} {unit} o menos. {unit}·h (grados-hora) suma cuánto por debajo y durante cuánto tiempo: 2 {unit} por debajo durante 3 horas son 6 {unit}·h.",
-    coldestMargin: "Margen más frío: tu sonda activa más fría menos el límite de helada de {threshold} {unit}. Ámbar a menos de {band}, rojo en el límite o por debajo.",
-    indoorOutdoor: "Interior − exterior: la sonda más fría (o el termostato de la casa) menos la temperatura exterior actual. Por debajo de {band} (ámbar), el espacio sigue de cerca al aire exterior y se enfriará rápido en una noche fría.",
-    probeSpread: "Dispersión de sondas: la sonda activa más cálida menos la más fría. {band} o más (ámbar) puede indicar un punto frío, aire en capas o un sensor que falla.",
-    condensation: "Condensación: horas de los últimos 7 días en que el aire estuvo a menos de {band} de su punto de rocío (calculado con temperatura y humedad), cuando las superficies pueden humedecerse. Ámbar con 6 horas o más, o a menos de {nowBand} ahora mismo.",
-    feedHealth: "Estado de los feeds: cuántos de tus feeds pull respondieron ahora mismo, no la disponibilidad a lo largo del tiempo.",
+    freezeHours:
+      "Horas de helada: tiempo en los últimos 7 días en que una sonda marcó tu límite de helada de {threshold} {unit} o menos. {unit}·h (grados-hora) suma cuánto por debajo y durante cuánto tiempo: 2 {unit} por debajo durante 3 horas son 6 {unit}·h.",
+    coldestMargin:
+      "Margen más frío: tu sonda activa más fría menos el límite de helada de {threshold} {unit}. Ámbar a menos de {band}, rojo en el límite o por debajo.",
+    indoorOutdoor:
+      "Interior − exterior: la sonda más fría (o el termostato de la casa) menos la temperatura exterior actual. Por debajo de {band} (ámbar), el espacio sigue de cerca al aire exterior y se enfriará rápido en una noche fría.",
+    probeSpread:
+      "Dispersión de sondas: la sonda activa más cálida menos la más fría. {band} o más (ámbar) puede indicar un punto frío, aire en capas o un sensor que falla.",
+    condensation:
+      "Condensación: horas de los últimos 7 días en que el aire estuvo a menos de {band} de su punto de rocío (calculado con temperatura y humedad), cuando las superficies pueden humedecerse. Ámbar con 6 horas o más, o a menos de {nowBand} ahora mismo.",
+    feedHealth:
+      "Estado de los feeds: cuántos de tus feeds pull respondieron ahora mismo, no la disponibilidad a lo largo del tiempo.",
     measured: "Todo esto sale de tus lecturas y de datos meteorológicos; nada es un pronóstico.",
   },
   metric: {
@@ -85,7 +93,10 @@ const es: OverviewMessages = {
     pinCount: "{count} de {max} fijadas.",
     pinRoomHint: "Desmarca una para dejar sitio a otra.",
     updatedJustNow: "Actualizado ahora mismo",
-    updatedMinutesAgo: { one: "Actualizado hace {count} min", other: "Actualizado hace {count} min" },
+    updatedMinutesAgo: {
+      one: "Actualizado hace {count} min",
+      other: "Actualizado hace {count} min",
+    },
     unhandledAlerts: { one: "alerta sin atender.", other: "alertas sin atender." },
     ackLatest: "Confirmar la última",
     alertsClear: "Sin alertas pendientes",
@@ -145,7 +156,8 @@ const es: OverviewMessages = {
         detail:
           "Paso 1 de 3: añade un dispositivo en la página Dispositivos (flasheador ESP32 o Home Assistant). Un feed de demostración sirve para echar un vistazo y no cuenta.",
         waitingTitle: "Esperando la primera lectura",
-        waitingDetail: "Paso 1 de 3: tu dispositivo está añadido pero aún no ha enviado datos. Abre Dispositivos para revisar su configuración.",
+        waitingDetail:
+          "Paso 1 de 3: tu dispositivo está añadido pero aún no ha enviado datos. Abre Dispositivos para revisar su configuración.",
       },
       alerts: {
         title: "Configura el umbral de congelación + correo",
@@ -166,11 +178,13 @@ const es: OverviewMessages = {
       },
       rename: {
         title: "Renombra los sensores importados",
-        detail: "Acepta los nombres sugeridos en la tarjeta del dispositivo para que el resumen y las alertas se lean con claridad.",
+        detail:
+          "Acepta los nombres sugeridos en la tarjeta del dispositivo para que el resumen y las alertas se lean con claridad.",
       },
       qr: {
         title: "Opcional: pegatina QR",
-        detail: "Imprime el QR de ingesta desde Dispositivos para configurar con el móvil en un solo escaneo.",
+        detail:
+          "Imprime el QR de ingesta desde Dispositivos para configurar con el móvil en un solo escaneo.",
       },
     },
     next: {

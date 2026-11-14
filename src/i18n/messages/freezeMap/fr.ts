@@ -14,7 +14,8 @@ const fr: FreezeMapMessages = {
   embed: "Intégrer",
   freezeSeason: "Saison du gel",
   shareKit: "Kit de partage",
-  seedIntroHtml: "<strong>Données d’exemple affichées</strong> : les relevés réels d’une ville apparaissent dès que suffisamment de foyers participent ({floor}+ sondes par ville).",
+  seedIntroHtml:
+    "<strong>Données d’exemple affichées</strong> : les relevés réels d’une ville apparaissent dès que suffisamment de foyers participent ({floor}+ sondes par ville).",
   optInNone: "Aucun foyer ne participe encore : soyez le premier de votre agglomération.",
   optInCount: {
     one: "{count} foyer participe pour l’instant.",
@@ -24,13 +25,16 @@ const fr: FreezeMapMessages = {
   linkCreate: "Créez un compte pour contribuer",
   liveNotice: {
     one: "Agrégats en direct des participants · {count} foyer contributeur · une ville doit compter {floor}+ foyers pour afficher des relevés",
-    other: "Agrégats en direct des participants · {count} foyers contributeurs · une ville doit compter {floor}+ foyers pour afficher des relevés",
+    other:
+      "Agrégats en direct des participants · {count} foyers contributeurs · une ville doit compter {floor}+ foyers pour afficher des relevés",
   },
   lastSnapshot: " · Dernier relevé {label}",
   liveOptOut: ". Désinscription à tout moment dans Household.",
   momentumTitle: "Progression",
-  momentumApproaching: "Villes les plus proches de l’affichage réel ({floor} foyers chacune). Votre participation fait avancer le compteur.",
-  momentumWaiting: "Dès qu’une ville atteint {floor} foyers participants avec une sonde active, l’aperçu d’exemple de cette agglomération est remplacé par des relevés réels.",
+  momentumApproaching:
+    "Villes les plus proches de l’affichage réel ({floor} foyers chacune). Votre participation fait avancer le compteur.",
+  momentumWaiting:
+    "Dès qu’une ville atteint {floor} foyers participants avec une sonde active, l’aperçu d’exemple de cette agglomération est remplacé par des relevés réels.",
   householdsProgress: "{count}/{floor} foyers",
   moreToGo: {
     one: " · encore {count} avant l’affichage réel",
@@ -47,7 +51,8 @@ const fr: FreezeMapMessages = {
   },
   sparsePrivate: {
     one: "{count} ville compte moins de {floor} foyers : ses relevés restent privés jusqu’à ce que d’autres foyers participent. Elle figure dans Progression avec son seul nombre de foyers.",
-    other: "{count} villes comptent moins de {floor} foyers : leurs relevés restent privés jusqu’à ce que d’autres foyers participent. Elles figurent dans Progression avec leur seul nombre de foyers.",
+    other:
+      "{count} villes comptent moins de {floor} foyers : leurs relevés restent privés jusqu’à ce que d’autres foyers participent. Elles figurent dans Progression avec leur seul nombre de foyers.",
   },
   mapTitle: "Carte",
   mapSubtitle:
@@ -74,7 +79,8 @@ const fr: FreezeMapMessages = {
   tableNote:
     "Foyers = logements participants dans cette ville pour ce relevé. Part à risque de gel = foyers dont la sonde la plus froide était à ≤1 °C (34 °F) au moment du relevé. La tendance correspond à la température moyenne récente de la ville sur les relevés horaires.",
   findTitle: "Trouver votre ville",
-  findSubtitle: "Recherchez via le géocodage OpenWeather pour voir si votre agglomération figure sur la carte.",
+  findSubtitle:
+    "Recherchez via le géocodage OpenWeather pour voir si votre agglomération figure sur la carte.",
   findUser: " Les titulaires du foyer participent dans Dashboard → Household.",
   findGuest: " Connectez-vous pour inscrire votre foyer.",
   searchLabel: "Rechercher une ville",

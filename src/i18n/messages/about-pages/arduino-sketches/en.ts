@@ -1,4 +1,3 @@
-
 /** Body copy for /about/arduino-sketches. Hrefs stay English; middleware localizes them. */
 const REPO = "https://github.com/doodersrage/probeharbor";
 const A = '<a class="text-link" target="_blank" rel="noreferrer" href=';
@@ -31,7 +30,8 @@ const en = {
   networkTitle: "Network stack choices",
   networkHtml: `This revision uses an Ethernet shield on SPI. The sketch handles DHCP, reconnect loops, and JSON serving while the LCD continues to show live probe values. When TLS is too heavy for the MCU, a Python relay can terminate HTTPS: see <a class="text-link" href="/about/python-feeds">Python scripts and feeds</a>. For push ingest from the same shield, see ${ETH_INGEST}.`,
   rev2Alt: "ProbeHarbor revision-two probe board with Ethernet shield, LCD, and DHT22 sensors",
-  rev2Caption: "ProbeHarbor revision two: Ethernet, LCD readout, and dual DHT22 inputs in one stack.",
+  rev2Caption:
+    "ProbeHarbor revision two: Ethernet, LCD readout, and dual DHT22 inputs in one stack.",
   workflowTitle: "Development workflow",
   workflow:
     "Sketches are edited in the Arduino IDE or PlatformIO, flashed over USB, then verified with serial logging before the board is mounted in the monitored space. Confirm JSON shape with curl before adding the feed URL to the website dashboard.",

@@ -21,9 +21,27 @@ const hourlyBody = {
   properties: {
     updateTime: "2026-01-10T18:00:00+00:00",
     periods: [
-      { startTime: "2026-01-10T18:00:00-05:00", isDaytime: false, temperature: 25, temperatureUnit: "F", windSpeed: "5 mph" },
-      { startTime: "2026-01-10T19:00:00-05:00", isDaytime: false, temperature: 18, temperatureUnit: "F", windSpeed: "5 mph" },
-      { startTime: "2026-01-11T07:00:00-05:00", isDaytime: true, temperature: 30, temperatureUnit: "F", windSpeed: "5 mph" },
+      {
+        startTime: "2026-01-10T18:00:00-05:00",
+        isDaytime: false,
+        temperature: 25,
+        temperatureUnit: "F",
+        windSpeed: "5 mph",
+      },
+      {
+        startTime: "2026-01-10T19:00:00-05:00",
+        isDaytime: false,
+        temperature: 18,
+        temperatureUnit: "F",
+        windSpeed: "5 mph",
+      },
+      {
+        startTime: "2026-01-11T07:00:00-05:00",
+        isDaytime: true,
+        temperature: 30,
+        temperatureUnit: "F",
+        windSpeed: "5 mph",
+      },
     ],
   },
 };

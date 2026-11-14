@@ -97,11 +97,15 @@ describe("getAlertPauseState", () => {
 
 describe("formatAlertPauseUntil", () => {
   it("formats in the alert-settings time zone", () => {
-    expect(formatAlertPauseUntil("2026-11-05T21:00:00.000Z", "en", "America/New_York")).toBe("Nov 5, 4:00 PM");
+    expect(formatAlertPauseUntil("2026-11-05T21:00:00.000Z", "en", "America/New_York")).toBe(
+      "Nov 5, 4:00 PM",
+    );
   });
 
   it("falls back to labelled UTC for an invalid zone", () => {
-    expect(formatAlertPauseUntil("2026-11-05T21:00:00.000Z", "en", "Not/AZone")).toMatch(/9:00 PM UTC/);
+    expect(formatAlertPauseUntil("2026-11-05T21:00:00.000Z", "en", "Not/AZone")).toMatch(
+      /9:00 PM UTC/,
+    );
   });
 });
 
@@ -122,14 +126,33 @@ describe("withHouseholdHold", () => {
     expect(own.snoozeUntil).toBeNull(); // never mutates the member's settings
     const away = withHouseholdHold(own, { snoozeUntil: null, vacationUntil: at(48) }, now);
     expect(away.vacationUntil).toBe(at(48));
-    for (const kind of ["threshold", "flood", "power", "outage", "rate", "battery", "recovery", "forecast", "rule"] as const) {
+    for (const kind of [
+      "threshold",
+      "flood",
+      "power",
+      "outage",
+      "rate",
+      "battery",
+      "recovery",
+      "forecast",
+      "rule",
+    ] as const) {
       const ownSnooze = { ...own, snoozeUntil: at(3) };
       const ownVacation = { ...own, vacationUntil: at(48) };
       // Compared at the real clock: shift both by the same offset.
-      const shift = (iso: string | null) => (iso ? new Date(Date.parse(iso) - now + Date.now()).toISOString() : null);
-      const h = (s: typeof own) => ({ ...s, snoozeUntil: shift(s.snoozeUntil), vacationUntil: shift(s.vacationUntil) });
-      expect(shouldSuppressForSnoozeOrVacation(h(snoozed), kind)).toBe(shouldSuppressForSnoozeOrVacation(h(ownSnooze), kind));
-      expect(shouldSuppressForSnoozeOrVacation(h(away), kind)).toBe(shouldSuppressForSnoozeOrVacation(h(ownVacation), kind));
+      const shift = (iso: string | null) =>
+        iso ? new Date(Date.parse(iso) - now + Date.now()).toISOString() : null;
+      const h = (s: typeof own) => ({
+        ...s,
+        snoozeUntil: shift(s.snoozeUntil),
+        vacationUntil: shift(s.vacationUntil),
+      });
+      expect(shouldSuppressForSnoozeOrVacation(h(snoozed), kind)).toBe(
+        shouldSuppressForSnoozeOrVacation(h(ownSnooze), kind),
+      );
+      expect(shouldSuppressForSnoozeOrVacation(h(away), kind)).toBe(
+        shouldSuppressForSnoozeOrVacation(h(ownVacation), kind),
+      );
     }
   });
 
@@ -139,6 +162,8 @@ describe("withHouseholdHold", () => {
     expect(merged.snoozeUntil).toBe(at(10));
     expect(merged.vacationUntil).toBe(at(5));
     const expiredOwn = { ...own, snoozeUntil: at(-1) };
-    expect(withHouseholdHold(expiredOwn, { snoozeUntil: at(2), vacationUntil: null }, now).snoozeUntil).toBe(at(2));
+    expect(
+      withHouseholdHold(expiredOwn, { snoozeUntil: at(2), vacationUntil: null }, now).snoozeUntil,
+    ).toBe(at(2));
   });
 });

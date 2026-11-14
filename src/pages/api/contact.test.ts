@@ -110,7 +110,11 @@ describe("POST /api/contact", () => {
   });
 
   it("returns 429 with Retry-After when rate limited", async () => {
-    mockCheckContactRateLimit.mockReturnValue({ ok: false, error: "Slow down.", retryAfterSec: 60 });
+    mockCheckContactRateLimit.mockReturnValue({
+      ok: false,
+      error: "Slow down.",
+      retryAfterSec: 60,
+    });
     const { POST } = await import("./contact");
 
     const response = await POST(makeContext(validFields()));

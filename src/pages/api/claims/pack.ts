@@ -59,10 +59,7 @@ export const GET: APIRoute = async (context) => {
 
   const pdf = await renderDocumentPdf({ html });
   if (!pdf) {
-    return new Response(
-      t.pdfUnavailable,
-      { status: 503 },
-    );
+    return new Response(t.pdfUnavailable, { status: 503 });
   }
 
   return new Response(pdf.bytes, {

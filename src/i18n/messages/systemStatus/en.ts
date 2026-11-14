@@ -39,7 +39,8 @@ const en = {
     lede: "Written notes for customer-visible outages or degradations. Cron errors above also drive the live banner and status-email subscribers.",
     none: "No incidents recorded yet. When we publish a resolved incident (date, impact, recovery), it will appear here. until then, treat the live banner and recent cron table as the source of truth.",
     open: "Open: service degraded",
-    started: "Started around this page load ({when}). Status subscribers are notified on degrade and recovery.",
+    started:
+      "Started around this page load ({when}). Status subscribers are notified on degrade and recovery.",
   },
   runs: {
     title: "Recent cron runs",
@@ -72,7 +73,8 @@ const en = {
   notify: {
     title: "Get notified",
     lede: "Get a one-off email if this status changes (degraded or back to normal). No routine emails. The form is protected by Cloudflare Turnstile.",
-    subscribed: "Check your inbox for a confirmation link -- you're not subscribed until you click it.",
+    subscribed:
+      "Check your inbox for a confirmation link -- you're not subscribed until you click it.",
     confirmed: "You're subscribed to status updates.",
     unsubscribed: "You've been unsubscribed from status updates.",
     errors: {

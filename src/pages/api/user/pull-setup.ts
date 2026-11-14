@@ -3,10 +3,7 @@ import { getAuthFromCookies } from "../../../lib/auth";
 import type { TempFeedConfig, TempProbeConfig } from "../../../lib/tempFeedConfig";
 import { sanitizeTempFeeds, sanitizeTempProbes } from "../../../lib/tempFeedConfig";
 import { saveUserPullSetup } from "../../../lib/userTempConfig";
-import {
-  redirectUnlessEditor,
-  requireHouseholdEditor,
-} from "../../../lib/householdAuth";
+import { redirectUnlessEditor, requireHouseholdEditor } from "../../../lib/householdAuth";
 import { formRedirectPath, sanitizeNextPath } from "../../../lib/siteUrl";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
 import { apiUserMessages } from "../../../i18n/messages/app/api/user";
@@ -22,10 +19,7 @@ function parseFeeds(body: unknown): TempFeedConfig[] | null {
     const url = typeof row.url === "string" ? row.url.trim() : "";
     if (!url) continue;
     parsed.push({
-      id:
-        typeof row.id === "string" && row.id.trim()
-          ? row.id.trim()
-          : `feed-${index}`,
+      id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `feed-${index}`,
       name: typeof row.name === "string" && row.name.trim() ? row.name.trim() : `Feed ${index + 1}`,
       url,
       enabled: row.enabled !== false,
@@ -48,10 +42,7 @@ function parseProbes(body: unknown, feedIds: Set<string>): TempProbeConfig[] {
     const feedId = typeof row.feedId === "string" ? row.feedId.trim() : "";
     if (!key || !feedId || !feedIds.has(feedId)) continue;
     parsed.push({
-      id:
-        typeof row.id === "string" && row.id.trim()
-          ? row.id.trim()
-          : `${feedId}-${key}-${index}`,
+      id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `${feedId}-${key}-${index}`,
       feedId,
       key,
       label: typeof row.label === "string" && row.label.trim() ? row.label.trim() : `Probe ${key}`,
@@ -99,15 +90,23 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
         headers: { "Content-Type": "application/json" },
       });
     }
-    if (typeof body === "object" && body && "redirect" in body && typeof body.redirect === "string") {
+    if (
+      typeof body === "object" &&
+      body &&
+      "redirect" in body &&
+      typeof body.redirect === "string"
+    ) {
       redirectTo = sanitizeNextPath(body.redirect) ?? redirectTo;
     }
     feeds = parseFeeds(body);
     if (!feeds) {
-      return new Response(JSON.stringify({ ok: false, error: apiUserMessages(locale).noValidFeeds }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ ok: false, error: apiUserMessages(locale).noValidFeeds }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
     const feedIds = new Set(feeds.map((feed) => feed.id));
     probes = parseProbes(body, feedIds);
@@ -119,16 +118,22 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     const { parseTempFeedsFromFormData } = await import("../../../lib/tempFeedConfig");
     feeds = parseTempFeedsFromFormData(formData);
     const feedIds = new Set(feeds.map((feed) => feed.id));
-    probes = parseProbes({ probes: JSON.parse(formData.get("probes_json")?.toString() ?? "[]") }, feedIds);
+    probes = parseProbes(
+      { probes: JSON.parse(formData.get("probes_json")?.toString() ?? "[]") },
+      feedIds,
+    );
   }
 
   const sanitizedFeeds = sanitizeTempFeeds(feeds);
   // The form may clear every row on purpose; an API call whose feeds are all invalid is an error.
   if (isJson && sanitizedFeeds.length === 0) {
-    return new Response(JSON.stringify({ ok: false, error: apiUserMessages(locale).noValidFeeds }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ ok: false, error: apiUserMessages(locale).noValidFeeds }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
   const sanitizedProbes = sanitizeTempProbes(probes, sanitizedFeeds);
   const { error, discoveredProbes } = await saveUserPullSetup(

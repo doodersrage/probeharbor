@@ -26,8 +26,10 @@ const es: AlertsMessages = {
     yourEnabledChannels: "tus canales activados",
     testIncomplete:
       "Ningún canal pudo enviar: activa un canal y completa su destino, y vuelve a intentarlo.",
-    testNoChannels: "No hay canales de alerta activados. Activa al menos uno, guarda y vuelve a intentarlo.",
-    testFailed: "No se pudo enviar la alerta de prueba. Revisa los ajustes de los canales y vuelve a intentarlo.",
+    testNoChannels:
+      "No hay canales de alerta activados. Activa al menos uno, guarda y vuelve a intentarlo.",
+    testFailed:
+      "No se pudo enviar la alerta de prueba. Revisa los ajustes de los canales y vuelve a intentarlo.",
     ackOk: "Alerta marcada como atendida.",
     ackError: "No se pudo confirmar la alerta.",
   },
@@ -41,16 +43,21 @@ const es: AlertsMessages = {
   pause: {
     snoozedUntil: "Alertas rutinarias pospuestas hasta {time}.",
     vacationUntil: "Modo vacaciones hasta {time}: las alertas rutinarias quedan en espera.",
-    stillSend: "Las alertas de helada, fugas, corte de luz y sensor desconectado se siguen enviando.",
+    stillSend:
+      "Las alertas de helada, fugas, corte de luz y sensor desconectado se siguen enviando.",
     resume: "Reanudar alertas",
     endVacation: "Terminar vacaciones",
-    householdSnoozedUntil: "Una integración pospuso las alertas rutinarias de este hogar hasta {time}, para todos sus miembros.",
-    householdVacationUntil: "Una integración puso este hogar en modo vacaciones hasta {time}: las alertas rutinarias quedan en espera para todos sus miembros.",
-    householdClearHint: "Para terminarlo antes, envía clear_snooze o clear_vacation desde la integración.",
+    householdSnoozedUntil:
+      "Una integración pospuso las alertas rutinarias de este hogar hasta {time}, para todos sus miembros.",
+    householdVacationUntil:
+      "Una integración puso este hogar en modo vacaciones hasta {time}: las alertas rutinarias quedan en espera para todos sus miembros.",
+    householdClearHint:
+      "Para terminarlo antes, envía clear_snooze o clear_vacation desde la integración.",
     /** Resume buttons for the household hold (owners and editors). */
     householdResume: "Reanudar alertas para todos",
     householdEndVacation: "Terminar vacaciones para todos",
-    householdResumeHint: "Al reanudar se levanta la pausa de este hogar para todos sus miembros; la integración puede volver a activarla.",
+    householdResumeHint:
+      "Al reanudar se levanta la pausa de este hogar para todos sus miembros; la integración puede volver a activarla.",
   },
   activity: {
     heading: "Actividad reciente de alertas",
@@ -211,7 +218,8 @@ const es: AlertsMessages = {
   },
   referral: {
     heading: "Regala un invierno de monitoreo",
-    introHtml: "Comparte tu enlace: quienes se registren obtienen <strong>7 días extra</strong> de prueba de Pro.",
+    introHtml:
+      "Comparte tu enlace: quienes se registren obtienen <strong>7 días extra</strong> de prueba de Pro.",
     bonusDays: {
       one: "Tienes {count} día de prueba extra por recomendaciones exitosas.",
       other: "Tienes {count} días de prueba extra por recomendaciones exitosas.",
@@ -241,7 +249,8 @@ const es: AlertsMessages = {
     fixPause: "Ajustes de pausa",
     heldTitle: "Retenida a propósito, así que no se avisó a nadie.",
     failedTitle: "El envío falló, o al canal le falta la dirección, el número o el webhook.",
-    notSetUpTitle: "Ningún canal estaba activo para esta alerta, o las reglas de enrutamiento no dejaron ninguno.",
+    notSetUpTitle:
+      "Ningún canal estaba activo para esta alerta, o las reglas de enrutamiento no dejaron ninguno.",
   },
 };
 

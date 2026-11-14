@@ -9,7 +9,8 @@ const ptBr: DigestEmailMessages = {
     "Um panorama rápido dos últimos 7 dias — a noite mais fria, as passagens pelo limite de congelamento e o que mais merece atenção.",
   ctaHistory: "Abrir esta semana no Histórico",
   ctaSettings: "Gerenciar configurações do resumo",
-  footerNote: "Você pode desativar os resumos semanais em Painel → Alertas → Configurações → E-mails de resumo.",
+  footerNote:
+    "Você pode desativar os resumos semanais em Painel → Alertas → Configurações → E-mails de resumo.",
   tip: "Dica: alertas de queda de conexão e de vazamento são enviados separadamente quando os sensores ficam em silêncio ou molhados.",
 
   readings: { one: "{count} leitura", other: "{count} leituras" },
@@ -40,7 +41,8 @@ const ptBr: DigestEmailMessages = {
 
   deliveryTitle: "Entrega de alertas",
   noAlerts: "Nenhum alerta foi enviado esta semana.",
-  sendTestAnyTime: "Envie um teste em Alertas quando quiser para confirmar que seus canais ainda chegam até você.",
+  sendTestAnyTime:
+    "Envie um teste em Alertas quando quiser para confirmar que seus canais ainda chegam até você.",
   heldBack: {
     one: "{count} retido por adiamento, modo férias ou horário silencioso.",
     other: "{count} retidos por adiamento, modo férias ou horário silencioso.",

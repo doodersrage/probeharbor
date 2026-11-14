@@ -19,14 +19,20 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
   if (blocked) return blocked;
 
   const id = Number(formData.get("history_id"));
-  if (!Number.isInteger(id) || id <= 0) return redirect(withQuery(redirectTo, { alert_error: "restore_failed" }));
+  if (!Number.isInteger(id) || id <= 0)
+    return redirect(withQuery(redirectTo, { alert_error: "restore_failed" }));
 
   const result = await restoreAlertSettings(user.id, id, apiLocale({ locals }));
   if (result.error) return redirect(withQuery(redirectTo, { alert_error: "restore_failed" }));
 
   const householdId = await getUserHouseholdId(user.id);
   if (householdId) {
-    await recordHouseholdActivity({ householdId, userId: user.id, action: "alert_settings_restored", detail: null });
+    await recordHouseholdActivity({
+      householdId,
+      userId: user.id,
+      action: "alert_settings_restored",
+      detail: null,
+    });
   }
   return redirect(withQuery(redirectTo, { alert_saved: "restored" }));
 };

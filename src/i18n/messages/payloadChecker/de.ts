@@ -17,7 +17,11 @@ const de: PayloadCheckerMessages = {
   whichHardware: "Welche Hardware funktioniert?",
   inputTitle: "Deine Payload",
   tryExample: "Probier ein Beispiel:",
-  examples: { flat: "Flache Schlüssel", classic: "Klassisches Arduino", typed: "Typisierte Sensoren" },
+  examples: {
+    flat: "Flache Schlüssel",
+    classic: "Klassisches Arduino",
+    typed: "Typisierte Sensoren",
+  },
   jsonBody: "JSON-Body",
   check: "Payload prüfen",
   resultTitle: "Ergebnis",

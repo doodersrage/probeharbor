@@ -117,13 +117,23 @@ describe("listLatestFreezeMapSnapshots", () => {
   it("feeds the page's momentum list names and counts only", async () => {
     recentSnapshots.mockResolvedValue([
       snap({ city_id: "a", sample_count: 4 }),
-      snap({ city_id: "4887398", city_label: "Lone", sample_count: 1, avg_temp_f: LONE_AVG, min_temp_f: LONE_MIN }),
+      snap({
+        city_id: "4887398",
+        city_label: "Lone",
+        sample_count: 1,
+        avg_temp_f: LONE_AVG,
+        min_temp_f: LONE_MIN,
+      }),
       snap({ city_id: "geo:44.48,-73.21", city_label: "Our farm", sample_count: 2 }),
     ]);
     const resolved = resolveFreezeMapDisplay(await listLatestFreezeMapSnapshots(), new Map());
     expect(resolved.isSeed).toBe(false);
     expect(resolved.approaching).toHaveLength(1);
-    expect(resolved.approaching[0]).toMatchObject({ city_label: "Chicago, IL", avg_temp_f: null, min_temp_f: null });
+    expect(resolved.approaching[0]).toMatchObject({
+      city_label: "Chicago, IL",
+      avg_temp_f: null,
+      min_temp_f: null,
+    });
     expect(JSON.stringify(resolved.approaching)).not.toContain("Our farm");
     // The page's listed rows (same filter as freeze-map.astro) exclude it.
     const visible = resolved.snapshots.filter(
@@ -134,7 +144,13 @@ describe("listLatestFreezeMapSnapshots", () => {
 
   it("falls back to seed data (with live sparse cities redacted) when nothing meets the floor", async () => {
     recentSnapshots.mockResolvedValue([
-      snap({ city_id: "b", city_label: "Lone", sample_count: 2, avg_temp_f: LONE_AVG, min_temp_f: LONE_MIN }),
+      snap({
+        city_id: "b",
+        city_label: "Lone",
+        sample_count: 2,
+        avg_temp_f: LONE_AVG,
+        min_temp_f: LONE_MIN,
+      }),
     ]);
     const resolved = resolveFreezeMapDisplay(await listLatestFreezeMapSnapshots(), new Map());
     expect(resolved.isSeed).toBe(true);
@@ -147,11 +163,36 @@ describe("listFreezeMapSparklines", () => {
   it("skips snapshots taken while the city was below the floor", async () => {
     // Newest first, as the query returns them.
     recentSnapshots.mockResolvedValue([
-      snap({ city_id: "a", sample_count: 3, avg_temp_f: 41, captured_at: "2026-11-07T12:00:00.000Z" }),
-      snap({ city_id: "a", sample_count: 2, avg_temp_f: LONE_AVG, captured_at: "2026-11-07T11:00:00.000Z" }),
-      snap({ city_id: "a", sample_count: 4, avg_temp_f: 43, captured_at: "2026-11-07T10:00:00.000Z" }),
-      snap({ city_id: "a", sample_count: 1, avg_temp_f: LONE_MIN, captured_at: "2026-11-07T09:00:00.000Z" }),
-      snap({ city_id: "lone", sample_count: 1, avg_temp_f: 30, captured_at: "2026-11-07T12:00:00.000Z" }),
+      snap({
+        city_id: "a",
+        sample_count: 3,
+        avg_temp_f: 41,
+        captured_at: "2026-11-07T12:00:00.000Z",
+      }),
+      snap({
+        city_id: "a",
+        sample_count: 2,
+        avg_temp_f: LONE_AVG,
+        captured_at: "2026-11-07T11:00:00.000Z",
+      }),
+      snap({
+        city_id: "a",
+        sample_count: 4,
+        avg_temp_f: 43,
+        captured_at: "2026-11-07T10:00:00.000Z",
+      }),
+      snap({
+        city_id: "a",
+        sample_count: 1,
+        avg_temp_f: LONE_MIN,
+        captured_at: "2026-11-07T09:00:00.000Z",
+      }),
+      snap({
+        city_id: "lone",
+        sample_count: 1,
+        avg_temp_f: 30,
+        captured_at: "2026-11-07T12:00:00.000Z",
+      }),
     ]);
     const map = await listFreezeMapSparklines(7);
     expect(map.get("a")).toEqual([43, 41]);

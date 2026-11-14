@@ -7,7 +7,8 @@ const es: AuthHandoffMessages = {
     heading: "Invitación al hogar",
     aHousehold: "un hogar",
     invalid: "Este enlace de invitación no es válido.",
-    expired: "Esta invitación caducó. Pide a la persona propietaria del hogar que te envíe una nueva.",
+    expired:
+      "Esta invitación caducó. Pide a la persona propietaria del hogar que te envíe una nueva.",
     alreadyAccepted: "Esta invitación ya fue aceptada.",
     openHousehold: "Abrir hogar",
     invited: "Te invitaron a compartir sensores en {household}.",
@@ -19,7 +20,8 @@ const es: AuthHandoffMessages = {
     signInOrRegister: "Inicia sesión o regístrate con el correo invitado para aceptar.",
     signIn: "Iniciar sesión",
     createAccount: "Crear cuenta",
-    signedInMismatch: "Sesión iniciada como {email}. Cierra sesión y usa la dirección invitada para unirte.",
+    signedInMismatch:
+      "Sesión iniciada como {email}. Cierra sesión y usa la dirección invitada para unirte.",
     signInAs: "Iniciar sesión como {email}",
     signInAsInvited: "Iniciar sesión con el correo invitado",
     signedInAs: "Sesión iniciada como {email}",
@@ -32,9 +34,11 @@ const es: AuthHandoffMessages = {
       title: "Volver a Bay Buddy",
       description: "Termina el inicio de sesión en ProbeHarbor volviendo a Bay Buddy.",
       open: "Abrir Bay Buddy",
-      handoff: "Si Bay Buddy está esperando, debería continuar automáticamente. Si no, toca el botón de abajo.",
+      handoff:
+        "Si Bay Buddy está esperando, debería continuar automáticamente. Si no, toca el botón de abajo.",
       close: "Puedes cerrar esta pestaña cuando Bay Buddy muestre el estado en vivo de tu garaje.",
-      missing: "Esta página te devuelve a Bay Buddy después de iniciar sesión. Abre Bay Buddy y elige Connect de nuevo.",
+      missing:
+        "Esta página te devuelve a Bay Buddy después de iniciar sesión. Abre Bay Buddy y elige Connect de nuevo.",
     },
     desktop: {
       title: "Volver a ProbeHarbor Desktop",

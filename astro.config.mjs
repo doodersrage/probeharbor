@@ -1,17 +1,17 @@
 // @ts-check
-import { defineConfig, memoryCache, fontProviders } from 'astro/config';
+import { defineConfig, memoryCache, fontProviders } from "astro/config";
 
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from "@tailwindcss/vite";
 
-import sitemap from '@astrojs/sitemap';
+import sitemap from "@astrojs/sitemap";
 
-import cloudflare from '@astrojs/cloudflare';
+import cloudflare from "@astrojs/cloudflare";
 
-import preact from '@astrojs/preact';
+import preact from "@astrojs/preact";
 
-import sentry from '@sentry/astro';
+import sentry from "@sentry/astro";
 
-import { buildPublicSitemapUrls } from './src/lib/sitemapPages.ts';
+import { buildPublicSitemapUrls } from "./src/lib/sitemapPages.ts";
 
 const site = process.env.SITE_URL?.replace(/\/+$/, "") || "https://probeharbor.dev";
 const sentryDsn = process.env.SENTRY_DSN?.trim() || process.env.PUBLIC_SENTRY_DSN?.trim() || "";
@@ -47,17 +47,17 @@ export default defineConfig({
   site,
 
   server: {
-    host: true
+    host: true,
   },
 
   adapter: cloudflare({
-    imageService: 'passthrough',
-    prerenderEnvironment: 'node',
+    imageService: "passthrough",
+    prerenderEnvironment: "node",
   }),
-  
+
   image: {
     service: {
-      entrypoint: '@astrojs/cloudflare/image-service',
+      entrypoint: "@astrojs/cloudflare/image-service",
     },
   },
 
@@ -65,26 +65,36 @@ export default defineConfig({
     plugins: [tailwindcss()],
     define: {
       // DSN is public by design; expose for the browser SDK.
-      'import.meta.env.PUBLIC_SENTRY_DSN': JSON.stringify(
+      "import.meta.env.PUBLIC_SENTRY_DSN": JSON.stringify(
         process.env.PUBLIC_SENTRY_DSN?.trim() || sentryDsn,
       ),
-      'import.meta.env.SENTRY_DSN': JSON.stringify(sentryDsn),
+      "import.meta.env.SENTRY_DSN": JSON.stringify(sentryDsn),
       // Date-based version from scripts/app-version.mjs, set by the deploy workflow.
-      'import.meta.env.APP_VERSION': defineProcessEnv('APP_VERSION'),
+      "import.meta.env.APP_VERSION": defineProcessEnv("APP_VERSION"),
       // Stripe display/price IDs are not PUBLIC_-prefixed, so Vite skips them unless defined.
-      'import.meta.env.STRIPE_DISPLAY_MEMBER_MONTHLY': defineProcessEnv('STRIPE_DISPLAY_MEMBER_MONTHLY'),
-      'import.meta.env.STRIPE_DISPLAY_MEMBER_ANNUAL': defineProcessEnv('STRIPE_DISPLAY_MEMBER_ANNUAL'),
-      'import.meta.env.STRIPE_DISPLAY_PRO_MONTHLY': defineProcessEnv('STRIPE_DISPLAY_PRO_MONTHLY'),
-      'import.meta.env.STRIPE_DISPLAY_PRO_ANNUAL': defineProcessEnv('STRIPE_DISPLAY_PRO_ANNUAL'),
-      'import.meta.env.STRIPE_DISPLAY_PORTFOLIO_MONTHLY': defineProcessEnv('STRIPE_DISPLAY_PORTFOLIO_MONTHLY'),
-      'import.meta.env.STRIPE_DISPLAY_PORTFOLIO_ANNUAL': defineProcessEnv('STRIPE_DISPLAY_PORTFOLIO_ANNUAL'),
-      'import.meta.env.STRIPE_PRICE_ID': defineProcessEnv('STRIPE_PRICE_ID'),
-      'import.meta.env.STRIPE_PRICE_ID_ANNUAL': defineProcessEnv('STRIPE_PRICE_ID_ANNUAL'),
-      'import.meta.env.STRIPE_PRICE_ID_PRO': defineProcessEnv('STRIPE_PRICE_ID_PRO'),
-      'import.meta.env.STRIPE_PRICE_ID_PRO_ANNUAL': defineProcessEnv('STRIPE_PRICE_ID_PRO_ANNUAL'),
-      'import.meta.env.STRIPE_PRICE_ID_PORTFOLIO': defineProcessEnv('STRIPE_PRICE_ID_PORTFOLIO'),
-      'import.meta.env.STRIPE_PRICE_ID_PORTFOLIO_ANNUAL': defineProcessEnv('STRIPE_PRICE_ID_PORTFOLIO_ANNUAL'),
-      'import.meta.env.YUBICO_CLIENT_ID': defineProcessEnv('YUBICO_CLIENT_ID'),
+      "import.meta.env.STRIPE_DISPLAY_MEMBER_MONTHLY": defineProcessEnv(
+        "STRIPE_DISPLAY_MEMBER_MONTHLY",
+      ),
+      "import.meta.env.STRIPE_DISPLAY_MEMBER_ANNUAL": defineProcessEnv(
+        "STRIPE_DISPLAY_MEMBER_ANNUAL",
+      ),
+      "import.meta.env.STRIPE_DISPLAY_PRO_MONTHLY": defineProcessEnv("STRIPE_DISPLAY_PRO_MONTHLY"),
+      "import.meta.env.STRIPE_DISPLAY_PRO_ANNUAL": defineProcessEnv("STRIPE_DISPLAY_PRO_ANNUAL"),
+      "import.meta.env.STRIPE_DISPLAY_PORTFOLIO_MONTHLY": defineProcessEnv(
+        "STRIPE_DISPLAY_PORTFOLIO_MONTHLY",
+      ),
+      "import.meta.env.STRIPE_DISPLAY_PORTFOLIO_ANNUAL": defineProcessEnv(
+        "STRIPE_DISPLAY_PORTFOLIO_ANNUAL",
+      ),
+      "import.meta.env.STRIPE_PRICE_ID": defineProcessEnv("STRIPE_PRICE_ID"),
+      "import.meta.env.STRIPE_PRICE_ID_ANNUAL": defineProcessEnv("STRIPE_PRICE_ID_ANNUAL"),
+      "import.meta.env.STRIPE_PRICE_ID_PRO": defineProcessEnv("STRIPE_PRICE_ID_PRO"),
+      "import.meta.env.STRIPE_PRICE_ID_PRO_ANNUAL": defineProcessEnv("STRIPE_PRICE_ID_PRO_ANNUAL"),
+      "import.meta.env.STRIPE_PRICE_ID_PORTFOLIO": defineProcessEnv("STRIPE_PRICE_ID_PORTFOLIO"),
+      "import.meta.env.STRIPE_PRICE_ID_PORTFOLIO_ANNUAL": defineProcessEnv(
+        "STRIPE_PRICE_ID_PORTFOLIO_ANNUAL",
+      ),
+      "import.meta.env.YUBICO_CLIENT_ID": defineProcessEnv("YUBICO_CLIENT_ID"),
     },
     // Pre-warm Astro Actions runtime so Cloudflare prerender doesn't race
     // a mid-build optimizeDeps reload (missing chunk-*.js in CI).
@@ -101,10 +111,10 @@ export default defineConfig({
   security: {
     // Keep false: companion apps and ingest clients often POST without a browser Origin.
     // Cookie auth relies on SameSite=Lax + Turnstile on public forms.
-    checkOrigin: false
+    checkOrigin: false,
   },
 
-  output: 'server',
+  output: "server",
   integrations: [
     sitemap({
       filter: (page) => isIndexablePublicPage(page),
@@ -140,18 +150,17 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.google(),
-      name: 'Plus Jakarta Sans',
+      name: "Plus Jakarta Sans",
       cssVariable: "--font-sans",
-      subsets: ['latin'],
-      weights: ['400', '600', '700', '800'],
+      subsets: ["latin"],
+      weights: ["400", "600", "700", "800"],
     },
     {
       provider: fontProviders.google(),
-      name: 'JetBrains Mono',
+      name: "JetBrains Mono",
       cssVariable: "--font-mono",
-      subsets: ['latin'],
-      weights: ['500', '600'],
+      subsets: ["latin"],
+      weights: ["500", "600"],
     },
   ],
-  
 });

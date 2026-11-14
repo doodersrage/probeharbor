@@ -1,10 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../../lib/auth";
 import { deleteUserTempFeed } from "../../../../lib/userTempConfig";
-import {
-  redirectUnlessEditor,
-  requireHouseholdEditor,
-} from "../../../../lib/householdAuth";
+import { redirectUnlessEditor, requireHouseholdEditor } from "../../../../lib/householdAuth";
 import { formRedirectPath } from "../../../../lib/siteUrl";
 import { apiLocale } from "../../../../i18n/messages/app/api/common";
 import { apiUserMessages } from "../../../../i18n/messages/app/api/user";

@@ -49,16 +49,30 @@ export default function PasskeyManager({ text: t = en.mfa, locale = "en" }: Prop
       const started = await api({ action: "register_options" });
       if (!started.ok) {
         const error = started.data.error;
-        throw new Error(error === "session_not_fresh" ? t.passkeyFresh : typeof error === "string" && error !== "generic" ? error : t.passkeyFailed);
+        throw new Error(
+          error === "session_not_fresh"
+            ? t.passkeyFresh
+            : typeof error === "string" && error !== "generic"
+              ? error
+              : t.passkeyFailed,
+        );
       }
       const response = await performWebAuthnCreate(started.data.options as Record<string, unknown>);
-      const verified = await api({ action: "register_verify", response, name: t.passkeyDefaultName });
+      const verified = await api({
+        action: "register_verify",
+        response,
+        name: t.passkeyDefaultName,
+      });
       if (!verified.ok) throw new Error(t.passkeyFailed);
       setMessage(t.passkeyAdded);
       await refresh();
     } catch (error) {
       // The browser's own cancel / not-allowed errors aren't translated: show ours.
-      setMessage(error instanceof Error && Object.values(t).includes(error.message) ? error.message : t.passkeyFailed);
+      setMessage(
+        error instanceof Error && Object.values(t).includes(error.message)
+          ? error.message
+          : t.passkeyFailed,
+      );
     } finally {
       setBusy(false);
     }
@@ -83,9 +97,16 @@ export default function PasskeyManager({ text: t = en.mfa, locale = "en" }: Prop
             <li class="flex flex-wrap items-center gap-2" key={p.id}>
               <span>
                 {p.name || t.passkeyDefaultName}
-                {p.createdAt ? ` · ${formatDateTime(p.createdAt, locale, { dateStyle: "medium" })}` : ""}
+                {p.createdAt
+                  ? ` · ${formatDateTime(p.createdAt, locale, { dateStyle: "medium" })}`
+                  : ""}
               </span>
-              <button type="button" class="btn-ghost" disabled={busy} onClick={() => void remove(p.id)}>
+              <button
+                type="button"
+                class="btn-ghost"
+                disabled={busy}
+                onClick={() => void remove(p.id)}
+              >
                 {t.remove}
               </button>
             </li>
@@ -100,7 +121,11 @@ export default function PasskeyManager({ text: t = en.mfa, locale = "en" }: Prop
         <p class="text-sm text-[var(--color-text-muted)] mb-0">{t.passkeyUnsupported}</p>
       )}
       {message && (
-        <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0" role="status" aria-live="polite">
+        <p
+          class="text-sm text-[var(--color-text-muted)] mt-3 mb-0"
+          role="status"
+          aria-live="polite"
+        >
           {message}
         </p>
       )}

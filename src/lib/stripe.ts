@@ -18,9 +18,7 @@ export function createStripeClient(): Stripe {
 }
 
 export function getSiteUrl(request: Request): string {
-  const fromEnv =
-    import.meta.env.SITE_URL?.trim() ||
-    import.meta.env.ORIGIN?.trim();
+  const fromEnv = import.meta.env.SITE_URL?.trim() || import.meta.env.ORIGIN?.trim();
 
   if (fromEnv) {
     return fromEnv.replace(/\/+$/, "");

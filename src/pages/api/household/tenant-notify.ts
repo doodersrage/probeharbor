@@ -29,10 +29,14 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { tenant_error: "1" }));
   }
 
-  const result = await updateTenantNotifySettings(householdId, {
-    email: formData.get("tenant_email")?.toString() ?? null,
-    name: formData.get("tenant_name")?.toString() ?? null,
-  }, apiLocale(context));
+  const result = await updateTenantNotifySettings(
+    householdId,
+    {
+      email: formData.get("tenant_email")?.toString() ?? null,
+      name: formData.get("tenant_name")?.toString() ?? null,
+    },
+    apiLocale(context),
+  );
 
   if (result.error) {
     // The settings page shows this text as is (already in the request language).

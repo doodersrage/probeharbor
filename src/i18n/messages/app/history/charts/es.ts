@@ -7,13 +7,16 @@ const es: AppHistoryChartsMessages = {
     house: "Casa",
     comparisonOverlay: "Gris = superposición de comparación",
     notEnough: "Todavía no hay suficientes lecturas para un gráfico.",
-    emptySteps: "{addDevice} → comprueba que lleguen los datos → {openLive} para que se acumulen las lecturas.",
+    emptySteps:
+      "{addDevice} → comprueba que lleguen los datos → {openLive} para que se acumulen las lecturas.",
     emptyAddDevice: "Añade un dispositivo",
     emptyOpenLive: "abre En vivo",
     summaryLatest: "Última lectura: {temp} {unit}.",
     summaryRange: "Rango en este periodo: de {min} {unit} a {max} {unit}.",
-    summaryBelow: "Bajó hasta la línea de helada de {freeze} {unit} o por debajo en {below} de {total} lecturas.",
-    summaryAbove: "Se mantuvo por encima de la línea de helada de {freeze} {unit} durante todo el periodo.",
+    summaryBelow:
+      "Bajó hasta la línea de helada de {freeze} {unit} o por debajo en {below} de {total} lecturas.",
+    summaryAbove:
+      "Se mantuvo por encima de la línea de helada de {freeze} {unit} durante todo el periodo.",
     hoverAlert: "Alerta: {title}",
     guideFreeze: "Helada",
     guideTarget: "Objetivo",
@@ -54,20 +57,28 @@ const es: AppHistoryChartsMessages = {
     dewPointF: "punto de rocío {unit}",
     dashed: " (discontinua)",
     humidityFrom: " · de {probe}",
-    humidityNoDew: " (sin punto de rocío: este sensor de humedad no tiene una temperatura asociada)",
+    humidityNoDew:
+      " (sin punto de rocío: este sensor de humedad no tiene una temperatura asociada)",
     humidityFromLabel: "Humedad de",
     humidityAuto: "Lectura más reciente",
     humidityAll: "Todas las sondas",
-    humidityAllLegend: "Humedad (línea fina) y punto de rocío (discontinua) en el color de cada sonda",
+    humidityAllLegend:
+      "Humedad (línea fina) y punto de rocío (discontinua) en el color de cada sonda",
     chartTips: "Consejos del gráfico",
-    tipsExpanded: "Vista ampliada: arrastra para seleccionar un rango, usa la rueda para hacer zoom y pulsa Esc o Cerrar para salir.",
-    tipsDefault: "Arrastra para seleccionar un rango (Mayús + arrastrar con zoom), usa la rueda para hacer zoom, Enlace para copiar esta ventana y PNG para guardarla.",
-    tipsAlerts: " Las marcas de colores señalan alertas: pasa el cursor cerca de una para ver los detalles.",
-    tipsTrace: "La línea se vuelve {cool} en la línea de helada o por debajo, y {warm} en la línea alta o por encima.",
-    tipsDew: " La línea discontinua del punto de rocío se calcula con la temperatura y la humedad: las superficies más frías que ella se humedecen.",
+    tipsExpanded:
+      "Vista ampliada: arrastra para seleccionar un rango, usa la rueda para hacer zoom y pulsa Esc o Cerrar para salir.",
+    tipsDefault:
+      "Arrastra para seleccionar un rango (Mayús + arrastrar con zoom), usa la rueda para hacer zoom, Enlace para copiar esta ventana y PNG para guardarla.",
+    tipsAlerts:
+      " Las marcas de colores señalan alertas: pasa el cursor cerca de una para ver los detalles.",
+    tipsTrace:
+      "La línea se vuelve {cool} en la línea de helada o por debajo, y {warm} en la línea alta o por encima.",
+    tipsDew:
+      " La línea discontinua del punto de rocío se calcula con la temperatura y la humedad: las superficies más frías que ella se humedecen.",
     tipsCool: "fría",
     tipsWarm: "cálida",
-    canvasAria: "Gráfico de líneas interactivo: {title}. Arrastra para seleccionar un rango, usa la rueda para hacer zoom o amplíalo para verlo más grande.",
+    canvasAria:
+      "Gráfico de líneas interactivo: {title}. Arrastra para seleccionar un rango, usa la rueda para hacer zoom o amplíalo para verlo más grande.",
     tooltipAlert: "Alerta",
     tooltipDew: "rocío",
     optionsSummary: "Opciones del gráfico: líneas guía",
@@ -85,9 +96,12 @@ const es: AppHistoryChartsMessages = {
     summaryDoors: "Periodos con una puerta abierta sombreados en el gráfico: {list}.",
     summaryDoorItem: "{door}: {count}",
     doorLegendTitle: "Mostrar u ocultar cuándo estuvo abierta {door}",
-    tipsDoors: " Las franjas sombreadas muestran cuándo un sensor de puerta de tu hogar indicó que estaba abierta; si hay más de una puerta, cada una tiene su propia fila encima del gráfico.",
-    doorLanesMore: " Las filas muestran hasta {max} puertas; las demás siguen sombreadas y aparecen al pasar el cursor.",
-    doorsUnavailable: "No se pudo cargar el historial de puertas, así que las puertas abiertas no aparecen sombreadas.",
+    tipsDoors:
+      " Las franjas sombreadas muestran cuándo un sensor de puerta de tu hogar indicó que estaba abierta; si hay más de una puerta, cada una tiene su propia fila encima del gráfico.",
+    doorLanesMore:
+      " Las filas muestran hasta {max} puertas; las demás siguen sombreadas y aparecen al pasar el cursor.",
+    doorsUnavailable:
+      "No se pudo cargar el historial de puertas, así que las puertas abiertas no aparecen sombreadas.",
   },
   freezeHours: {
     title: "Horas a temperatura de congelación o menos por día",
@@ -100,10 +114,12 @@ const es: AppHistoryChartsMessages = {
     coldest: "Mínima",
     hoursValue: "{hours} h",
     summaryNone: "Días mostrados: {days}. Ningún tiempo a {temp}{unit} o menos.",
-    summarySome: "Días mostrados: {days}. Días con tiempo a {temp}{unit} o menos: {belowDays}. Máximo: {hours} h el {day}.",
+    summarySome:
+      "Días mostrados: {days}. Días con tiempo a {temp}{unit} o menos: {belowDays}. Máximo: {hours} h el {day}.",
   },
   probeSpread: {
-    summary: "Última diferencia entre la sonda más cálida y la más fría: {spread} {unit} ({min} {unit} a {max} {unit}). Mayor diferencia en este periodo: {widest} {unit}, a las {time}.",
+    summary:
+      "Última diferencia entre la sonda más cálida y la más fría: {spread} {unit} ({min} {unit} a {max} {unit}). Mayor diferencia en este periodo: {widest} {unit}, a las {time}.",
     title: "Dispersión entre sondas ({unit})",
     closeExpandedAria: "Cerrar el gráfico ampliado",
     close: "Cerrar",
@@ -114,7 +130,8 @@ const es: AppHistoryChartsMessages = {
     warmest: "Más cálida",
   },
   indoorOutdoor: {
-    summary: "Última lectura: interior {indoor} {unit}, exterior {outdoor} {unit}, una diferencia de {delta} {unit}. En este periodo la diferencia fue de {min} {unit} a {max} {unit}.",
+    summary:
+      "Última lectura: interior {indoor} {unit}, exterior {outdoor} {unit}, una diferencia de {delta} {unit}. En este periodo la diferencia fue de {min} {unit} a {max} {unit}.",
     title: "Diferencia interior-exterior",
     closeExpandedAria: "Cerrar el gráfico ampliado",
     controlsAria: "Controles del gráfico",

@@ -4,7 +4,8 @@ const ptBr: DemoIslandMessages = {
   temps: {
     loading: "Carregando temperaturas das sondas…",
     title: "Oficina de demonstração simulada",
-    subtitle: "Temperaturas das sondas modeladas a partir do clima real da região. Crie uma conta grátis (sem cartão) para conectar seus próprios sensores.",
+    subtitle:
+      "Temperaturas das sondas modeladas a partir do clima real da região. Crie uma conta grátis (sem cartão) para conectar seus próprios sensores.",
     loadError: "Não foi possível carregar as temperaturas das sondas",
     rateLimited: "Muitas solicitações. Tente de novo em instantes.",
     retry: "Tentar de novo",
@@ -12,7 +13,7 @@ const ptBr: DemoIslandMessages = {
     emptyCta: "Criar conta grátis e conectar sondas",
     disabled: "Desativado",
     noProbes: "Ainda não há sondas atribuídas a este feed.",
-    noReading: "Nenhuma leitura disponível para a chave \"{key}\"",
+    noReading: 'Nenhuma leitura disponível para a chave "{key}"',
     updated: "Atualizado às {time}. Próxima atualização em {seconds} s.",
     nextRefresh: "Próxima atualização em {seconds} s.",
     footerCta: "Conta grátis: conecte suas sondas",
@@ -43,7 +44,8 @@ const ptBr: DemoIslandMessages = {
     mapAttribution: "· © OpenStreetMap · clima © OpenWeather",
   },
   history: {
-    unavailable: "O gráfico de 7 dias está indisponível no momento. As leituras ao vivo acima continuam atualizando.",
+    unavailable:
+      "O gráfico de 7 dias está indisponível no momento. As leituras ao vivo acima continuam atualizando.",
     loading: "Carregando os últimos 7 dias…",
     outdoor: "Externo",
     outdoorAt: "Externo ({location})",
@@ -55,12 +57,14 @@ const ptBr: DemoIslandMessages = {
     house: "Casa",
     comparisonOverlay: "Cinza = sobreposição de comparação",
     notEnough: "Ainda não há leituras suficientes para um gráfico.",
-    emptySteps: "{addDevice} → confira se os dados estão chegando → {openLive} para que as leituras se acumulem.",
+    emptySteps:
+      "{addDevice} → confira se os dados estão chegando → {openLive} para que as leituras se acumulem.",
     emptyAddDevice: "Adicione um dispositivo",
     emptyOpenLive: "abra o Live",
     summaryLatest: "Última leitura: {temp} {unit}.",
     summaryRange: "Faixa neste período: de {min} {unit} a {max} {unit}.",
-    summaryBelow: "Chegou à linha de congelamento de {freeze} {unit} ou abaixo dela em {below} de {total} leituras.",
+    summaryBelow:
+      "Chegou à linha de congelamento de {freeze} {unit} ou abaixo dela em {below} de {total} leituras.",
     summaryAbove: "Ficou acima da linha de congelamento de {freeze} {unit} durante todo o período.",
     hoverAlert: "Alerta: {title}",
     guideFreeze: "Congelamento",
@@ -102,20 +106,27 @@ const ptBr: DemoIslandMessages = {
     dewPointF: "ponto de orvalho {unit}",
     dashed: " (tracejado)",
     humidityFrom: " · de {probe}",
-    humidityNoDew: " (sem ponto de orvalho: este sensor de umidade não tem uma temperatura correspondente)",
+    humidityNoDew:
+      " (sem ponto de orvalho: este sensor de umidade não tem uma temperatura correspondente)",
     humidityFromLabel: "Umidade de",
     humidityAuto: "Leitura mais recente",
     humidityAll: "Todas as sondas",
     humidityAllLegend: "Umidade (linha fina) e ponto de orvalho (tracejada) na cor de cada sonda",
     chartTips: "Dicas do gráfico",
-    tipsExpanded: "Visão ampliada: arraste para selecionar um período, role para dar zoom e use Esc ou Fechar para sair.",
-    tipsDefault: "Arraste para selecionar um período (Shift + arrastar com zoom), role para dar zoom, use Link para copiar esta janela e PNG para salvar.",
-    tipsAlerts: " As marcas coloridas indicam alertas: passe o mouse perto de uma para ver os detalhes.",
-    tipsTrace: "A linha fica {cool} na linha de congelamento ou abaixo dela, e {warm} na linha alta ou acima dela.",
-    tipsDew: " A linha tracejada do ponto de orvalho é calculada a partir da temperatura e da umidade: superfícies mais frias que ela ficam úmidas.",
+    tipsExpanded:
+      "Visão ampliada: arraste para selecionar um período, role para dar zoom e use Esc ou Fechar para sair.",
+    tipsDefault:
+      "Arraste para selecionar um período (Shift + arrastar com zoom), role para dar zoom, use Link para copiar esta janela e PNG para salvar.",
+    tipsAlerts:
+      " As marcas coloridas indicam alertas: passe o mouse perto de uma para ver os detalhes.",
+    tipsTrace:
+      "A linha fica {cool} na linha de congelamento ou abaixo dela, e {warm} na linha alta ou acima dela.",
+    tipsDew:
+      " A linha tracejada do ponto de orvalho é calculada a partir da temperatura e da umidade: superfícies mais frias que ela ficam úmidas.",
     tipsCool: "fria",
     tipsWarm: "quente",
-    canvasAria: "Gráfico de linhas interativo: {title}. Arraste para selecionar um período, role para dar zoom ou amplie para ver maior.",
+    canvasAria:
+      "Gráfico de linhas interativo: {title}. Arraste para selecionar um período, role para dar zoom ou amplie para ver maior.",
     tooltipAlert: "Alerta",
     tooltipDew: "orvalho",
     optionsSummary: "Opções do gráfico: linhas de referência",
@@ -133,9 +144,12 @@ const ptBr: DemoIslandMessages = {
     summaryDoors: "Períodos com porta aberta sombreados no gráfico: {list}.",
     summaryDoorItem: "{door}: {count}",
     doorLegendTitle: "Mostrar ou ocultar quando {door} estava aberta",
-    tipsDoors: " As faixas sombreadas mostram quando um sensor de porta da sua casa informou que estava aberta; com mais de uma porta, cada uma tem sua própria linha acima do gráfico.",
-    doorLanesMore: " As linhas mostram até {max} portas; as outras continuam sombreadas e aparecem ao passar o mouse.",
-    doorsUnavailable: "Não foi possível carregar o histórico das portas, então as portas abertas não aparecem sombreadas.",
+    tipsDoors:
+      " As faixas sombreadas mostram quando um sensor de porta da sua casa informou que estava aberta; com mais de uma porta, cada uma tem sua própria linha acima do gráfico.",
+    doorLanesMore:
+      " As linhas mostram até {max} portas; as outras continuam sombreadas e aparecem ao passar o mouse.",
+    doorsUnavailable:
+      "Não foi possível carregar o histórico das portas, então as portas abertas não aparecem sombreadas.",
   },
 };
 

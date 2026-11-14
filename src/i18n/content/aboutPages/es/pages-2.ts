@@ -6,13 +6,15 @@ export default {
     title: "Cableado del Arduino pin a pin",
     description:
       "Asignación exacta de GPIO para la LCD 16×2, las líneas de datos de la DHT22, el transistor de la retroiluminación y los pines SPI reservados.",
-    summary: "Mapa pin a pin que coincide con el constructor de LiquidCrystal y las líneas de datos de los sensores en el firmware.",
+    summary:
+      "Mapa pin a pin que coincide con el constructor de LiquidCrystal y las líneas de datos de los sensores en el firmware.",
   },
   "liquid-crystal-gpio-map": {
     title: "Mapa de GPIO de LiquidCrystal",
     description:
       "Haz coincidir los pines RS, E y D4–D7 de LiquidCrystal con el constructor de tu sketch para que la LCD se encienda en lugar de quedarse en blanco.",
-    summary: "Los pines de la LCD deben coincidir exactamente con el sketch o la pantalla se queda en blanco.",
+    summary:
+      "Los pines de la LCD deben coincidir exactamente con el sketch o la pantalla se queda en blanco.",
   },
   "dht22-data-line-wiring": {
     title: "Cableado de la línea de datos de la DHT22",
@@ -51,7 +53,8 @@ export default {
     title: "Errores de lectura y reintentos de la DHT22",
     description:
       "Gestiona los fallos de checksum y de temporización con esperas progresivas para que una mala lectura no deje el feed en blanco.",
-    summary: "La lógica de reintentos y los intervalos mínimos mantienen estable el JSON en instalaciones con corrientes.",
+    summary:
+      "La lógica de reintentos y los intervalos mínimos mantienen estable el JSON en instalaciones con corrientes.",
   },
   "lcd-local-display-format": {
     title: "Formato de la pantalla LCD local",
@@ -63,7 +66,8 @@ export default {
     title: "Lógica de promedio con doble sonda",
     description:
       "Calcula la media JSON con las sondas que funcionan bien y conserva los valores por zona en la LCD y en los feeds.",
-    summary: "Cuándo promediar, cuándo excluir una lectura fallida y cómo usa el historial el valor avg.",
+    summary:
+      "Cuándo promediar, cuándo excluir una lectura fallida y cómo usa el historial el valor avg.",
   },
   "sensor-warm-up-time": {
     title: "Tiempo de calentamiento del sensor DHT22",
@@ -96,7 +100,8 @@ export default {
     title: "Flujo de datos de monitoreo de principio a fin",
     description:
       "Sigue una lectura desde el cable de la sonda pasando por los feeds JSON y el almacenamiento hasta el panel de historial con sesión iniciada.",
-    summary: "Hardware, relay, consulta del sitio web, almacenamiento en Postgres (Neon) y exportación CSV en un solo flujo.",
+    summary:
+      "Hardware, relay, consulta del sitio web, almacenamiento en Postgres (Neon) y exportación CSV en un solo flujo.",
   },
   "debugging-stale-readings": {
     title: "Depurar lecturas desactualizadas",
@@ -122,7 +127,8 @@ export default {
     title: "Configurar feeds de temperatura",
     description:
       "Añade URLs de feeds HTTPS de consulta, define la clave raíz del JSON, asigna etiquetas a las sondas y comprueba que Home se actualiza.",
-    summary: "URLs de feeds de consulta, clave raíz del JSON, etiquetas de sondas y solución de problemas.",
+    summary:
+      "URLs de feeds de consulta, clave raíz del JSON, etiquetas de sondas y solución de problemas.",
   },
   "group-membership-model": {
     title: "Modelo de pertenencia a grupos",
@@ -142,7 +148,8 @@ export default {
     title: "Guía de alertas ante olas de frío",
     description:
       "Qué hacer antes, durante y después de una alerta de helada: umbrales, horas de silencio, confirmación y escalado.",
-    summary: "Una lista práctica para que las alertas de helada se conviertan en acción y no en ruido.",
+    summary:
+      "Una lista práctica para que las alertas de helada se conviertan en acción y no en ruido.",
   },
   "alert-channel-cookbook": {
     title: "Recetario de canales de alerta",
@@ -160,13 +167,15 @@ export default {
     title: "Guía de puerta del garaje + alerta de frío",
     description:
       "Recibe una alerta si la puerta queda abierta mientras baja la temperatura: ingesta del contacto de puerta, reglas combinadas y pasos para el hogar.",
-    summary: "Evita la pérdida de calor y el riesgo de helada cuando la puerta del garaje se queda abierta en una noche fría.",
+    summary:
+      "Evita la pérdida de calor y el riesgo de helada cuando la puerta del garaje se queda abierta en una noche fría.",
   },
   "personal-weather-stations": {
     title: "Estaciones meteorológicas personales (Ambient y WeatherFlow)",
     description:
       "Usa una estación Ambient Weather o WeatherFlow Tempest en tu patio para tener contexto exterior, alertas del NWS (EE. UU.) y riesgo de helada previsto.",
-    summary: "Conecta ProbeHarbor a la estación de tu propiedad: mejor contexto de helada a nivel de tu terreno.",
+    summary:
+      "Conecta ProbeHarbor a la estación de tu propiedad: mejor contexto de helada a nivel de tu terreno.",
   },
   "freeze-thaw-flood-playbook": {
     title: "Guía de inundaciones por helada y deshielo",
@@ -193,19 +202,22 @@ export default {
     title: "Alta del kit por código QR",
     description:
       "Pega en la carcasa de la sonda un código QR con la URL de ingesta para dar de alta el dispositivo en ProbeHarbor con un escaneo, sin teclear claves largas.",
-    summary: "Codifica la URL de ingesta en una etiqueta para que dar de alta hardware nuevo sea un solo escaneo con el móvil.",
+    summary:
+      "Codifica la URL de ingesta en una etiqueta para que dar de alta hardware nuevo sea un solo escaneo con el móvil.",
   },
   "esp32-ota-firmware": {
     title: "OTA del ESP32 y reporte de batería",
     description:
       "Mantén al día el firmware de las sondas ESP32 con OTA por la LAN mientras la ingesta push envía la batería y el RSSI a la API HTTP de ProbeHarbor.",
-    summary: "Mantén actualizado el firmware del ESP32 en tu LAN mientras la telemetría se envía a la API de ingesta.",
+    summary:
+      "Mantén actualizado el firmware del ESP32 en tu LAN mientras la telemetría se envía a la API de ingesta.",
   },
   "zapier-make-recipes": {
     title: "Recetas para Zapier y Make.com",
     description:
       "Conecta los webhooks de alertas y las acciones de pausa de ProbeHarbor a Zapier o Make.com para automatizar heladas, fugas y vacaciones sin código.",
-    summary: "Envía alertas a Zapier/Make y pausa las notificaciones desde otros flujos de domótica.",
+    summary:
+      "Envía alertas a Zapier/Make y pausa las notificaciones desde otros flujos de domótica.",
   },
   "esphome-shelly-recipes": {
     title: "Recetas para ESPHome y Shelly",
@@ -267,25 +279,29 @@ export default {
     title: "Ingesta con CH32V RISC-V",
     description:
       "Envía lecturas DS18B20 desde un WCH CH32V307 con WCHNET en C y Ethernet integrado. MounRiver Studio y el mismo relay HTTPS en la LAN que el Uno.",
-    summary: "Sonda Ethernet RISC-V: WCHNET en C sobre CH32V307, DS18B20 en PB12, HTTP a un relay TLS en la LAN.",
+    summary:
+      "Sonda Ethernet RISC-V: WCHNET en C sobre CH32V307, DS18B20 en PB12, HTTP a un relay TLS en la LAN.",
   },
   "avr-asm-ingest": {
     title: "Ingesta en ensamblador AVR",
     description:
       "Envía lecturas DS18B20 desde un ATmega328P en ensamblador GNU AVR con un shield W5100. avr-gcc, avrdude y el mismo relay HTTPS en la LAN que el Uno.",
-    summary: "Uno + W5100 en ensamblador GNU AVR: DS18B20 en D7, HTTP a un relay TLS en la LAN, sin Arduino C.",
+    summary:
+      "Uno + W5100 en ensamblador GNU AVR: DS18B20 en D7, HTTP a un relay TLS en la LAN, sin Arduino C.",
   },
   "cellular-ingest": {
     title: "Ingesta por red móvil (Particle Boron)",
     description:
       "Envía lecturas DS18B20 desde una Particle Boron por LTE mediante un webhook de la Console. Para sitios remotos sin Wi-Fi en el garaje.",
-    summary: "Sonda de heladas LTE: Particle Boron + DS18B20 en D2, webhook de Particle a la ingesta HTTPS.",
+    summary:
+      "Sonda de heladas LTE: Particle Boron + DS18B20 en D2, webhook de Particle a la ingesta HTTPS.",
   },
   "pic18-ethernet-ingest": {
     title: "Ingesta Ethernet con PIC18F67J60",
     description:
       "Envía lecturas DS18B20 desde un PIC18F67J60 con la pila TCP/IP de Microchip en MPLAB X y el mismo relay HTTPS en la LAN que el Uno.",
-    summary: "Sonda Ethernet de Microchip: MLA en C sobre PIC18F67J60, DS18B20 en RD0, HTTP a un relay TLS en la LAN.",
+    summary:
+      "Sonda Ethernet de Microchip: MLA en C sobre PIC18F67J60, DS18B20 en RD0, HTTP a un relay TLS en la LAN.",
   },
   "teensy41-ingest": {
     title: "Ingesta Ethernet con Teensy 4.1",
@@ -304,6 +320,7 @@ export default {
     title: "Instalar como app (PWA)",
     description:
       "Instala ProbeHarbor como PWA en escritorio, Android o iOS para acceder más rápido al panel y recibir, si quieres, alertas push de helada y fugas.",
-    summary: "Pasos de instalación en escritorio, Android e iOS, y los límites de Web Push en dispositivos Apple.",
+    summary:
+      "Pasos de instalación en escritorio, Android e iOS, y los límites de Web Push en dispositivos Apple.",
   },
 } satisfies AboutPageOverlay;

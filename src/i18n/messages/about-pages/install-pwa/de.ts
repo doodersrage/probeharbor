@@ -1,4 +1,3 @@
-
 /**
  * /about/install-pwa body copy. `*Html` keys are trusted inline HTML (English hrefs).
  * Browser menu labels (Install app, Add to Home Screen…) are translated to what the

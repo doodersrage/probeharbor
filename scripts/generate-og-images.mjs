@@ -119,15 +119,24 @@ POST /api/ingest/{key}</span></pre></div>`,
 
 const browser = await chromium.launch();
 
-const mapPage = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
+const mapPage = await browser.newPage({
+  viewport: { width: 1280, height: 900 },
+  deviceScaleFactor: 1,
+});
 await mapPage.goto("https://probeharbor.dev/freeze-map", { waitUntil: "domcontentloaded" });
 await mapPage.waitForTimeout(6000);
-await mapPage.addStyleTag({ content: ".leaflet-control-zoom, .leaflet-control-layers { display: none !important; }" });
+await mapPage.addStyleTag({
+  content: ".leaflet-control-zoom, .leaflet-control-layers { display: none !important; }",
+});
 const mapShot = `data:image/png;base64,${(await mapPage.locator(".leaflet-container").first().screenshot()).toString("base64")}`;
 await mapPage.close();
-cards["og-freeze-map.jpg"].visual = `<div class="panel" style="width:600px"><img src="${mapShot}" width="600" alt=""></div>`;
+cards["og-freeze-map.jpg"].visual =
+  `<div class="panel" style="width:600px"><img src="${mapShot}" width="600" alt=""></div>`;
 
-const page1200 = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
+const page1200 = await browser.newPage({
+  viewport: { width: 1200, height: 630 },
+  deviceScaleFactor: 1,
+});
 for (const [file, card] of Object.entries(cards)) {
   await page1200.setContent(page(card), { waitUntil: "networkidle" });
   await page1200.evaluate(() => document.fonts.ready);

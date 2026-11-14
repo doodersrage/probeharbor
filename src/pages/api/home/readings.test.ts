@@ -23,8 +23,7 @@ vi.mock("../../../lib/tempFeedConfig", () => ({
 
 const mockGetUserDevicesAsTempConfig = vi.fn();
 vi.mock("../../../lib/devices", () => ({
-  getUserDevicesAsTempConfig: (...a: unknown[]) =>
-    mockGetUserDevicesAsTempConfig(...a),
+  getUserDevicesAsTempConfig: (...a: unknown[]) => mockGetUserDevicesAsTempConfig(...a),
 }));
 
 const mockFetchLatestSensorValues = vi.fn();
@@ -152,9 +151,7 @@ describe("GET /api/home/readings", () => {
     const response = await GET(makeContext("?save=0&space=basement"));
     const body = (await response.json()) as { sensors: unknown };
 
-    expect(mockFetchTemps).toHaveBeenCalledWith(
-      expect.objectContaining({ saveToDatabase: false }),
-    );
+    expect(mockFetchTemps).toHaveBeenCalledWith(expect.objectContaining({ saveToDatabase: false }));
     expect(body.sensors).toEqual([]);
   });
 });

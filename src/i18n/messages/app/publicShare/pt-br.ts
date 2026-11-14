@@ -110,7 +110,8 @@ const ptBr: PublicShareMessages = {
   pipeFreeze: {
     heading: "Previsão de congelamento de canos · {place}",
     thisArea: "Esta região",
-    source: "Mínimas externas do National Weather Service (EUA), avaliadas para canos em espaços sem aquecimento.",
+    source:
+      "Mínimas externas do National Weather Service (EUA), avaliadas para canos em espaços sem aquecimento.",
     hours: "{hours} h a {temp} ou menos",
     needCoords: "Adicione ?lat= e ?lon= de um local nos EUA.",
     usOnly: "A previsão cobre apenas locais nos EUA.",

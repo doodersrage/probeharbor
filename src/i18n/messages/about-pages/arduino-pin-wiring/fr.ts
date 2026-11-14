@@ -1,4 +1,3 @@
-
 /** /about/arduino-pin-wiring body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 const ETH_LINK =
   '<a class="text-link" href="https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest" target="_blank" rel="noreferrer"><code>ethernet_dht22_ingest</code></a>';
@@ -7,7 +6,8 @@ import type { ArduinoPinWiringMessages } from "./en";
 const fr: ArduinoPinWiringMessages = {
   introHtml:
     "Le schéma broche par broche ci-dessous correspond au constructeur <code>LiquidCrystal</code> du firmware et aux lignes de données DHT22 utilisées dans ce projet. Servez-vous-en pour vérifier les fils de liaison par rapport au sketch, surtout si des broches analogiques servent d’E/S numériques.",
-  diagramAlt: "Schéma de câblage broche par broche d’un Arduino Uno relié à un écran LCD et à deux capteurs DHT22",
+  diagramAlt:
+    "Schéma de câblage broche par broche d’un Arduino Uno relié à un écran LCD et à deux capteurs DHT22",
   diagramCaption:
     "RS, RW, EN, lignes de données, rétroéclairage et les deux broches de données DHT22 associés à des broches précises de l’Uno.",
   lcdTitle: "Brochage de l’écran LCD 16×2",

@@ -49,7 +49,14 @@ describe("ensureDiscoveredPushSensors", () => {
       { key: "0", label: "Probe 0", kind: "temp" as never, unit: "C" },
     ]);
 
-    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith("house-1", "device-1", "0", "Probe 0", "temp", "C");
+    expect(mockUpsertDeviceSensor).toHaveBeenCalledWith(
+      "house-1",
+      "device-1",
+      "0",
+      "Probe 0",
+      "temp",
+      "C",
+    );
     expect(mockDefaultUnitForKind).not.toHaveBeenCalled();
     expect(result).toEqual({ created: 1, error: null });
   });
@@ -144,12 +151,9 @@ describe("ensureDiscoveredPushSensors", () => {
     it("only creates the humidity sibling when the temperature row already exists", async () => {
       const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-      const result = await ensureDiscoveredPushSensors(
-        "house-1",
-        "device-1",
-        discovered,
-        [sensor({ key: "0", kind: "temperature" })],
-      );
+      const result = await ensureDiscoveredPushSensors("house-1", "device-1", discovered, [
+        sensor({ key: "0", kind: "temperature" }),
+      ]);
 
       expect(mockUpsertDeviceSensor).toHaveBeenCalledTimes(1);
       expect(mockUpsertDeviceSensor).toHaveBeenCalledWith(
@@ -166,12 +170,9 @@ describe("ensureDiscoveredPushSensors", () => {
     it("only creates the temperature row when the humidity sibling already exists", async () => {
       const { ensureDiscoveredPushSensors } = await import("./pushSensorDiscovery");
 
-      const result = await ensureDiscoveredPushSensors(
-        "house-1",
-        "device-1",
-        discovered,
-        [sensor({ key: "0", kind: "humidity" })],
-      );
+      const result = await ensureDiscoveredPushSensors("house-1", "device-1", discovered, [
+        sensor({ key: "0", kind: "humidity" }),
+      ]);
 
       expect(mockUpsertDeviceSensor).toHaveBeenCalledTimes(1);
       expect(mockUpsertDeviceSensor).toHaveBeenCalledWith(

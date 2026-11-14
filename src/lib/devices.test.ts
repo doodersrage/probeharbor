@@ -51,9 +51,39 @@ describe("devicesToTempConfig", () => {
       device({
         id: "d1",
         sensors: [
-          { id: "s1", device_id: "d1", key: "temp1", label: "Bay 1", kind: "temperature", unit: "F", visible: true, sort_order: 0, offset_num: 0 },
-          { id: "s2", device_id: "d1", key: "temp1", label: "Bay 1 humidity", kind: "humidity", unit: "%", visible: true, sort_order: 1, offset_num: 0 },
-          { id: "s3", device_id: "d1", key: "door1", label: "Door", kind: "door" as never, unit: null, visible: true, sort_order: 2, offset_num: 0 },
+          {
+            id: "s1",
+            device_id: "d1",
+            key: "temp1",
+            label: "Bay 1",
+            kind: "temperature",
+            unit: "F",
+            visible: true,
+            sort_order: 0,
+            offset_num: 0,
+          },
+          {
+            id: "s2",
+            device_id: "d1",
+            key: "temp1",
+            label: "Bay 1 humidity",
+            kind: "humidity",
+            unit: "%",
+            visible: true,
+            sort_order: 1,
+            offset_num: 0,
+          },
+          {
+            id: "s3",
+            device_id: "d1",
+            key: "door1",
+            label: "Door",
+            kind: "door" as never,
+            unit: null,
+            visible: true,
+            sort_order: 2,
+            offset_num: 0,
+          },
         ],
       }),
     ];
@@ -67,7 +97,17 @@ describe("devicesToTempConfig", () => {
       device({
         id: "d1",
         sensors: [
-          { id: "s1", device_id: "d1", key: "temp1", label: "Bay 1 humidity", kind: "temperature", unit: "F", visible: true, sort_order: 0, offset_num: 0 },
+          {
+            id: "s1",
+            device_id: "d1",
+            key: "temp1",
+            label: "Bay 1 humidity",
+            kind: "temperature",
+            unit: "F",
+            visible: true,
+            sort_order: 0,
+            offset_num: 0,
+          },
         ],
       }),
     ];
@@ -82,8 +122,28 @@ describe("devicesToTempConfig", () => {
       device({
         id: "d1",
         sensors: [
-          { id: "s1", device_id: "d1", key: "temp1", label: "A", kind: "temperature", unit: "F", visible: true, sort_order: 0, offset_num: 0 },
-          { id: "s2", device_id: "d1", key: "temp1", label: "A dup", kind: "temperature", unit: "F", visible: true, sort_order: 1, offset_num: 0 },
+          {
+            id: "s1",
+            device_id: "d1",
+            key: "temp1",
+            label: "A",
+            kind: "temperature",
+            unit: "F",
+            visible: true,
+            sort_order: 0,
+            offset_num: 0,
+          },
+          {
+            id: "s2",
+            device_id: "d1",
+            key: "temp1",
+            label: "A dup",
+            kind: "temperature",
+            unit: "F",
+            visible: true,
+            sort_order: 1,
+            offset_num: 0,
+          },
         ],
       }),
     ];
@@ -104,8 +164,22 @@ describe("createPushDevice", () => {
     await createPushDevice("house-1", "New device", "hash-abc", "gtm_abc", "  Attic  ");
     await createPushDevice("house-1", "New device", "hash-abc", "gtm_abc", "   ");
 
-    expect(neonDevices.createPushDevice).toHaveBeenNthCalledWith(1, "house-1", "New device", "hash-abc", "gtm_abc", "Attic");
-    expect(neonDevices.createPushDevice).toHaveBeenNthCalledWith(2, "house-1", "New device", "hash-abc", "gtm_abc", null);
+    expect(neonDevices.createPushDevice).toHaveBeenNthCalledWith(
+      1,
+      "house-1",
+      "New device",
+      "hash-abc",
+      "gtm_abc",
+      "Attic",
+    );
+    expect(neonDevices.createPushDevice).toHaveBeenNthCalledWith(
+      2,
+      "house-1",
+      "New device",
+      "hash-abc",
+      "gtm_abc",
+      null,
+    );
   });
 });
 
@@ -123,7 +197,12 @@ describe("renamePushDevice", () => {
     const { renamePushDevice } = await import("./devices");
 
     expect(await renamePushDevice("house-1", "d1", "  Garage  ")).toEqual({ error: null });
-    expect(neonDevices.renamePushDevice).toHaveBeenCalledWith("house-1", "d1", "Garage", "Failed to rename device");
+    expect(neonDevices.renamePushDevice).toHaveBeenCalledWith(
+      "house-1",
+      "d1",
+      "Garage",
+      "Failed to rename device",
+    );
   });
 });
 
@@ -165,7 +244,11 @@ describe("updateDeviceSensor", () => {
     neonDevices.updateDeviceSensor.mockResolvedValue({ error: null });
     const { updateDeviceSensor } = await import("./devices");
 
-    await updateDeviceSensor("house-1", "s1", "d1", { key: "temp1", label: "Bay", kind: "temperature" });
+    await updateDeviceSensor("house-1", "s1", "d1", {
+      key: "temp1",
+      label: "Bay",
+      kind: "temperature",
+    });
 
     expect(neonDevices.updateDeviceSensor.mock.calls[0]?.[3]?.visible).toBeUndefined();
   });
@@ -175,20 +258,42 @@ describe("updateDeviceDetails", () => {
   it("saves name, space, and enabled for a push device", async () => {
     neonDevices.getDeviceSource.mockResolvedValue("push");
     neonDevices.updateDeviceDetails.mockResolvedValue({ error: null });
-    expect(await updateDeviceDetails("house-1", "d1", { name: " Attic ", space: " Attic ", enabled: false })).toEqual({ error: null });
-    expect(neonDevices.updateDeviceDetails).toHaveBeenCalledWith("house-1", "d1", true, "Attic", false, "Attic");
+    expect(
+      await updateDeviceDetails("house-1", "d1", {
+        name: " Attic ",
+        space: " Attic ",
+        enabled: false,
+      }),
+    ).toEqual({ error: null });
+    expect(neonDevices.updateDeviceDetails).toHaveBeenCalledWith(
+      "house-1",
+      "d1",
+      true,
+      "Attic",
+      false,
+      "Attic",
+    );
   });
 
   it("tells the save it's a pull feed, which owns its own name and on/off", async () => {
     neonDevices.getDeviceSource.mockResolvedValue("pull_url");
     neonDevices.updateDeviceDetails.mockResolvedValue({ error: null });
     await updateDeviceDetails("house-1", "d1", { name: "Renamed", space: "", enabled: false });
-    expect(neonDevices.updateDeviceDetails).toHaveBeenCalledWith("house-1", "d1", false, "Renamed", false, null);
+    expect(neonDevices.updateDeviceDetails).toHaveBeenCalledWith(
+      "house-1",
+      "d1",
+      false,
+      "Renamed",
+      false,
+      null,
+    );
   });
 
   it("refuses a blank name and devices from other properties", async () => {
     neonDevices.getDeviceSource.mockResolvedValueOnce("push");
-    expect((await updateDeviceDetails("house-1", "d1", { name: "  ", space: null })).error).toMatch(/Name/);
+    expect((await updateDeviceDetails("house-1", "d1", { name: "  ", space: null })).error).toMatch(
+      /Name/,
+    );
     neonDevices.getDeviceSource.mockResolvedValueOnce(null);
     expect((await updateDeviceDetails("house-1", "x", { space: null })).error).toMatch(/not found/);
     neonDevices.getDeviceSource.mockRejectedValueOnce(new Error("db down"));
@@ -202,7 +307,19 @@ describe("updateDeviceMeta", () => {
     const { updateDeviceMeta } = await import("./devices");
     await updateDeviceMeta("house-1", "d1", { ingest_key_enc: "x" });
     await updateDeviceMeta("house-1", "d1", { ingest_key_enc: "x" }, { touchLastSeen: false });
-    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(1, "house-1", "d1", { ingest_key_enc: "x" }, true);
-    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(2, "house-1", "d1", { ingest_key_enc: "x" }, false);
+    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(
+      1,
+      "house-1",
+      "d1",
+      { ingest_key_enc: "x" },
+      true,
+    );
+    expect(neonIngest.updateDeviceMeta).toHaveBeenNthCalledWith(
+      2,
+      "house-1",
+      "d1",
+      { ingest_key_enc: "x" },
+      false,
+    );
   });
 });

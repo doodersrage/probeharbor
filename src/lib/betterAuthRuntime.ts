@@ -15,7 +15,11 @@ import { getRuntimeEnv } from "./runtimeEnv";
 import { buildGitHubOAuthCallbackUrl, buildSiteUrl } from "./siteUrl";
 import type { OAuthProviderId } from "./betterAuthOAuth";
 import type { YubiKeyVerifier } from "./betterAuthYubiKey";
-import { getYubiKeyPublicIdsFromUser, isYubiKeyOtpConfigured, verifyYubiKeyOtpWithYubiCloud } from "./yubikeyOtp";
+import {
+  getYubiKeyPublicIdsFromUser,
+  isYubiKeyOtpConfigured,
+  verifyYubiKeyOtpWithYubiCloud,
+} from "./yubikeyOtp";
 import { getUserMetadata } from "./db/userMetadata";
 
 /** YubiCloud check against the user's enrolled keys (user_profiles.metadata). */
@@ -48,7 +52,11 @@ function oauthApps(request: Request | undefined, siteUrl: string) {
   return {
     ...app("google", "GOOGLE", `${siteUrl}/api/auth/callback/google`),
     ...app("discord", "DISCORD", `${siteUrl}/api/auth/callback/discord`),
-    ...app("github", "GITHUB", request ? buildGitHubOAuthCallbackUrl(request) : `${siteUrl}/api/auth/github/callback`),
+    ...app(
+      "github",
+      "GITHUB",
+      request ? buildGitHubOAuthCallbackUrl(request) : `${siteUrl}/api/auth/github/callback`,
+    ),
   };
 }
 
@@ -72,9 +80,17 @@ export async function withBetterAuth<T>(
       oauth: oauthApps(request, siteUrl),
       verifyYubiKey: isYubiKeyOtpConfigured() ? verifyYubiKey : undefined,
       sendVerificationEmail: ({ email, token }) =>
-        sendConfirmationEmail(email, accountEmailLink(siteUrl, "signup", token), options.emailLocale ?? "en"),
+        sendConfirmationEmail(
+          email,
+          accountEmailLink(siteUrl, "signup", token),
+          options.emailLocale ?? "en",
+        ),
       sendResetPassword: ({ email, token }) =>
-        sendPasswordResetEmail(email, accountEmailLink(siteUrl, "recovery", token), options.emailLocale ?? "en"),
+        sendPasswordResetEmail(
+          email,
+          accountEmailLink(siteUrl, "recovery", token),
+          options.emailLocale ?? "en",
+        ),
     });
     return await run(auth);
   } finally {
@@ -88,10 +104,16 @@ export async function withBetterAuth<T>(
  * the session cookie, the two-factor challenge, or the error page) is
  * returned as is.
  */
-export function forwardOAuthCallback(request: Request, provider: OAuthProviderId): Promise<Response> {
+export function forwardOAuthCallback(
+  request: Request,
+  provider: OAuthProviderId,
+): Promise<Response> {
   return withBetterAuth(request, (auth) => {
     const incoming = new URL(request.url);
-    const target = new URL(`/api/better-auth/callback/${provider}${incoming.search}`, buildSiteUrl(request));
+    const target = new URL(
+      `/api/better-auth/callback/${provider}${incoming.search}`,
+      buildSiteUrl(request),
+    );
     return auth.handler(new Request(target, { method: "GET", headers: request.headers }));
   });
 }

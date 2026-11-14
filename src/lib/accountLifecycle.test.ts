@@ -107,9 +107,7 @@ describe("cancelStripeSubscriptionForDeletedAccount", () => {
     mockCancel.mockRejectedValueOnce(new Error("Stripe unreachable"));
     const { cancelStripeSubscriptionForDeletedAccount } = await import("./accountLifecycle");
 
-    await expect(
-      cancelStripeSubscriptionForDeletedAccount("user-1"),
-    ).resolves.toBeUndefined();
+    await expect(cancelStripeSubscriptionForDeletedAccount("user-1")).resolves.toBeUndefined();
 
     expect(mockNotifyOps).toHaveBeenCalledWith(
       expect.stringContaining("Stripe cancellation failed"),

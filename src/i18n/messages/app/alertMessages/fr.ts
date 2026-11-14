@@ -2,12 +2,14 @@ import type { AlertMessages } from "./en";
 
 const fr: AlertMessages = {
   threshold: {
-    freezeDetail: "{label} est à {temp} {unit} (au seuil de gel de {threshold} {unit} ou en dessous).",
+    freezeDetail:
+      "{label} est à {temp} {unit} (au seuil de gel de {threshold} {unit} ou en dessous).",
     freezeDetailDwell:
       "{label} est à {temp} {unit} (au seuil de gel de {threshold} {unit} ou en dessous depuis {minutes}+ min).",
     /** Appended to a freeze line when the reading is a few minutes old or more. */
     readingAge: " Dernière mesure {age}.",
-    humidityDetail: "L’humidité de {label} est de {humidity} % (au-dessus du seuil de {threshold} %).",
+    humidityDetail:
+      "L’humidité de {label} est de {humidity} % (au-dessus du seuil de {threshold} %).",
     titleFreeze: "Gel : {label} {temp} {unit}",
     titleMore: " (+{count} autres)",
     titleHumidityNote: ", humidité élevée",
@@ -22,15 +24,18 @@ const fr: AlertMessages = {
   power: {
     title: "Courant coupé",
     detail: "{label} signale une coupure de courant.",
-    footer: "Les chauffages, câbles chauffants et pompes de relevage sur ce circuit sont peut-être coupés aussi.",
+    footer:
+      "Les chauffages, câbles chauffants et pompes de relevage sur ce circuit sont peut-être coupés aussi.",
   },
   forecast: {
     title: "Risque de gel prévu",
-    detail: "La prévision extérieure atteint {temp} {unit} d’ici {hours} h (seuil de gel {threshold} {unit}).",
+    detail:
+      "La prévision extérieure atteint {temp} {unit} d’ici {hours} h (seuil de gel {threshold} {unit}).",
   },
   rate: {
     title: "Variation rapide de température",
-    detail: "{label} a varié de {delta} {unit} au cours de la dernière heure (seuil ±{threshold} {unit}).",
+    detail:
+      "{label} a varié de {delta} {unit} au cours de la dernière heure (seuil ±{threshold} {unit}).",
   },
   battery: {
     title: "Batterie d’appareil faible",
@@ -75,7 +80,8 @@ const fr: AlertMessages = {
   recovery: {
     freezeTitle: "Rétabli : les températures sont revenues à la normale",
     freezeBodyEmpty: "Retour à la normale. L’alerte est close ; rien à faire.",
-    freezeBody: "Retour à la normale : {temps} (seuil de gel {threshold} {unit}). L’alerte est close ; rien à faire.",
+    freezeBody:
+      "Retour à la normale : {temps} (seuil de gel {threshold} {unit}). L’alerte est close ; rien à faire.",
     freezeTemp: "{label} {temp} {unit}",
     floodTitle: "Rétabli : les capteurs de fuite sont secs",
     floodBody:
@@ -86,12 +92,15 @@ const fr: AlertMessages = {
     outageTitle: "Rétabli : les appareils envoient de nouveau des mesures",
     outageBody: "Tous les appareils se sont de nouveau manifestés. L’alerte de panne est close.",
     stuckTitle: "Rétabli : les mesures de la sonde varient de nouveau",
-    stuckBody: "La sonde qui semblait bloquée envoie de nouveau des températures qui varient. L’alerte est close.",
+    stuckBody:
+      "La sonde qui semblait bloquée envoie de nouveau des températures qui varient. L’alerte est close.",
     doorTitle: "Rétabli : alerte de porte levée",
-    doorBody: "La règle de porte qui a déclenché l’alerte ne correspond plus (par exemple, la porte a été fermée). L’alerte est close.",
+    doorBody:
+      "La règle de porte qui a déclenché l’alerte ne correspond plus (par exemple, la porte a été fermée). L’alerte est close.",
   },
   context: {
-    doorOpen: "Un capteur de porte est ouvert. Attendez-vous à une perte de chaleur plus rapide jusqu’à sa fermeture.",
+    doorOpen:
+      "Un capteur de porte est ouvert. Attendez-vous à une perte de chaleur plus rapide jusqu’à sa fermeture.",
   },
   delivery: {
     smsLine: "{title} : {body}",

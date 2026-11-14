@@ -24,11 +24,10 @@ function decodeBase64Url(value) {
   return Buffer.from(padded + pad, "base64");
 }
 
-const keyPair = await webcrypto.subtle.generateKey(
-  { name: "ECDSA", namedCurve: "P-256" },
-  true,
-  ["sign", "verify"],
-);
+const keyPair = await webcrypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [
+  "sign",
+  "verify",
+]);
 
 const publicJwk = await webcrypto.subtle.exportKey("jwk", keyPair.publicKey);
 const privateJwk = await webcrypto.subtle.exportKey("jwk", keyPair.privateKey);

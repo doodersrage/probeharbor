@@ -1,11 +1,14 @@
 import * as Sentry from "@sentry/astro";
 import { appVersion } from "./src/lib/appVersion";
-import { SENTRY_DATA_COLLECTION, scrubBreadcrumb, scrubDeep, scrubEvent, scrubSpan } from "./src/lib/sentryScrub";
+import {
+  SENTRY_DATA_COLLECTION,
+  scrubBreadcrumb,
+  scrubDeep,
+  scrubEvent,
+  scrubSpan,
+} from "./src/lib/sentryScrub";
 
-const dsn =
-  import.meta.env.PUBLIC_SENTRY_DSN?.trim() ||
-  import.meta.env.SENTRY_DSN?.trim() ||
-  "";
+const dsn = import.meta.env.PUBLIC_SENTRY_DSN?.trim() || import.meta.env.SENTRY_DSN?.trim() || "";
 
 // Production builds only: `astro dev` errors (Vite reloads, HMR) aren't user-facing.
 const release = appVersion();

@@ -119,17 +119,15 @@ const INDEXED_TRANSLATION_STATIC_PATHS = [
 
 /** English paths whose translations are indexable (see INDEXED_TRANSLATION_STATIC_PATHS). */
 export function getIndexedTranslationPaths(): string[] {
-  return [...new Set([...INDEXED_TRANSLATION_STATIC_PATHS, ...answers.map((answer) => answer.path)])];
+  return [
+    ...new Set([...INDEXED_TRANSLATION_STATIC_PATHS, ...answers.map((answer) => answer.path)]),
+  ];
 }
 
 /** Pathnames for every public page that should appear in the XML sitemap. */
 export function getPublicSitemapPaths(): string[] {
   const aboutPaths = aboutPages
-    .filter(
-      (page) =>
-        !EXCLUDED_ABOUT_SLUGS.has(page.slug) &&
-        !NOINDEX_ABOUT_SLUGS.has(page.slug),
-    )
+    .filter((page) => !EXCLUDED_ABOUT_SLUGS.has(page.slug) && !NOINDEX_ABOUT_SLUGS.has(page.slug))
     .map((page) => `/about/${page.slug}`);
   const storyPaths = stories.map((story) => story.path);
   const answerPaths = answers.map((answer) => answer.path);

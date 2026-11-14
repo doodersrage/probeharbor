@@ -12,10 +12,11 @@ export type TenantNotifySettings = {
   name: string | null;
 };
 
-export async function getTenantNotifySettings(
-  householdId: string,
-): Promise<TenantNotifySettings> {
-  const { data } = (await getHouseholdFields(householdId, ["tenant_notify_email", "tenant_notify_name"])) as {
+export async function getTenantNotifySettings(householdId: string): Promise<TenantNotifySettings> {
+  const { data } = (await getHouseholdFields(householdId, [
+    "tenant_notify_email",
+    "tenant_notify_name",
+  ])) as {
     data: { tenant_notify_email: string | null; tenant_notify_name: string | null } | null;
   };
 
@@ -37,7 +38,10 @@ export async function updateTenantNotifySettings(
     return { error: alertJobsMessages(locale).tenant.errors.invalidEmail };
   }
 
-  return updateHouseholdFields(householdId, { tenant_notify_email: email, tenant_notify_name: name });
+  return updateHouseholdFields(householdId, {
+    tenant_notify_email: email,
+    tenant_notify_name: name,
+  });
 }
 
 export async function sendTenantFreezeRelay(input: {

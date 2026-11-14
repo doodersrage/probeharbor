@@ -43,9 +43,16 @@ export const stories: Story[] = [
       "Weekly digest for the household; family live link for a neighbor who watches the house",
     ],
     timeline: [
-      { time: "2:14 a.m.", detail: "The garage crosses 34°F; ProbeHarbor texts both owners and posts to a Telegram family channel." },
+      {
+        time: "2:14 a.m.",
+        detail:
+          "The garage crosses 34°F; ProbeHarbor texts both owners and posts to a Telegram family channel.",
+      },
       { time: "2:22 a.m.", detail: "One owner power-cycles the heater through a smart plug." },
-      { time: "3:05 a.m.", detail: "The chart shows the temperature recovering, well before the pipes reach 32°F." },
+      {
+        time: "3:05 a.m.",
+        detail: "The chart shows the temperature recovering, well before the pipes reach 32°F.",
+      },
     ],
     outcome:
       "A heater failure is only a disaster if nobody finds out until morning. The threshold sits a couple of degrees above freezing so there is time to respond, and SMS is what wakes you up at 2 a.m.; email alone is easy to sleep through.",
@@ -80,9 +87,18 @@ export const stories: Story[] = [
       "A local friend invited to the household as a backup responder",
     ],
     timeline: [
-      { time: "Tue 11:40 a.m.", detail: "A power blip resets the furnace; the crawlspace drifts below 36°F." },
-      { time: "Tue 11:41 a.m.", detail: "Push and email go out; the owner calls the local friend." },
-      { time: "Tue 1:10 p.m.", detail: "The friend resets the furnace and the chart climbs before the evening cold." },
+      {
+        time: "Tue 11:40 a.m.",
+        detail: "A power blip resets the furnace; the crawlspace drifts below 36°F.",
+      },
+      {
+        time: "Tue 11:41 a.m.",
+        detail: "Push and email go out; the owner calls the local friend.",
+      },
+      {
+        time: "Tue 1:10 p.m.",
+        detail: "The friend resets the furnace and the chart climbs before the evening cold.",
+      },
     ],
     outcome:
       "Empty buildings fail silently. The value is the lead time: a Tuesday alert instead of discovering frozen pipes on Friday.",
@@ -117,9 +133,19 @@ export const stories: Story[] = [
       "Outbound webhook (Pro) into Home Assistant to switch off a smart plug",
     ],
     timeline: [
-      { time: "Fri 6:05 p.m.", detail: "The closet reaches 96°F after a fan fails; the heat rule fires and the webhook reaches Home Assistant." },
-      { time: "Fri 6:06 p.m.", detail: "An automation powers down non-critical gear; SMS confirms the alert." },
-      { time: "Sat morning", detail: "The owner replaces the fan; the history chart shows how fast the closet heated." },
+      {
+        time: "Fri 6:05 p.m.",
+        detail:
+          "The closet reaches 96°F after a fan fails; the heat rule fires and the webhook reaches Home Assistant.",
+      },
+      {
+        time: "Fri 6:06 p.m.",
+        detail: "An automation powers down non-critical gear; SMS confirms the alert.",
+      },
+      {
+        time: "Sat morning",
+        detail: "The owner replaces the fan; the history chart shows how fast the closet heated.",
+      },
     ],
     outcome:
       "The same probes and ingest path cover both failure modes: freeze on the garage side, heat in the closet.",
@@ -154,9 +180,18 @@ export const stories: Story[] = [
       "Indoor garage compared against outdoor weather on the dashboard",
     ],
     timeline: [
-      { time: "Week 1", detail: "Alerts fire on clear, still nights; it looks like ordinary cold." },
-      { time: "Week 2", detail: "History and CSV show the door-side probe dipping first every time." },
-      { time: "Week 3", detail: "After weatherstripping the door, nights stay above the threshold." },
+      {
+        time: "Week 1",
+        detail: "Alerts fire on clear, still nights; it looks like ordinary cold.",
+      },
+      {
+        time: "Week 2",
+        detail: "History and CSV show the door-side probe dipping first every time.",
+      },
+      {
+        time: "Week 3",
+        detail: "After weatherstripping the door, nights stay above the threshold.",
+      },
     ],
     outcome:
       "An alert tells you something is wrong; history tells you where. A cheap seal fix beats waiting for the night it gets cold enough to split a pipe.",
@@ -191,9 +226,18 @@ export const stories: Story[] = [
       "Family live link for a relative who lives nearby",
     ],
     timeline: [
-      { time: "Sun 4:05 a.m.", detail: "The crawlspace crosses 36°F with a foundation vent stuck open." },
-      { time: "Sun 4:06 a.m.", detail: "SMS and email go out; the nearby relative checks the live link and heads over." },
-      { time: "Sun 5:20 a.m.", detail: "The vent is closed and the chart starts climbing before the morning low." },
+      {
+        time: "Sun 4:05 a.m.",
+        detail: "The crawlspace crosses 36°F with a foundation vent stuck open.",
+      },
+      {
+        time: "Sun 4:06 a.m.",
+        detail: "SMS and email go out; the nearby relative checks the live link and heads over.",
+      },
+      {
+        time: "Sun 5:20 a.m.",
+        detail: "The vent is closed and the chart starts climbing before the morning low.",
+      },
     ],
     outcome:
       "Nobody checks a crawlspace at 4 a.m. A probe on the pipe run, not at the hatch, is what turns a stuck vent into a quick fix.",
@@ -227,9 +271,19 @@ export const stories: Story[] = [
       "Vacation mode off before a trip, so alerts keep flowing",
     ],
     timeline: [
-      { time: "Wed", detail: "A forecast warning flags Thursday's overnight low; the owner confirms the heater is on." },
-      { time: "Thu 1:50 a.m.", detail: "The heater trips its GFCI; the shop crosses 34°F and the email goes out." },
-      { time: "Thu 2:15 a.m.", detail: "The owner resets the circuit through a smart plug before the sink line freezes." },
+      {
+        time: "Wed",
+        detail:
+          "A forecast warning flags Thursday's overnight low; the owner confirms the heater is on.",
+      },
+      {
+        time: "Thu 1:50 a.m.",
+        detail: "The heater trips its GFCI; the shop crosses 34°F and the email goes out.",
+      },
+      {
+        time: "Thu 2:15 a.m.",
+        detail: "The owner resets the circuit through a smart plug before the sink line freezes.",
+      },
     ],
     outcome:
       "Detached buildings lose heat fast. A forecast warning covers the planning window; the threshold alert covers the failure itself.",
@@ -264,9 +318,20 @@ export const stories: Story[] = [
       "Email plus SMS (Pro); the freeze threshold keeps watching the same space",
     ],
     timeline: [
-      { time: "3:08 a.m.", detail: "The flood contact reports wet; SMS and email go out even though vacation mode is on." },
-      { time: "3:20 a.m.", detail: "A neighbor with the family live link checks in and finds a drip at the drain valve." },
-      { time: "Morning", detail: "A plumber tightens the valve while the slab is still mostly dry." },
+      {
+        time: "3:08 a.m.",
+        detail:
+          "The flood contact reports wet; SMS and email go out even though vacation mode is on.",
+      },
+      {
+        time: "3:20 a.m.",
+        detail:
+          "A neighbor with the family live link checks in and finds a drip at the drain valve.",
+      },
+      {
+        time: "Morning",
+        detail: "A plumber tightens the valve while the slab is still mostly dry.",
+      },
     ],
     outcome:
       "Leaks don't wait for a freeze. Flood contacts share the same device and ingest path, and wet alerts get through even when vacation mode mutes the routine ones.",

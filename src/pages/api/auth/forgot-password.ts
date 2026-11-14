@@ -8,10 +8,7 @@ export const POST: APIRoute = async (context) => {
   const formData = await request.formData();
   const email = formData.get("email")?.toString()?.trim();
 
-  const turnstile = await verifyTurnstileToken(
-    getTurnstileToken(formData),
-    clientAddress,
-  );
+  const turnstile = await verifyTurnstileToken(getTurnstileToken(formData), clientAddress);
 
   if (!turnstile.success) {
     return redirect("/forgot-password?error=verification");
@@ -24,6 +21,8 @@ export const POST: APIRoute = async (context) => {
   // Same answer whether or not the address has an account.
   await withBetterAuth(request, (auth) => auth.api.requestPasswordReset({ body: { email } }), {
     emailLocale: requestLocale(context),
-  }).catch((error: unknown) => console.error("password reset request failed:", error instanceof Error ? error.message : error));
+  }).catch((error: unknown) =>
+    console.error("password reset request failed:", error instanceof Error ? error.message : error),
+  );
   return redirect("/forgot-password?sent=1");
 };

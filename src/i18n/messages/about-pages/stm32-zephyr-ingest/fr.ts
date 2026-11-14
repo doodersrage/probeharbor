@@ -1,4 +1,3 @@
-
 /**
  * /about/stm32-zephyr-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Commands, pin names and
@@ -23,10 +22,12 @@ const fr: Stm32ZephyrIngestMessages = {
     colBuy: "Acheter",
     boardWhy: "Cortex-M7, MAC + PHY Ethernet intégrés, débogueur ST-LINK. Pas de module Wi‑Fi.",
     probePart: "DS18B20 étanche",
-    probeWhyHtml: "Sonde pour tuyau ou vide sanitaire. Donnée sur la broche Arduino <strong>D4</strong> (PF14).",
+    probeWhyHtml:
+      "Sonde pour tuyau ou vide sanitaire. Donnée sur la broche Arduino <strong>D4</strong> (PF14).",
     amazon: "Amazon",
     resistorPart: "Résistance de 4,7 kΩ",
-    resistorWhy: "Pull-up entre la donnée du DS18B20 et le 3,3 V. N’alimentez pas la sonde depuis la broche 5 V Arduino.",
+    resistorWhy:
+      "Pull-up entre la donnée du DS18B20 et le 3,3 V. N’alimentez pas la sonde depuis la broche 5 V Arduino.",
     amazonResistor: "4,7k sur Amazon",
     ethernetPart: "Prise Ethernet",
     ethernetWhy: "DHCP sur votre LAN. Un Pi, un NAS ou un portable fait tourner le relais TLS.",

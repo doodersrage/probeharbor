@@ -24,11 +24,17 @@ export function listLowBatteryDevices(
     .sort((a, b) => a.batteryPct - b.batteryPct);
 }
 
-export function lowBatteryBannerMessage(devices: LowBatteryDevice[], locale: Locale = "en"): string {
+export function lowBatteryBannerMessage(
+  devices: LowBatteryDevice[],
+  locale: Locale = "en",
+): string {
   if (devices.length === 0) return "";
   const t = libTextMessages(locale).lowBattery;
   if (devices.length === 1) {
-    return fmt(t.single, { name: devices[0]!.name, pct: libNumber(devices[0]!.batteryPct, locale) });
+    return fmt(t.single, {
+      name: devices[0]!.name,
+      pct: libNumber(devices[0]!.batteryPct, locale),
+    });
   }
   const names = devices
     .slice(0, 3)

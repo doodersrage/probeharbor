@@ -1,4 +1,3 @@
-
 /**
  * /about/esp32-freeze-kit body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Dashboard UI paths such as
@@ -51,14 +50,16 @@ const de: Esp32FreezeKitMessages = {
     pullupWhy: "Auf der 1-Wire-Datenleitung erforderlich, falls dem Fühler keiner beiliegt",
     amazonResistor: "4,7k bei Amazon",
     powerPart: "USB-Stromversorgung",
-    powerWhy: "Steckernetzteil oder USB-C-Kabel; die Platine nach Möglichkeit wärmer unterbringen als den Fühler",
+    powerWhy:
+      "Steckernetzteil oder USB-C-Kabel; die Platine nach Möglichkeit wärmer unterbringen als den Fühler",
     powerBuyHtml: "Beliebiges 5-V-USB-Netzteil mit ≥500&nbsp;mA",
   },
   bomNoteHtml:
     "Produktangebote wechseln: Nimm Adafruit als Referenz-Stückliste. Die Amazon-<code>/dp/</code>-Links in <code>bomLinks</code> sind Partnerprogramm-taugliche Alternativen, solange das Angebot noch besteht. Generische „ESP32 + DS18B20 Kit“-Bundles enthalten oft einen DHT11 statt eines wasserdichten Fühlers – lass die besser liegen.",
   wire: {
     title: "Verdrahten",
-    diagramAlt: "Schaltplan: ESP32 DevKit an wasserdichten DS18B20 mit 4,7-Kiloohm-Pull-up an GPIO 4",
+    diagramAlt:
+      "Schaltplan: ESP32 DevKit an wasserdichten DS18B20 mit 4,7-Kiloohm-Pull-up an GPIO 4",
     captionHtml:
       "Rot → 3,3&nbsp;V, Schwarz → GND, Gelb/Weiß (Daten) → GPIO 4, mit einem 4,7-kΩ-Pull-up zwischen Daten und 3,3&nbsp;V. Der Beispiel-Sketch nutzt standardmäßig GPIO 4.",
     itemsHtml: [

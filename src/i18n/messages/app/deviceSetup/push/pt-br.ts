@@ -25,8 +25,7 @@ const ptBr: DeviceSetupPushMessages = {
   ],
   firstRunHtml:
     'Use <a class="text-link" href="#devices-first-run">Conecte seu primeiro sensor</a> acima para escolher um caminho.',
-  viewOnly:
-    "Acesso somente leitura: a criação de dispositivos está desativada.",
+  viewOnly: "Acesso somente leitura: a criação de dispositivos está desativada.",
   otherDevicesHtml: {
     one: 'Você tem mais {count} dispositivo na aba <a class="text-link" href="/dashboard/devices?view=ops">Dispositivos</a>.',
     other:
@@ -52,8 +51,7 @@ const ptBr: DeviceSetupPushMessages = {
   rename: "Renomear",
   spaceExamplePlaceholder: "garagem, sótão, porão…",
   saveSpace: "Salvar espaço",
-  rotateConfirm:
-    "Trocar esta chave de ingestão? A chave antiga para de funcionar imediatamente.",
+  rotateConfirm: "Trocar esta chave de ingestão? A chave antiga para de funcionar imediatamente.",
   rotateKey: "Trocar chave",
   moveTo: "Mover para",
   transferDevice: "Transferir dispositivo",

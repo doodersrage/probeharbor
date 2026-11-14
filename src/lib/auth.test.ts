@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 const withBetterAuth = vi.fn();
-vi.mock("./betterAuthRuntime", () => ({ withBetterAuth: (...a: unknown[]) => withBetterAuth(...a) }));
+vi.mock("./betterAuthRuntime", () => ({
+  withBetterAuth: (...a: unknown[]) => withBetterAuth(...a),
+}));
 
 import { getAuthFromCookies } from "./auth";
 
@@ -16,7 +18,9 @@ describe("getAuthFromCookies", () => {
 
   it("ignores the old Supabase cookies", async () => {
     const jar: Record<string, string> = { "sb-access-token": "a", "sb-refresh-token": "r" };
-    const result = await getAuthFromCookies({ get: (n: string) => (jar[n] ? { value: jar[n] } : undefined) } as never);
+    const result = await getAuthFromCookies({
+      get: (n: string) => (jar[n] ? { value: jar[n] } : undefined),
+    } as never);
     expect(result.session).toBeNull();
     expect(withBetterAuth).not.toHaveBeenCalled();
   });

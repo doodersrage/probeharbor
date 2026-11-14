@@ -30,7 +30,10 @@ export function resolveRequestLocale(input: RequestLocaleInput): Locale {
   if (isLocalizablePath(input.path)) return input.prefixLocale;
   if (isEnglishOnlyPath(input.path)) return DEFAULT_LOCALE;
   if (input.user) {
-    return getSavedUserLocale(input.user) ?? (isLocale(input.cookieLocale) ? input.cookieLocale : DEFAULT_LOCALE);
+    return (
+      getSavedUserLocale(input.user) ??
+      (isLocale(input.cookieLocale) ? input.cookieLocale : DEFAULT_LOCALE)
+    );
   }
   if (isLocale(input.cookieLocale)) return input.cookieLocale;
   if (input.path.startsWith("/dashboard")) return DEFAULT_LOCALE;

@@ -80,8 +80,6 @@ function mergeChartPoints(points: ChartPoint[], extra: ChartPoint[]): ChartPoint
   return [...merged.values()].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
 }
 
-
-
 type SensorRow = {
   recorded_at: string;
   value_num: number | null;
@@ -101,8 +99,16 @@ type SensorRow = {
 export const CHART_DISPLAY_CAP = 500;
 
 /** `timeZone`: an IANA zone (the browser's, from the ph_tz cookie); omitted = the server's. */
-export function formatReadingTimestamp(timestamp: string, locale: Locale = "en", timeZone?: string): string {
-  return formatDateTime(timestamp, locale, { dateStyle: "medium", timeStyle: "short", ...(timeZone ? { timeZone } : {}) });
+export function formatReadingTimestamp(
+  timestamp: string,
+  locale: Locale = "en",
+  timeZone?: string,
+): string {
+  return formatDateTime(timestamp, locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    ...(timeZone ? { timeZone } : {}),
+  });
 }
 
 export function getReadingFeedName(reading: GarageTempReading): string {
@@ -113,10 +119,7 @@ export function getReadingProbeLabel(reading: GarageTempReading): string {
   return reading.probe_label?.trim() || "Average";
 }
 
-export function pairTempHumidityRows(
-  rows: SensorRow[],
-  userId: string,
-): GarageTempReading[] {
+export function pairTempHumidityRows(rows: SensorRow[], userId: string): GarageTempReading[] {
   const temps = new Map<string, SensorRow>();
   const humidities = new Map<string, SensorRow>();
 
@@ -141,8 +144,7 @@ export function pairTempHumidityRows(
     const humidityKey = `${deviceName}::${probePairingKey(sensor.key)}::${tempRow.recorded_at}`;
     const humidityRow = humidities.get(humidityKey);
     const rawTempF = Number(tempRow.value_num);
-    const tempOffset =
-      typeof sensor.offset_num === "number" ? sensor.offset_num : 0;
+    const tempOffset = typeof sensor.offset_num === "number" ? sensor.offset_num : 0;
     const tempf = applySensorOffset(rawTempF, tempOffset);
     const meta = tempRow.meta ?? {};
     const tempc =
@@ -195,16 +197,11 @@ export function pairTempHumidityRows(
     });
   }
 
-  readings.sort(
-    (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
-  );
+  readings.sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp));
   return readings;
 }
 
-function matchesFilters(
-  reading: GarageTempReading,
-  filters: HistoryFilters,
-): boolean {
+function matchesFilters(reading: GarageTempReading, filters: HistoryFilters): boolean {
   if (filters.feedName && getReadingFeedName(reading) !== filters.feedName) {
     return false;
   }
@@ -308,19 +305,14 @@ export function limitPairedReadingsFairly(
   const picked: GarageTempReading[] = [];
 
   for (const group of groups.values()) {
-    const sorted = [...group].sort(
-      (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-    );
+    const sorted = [...group].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
     if (sorted.length <= perProbe) {
       picked.push(...sorted);
       continue;
     }
     const stride = sorted.length / perProbe;
     for (let index = 0; index < perProbe; index += 1) {
-      const sampleIndex = Math.min(
-        sorted.length - 1,
-        Math.floor(index * stride + stride / 2),
-      );
+      const sampleIndex = Math.min(sorted.length - 1, Math.floor(index * stride + stride / 2));
       picked.push(sorted[sampleIndex]!);
     }
   }
@@ -353,11 +345,7 @@ async function fetchPairedFromSensorReadings(
   let readings = pairTempHumidityRows(rows, userId);
   readings = readings.filter((reading) => matchesFilters(reading, filters));
   if (options.limit && readings.length > options.limit) {
-    readings = limitPairedReadingsFairly(
-      readings,
-      options.limit,
-      options.ascending === true,
-    );
+    readings = limitPairedReadingsFairly(readings, options.limit, options.ascending === true);
   }
   return { readings, error: null };
 }
@@ -409,10 +397,9 @@ export async function fetchGarageTempHistory(
     };
   }
 
-  const readings = pairTempHumidityRows(
-    [...tempPage.rows, ...humidityPage.rows],
-    userId,
-  ).filter((reading) => matchesFilters(reading, filters));
+  const readings = pairTempHumidityRows([...tempPage.rows, ...humidityPage.rows], userId).filter(
+    (reading) => matchesFilters(reading, filters),
+  );
 
   const totalCount = count;
   const totalPages = totalCount === 0 ? 0 : Math.ceil(totalCount / pageSize);
@@ -459,11 +446,17 @@ const SAMPLE_TARGET_TEMP_POINTS = 1000;
 
 /** Buckets per sensor for `tempSensors` temperature sensors: 50–300. */
 export function sampleBucketCount(tempSensors: number): number {
-  return Math.min(300, Math.max(50, Math.floor(SAMPLE_TARGET_TEMP_POINTS / (3 * Math.max(1, tempSensors)))));
+  return Math.min(
+    300,
+    Math.max(50, Math.floor(SAMPLE_TARGET_TEMP_POINTS / (3 * Math.max(1, tempSensors)))),
+  );
 }
 
 /** Split sensors into calls whose expected rows (temperature 3 per bucket, humidity 1) fit one response. */
-export function groupSensorsForSampling<T extends { kind: string }>(sensors: T[], buckets: number): T[][] {
+export function groupSensorsForSampling<T extends { kind: string }>(
+  sensors: T[],
+  buckets: number,
+): T[][] {
   const groups: T[][] = [];
   let current: T[] = [];
   let rows = 0;
@@ -569,11 +562,15 @@ export async function fetchGarageTempChartData(
   // Preferred: sampled readings in a few calls (first/min/max per bucket).
   // Fallback: every raw row, then 500 evenly spaced readings (as before).
   const householdId = await getUserHouseholdId(userId);
-  const sampled = householdId ? await fetchSampledSensorRows(householdId, sinceIso, filters.to) : null;
+  const sampled = householdId
+    ? await fetchSampledSensorRows(householdId, sinceIso, filters.to)
+    : null;
   let fromSensor: { readings: GarageTempReading[]; error: string | null };
   if (sampled) {
     fromSensor = {
-      readings: pairTempHumidityRows(sampled.rows, userId).filter((reading) => matchesFilters(reading, chartFilters)),
+      readings: pairTempHumidityRows(sampled.rows, userId).filter((reading) =>
+        matchesFilters(reading, chartFilters),
+      ),
       error: null,
     };
   } else {
@@ -595,18 +592,26 @@ export async function fetchGarageTempChartData(
     // Temperature charts only plot readings that have a temperature.
     row.tempf == null
       ? []
-      : [{
-          timestamp: row.timestamp,
-          tempf: row.tempf,
-          humidity: row.humidity,
-          probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
-          device: row.feed_name ?? undefined,
-        }],
+      : [
+          {
+            timestamp: row.timestamp,
+            tempf: row.tempf,
+            humidity: row.humidity,
+            probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+            device: row.feed_name ?? undefined,
+          },
+        ],
   );
   // Humidity that paired with no temperature: the chart can still draw it (no dew point).
   const humidityOnly: HumidityOnlyPoint[] = readings.flatMap((row) =>
     row.tempf == null && row.humidity != null && Number.isFinite(row.humidity)
-      ? [{ timestamp: row.timestamp, humidity: row.humidity, probeLabel: row.probe_label?.trim() || row.probe_key || "Humidity" }]
+      ? [
+          {
+            timestamp: row.timestamp,
+            humidity: row.humidity,
+            probeLabel: row.probe_label?.trim() || row.probe_key || "Humidity",
+          },
+        ]
       : [],
   );
 
@@ -626,7 +631,12 @@ export async function fetchGarageTempChartData(
     }
   }
 
-  return { points: disambiguateChartLabels(points), humidityOnly, sampleIntervalMs: sampled?.bucketMs ?? 0, error: null };
+  return {
+    points: disambiguateChartLabels(points),
+    humidityOnly,
+    sampleIntervalMs: sampled?.bucketMs ?? 0,
+    error: null,
+  };
 }
 
 /** Most rollup points handed to a chart; longer series are averaged into wider buckets. */
@@ -652,7 +662,9 @@ export function thinChartPoints(points: ChartPoint[], maxPoints = ROLLUP_POINT_C
     list.sort((x, y) => Date.parse(x.timestamp) - Date.parse(y.timestamp));
     for (let i = 0; i < list.length; i += factor) {
       const chunk = list.slice(i, i + factor);
-      const hums = chunk.map((c) => c.humidity).filter((h): h is number => h != null && Number.isFinite(h));
+      const hums = chunk
+        .map((c) => c.humidity)
+        .filter((h): h is number => h != null && Number.isFinite(h));
       out.push({
         ...chunk[0]!,
         tempf: chunk.reduce((sum, c) => sum + c.tempf, 0) / chunk.length,
@@ -707,7 +719,10 @@ export async function fetchRollupChartPointsForHousehold(
     }));
     return thinChartPoints(rollupRowsToPoints(shaped, filters));
   } catch (error) {
-    console.error("fetchRollupChartPointsForHousehold failed:", error instanceof Error ? error.message : error);
+    console.error(
+      "fetchRollupChartPointsForHousehold failed:",
+      error instanceof Error ? error.message : error,
+    );
     return [];
   }
 }
@@ -748,7 +763,10 @@ function rollupRowsToPoints(rows: RollupRow[], filters: HistoryFilters): ChartPo
       timestamp: row.bucket_start,
       tempf: applySensorOffset(Number(row.avg_num), offsetOf(sensor)),
       // Hourly mean humidity of the paired sensor; null when none (never 0).
-      humidity: humidityByPair.get(`${feedName}::${probePairingKey(sensor.key)}::${Date.parse(row.bucket_start)}`) ?? null,
+      humidity:
+        humidityByPair.get(
+          `${feedName}::${probePairingKey(sensor.key)}::${Date.parse(row.bucket_start)}`,
+        ) ?? null,
       probeLabel,
       device: feedName,
     });
@@ -785,13 +803,15 @@ export async function fetchHouseholdChartData(
     // Temperature charts only plot readings that have a temperature.
     row.tempf == null
       ? []
-      : [{
-          timestamp: row.timestamp,
-          tempf: row.tempf,
-          humidity: row.humidity,
-          probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
-          device: row.feed_name ?? undefined,
-        }],
+      : [
+          {
+            timestamp: row.timestamp,
+            tempf: row.tempf,
+            humidity: row.humidity,
+            probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+            device: row.feed_name ?? undefined,
+          },
+        ],
   );
 
   if (points.length < 10) {
@@ -833,22 +853,20 @@ export async function fetchGarageTempChartDataPriorYear(
     // Temperature charts only plot readings that have a temperature.
     row.tempf == null
       ? []
-      : [{
-          timestamp: row.timestamp,
-          tempf: row.tempf,
-          humidity: row.humidity,
-          probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
-          device: row.feed_name ?? undefined,
-        }],
+      : [
+          {
+            timestamp: row.timestamp,
+            tempf: row.tempf,
+            humidity: row.humidity,
+            probeLabel: row.probe_label?.trim() || row.probe_key || "Probe",
+            device: row.feed_name ?? undefined,
+          },
+        ],
   );
 
   const householdId = await getUserHouseholdId(userId);
   const rollups = householdId
-    ? await fetchRollupChartPointsForHousehold(
-        householdId,
-        start.toISOString(),
-        priorFilters,
-      )
+    ? await fetchRollupChartPointsForHousehold(householdId, start.toISOString(), priorFilters)
     : [];
   const endMs = end.getTime();
   const filteredRollups = rollups.filter((p) => Date.parse(p.timestamp) <= endMs);
@@ -860,9 +878,7 @@ export async function fetchGarageTempChartDataPriorYear(
 }
 
 /** Earliest stored sensor reading for empty-state copy on YoY comparisons. */
-export async function fetchEarliestSensorReadingAt(
-  householdId: string,
-): Promise<string | null> {
+export async function fetchEarliestSensorReadingAt(householdId: string): Promise<string | null> {
   return neonHistory.fetchEarliestSensorReadingAt(householdId);
 }
 

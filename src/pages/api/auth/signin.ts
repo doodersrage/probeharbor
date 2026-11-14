@@ -10,7 +10,11 @@ import {
 import { requestLocale } from "./_locale";
 import { buildMfaChallengeUrl } from "../../../lib/mfa";
 import { getUserMetadata, mergeUserMetadata } from "../../../lib/db/userMetadata";
-import { betterAuthErrorCode, redirectWithAuthCookies, signInErrorFromBetterAuth } from "../../../lib/betterAuthResponse";
+import {
+  betterAuthErrorCode,
+  redirectWithAuthCookies,
+  signInErrorFromBetterAuth,
+} from "../../../lib/betterAuthResponse";
 import { withBetterAuth } from "../../../lib/betterAuthRuntime";
 import { startBetterAuthOAuth } from "../../../lib/betterAuthAppHandoff";
 import type { OAuthProviderId } from "../../../lib/betterAuthOAuth";
@@ -62,10 +66,7 @@ export const POST: APIRoute = async (context) => {
     return started ?? redirect(buildSignInRedirectUrl("oauth_failed"));
   }
 
-  const turnstile = await verifyTurnstileToken(
-    getTurnstileToken(formData),
-    clientAddress,
-  );
+  const turnstile = await verifyTurnstileToken(getTurnstileToken(formData), clientAddress);
 
   if (!turnstile.success) {
     return redirect(buildSignInRedirectUrl("turnstile_failed", email));
@@ -102,7 +103,10 @@ export const POST: APIRoute = async (context) => {
       const meta = await getUserMetadata(body.user.id);
       if (!meta.locale) await mergeUserMetadata(body.user.id, { locale });
     } catch (saveError) {
-      console.error("auth: could not save account language", saveError instanceof Error ? saveError.message : saveError);
+      console.error(
+        "auth: could not save account language",
+        saveError instanceof Error ? saveError.message : saveError,
+      );
     }
   }
   return redirectWithAuthCookies(safeNext ?? "/dashboard", res);

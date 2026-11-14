@@ -65,10 +65,9 @@ function makeCookies(initial: Record<string, string> = {}) {
   };
 }
 
-function makeContext(options: {
-  search?: Record<string, string>;
-  cookies?: Record<string, string>;
-} = {}): APIContext {
+function makeContext(
+  options: { search?: Record<string, string>; cookies?: Record<string, string> } = {},
+): APIContext {
   const url = new URL("https://example.com/api/integrations/nest/callback");
   for (const [k, v] of Object.entries(options.search ?? {})) url.searchParams.set(k, v);
   const redirect = vi.fn(
@@ -145,7 +144,9 @@ describe("GET /api/integrations/nest/callback", () => {
 
     await GET(context);
 
-    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?view=setup&tab=thermostat&thermostat_error=denied#thermostat-connect");
+    expect(context.redirect).toHaveBeenCalledWith(
+      "/dashboard/devices?view=setup&tab=thermostat&thermostat_error=denied#thermostat-connect",
+    );
   });
 
   it("redirects to plans when the plan cannot use thermostat integrations", async () => {
@@ -171,9 +172,7 @@ describe("GET /api/integrations/nest/callback", () => {
 
     await GET(context);
 
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/devices?error=manager_required",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?error=manager_required");
   });
 
   it("redirects with not_configured when Nest credentials are missing", async () => {

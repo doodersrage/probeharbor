@@ -27,10 +27,7 @@ import {
   type ChartDoorBand,
 } from "../lib/chartDoorBands";
 import { useHistoryChartInteraction } from "../lib/useHistoryChartInteraction";
-import {
-  buildHistoryChartUrl,
-  timeWindowToHistoryDates,
-} from "../lib/historyUrls";
+import { buildHistoryChartUrl, timeWindowToHistoryDates } from "../lib/historyUrls";
 import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 import { pickHumiditySource } from "../lib/chartHumidity";
 import { dewPoint as dewPointF } from "../lib/dewPoint";
@@ -41,24 +38,30 @@ import HistoryChartOptions from "./HistoryChartOptions";
 import HistoryChartPresets from "./HistoryChartPresets";
 import HistoryChartToolbar from "./HistoryChartToolbar";
 import { drawHistoryChart, type HumiditySample, type Point } from "./drawHistoryChart";
-import { COLOR_ABOVE, COLOR_BELOW, DEW_COLOR, DOOR_COLOR, HOUSE_COLOR, HUMIDITY_COLOR, PROBE_COLORS } from "./historyChartColors";
+import {
+  COLOR_ABOVE,
+  COLOR_BELOW,
+  DEW_COLOR,
+  DOOR_COLOR,
+  HOUSE_COLOR,
+  HUMIDITY_COLOR,
+  PROBE_COLORS,
+} from "./historyChartColors";
 
 export { HISTORY_CHART_UI_EN, type HistoryChartUi };
-
-
 
 /** True when no locale (or an English one) is given: keep the original formatting. */
 /** `formatHoverTime`, in `locale` when a non-English one is given. */
 const hoverTime = (iso: string, locale?: string): string => formatHoverTime(iso, locale);
 
-
 /** Replace `{name}` placeholders with nodes (links, colored spans). */
 function fillNodes(template: string, nodes: Record<string, ComponentChildren>): ComponentChildren {
-  return template.split(/\{(\w+)\}/).map((part, i) =>
-    i % 2 === 1 ? <Fragment key={i}>{nodes[part] ?? `{${part}}`}</Fragment> : part,
-  );
+  return template
+    .split(/\{(\w+)\}/)
+    .map((part, i) =>
+      i % 2 === 1 ? <Fragment key={i}>{nodes[part] ?? `{${part}}`}</Fragment> : part,
+    );
 }
-
 
 type HumidityPoint = Point & { humidity: number };
 const hasHumidity = (p: Point): p is HumidityPoint =>
@@ -114,7 +117,6 @@ const storageHigh = (celsius: boolean) => (celsius ? "tt-chart-high-c" : "tt-cha
 const storageTarget = (celsius: boolean) => (celsius ? "tt-chart-target-c" : "tt-chart-target-f");
 const toCelsius = (f: number) => ((f - 32) * 5) / 9;
 
-
 function HistoryChartView({
   points,
   priorYearPoints = [],
@@ -143,7 +145,9 @@ function HistoryChartView({
   const unit = celsius ? "°C" : "°F";
   /** A threshold in the display unit: whole °F as before; °C to at most one decimal. */
   const deg = (value: number) =>
-    celsius ? fixed(value, Number.isInteger(Math.round(value * 10) / 10) ? 0 : 1, locale) : String(value);
+    celsius
+      ? fixed(value, Number.isInteger(Math.round(value * 10) / 10) ? 0 : 1, locale)
+      : String(value);
   const t = useMemo<HistoryChartUi>(() => {
     const merged = { ...HISTORY_CHART_UI_EN };
     if (ui) {
@@ -168,24 +172,16 @@ function HistoryChartView({
   );
 
   const [highTempF, setHighTempF] = useState<number | null>(defaultHighTempF);
-  const [targetAmbientF, setTargetAmbientF] = useState<number | null>(
-    defaultTargetAmbientF,
-  );
+  const [targetAmbientF, setTargetAmbientF] = useState<number | null>(defaultTargetAmbientF);
   const [humidityOn, setHumidityOn] = useState(showHumidity);
   const [hydrated, setHydrated] = useState(false);
   const [prefsReady, setPrefsReady] = useState(false);
-  const [initialPresetId, setInitialPresetId] = useState<
-    "24h" | "7d" | "30d" | "all" | null
-  >(null);
-  const [visibleProbes, setVisibleProbes] = useState<Set<string>>(
-    () => new Set(probeLabels),
-  );
+  const [initialPresetId, setInitialPresetId] = useState<"24h" | "7d" | "30d" | "all" | null>(null);
+  const [visibleProbes, setVisibleProbes] = useState<Set<string>>(() => new Set(probeLabels));
   const [hoverTs, setHoverTs] = useState<number | null>(null);
   const [hoverHits, setHoverHits] = useState<HoverSeriesHit[]>([]);
   const [hoverMarker, setHoverMarker] = useState<ChartAlertMarker | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
   const [houseVisible, setHouseVisible] = useState(true);
   const [hiddenDoors, setHiddenDoors] = useState<Set<string>>(() => new Set());
   const allDoorLabels = useMemo(() => doorLabels(doorBands), [doorBands]);
@@ -232,20 +228,35 @@ function HistoryChartView({
   // sensors (no toggle) with at least two humidity readings.
   const humidityCandidates = useMemo(() => {
     if (!showHumidity) return [] as string[];
-    const labels = [...probeLabels.filter((l) => visibleProbes.has(l)), ...new Set(humidityOnlyPoints.map((p) => p.probeLabel))];
+    const labels = [
+      ...probeLabels.filter((l) => visibleProbes.has(l)),
+      ...new Set(humidityOnlyPoints.map((p) => p.probeLabel)),
+    ];
     return [...new Set(labels)].filter((label) => humiditySamplesFor(label).length >= 2);
   }, [points, humidityOnlyPoints, probeLabels, visibleProbes, showHumidity, t.probe]);
   // "auto" (newest humidity), a probe label, or "all"; saved in this browser.
   const [humidityChoice, setHumidityChoice] = useState<string>("auto");
   const humiditySource = useMemo(() => {
     if (!showHumidity) return null;
-    if (humidityChoice !== "auto" && humidityChoice !== "all" && humidityCandidates.includes(humidityChoice)) {
+    if (
+      humidityChoice !== "auto" &&
+      humidityChoice !== "all" &&
+      humidityCandidates.includes(humidityChoice)
+    ) {
       return humidityChoice;
     }
     const candidates = [...points, ...humidityOnlyPoints];
     const visible = new Set([...visibleProbes, ...humidityOnlyPoints.map((p) => p.probeLabel)]);
     return pickHumiditySource(candidates, visible, (p) => p.probeLabel || t.probe);
-  }, [points, humidityOnlyPoints, visibleProbes, showHumidity, humidityChoice, humidityCandidates, t.probe]);
+  }, [
+    points,
+    humidityOnlyPoints,
+    visibleProbes,
+    showHumidity,
+    humidityChoice,
+    humidityCandidates,
+    t.probe,
+  ]);
   const showAllHumidity = humidityChoice === "all" && humidityCandidates.length > 1;
   /** What to draw: one series in the humidity/dew colors, or every probe's in its own color. */
   const humiditySeries = useMemo(() => {
@@ -259,9 +270,24 @@ function HistoryChartView({
     if (!humiditySource) return [];
     const samples = humiditySamplesFor(humiditySource);
     return samples.length >= 2
-      ? [{ label: humiditySource, humidityColor: HUMIDITY_COLOR, dewColor: DEW_COLOR, points: samples }]
+      ? [
+          {
+            label: humiditySource,
+            humidityColor: HUMIDITY_COLOR,
+            dewColor: DEW_COLOR,
+            points: samples,
+          },
+        ]
       : [];
-  }, [showAllHumidity, humidityCandidates, humiditySource, points, humidityOnlyPoints, probeLabels, t.probe]);
+  }, [
+    showAllHumidity,
+    humidityCandidates,
+    humiditySource,
+    points,
+    humidityOnlyPoints,
+    probeLabels,
+    t.probe,
+  ]);
   const humidityPoints = useMemo(() => humiditySeries.flatMap((s) => s.points), [humiditySeries]);
   const humidityHasDew = humidityPoints.some((p) => p.tempf != null);
 
@@ -368,7 +394,9 @@ function HistoryChartView({
           houseLegend,
           houseColor: HOUSE_COLOR,
           // Hover temps are in the display unit, so the dew point must be too.
-          dewPointF: humidityOn ? (temp: number, rh: number) => dewPointF(temp, rh, celsius) : undefined,
+          dewPointF: humidityOn
+            ? (temp: number, rh: number) => dewPointF(temp, rh, celsius)
+            : undefined,
         });
 
         const marker = nearestAlertMarker(alertMarkers, bounds, localX, 10);
@@ -460,7 +488,9 @@ function HistoryChartView({
   };
   const doorStatus = (band: ChartDoorBand) =>
     band.closedAt
-      ? fill(t.doorOpenFor, { duration: doorDuration(Date.parse(band.closedAt) - Date.parse(band.openedAt)) })
+      ? fill(t.doorOpenFor, {
+          duration: doorDuration(Date.parse(band.closedAt) - Date.parse(band.openedAt)),
+        })
       : t.doorStillOpen;
 
   const chartSummary = useMemo(() => {
@@ -476,12 +506,21 @@ function HistoryChartView({
     const latest = points[points.length - 1]!;
     const parts = [
       fill(t.summaryLatest, { temp: fixed(latest.tempf, 1, locale), unit }),
-      fill(t.summaryRange, { min: fixed(min.tempf, 1, locale), max: fixed(max.tempf, 1, locale), unit }),
+      fill(t.summaryRange, {
+        min: fixed(min.tempf, 1, locale),
+        max: fixed(max.tempf, 1, locale),
+        unit,
+      }),
     ];
     if (freezeThresholdF != null) {
       parts.push(
         below > 0
-          ? fill(t.summaryBelow, { freeze: deg(freezeThresholdF), unit, below, total: points.length })
+          ? fill(t.summaryBelow, {
+              freeze: deg(freezeThresholdF),
+              unit,
+              below,
+              total: points.length,
+            })
           : fill(t.summaryAbove, { freeze: deg(freezeThresholdF), unit }),
       );
     }
@@ -489,7 +528,9 @@ function HistoryChartView({
       const times = points.map((p) => Date.parse(p.timestamp)).filter(Number.isFinite);
       const doors = summarizeDoorBands(doorBands, Math.min(...times), Math.max(...times));
       if (doors.count > 0) {
-        const list = doors.perDoor.map((d) => fill(t.summaryDoorItem, { door: d.label, count: d.count })).join(", ");
+        const list = doors.perDoor
+          .map((d) => fill(t.summaryDoorItem, { door: d.label, count: d.count }))
+          .join(", ");
         parts.push(fill(t.summaryDoors, { list }));
       }
     }
@@ -607,8 +648,7 @@ function HistoryChartView({
       to: range.to,
       highlightAlertId: highlightAlertId ?? undefined,
     });
-    const url =
-      typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+    const url = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
@@ -678,13 +718,19 @@ function HistoryChartView({
     return (
       <div class="history-chart-wrap">
         <p class="history-chart-title m-0">{title}</p>
-        <p class="m-0 text-sm text-[var(--color-text-muted)]">
-          {t.notEnough}
-        </p>
+        <p class="m-0 text-sm text-[var(--color-text-muted)]">{t.notEnough}</p>
         <p class="mt-3 mb-0 text-sm">
           {fillNodes(t.emptySteps, {
-            addDevice: <a class="text-link" href="/dashboard/devices">{t.emptyAddDevice}</a>,
-            openLive: <a class="text-link" href="/dashboard/live">{t.emptyOpenLive}</a>,
+            addDevice: (
+              <a class="text-link" href="/dashboard/devices">
+                {t.emptyAddDevice}
+              </a>
+            ),
+            openLive: (
+              <a class="text-link" href="/dashboard/live">
+                {t.emptyOpenLive}
+              </a>
+            ),
           })}
         </p>
       </div>
@@ -719,213 +765,237 @@ function HistoryChartView({
         class={`history-chart-wrap${expanded ? " is-lightbox" : ""}`}
         {...expandedChartDialogAttrs(expanded, title)}
       >
-      <div class="history-chart-header">
-        <p class={hideTitle ? "sr-only" : "history-chart-title"}>{title}</p>
-        <HistoryChartToolbar
+        <div class="history-chart-header">
+          <p class={hideTitle ? "sr-only" : "history-chart-title"}>{title}</p>
+          <HistoryChartToolbar
+            t={t}
+            zoomed={zoomed}
+            guest={guest}
+            canShareChart={canShareChart}
+            shareBusy={shareBusy}
+            shared={!!shareMessage}
+            linkCopied={linkCopied}
+            claimsHref={claimsPackHrefForView()}
+            expanded={expanded}
+            expandBtnRef={expandBtnRef}
+            closeBtnRef={closeBtnRef}
+            onZoom={applyZoom}
+            onResetZoom={resetZoom}
+            onExportPng={exportPng}
+            onCopyLink={() => void copyChartLink()}
+            onShare={() => void shareChartSnapshot()}
+            onExpand={openLightbox}
+            onClose={closeLightbox}
+          />
+        </div>
+        <HistoryChartPresets
           t={t}
-          zoomed={zoomed}
-          guest={guest}
-          canShareChart={canShareChart}
-          shareBusy={shareBusy}
-          shared={!!shareMessage}
-          linkCopied={linkCopied}
-          claimsHref={claimsPackHrefForView()}
-          expanded={expanded}
-          expandBtnRef={expandBtnRef}
-          closeBtnRef={closeBtnRef}
-          onZoom={applyZoom}
-          onResetZoom={resetZoom}
-          onExportPng={exportPng}
-          onCopyLink={() => void copyChartLink()}
-          onShare={() => void shareChartSnapshot()}
-          onExpand={openLightbox}
-          onClose={closeLightbox}
+          domain={domain}
+          activePreset={activePreset}
+          onPreset={applyPreset}
         />
-      </div>
-      <HistoryChartPresets t={t} domain={domain} activePreset={activePreset} onPreset={applyPreset} />
-      {domain && !presetNarrowsDomain(domain, 7 * 24 * 60 * 60 * 1000) && (
-        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          {fill(t.loadedWindow, { hours: Math.max(1, Math.round((domain.maxTs - domain.minTs) / 36e5)) })}
-        </p>
-      )}
-      {(probeLabels.length > 0 || housePoints.length >= 2 || doorBands.length > 0) && (
-        <HistoryChartLegend
-          t={t}
-          probeLabels={probeLabels}
-          visibleProbes={visibleProbes}
-          onToggleProbe={toggleProbe}
-          showHouse={housePoints.length >= 2}
-          houseVisible={houseVisible}
-          houseLabel={houseLegend ?? t.house}
-          onToggleHouse={() => setHouseVisible((v) => !v)}
-          doorLabels={allDoorLabels}
-          hiddenDoors={hiddenDoors}
-          onToggleDoor={toggleDoor}
-        />
-      )}
-      {doorBandsError && (
-        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]" role="status">
-          {t.doorsUnavailable}
-        </p>
-      )}
-      {priorYearPoints.length >= 2 && (
-        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-          {priorYearLegend ?? t.comparisonOverlay}
-        </p>
-      )}
-      {humidityOn && humiditySeries.length > 0 && (
-        <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)] flex flex-wrap items-center gap-x-2 gap-y-1">
-          {showAllHumidity ? (
-            <span>{t.humidityAllLegend}</span>
-          ) : (
-            <span>
-              <span style={{ color: HUMIDITY_COLOR }}>{t.humidityPct}</span>
-              {humidityHasDew ? (
-                <>
-                  {" · "}
-                  <span style={{ color: DEW_COLOR }}>{fill(t.dewPointF, { unit })}</span>{t.dashed}
-                </>
-              ) : (
-                t.humidityNoDew
-              )}
-              {humidityCandidates.length <= 1 && (probeLabels.length > 1 || !humidityHasDew) && humiditySource
-                ? fill(t.humidityFrom, { probe: humiditySource })
-                : ""}
-            </span>
-          )}
-          {humidityCandidates.length > 1 && (
-            <label class="inline-flex items-center gap-1">
-              <span>{t.humidityFromLabel}</span>
-              <select
-                class="form-input py-0 text-xs"
-                style={{ width: "auto" }}
-                value={humidityChoice === "auto" || humidityChoice === "all" || humidityCandidates.includes(humidityChoice) ? humidityChoice : "auto"}
-                onChange={(e) => {
-                  const value = (e.currentTarget as HTMLSelectElement).value;
-                  setHumidityChoice(value);
-                  writeHistoryChartPrefs({ humiditySource: value });
-                }}
-              >
-                <option value="auto">{humiditySource && humidityChoice === "auto" ? `${t.humidityAuto} (${humiditySource})` : t.humidityAuto}</option>
-                {humidityCandidates.map((label) => (
-                  <option key={label} value={label}>{label}</option>
-                ))}
-                <option value="all">{t.humidityAll}</option>
-              </select>
-            </label>
-          )}
-        </p>
-      )}
-      <details class="history-chart-tips m-0 mb-2 text-xs text-[var(--color-text-muted)]">
-        <summary>{t.chartTips}</summary>
-        {expanded ? t.tipsExpanded : t.tipsDefault}
-        {alertMarkers.length > 0 ? t.tipsAlerts : ""}{" "}
-        {fillNodes(t.tipsTrace, {
-          cool: <span style={{ color: COLOR_BELOW }}>{t.tipsCool}</span>,
-          warm: <span style={{ color: COLOR_ABOVE }}>{t.tipsWarm}</span>,
-        })}
-        {humidityOn && humidityHasDew ? t.tipsDew : ""}
-        {doorBands.length > 0 ? t.tipsDoors : ""}
-        {doorLaneInfo.overflow > 0 ? fill(t.doorLanesMore, { max: MAX_DOOR_LANES }) : ""}
-      </details>
-      <div
-        class="history-chart-canvas-wrap"
-        onPointerLeave={() => {
-          if (!dragActiveRef.current) {
-            setHoverTs(null);
-            setHoverHits([]);
-            setHoverMarker(null);
-            setHoverDoors([]);
-            setTooltipPos(null);
-          }
-        }}
-      >
-        <canvas
-          ref={canvasRef}
-          class={`w-full history-chart-canvas${zoomed ? " is-zoomed" : ""}${isPanning ? " is-panning" : ""}${isBrushing ? " is-brushing" : ""}`}
-          role="img"
-          aria-label={fill(t.canvasAria, { title })}
-          aria-describedby="history-chart-summary"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onDblClick={resetZoom}
-        />
-        {showTooltip && tooltipPos && (
-          <div
-            class="history-chart-tooltip"
-            style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
-            role="status"
-          >
-            <p class="history-chart-tooltip-time">
-              {hoverMarker
-                ? hoverTime(hoverMarker.createdAt, locale)
-                : hoverHits[0]
-                  ? hoverTime(hoverHits[0].timestamp, locale)
-                  : hoverTs != null
-                    ? hoverTime(new Date(hoverTs).toISOString(), locale)
-                    : null}
-            </p>
-            <ul class="history-chart-tooltip-list">
-              {hoverMarker && (
-                <li>
-                  <span
-                    class="history-chart-tooltip-swatch"
-                    style={{ background: alertMarkerColor(hoverMarker.kind) }}
-                  />
-                  <span class="history-chart-tooltip-label">{t.tooltipAlert}</span>
-                  <span class="history-chart-tooltip-value">
-                    {hoverMarker.title}
-                  </span>
-                </li>
-              )}
-              {hoverDoors.map((band) => (
-                <li key={`door:${band.label}:${band.openedAt}`}>
-                  <span class="history-chart-tooltip-swatch" style={{ background: DOOR_COLOR }} />
-                  <span class="history-chart-tooltip-label">{band.label}</span>
-                  <span class="history-chart-tooltip-value">{doorStatus(band)}</span>
-                </li>
-              ))}
-              {hoverHits.map((hit) => (
-                <li key={hit.probeLabel}>
-                  <span
-                    class="history-chart-tooltip-swatch"
-                    style={{ background: hit.color }}
-                  />
-                  <span class="history-chart-tooltip-label">{hit.probeLabel}</span>
-                  <span class="history-chart-tooltip-value">
-                    {fixed(hit.tempf, 1, locale)}{unit}
-                    {humidityOn &&
-                      hit.humidity != null &&
-                      Number.isFinite(hit.humidity) &&
-                      hit.humidity > 0 &&
-                      ` · ${fixed(hit.humidity, 0, locale)}%`}
-                    {hit.dewPointF != null &&
-                      ` · ${t.tooltipDew} ${fixed(hit.dewPointF, 1, locale)}${unit}`}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {domain && !presetNarrowsDomain(domain, 7 * 24 * 60 * 60 * 1000) && (
+          <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
+            {fill(t.loadedWindow, {
+              hours: Math.max(1, Math.round((domain.maxTs - domain.minTs) / 36e5)),
+            })}
+          </p>
         )}
-      </div>
-      <p id="history-chart-summary" class="sr-only">{chartSummary}</p>
-      <p class="sr-only" aria-live="polite">
-        {hoverLive}
-      </p>
-      {/* Display-only guide lines (saved in this browser), folded so the chart stays the focus. */}
-      <HistoryChartOptions
-        t={t}
-        unit={unit}
-        humidityOption={showHumidity && humidityCandidates.length > 0}
-        targetAmbientF={targetAmbientF}
-        onTargetAmbientF={setTargetAmbientF}
-        highTempF={highTempF}
-        onHighTempF={setHighTempF}
-        humidityOn={humidityOn}
-        onHumidityOn={setHumidityOn}
-        freezeNote={freezeThresholdF != null ? fill(t.freezeLineFromAlerts, { temp: deg(freezeThresholdF), unit }) : null}
-      />
+        {(probeLabels.length > 0 || housePoints.length >= 2 || doorBands.length > 0) && (
+          <HistoryChartLegend
+            t={t}
+            probeLabels={probeLabels}
+            visibleProbes={visibleProbes}
+            onToggleProbe={toggleProbe}
+            showHouse={housePoints.length >= 2}
+            houseVisible={houseVisible}
+            houseLabel={houseLegend ?? t.house}
+            onToggleHouse={() => setHouseVisible((v) => !v)}
+            doorLabels={allDoorLabels}
+            hiddenDoors={hiddenDoors}
+            onToggleDoor={toggleDoor}
+          />
+        )}
+        {doorBandsError && (
+          <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]" role="status">
+            {t.doorsUnavailable}
+          </p>
+        )}
+        {priorYearPoints.length >= 2 && (
+          <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)]">
+            {priorYearLegend ?? t.comparisonOverlay}
+          </p>
+        )}
+        {humidityOn && humiditySeries.length > 0 && (
+          <p class="m-0 mb-2 text-xs text-[var(--color-text-muted)] flex flex-wrap items-center gap-x-2 gap-y-1">
+            {showAllHumidity ? (
+              <span>{t.humidityAllLegend}</span>
+            ) : (
+              <span>
+                <span style={{ color: HUMIDITY_COLOR }}>{t.humidityPct}</span>
+                {humidityHasDew ? (
+                  <>
+                    {" · "}
+                    <span style={{ color: DEW_COLOR }}>{fill(t.dewPointF, { unit })}</span>
+                    {t.dashed}
+                  </>
+                ) : (
+                  t.humidityNoDew
+                )}
+                {humidityCandidates.length <= 1 &&
+                (probeLabels.length > 1 || !humidityHasDew) &&
+                humiditySource
+                  ? fill(t.humidityFrom, { probe: humiditySource })
+                  : ""}
+              </span>
+            )}
+            {humidityCandidates.length > 1 && (
+              <label class="inline-flex items-center gap-1">
+                <span>{t.humidityFromLabel}</span>
+                <select
+                  class="form-input py-0 text-xs"
+                  style={{ width: "auto" }}
+                  value={
+                    humidityChoice === "auto" ||
+                    humidityChoice === "all" ||
+                    humidityCandidates.includes(humidityChoice)
+                      ? humidityChoice
+                      : "auto"
+                  }
+                  onChange={(e) => {
+                    const value = (e.currentTarget as HTMLSelectElement).value;
+                    setHumidityChoice(value);
+                    writeHistoryChartPrefs({ humiditySource: value });
+                  }}
+                >
+                  <option value="auto">
+                    {humiditySource && humidityChoice === "auto"
+                      ? `${t.humidityAuto} (${humiditySource})`
+                      : t.humidityAuto}
+                  </option>
+                  {humidityCandidates.map((label) => (
+                    <option key={label} value={label}>
+                      {label}
+                    </option>
+                  ))}
+                  <option value="all">{t.humidityAll}</option>
+                </select>
+              </label>
+            )}
+          </p>
+        )}
+        <details class="history-chart-tips m-0 mb-2 text-xs text-[var(--color-text-muted)]">
+          <summary>{t.chartTips}</summary>
+          {expanded ? t.tipsExpanded : t.tipsDefault}
+          {alertMarkers.length > 0 ? t.tipsAlerts : ""}{" "}
+          {fillNodes(t.tipsTrace, {
+            cool: <span style={{ color: COLOR_BELOW }}>{t.tipsCool}</span>,
+            warm: <span style={{ color: COLOR_ABOVE }}>{t.tipsWarm}</span>,
+          })}
+          {humidityOn && humidityHasDew ? t.tipsDew : ""}
+          {doorBands.length > 0 ? t.tipsDoors : ""}
+          {doorLaneInfo.overflow > 0 ? fill(t.doorLanesMore, { max: MAX_DOOR_LANES }) : ""}
+        </details>
+        <div
+          class="history-chart-canvas-wrap"
+          onPointerLeave={() => {
+            if (!dragActiveRef.current) {
+              setHoverTs(null);
+              setHoverHits([]);
+              setHoverMarker(null);
+              setHoverDoors([]);
+              setTooltipPos(null);
+            }
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            class={`w-full history-chart-canvas${zoomed ? " is-zoomed" : ""}${isPanning ? " is-panning" : ""}${isBrushing ? " is-brushing" : ""}`}
+            role="img"
+            aria-label={fill(t.canvasAria, { title })}
+            aria-describedby="history-chart-summary"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onDblClick={resetZoom}
+          />
+          {showTooltip && tooltipPos && (
+            <div
+              class="history-chart-tooltip"
+              style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
+              role="status"
+            >
+              <p class="history-chart-tooltip-time">
+                {hoverMarker
+                  ? hoverTime(hoverMarker.createdAt, locale)
+                  : hoverHits[0]
+                    ? hoverTime(hoverHits[0].timestamp, locale)
+                    : hoverTs != null
+                      ? hoverTime(new Date(hoverTs).toISOString(), locale)
+                      : null}
+              </p>
+              <ul class="history-chart-tooltip-list">
+                {hoverMarker && (
+                  <li>
+                    <span
+                      class="history-chart-tooltip-swatch"
+                      style={{ background: alertMarkerColor(hoverMarker.kind) }}
+                    />
+                    <span class="history-chart-tooltip-label">{t.tooltipAlert}</span>
+                    <span class="history-chart-tooltip-value">{hoverMarker.title}</span>
+                  </li>
+                )}
+                {hoverDoors.map((band) => (
+                  <li key={`door:${band.label}:${band.openedAt}`}>
+                    <span class="history-chart-tooltip-swatch" style={{ background: DOOR_COLOR }} />
+                    <span class="history-chart-tooltip-label">{band.label}</span>
+                    <span class="history-chart-tooltip-value">{doorStatus(band)}</span>
+                  </li>
+                ))}
+                {hoverHits.map((hit) => (
+                  <li key={hit.probeLabel}>
+                    <span class="history-chart-tooltip-swatch" style={{ background: hit.color }} />
+                    <span class="history-chart-tooltip-label">{hit.probeLabel}</span>
+                    <span class="history-chart-tooltip-value">
+                      {fixed(hit.tempf, 1, locale)}
+                      {unit}
+                      {humidityOn &&
+                        hit.humidity != null &&
+                        Number.isFinite(hit.humidity) &&
+                        hit.humidity > 0 &&
+                        ` · ${fixed(hit.humidity, 0, locale)}%`}
+                      {hit.dewPointF != null &&
+                        ` · ${t.tooltipDew} ${fixed(hit.dewPointF, 1, locale)}${unit}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+        <p id="history-chart-summary" class="sr-only">
+          {chartSummary}
+        </p>
+        <p class="sr-only" aria-live="polite">
+          {hoverLive}
+        </p>
+        {/* Display-only guide lines (saved in this browser), folded so the chart stays the focus. */}
+        <HistoryChartOptions
+          t={t}
+          unit={unit}
+          humidityOption={showHumidity && humidityCandidates.length > 0}
+          targetAmbientF={targetAmbientF}
+          onTargetAmbientF={setTargetAmbientF}
+          highTempF={highTempF}
+          onHighTempF={setHighTempF}
+          humidityOn={humidityOn}
+          onHumidityOn={setHumidityOn}
+          freezeNote={
+            freezeThresholdF != null
+              ? fill(t.freezeLineFromAlerts, { temp: deg(freezeThresholdF), unit })
+              : null
+          }
+        />
       </div>
     </>
   );

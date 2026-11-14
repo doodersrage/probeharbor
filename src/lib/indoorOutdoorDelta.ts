@@ -41,8 +41,7 @@ export function computeIndoorOutdoorDelta(
 ): IndoorOutdoorDelta | null {
   if (points.length === 0 || !Number.isFinite(outdoorF)) return null;
 
-  const indoorAvgF =
-    points.reduce((sum, point) => sum + point.tempf, 0) / points.length;
+  const indoorAvgF = points.reduce((sum, point) => sum + point.tempf, 0) / points.length;
 
   return {
     outdoorF,
@@ -65,10 +64,5 @@ export async function fetchIndoorOutdoorDelta(
     : await fetchWeatherSnapshot(resolveWeatherCityId(weatherCityId));
   if (!weather) return null;
 
-  return computeIndoorOutdoorDelta(
-    points,
-    weather.temp,
-    weather.description,
-    weather.name,
-  );
+  return computeIndoorOutdoorDelta(points, weather.temp, weather.description, weather.name);
 }

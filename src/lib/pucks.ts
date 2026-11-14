@@ -1,11 +1,6 @@
 import * as neonPucks from "./db/pucks";
 import { timingSafeEqualHex } from "./timingSafeEqual";
-import {
-  isBayMood,
-  isValidBayId,
-  resolveBayMood,
-  type BayMood,
-} from "./bayMood";
+import { isBayMood, isValidBayId, resolveBayMood, type BayMood } from "./bayMood";
 import { fetchLatestSensorValues } from "./sensorReadings";
 import { rowToAlertSettings } from "./alerts";
 
@@ -30,10 +25,7 @@ function hexToBytes(hex: string): Uint8Array<ArrayBuffer> {
   return out;
 }
 
-export async function hmacSha256Hex(
-  secretHex: string,
-  nonceHex: string,
-): Promise<string> {
+export async function hmacSha256Hex(secretHex: string, nonceHex: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
     hexToBytes(secretHex),
@@ -42,9 +34,7 @@ export async function hmacSha256Hex(
     ["sign"],
   );
   const sig = await crypto.subtle.sign("HMAC", key, hexToBytes(nonceHex));
-  return [...new Uint8Array(sig)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export function normalizeDeviceId(value: string): string | null {
@@ -69,7 +59,12 @@ export async function registerPuck(input: {
     return { ok: false, error: "bad_register", status: 400 };
   }
 
-  const result = await neonPucks.registerPuck(deviceId, secretHex, input.householdId, input.createdBy);
+  const result = await neonPucks.registerPuck(
+    deviceId,
+    secretHex,
+    input.householdId,
+    input.createdBy,
+  );
   if (result === "ok") return { ok: true };
   if (result === "owned") return { ok: false, error: "device_owned", status: 409 };
   return { ok: false, error: result.error, status: 500 };
@@ -86,8 +81,7 @@ export async function startPuckClaim(input: {
   bayId: string;
   householdId: string;
 }): Promise<
-  | { ok: true; nonceHex: string; expiresIn: number }
-  | { ok: false; error: string; status: number }
+  { ok: true; nonceHex: string; expiresIn: number } | { ok: false; error: string; status: number }
 > {
   const deviceId = normalizeDeviceId(input.deviceId);
   if (!deviceId || !isValidBayId(input.bayId)) {
@@ -100,13 +94,13 @@ export async function startPuckClaim(input: {
   }
 
   const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
-  const nonceHex = [...nonceBytes]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const nonceHex = [...nonceBytes].map((b) => b.toString(16).padStart(2, "0")).join("");
   const expiresAt = new Date(Date.now() + 60_000).toISOString();
 
   const saved = await neonPucks.savePendingClaim(deviceId, input.bayId, nonceHex, expiresAt);
-  return saved.error ? { ok: false, error: saved.error, status: 500 } : { ok: true, nonceHex, expiresIn: 60 };
+  return saved.error
+    ? { ok: false, error: saved.error, status: 500 }
+    : { ok: true, nonceHex, expiresIn: 60 };
 }
 
 export async function finishPuckClaim(input: {
@@ -117,8 +111,7 @@ export async function finishPuckClaim(input: {
   spaceName: string;
   householdId: string;
 }): Promise<
-  | { ok: true; bayId: string; spaceName: string }
-  | { ok: false; error: string; status: number }
+  { ok: true; bayId: string; spaceName: string } | { ok: false; error: string; status: number }
 > {
   const deviceId = normalizeDeviceId(input.deviceId);
   const nonceHex = input.nonceHex.trim().toLowerCase();
@@ -155,7 +148,13 @@ export async function finishPuckClaim(input: {
   }
 
   const spaceName = input.spaceName.trim().slice(0, 64) || input.bayId;
-  const bound = await neonPucks.bindClaimedBay(deviceId, input.householdId, input.bayId, nonceHex, spaceName);
+  const bound = await neonPucks.bindClaimedBay(
+    deviceId,
+    input.householdId,
+    input.bayId,
+    nonceHex,
+    spaceName,
+  );
   if (bound === "ok") return { ok: true, bayId: input.bayId, spaceName };
   if (bound === "gone") return { ok: false, error: "no_pending", status: 400 };
   return { ok: false, error: bound.error, status: 500 };
@@ -198,8 +197,7 @@ export async function resolveBayMoodForHousehold(input: {
     return { ok: false, error: "bay_not_claimed", status: 404 };
   }
 
-  const spaceName =
-    (typeof puck.space_name === "string" && puck.space_name) || input.bayId;
+  const spaceName = (typeof puck.space_name === "string" && puck.space_name) || input.bayId;
 
   if (puck.mood_override && isBayMood(puck.mood_override)) {
     const updatedAt = puck.mood_override_at
@@ -215,15 +213,15 @@ export async function resolveBayMoodForHousehold(input: {
     };
   }
 
-  const alertSettings = rowToAlertSettings(await neonPucks.firstOwnerAlertSettings(input.householdId));
+  const alertSettings = rowToAlertSettings(
+    await neonPucks.firstOwnerAlertSettings(input.householdId),
+  );
   const freezeThreshold = alertSettings.freezeThresholdF;
   const staleMs = Math.max(1, alertSettings.outageHours) * 3600_000;
 
   const latest = await fetchLatestSensorValues(input.householdId);
   const bayKey = input.bayId.toLowerCase();
-  const inBay = latest.filter(
-    (row) => (row.deviceSpace ?? "").trim().toLowerCase() === bayKey,
-  );
+  const inBay = latest.filter((row) => (row.deviceSpace ?? "").trim().toLowerCase() === bayKey);
 
   let wetContact = false;
   let doorOpen = false;
@@ -249,8 +247,7 @@ export async function resolveBayMoodForHousehold(input: {
   }
 
   const feedHealthy = inBay.length > 0 && Date.now() - newestMs <= staleMs;
-  const freezeMarginF =
-    coldest == null ? null : coldest - freezeThreshold;
+  const freezeMarginF = coldest == null ? null : coldest - freezeThreshold;
 
   const mood = resolveBayMood({
     wetContact,

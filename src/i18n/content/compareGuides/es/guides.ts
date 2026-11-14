@@ -10,8 +10,7 @@ export default {
       "Compara las alertas de helada y fugas de ProbeHarbor con un sistema propio de MQTT, Node-RED y cron: mantenimiento, SMS, historial y acceso familiar.",
     summary:
       "MQTT casero es muy potente si disfrutas manteniendo brókers, paneles y scripts de alertas. ProbeHarbor da el mismo resultado (sondas en vivo, alertas de helada y fugas, historial) sin tener que cuidar el sistema a las 2 de la mañana.",
-    lede:
-      "Un bróker Mosquitto, flujos de Node-RED y una tarea cron pueden avisarte de una helada en el garaje. El precio es mantener parches, TLS, Twilio y una Raspberry Pi que no puede apagarse. ProbeHarbor es la capa alojada de alertas e historial: conserva MQTT en tu red local si quieres, envía las lecturas por HTTPS y deja en la nube los canales de alerta de helada y fugas de tu hogar.",
+    lede: "Un bróker Mosquitto, flujos de Node-RED y una tarea cron pueden avisarte de una helada en el garaje. El precio es mantener parches, TLS, Twilio y una Raspberry Pi que no puede apagarse. ProbeHarbor es la capa alojada de alertas e historial: conserva MQTT en tu red local si quieres, envía las lecturas por HTTPS y deja en la nube los canales de alerta de helada y fugas de tu hogar.",
     whenProbeHarbor: [
       "Quieres alertas de helada y fugas por SMS, correo o push sin configurar Twilio tú mismo",
       "Los miembros del hogar necesitan acceso sin una VPN hacia tu Raspberry Pi",
@@ -23,11 +22,31 @@ export default {
       "Necesitas protocolos industriales a medida que ProbeHarbor no habla",
     ],
     rows: [
-      { capability: "Mantenimiento del bróker o servidor", probeharbor: "Alojado (ningún Mosquitto que parchear)", other: "Tú actualizas Mosquitto/HA" },
-      { capability: "Alertas de helada y fugas", probeharbor: "Canales integrados + reloj de horas restantes hasta la helada", other: "Node-RED + Twilio/correo" },
-      { capability: "Envío de datos desde ESP", probeharbor: "Clave de dispositivo por HTTPS o puente MQTT", other: "Diseño de topics MQTT" },
-      { capability: "Historial y CSV", probeharbor: "En planes de pago", other: "Influx/Postgres que administras tú" },
-      { capability: "Compartir con la familia", probeharbor: "Invitaciones al hogar", other: "VPN o proxy inverso" },
+      {
+        capability: "Mantenimiento del bróker o servidor",
+        probeharbor: "Alojado (ningún Mosquitto que parchear)",
+        other: "Tú actualizas Mosquitto/HA",
+      },
+      {
+        capability: "Alertas de helada y fugas",
+        probeharbor: "Canales integrados + reloj de horas restantes hasta la helada",
+        other: "Node-RED + Twilio/correo",
+      },
+      {
+        capability: "Envío de datos desde ESP",
+        probeharbor: "Clave de dispositivo por HTTPS o puente MQTT",
+        other: "Diseño de topics MQTT",
+      },
+      {
+        capability: "Historial y CSV",
+        probeharbor: "En planes de pago",
+        other: "Influx/Postgres que administras tú",
+      },
+      {
+        capability: "Compartir con la familia",
+        probeharbor: "Invitaciones al hogar",
+        other: "VPN o proxy inverso",
+      },
     ],
     faqs: [
       {
@@ -55,8 +74,7 @@ export default {
       "Govee vs ProbeHarbor para vigilar heladas y fugas en espacios sin calefacción: alertas, envío desde ESP, zonas con varias sondas e historial exportable.",
     summary:
       "Govee y los hubs de consumo como SmartThings son ideales para sensores de habitación baratos y una app pulida. ProbeHarbor está hecho para vigilar heladas y fugas en garajes, talleres, áticos y naves: tus propias sondas ESP, alertas para todo el hogar e historial exportable.",
-    lede:
-      "Los higrómetros Govee (y los hubs al estilo SmartThings que integran el mismo tipo de sensores Bluetooth/Wi-Fi) ganan en precio y en una app amigable para dormitorios y armarios. Flaquean en un garaje o taller separado de la casa: alcance Bluetooth, dependencia del fabricante y alertas que casi nunca salen de la app. ProbeHarbor da por hecho que traes un ESP32 y te ofrece enrutamiento de alertas de helada y fugas para el hogar y una temporada entera de historial exportable.",
+    lede: "Los higrómetros Govee (y los hubs al estilo SmartThings que integran el mismo tipo de sensores Bluetooth/Wi-Fi) ganan en precio y en una app amigable para dormitorios y armarios. Flaquean en un garaje o taller separado de la casa: alcance Bluetooth, dependencia del fabricante y alertas que casi nunca salen de la app. ProbeHarbor da por hecho que traes un ESP32 y te ofrece enrutamiento de alertas de helada y fugas para el hogar y una temporada entera de historial exportable.",
     whenProbeHarbor: [
       "Quieres sondas ESP, Pico W, STM32, CH32V o Arduino que controlas tú (no solo sensores del fabricante)",
       "Las alertas de helada y fugas necesitan SMS, webhooks o enrutamiento para el hogar",
@@ -68,12 +86,36 @@ export default {
       "Es imposible tener Wi-Fi en el garaje y el alcance Bluetooth te basta",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "El tuyo: ESP / Pico / Arduino", other: "Sensores Govee" },
-      { capability: "Garajes / espacios separados", probeharbor: "Diseñado para ello", other: "Alcance irregular" },
-      { capability: "Canales de alerta", probeharbor: "Correo, SMS, push, chat, webhooks + reloj de tiempo hasta la helada", other: "Sobre todo push de la app" },
-      { capability: "Precio", probeharbor: "Unos 25 US$ en piezas por sonda; plan Free, Member 4 US$/mes, Pro 10 US$/mes", other: "Unos 35–50 US$ por pasarela Wi-Fi + sensor; sin suscripción" },
-      { capability: "Exportación de datos", probeharbor: "CSV (Member+) y API (Pro)", other: "Exportación desde la app; 2 años de datos guardados en algunos modelos" },
-      { capability: "Varios usuarios por hogar", probeharbor: "Incluido", other: "Compartir la cuenta es incómodo" },
+      {
+        capability: "Hardware",
+        probeharbor: "El tuyo: ESP / Pico / Arduino",
+        other: "Sensores Govee",
+      },
+      {
+        capability: "Garajes / espacios separados",
+        probeharbor: "Diseñado para ello",
+        other: "Alcance irregular",
+      },
+      {
+        capability: "Canales de alerta",
+        probeharbor: "Correo, SMS, push, chat, webhooks + reloj de tiempo hasta la helada",
+        other: "Sobre todo push de la app",
+      },
+      {
+        capability: "Precio",
+        probeharbor: "Unos 25 US$ en piezas por sonda; plan Free, Member 4 US$/mes, Pro 10 US$/mes",
+        other: "Unos 35–50 US$ por pasarela Wi-Fi + sensor; sin suscripción",
+      },
+      {
+        capability: "Exportación de datos",
+        probeharbor: "CSV (Member+) y API (Pro)",
+        other: "Exportación desde la app; 2 años de datos guardados en algunos modelos",
+      },
+      {
+        capability: "Varios usuarios por hogar",
+        probeharbor: "Incluido",
+        other: "Compartir la cuenta es incómodo",
+      },
     ],
     faqs: [
       {
@@ -108,8 +150,7 @@ export default {
       "Estaciones meteorológicas exteriores como Tempest frente a las sondas interiores de ProbeHarbor, cuando necesitas alertas de helada donde está el agua.",
     summary:
       "Tempest brilla con el clima del jardín: viento, lluvia, temperatura exterior. Pero el riesgo de que se congelen las tuberías está dentro. ProbeHarbor vigila el garaje, el sótano o el taller donde está la fontanería.",
-    lede:
-      "Una Tempest en el tejado te da el aire exterior, el viento y la lluvia con una fidelidad excelente. Las tuberías se congelan donde está el agua, normalmente un garaje, un sótano o un taller que la estación nunca ve. Usa Tempest para el clima exterior y ProbeHarbor para la sonda interior junto a las tuberías.",
+    lede: "Una Tempest en el tejado te da el aire exterior, el viento y la lluvia con una fidelidad excelente. Las tuberías se congelan donde está el agua, normalmente un garaje, un sótano o un taller que la estación nunca ve. Usa Tempest para el clima exterior y ProbeHarbor para la sonda interior junto a las tuberías.",
     whenProbeHarbor: [
       "Necesitas la temperatura de espacios interiores o sin calefacción para el riesgo de las tuberías",
       "Las alertas deben saltar según la temperatura del espacio, no solo la del aire exterior",
@@ -121,11 +162,27 @@ export default {
       "No tienes riesgo de que se congelen tuberías interiores",
     ],
     rows: [
-      { capability: "Función principal", probeharbor: "Vigilancia de heladas / espacios interiores", other: "Clima exterior" },
-      { capability: "Ubicación de la sonda", probeharbor: "Garaje, sótano, armario", other: "Tejado / jardín" },
-      { capability: "Alertas de helada en tuberías", probeharbor: "Directas + reloj de horas hasta la helada", other: "Solo deducidas del exterior" },
+      {
+        capability: "Función principal",
+        probeharbor: "Vigilancia de heladas / espacios interiores",
+        other: "Clima exterior",
+      },
+      {
+        capability: "Ubicación de la sonda",
+        probeharbor: "Garaje, sótano, armario",
+        other: "Tejado / jardín",
+      },
+      {
+        capability: "Alertas de helada en tuberías",
+        probeharbor: "Directas + reloj de horas hasta la helada",
+        other: "Solo deducidas del exterior",
+      },
       { capability: "Envío desde ESP casero", probeharbor: "Sí", other: "No aplica" },
-      { capability: "¿Se complementan?", probeharbor: "Sí, usa ambos", other: "Sí: contexto exterior" },
+      {
+        capability: "¿Se complementan?",
+        probeharbor: "Sí, usa ambos",
+        other: "Sí: contexto exterior",
+      },
     ],
     faqs: [
       {
@@ -148,13 +205,13 @@ export default {
   nest: {
     title: "ProbeHarbor vs termostato Nest",
     seoTitle: "Termostato Nest vs sensor de helada para el garaje",
-    headline: "ProbeHarbor vs un termostato Nest para proteger de heladas los espacios sin calefacción",
+    headline:
+      "ProbeHarbor vs un termostato Nest para proteger de heladas los espacios sin calefacción",
     description:
       "Un termostato Nest no recibe señal de un garaje sin calefacción. ProbeHarbor vigila ese espacio y puede mostrar la lectura de tu Nest en las alertas.",
     summary:
       "Nest es excelente controlando tu climatización e informando de la temperatura donde está instalado (él o un Nest Temperature Sensor): casi nunca el garaje, el sótano o el taller donde de verdad se congelan las tuberías. ProbeHarbor vigila ese espacio directamente y, si conectas tu cuenta de Nest, añade su lectura y el estado de la calefacción a cada alerta de helada como contexto.",
-    lede:
-      "Nest hace muy bien una cosa: controlar la caldera y seguir la temperatura de la habitación donde está. Un garaje, sótano o taller sin calefacción no está climatizado por diseño, así que Nest no tiene ninguna lectura de ahí: no hay nada sobre lo que alertar. ProbeHarbor coloca una sonda dedicada en ese espacio y, si conectas tu cuenta de Nest (Pro), cada alerta de helada muestra la temperatura interior de tu casa y si la calefacción está funcionando, para que sepas de un vistazo si el frío es lo esperado (el garaje no está climatizado y la casa está bien) o si algo va mal de verdad.",
+    lede: "Nest hace muy bien una cosa: controlar la caldera y seguir la temperatura de la habitación donde está. Un garaje, sótano o taller sin calefacción no está climatizado por diseño, así que Nest no tiene ninguna lectura de ahí: no hay nada sobre lo que alertar. ProbeHarbor coloca una sonda dedicada en ese espacio y, si conectas tu cuenta de Nest (Pro), cada alerta de helada muestra la temperatura interior de tu casa y si la calefacción está funcionando, para que sepas de un vistazo si el frío es lo esperado (el garaje no está climatizado y la casa está bien) o si algo va mal de verdad.",
     whenProbeHarbor: [
       "Tienes un garaje, sótano o taller que no está en el circuito de calefacción de Nest",
       "Quieres una alerta del espacio concreto sin climatizar, no una deducción a partir del termostato",
@@ -166,12 +223,32 @@ export default {
       "No tienes un espacio aparte sin climatizar que necesite su propia sonda",
     ],
     rows: [
-      { capability: "Función principal", probeharbor: "Vigilancia de heladas y fugas en cualquier espacio", other: "Control de la climatización del espacio acondicionado" },
-      { capability: "Ve un garaje o sótano sin calefacción", probeharbor: "Sí: sonda dedicada", other: "No: los espacios sin climatizar quedan fuera del circuito" },
-      { capability: "Alertas de helada y fugas (SMS, push, correo)", probeharbor: "Sí, además del tiempo restante hasta la helada", other: "No" },
-      { capability: "Muestra la lectura del termostato en las alertas", probeharbor: "Sí, si está conectado (Pro)", other: "No aplica" },
+      {
+        capability: "Función principal",
+        probeharbor: "Vigilancia de heladas y fugas en cualquier espacio",
+        other: "Control de la climatización del espacio acondicionado",
+      },
+      {
+        capability: "Ve un garaje o sótano sin calefacción",
+        probeharbor: "Sí: sonda dedicada",
+        other: "No: los espacios sin climatizar quedan fuera del circuito",
+      },
+      {
+        capability: "Alertas de helada y fugas (SMS, push, correo)",
+        probeharbor: "Sí, además del tiempo restante hasta la helada",
+        other: "No",
+      },
+      {
+        capability: "Muestra la lectura del termostato en las alertas",
+        probeharbor: "Sí, si está conectado (Pro)",
+        other: "No aplica",
+      },
       { capability: "Controla los horarios de calefacción", probeharbor: "No", other: "Sí" },
-      { capability: "¿Se complementan?", probeharbor: "Sí: conecta ambos", other: "Sí: conecta ambos" },
+      {
+        capability: "¿Se complementan?",
+        probeharbor: "Sí: conecta ambos",
+        other: "Sí: conecta ambos",
+      },
     ],
     faqs: [
       {
@@ -194,13 +271,13 @@ export default {
   ecobee: {
     title: "ProbeHarbor vs termostato Ecobee",
     seoTitle: "Termostato Ecobee vs sensor de helada para el garaje",
-    headline: "ProbeHarbor vs un termostato Ecobee para proteger de heladas los espacios sin calefacción",
+    headline:
+      "ProbeHarbor vs un termostato Ecobee para proteger de heladas los espacios sin calefacción",
     description:
       "Un termostato Ecobee no recibe señal de un garaje sin calefacción. ProbeHarbor vigila ese espacio y puede mostrar la lectura de tu Ecobee en las alertas.",
     summary:
       "Ecobee es excelente controlando tu climatización e informando de la temperatura donde está instalado (él o un Ecobee SmartSensor): casi nunca el garaje, el sótano o el taller donde de verdad se congelan las tuberías. ProbeHarbor vigila ese espacio directamente y, si conectas tu cuenta de Ecobee, añade su lectura y el estado de la calefacción a cada alerta de helada como contexto.",
-    lede:
-      "Ecobee hace muy bien una cosa: controlar la caldera y seguir la temperatura de la habitación donde está. Un garaje, sótano o taller sin calefacción no está climatizado por diseño, así que Ecobee no tiene ninguna lectura de ahí: no hay nada sobre lo que alertar. ProbeHarbor coloca una sonda dedicada en ese espacio y, si conectas tu cuenta de Ecobee (Pro), cada alerta de helada muestra la temperatura interior de tu casa y si la calefacción está funcionando, para que sepas de un vistazo si el frío es lo esperado (el garaje no está climatizado y la casa está bien) o si algo va mal de verdad.",
+    lede: "Ecobee hace muy bien una cosa: controlar la caldera y seguir la temperatura de la habitación donde está. Un garaje, sótano o taller sin calefacción no está climatizado por diseño, así que Ecobee no tiene ninguna lectura de ahí: no hay nada sobre lo que alertar. ProbeHarbor coloca una sonda dedicada en ese espacio y, si conectas tu cuenta de Ecobee (Pro), cada alerta de helada muestra la temperatura interior de tu casa y si la calefacción está funcionando, para que sepas de un vistazo si el frío es lo esperado (el garaje no está climatizado y la casa está bien) o si algo va mal de verdad.",
     whenProbeHarbor: [
       "Tienes un garaje, sótano o taller que no está en el circuito de calefacción de Ecobee",
       "Quieres una alerta del espacio concreto sin climatizar, no una deducción a partir del termostato",
@@ -212,12 +289,32 @@ export default {
       "No tienes un espacio aparte sin climatizar que necesite su propia sonda",
     ],
     rows: [
-      { capability: "Función principal", probeharbor: "Vigilancia de heladas y fugas en cualquier espacio", other: "Control de la climatización del espacio acondicionado" },
-      { capability: "Ve un garaje o sótano sin calefacción", probeharbor: "Sí: sonda dedicada", other: "No: los espacios sin climatizar quedan fuera del circuito" },
-      { capability: "Alertas de helada y fugas (SMS, push, correo)", probeharbor: "Sí, además del tiempo restante hasta la helada", other: "No" },
-      { capability: "Muestra la lectura del termostato en las alertas", probeharbor: "Sí, si está conectado (Pro)", other: "No aplica" },
+      {
+        capability: "Función principal",
+        probeharbor: "Vigilancia de heladas y fugas en cualquier espacio",
+        other: "Control de la climatización del espacio acondicionado",
+      },
+      {
+        capability: "Ve un garaje o sótano sin calefacción",
+        probeharbor: "Sí: sonda dedicada",
+        other: "No: los espacios sin climatizar quedan fuera del circuito",
+      },
+      {
+        capability: "Alertas de helada y fugas (SMS, push, correo)",
+        probeharbor: "Sí, además del tiempo restante hasta la helada",
+        other: "No",
+      },
+      {
+        capability: "Muestra la lectura del termostato en las alertas",
+        probeharbor: "Sí, si está conectado (Pro)",
+        other: "No aplica",
+      },
       { capability: "Controla los horarios de calefacción", probeharbor: "No", other: "Sí" },
-      { capability: "¿Se complementan?", probeharbor: "Sí: conecta ambos", other: "Sí: conecta ambos" },
+      {
+        capability: "¿Se complementan?",
+        probeharbor: "Sí: conecta ambos",
+        other: "Sí: conecta ambos",
+      },
     ],
     faqs: [
       {
@@ -245,8 +342,7 @@ export default {
       "Temp Stick vs ProbeHarbor: sensores de 149–209 US$ con SMS gratis, o sondas caseras de 25 US$ con varias zonas, sensores de fuga y Home Assistant.",
     summary:
       "Temp Stick es la opción más sencilla para uno o dos espacios: un sensor a pilas terminado, sin suscripción y con alertas gratis por SMS, correo y app. ProbeHarbor sale más barato por sensor y es más flexible (varias sondas, sensores de fuga, Home Assistant), pero tú montas el sensor y los SMS requieren Pro.",
-    lede:
-      "Temp Stick vende sensores Wi‑Fi terminados: 149 US$ el modelo estándar o unos 199 US$ el PRO con sonda de abrazadera para tubería, con alertas gratis por SMS, correo y app y sin suscripción. Es difícil de superar si quieres un solo sensor sin configurar nada. ProbeHarbor encaja si quieres varias sondas, un sensor de fuga bajo el calentador o lecturas dentro de Home Assistant: un ESP32 y una sonda cuestan unos 25 US$, las alertas por correo y chat son gratis y los SMS están en Pro.",
+    lede: "Temp Stick vende sensores Wi‑Fi terminados: 149 US$ el modelo estándar o unos 199 US$ el PRO con sonda de abrazadera para tubería, con alertas gratis por SMS, correo y app y sin suscripción. Es difícil de superar si quieres un solo sensor sin configurar nada. ProbeHarbor encaja si quieres varias sondas, un sensor de fuga bajo el calentador o lecturas dentro de Home Assistant: un ESP32 y una sonda cuestan unos 25 US$, las alertas por correo y chat son gratis y los SMS están en Pro.",
     whenProbeHarbor: [
       "Quieres sondas en varios puntos (tuberías, junto a la puerta, sótano) sin comprar un sensor de 149 US$ o más para cada uno",
       "Quieres sensores de fuga mojado/seco y alertas de helada en una sola cuenta",
@@ -260,15 +356,51 @@ export default {
       "Uno o dos sensores cubren todo lo que necesitas",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "Casero: ESP32 / Pico / Arduino + DS18B20 o DHT22", other: "Sensor terminado a pilas o de corriente" },
-      { capability: "Coste inicial", probeharbor: "Unos 25 US$ en piezas por sonda", other: "149 US$ el estándar; unos 199 US$ el PRO con abrazadera para tubería" },
-      { capability: "Coste recurrente", probeharbor: "Plan Free; Member 4 US$/mes; Pro 10 US$/mes para SMS", other: "Ninguno" },
-      { capability: "Sonda montada en la tubería", probeharbor: "Sí (DS18B20 impermeable sobre la tubería)", other: "Sí en el PRO (abrazadera para tubería)" },
-      { capability: "Sensores de fuga / inundación", probeharbor: "Sí, alertan automáticamente al mojarse", other: "No figura en el modelo con abrazadera" },
-      { capability: "Canales de alerta", probeharbor: "Correo, push y apps de chat gratis; SMS y webhooks en Pro", other: "SMS, correo y app, todo gratis" },
-      { capability: "Compartir y datos", probeharbor: "Invitaciones al hogar, CSV (Member+), API (Pro)", other: "Hasta 10 contactos de alerta, exportación CSV, API pública" },
-      { capability: "Home Assistant", probeharbor: "Integración HACS oficial + envío desde HA", other: "A través de su API" },
-      { capability: "Avisos por pronóstico", probeharbor: "Helada prevista (Member+), alertas del NWS (Pro, EE. UU.)", other: "No figura; alertas por umbral" },
+      {
+        capability: "Hardware",
+        probeharbor: "Casero: ESP32 / Pico / Arduino + DS18B20 o DHT22",
+        other: "Sensor terminado a pilas o de corriente",
+      },
+      {
+        capability: "Coste inicial",
+        probeharbor: "Unos 25 US$ en piezas por sonda",
+        other: "149 US$ el estándar; unos 199 US$ el PRO con abrazadera para tubería",
+      },
+      {
+        capability: "Coste recurrente",
+        probeharbor: "Plan Free; Member 4 US$/mes; Pro 10 US$/mes para SMS",
+        other: "Ninguno",
+      },
+      {
+        capability: "Sonda montada en la tubería",
+        probeharbor: "Sí (DS18B20 impermeable sobre la tubería)",
+        other: "Sí en el PRO (abrazadera para tubería)",
+      },
+      {
+        capability: "Sensores de fuga / inundación",
+        probeharbor: "Sí, alertan automáticamente al mojarse",
+        other: "No figura en el modelo con abrazadera",
+      },
+      {
+        capability: "Canales de alerta",
+        probeharbor: "Correo, push y apps de chat gratis; SMS y webhooks en Pro",
+        other: "SMS, correo y app, todo gratis",
+      },
+      {
+        capability: "Compartir y datos",
+        probeharbor: "Invitaciones al hogar, CSV (Member+), API (Pro)",
+        other: "Hasta 10 contactos de alerta, exportación CSV, API pública",
+      },
+      {
+        capability: "Home Assistant",
+        probeharbor: "Integración HACS oficial + envío desde HA",
+        other: "A través de su API",
+      },
+      {
+        capability: "Avisos por pronóstico",
+        probeharbor: "Helada prevista (Member+), alertas del NWS (Pro, EE. UU.)",
+        other: "No figura; alertas por umbral",
+      },
     ],
     faqs: [
       {
@@ -309,8 +441,7 @@ export default {
       "YoLink vs ProbeHarbor: un kit con hub de 59,99 US$, sensores a pilas terminados y SMS, o sondas caseras sobre la tubería con software de código fuente disponible.",
     summary:
       "YoLink es la opción más sencilla y a menudo más barata en sensores terminados: un hub y dos sensores a pilas cuestan 59,99 US$ y avisan por push, correo y SMS. ProbeHarbor encaja si quieres una sonda pegada a la tubería, sin hub, con tu propio hardware o con las lecturas en un sistema abierto.",
-    lede:
-      "YoLink vende un hub con dos sensores de temperatura y humedad a pilas por 59,99 US$. Los sensores funcionan de −30 °C a 60 °C (−22 °F a 140 °F), duran dos años o más con un par de pilas y envían alertas por push, correo y SMS. Para la mayoría de quienes quieren un producto terminado en un garaje frío, es una opción sólida. ProbeHarbor encaja mejor si quieres una sonda impermeable directamente sobre la tubería, sensores de fuga y alertas de helada en un mismo sitio, sin hub propietario, o software que puedas leer y alojar tú mismo: un ESP32 y una sonda cuestan unos 25 US$, las alertas por correo y chat son gratis y los SMS están en Pro.",
+    lede: "YoLink vende un hub con dos sensores de temperatura y humedad a pilas por 59,99 US$. Los sensores funcionan de −30 °C a 60 °C (−22 °F a 140 °F), duran dos años o más con un par de pilas y envían alertas por push, correo y SMS. Para la mayoría de quienes quieren un producto terminado en un garaje frío, es una opción sólida. ProbeHarbor encaja mejor si quieres una sonda impermeable directamente sobre la tubería, sensores de fuga y alertas de helada en un mismo sitio, sin hub propietario, o software que puedas leer y alojar tú mismo: un ESP32 y una sonda cuestan unos 25 US$, las alertas por correo y chat son gratis y los SMS están en Pro.",
     whenProbeHarbor: [
       "Quieres una sonda impermeable pegada a la propia tubería en lugar de un sensor de ambiente en la pared",
       "Ya usas Home Assistant, ESPHome o MQTT y quieres un destino más, no otro hub",
@@ -324,15 +455,51 @@ export default {
       "El espacio está lejos de tu Wi‑Fi y un hub de largo alcance le viene mejor",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "Casero: ESP32 / Pico / Arduino + DS18B20 o DHT22", other: "Sensor a pilas terminado; requiere hub YoLink" },
-      { capability: "Coste inicial", probeharbor: "Unos 25 US$ en piezas por sonda", other: "59,99 US$ por un hub y dos sensores" },
-      { capability: "Coste recurrente", probeharbor: "Plan Free; Member 4 US$/mes; Pro 10 US$/mes para SMS", other: "No se indica en la página del producto" },
-      { capability: "Apto para espacios bajo cero", probeharbor: "Sí (sonda DS18B20: −55 °C a 125 °C (−67 °F a 257 °F))", other: "Sí (−30 °C a 60 °C (−22 °F a 140 °F))" },
-      { capability: "Alimentación", probeharbor: "USB en la placa", other: "Dos pilas, 2+ años previstos" },
-      { capability: "Sonda montada en la tubería", probeharbor: "Sí (DS18B20 impermeable sobre la tubería)", other: "Sensor exterior aparte con sonda (YS8005)" },
-      { capability: "Canales de alerta", probeharbor: "Correo, push y apps de chat gratis; SMS y webhooks en Pro", other: "Push, correo, SMS" },
-      { capability: "Exportación de datos", probeharbor: "CSV (Member+), API (Pro)", other: "Exportación CSV" },
-      { capability: "Home Assistant", probeharbor: "Integración HACS oficial + envío desde HA", other: "Figura como compatible" },
+      {
+        capability: "Hardware",
+        probeharbor: "Casero: ESP32 / Pico / Arduino + DS18B20 o DHT22",
+        other: "Sensor a pilas terminado; requiere hub YoLink",
+      },
+      {
+        capability: "Coste inicial",
+        probeharbor: "Unos 25 US$ en piezas por sonda",
+        other: "59,99 US$ por un hub y dos sensores",
+      },
+      {
+        capability: "Coste recurrente",
+        probeharbor: "Plan Free; Member 4 US$/mes; Pro 10 US$/mes para SMS",
+        other: "No se indica en la página del producto",
+      },
+      {
+        capability: "Apto para espacios bajo cero",
+        probeharbor: "Sí (sonda DS18B20: −55 °C a 125 °C (−67 °F a 257 °F))",
+        other: "Sí (−30 °C a 60 °C (−22 °F a 140 °F))",
+      },
+      {
+        capability: "Alimentación",
+        probeharbor: "USB en la placa",
+        other: "Dos pilas, 2+ años previstos",
+      },
+      {
+        capability: "Sonda montada en la tubería",
+        probeharbor: "Sí (DS18B20 impermeable sobre la tubería)",
+        other: "Sensor exterior aparte con sonda (YS8005)",
+      },
+      {
+        capability: "Canales de alerta",
+        probeharbor: "Correo, push y apps de chat gratis; SMS y webhooks en Pro",
+        other: "Push, correo, SMS",
+      },
+      {
+        capability: "Exportación de datos",
+        probeharbor: "CSV (Member+), API (Pro)",
+        other: "Exportación CSV",
+      },
+      {
+        capability: "Home Assistant",
+        probeharbor: "Integración HACS oficial + envío desde HA",
+        other: "Figura como compatible",
+      },
     ],
     faqs: [
       {
@@ -372,8 +539,7 @@ export default {
       "SensorPush vs ProbeHarbor: sensores Bluetooth precisos que necesitan una pasarela de 99,95 US$ para alertas remotas, o sondas Wi‑Fi caseras en la tubería.",
     summary:
       "SensorPush fabrica sensores Bluetooth pequeños y precisos con una app pulida y sin cuota mensual, pero para recibir alertas fuera de casa necesitas la pasarela Wi‑Fi de 99,95 US$. Las sondas de ProbeHarbor envían los datos por Wi‑Fi directamente y pueden ir sobre la tubería; tú las montas y los SMS requieren Pro.",
-    lede:
-      "Los sensores SensorPush son compactos y precisos: el HT1 cuesta 54,95 US$ y el HT.w resistente al agua 69,99 US$, ambos especificados de −40 °C a 60 °C (−40 °F a 140 °F) con un año o más de batería. Son sensores Bluetooth, así que tu teléfono tiene que estar al alcance salvo que añadas la G1 Wi‑Fi Gateway de 99,95 US$, que incluye acceso a la nube sin cuota mensual y alertas en la app y por correo. ProbeHarbor parte del extremo opuesto: un ESP32 con una sonda impermeable (unos 25 US$ en piezas) envía los datos por Wi‑Fi por sí solo, las alertas por correo y chat son gratis, y los sensores de fuga, los avisos por pronóstico y Home Assistant vienen integrados. Los SMS están en Pro.",
+    lede: "Los sensores SensorPush son compactos y precisos: el HT1 cuesta 54,95 US$ y el HT.w resistente al agua 69,99 US$, ambos especificados de −40 °C a 60 °C (−40 °F a 140 °F) con un año o más de batería. Son sensores Bluetooth, así que tu teléfono tiene que estar al alcance salvo que añadas la G1 Wi‑Fi Gateway de 99,95 US$, que incluye acceso a la nube sin cuota mensual y alertas en la app y por correo. ProbeHarbor parte del extremo opuesto: un ESP32 con una sonda impermeable (unos 25 US$ en piezas) envía los datos por Wi‑Fi por sí solo, las alertas por correo y chat son gratis, y los sensores de fuga, los avisos por pronóstico y Home Assistant vienen integrados. Los SMS están en Pro.",
     whenProbeHarbor: [
       "Quieres alertas remotas sin comprar una pasarela",
       "Quieres una sonda impermeable en la tubería, o varias sondas desde una sola placa",
@@ -387,14 +553,46 @@ export default {
       "Prefieres una compra única sin ningún plan del que preocuparte",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "Casero: ESP32 / Pico / Arduino + DS18B20 o DHT22", other: "Sensor Bluetooth terminado" },
-      { capability: "Coste inicial", probeharbor: "Unos 25 US$ en piezas por sonda", other: "54,95 US$ (HT1) o 69,99 US$ (HT.w) por sensor" },
-      { capability: "Alertas fuera de casa", probeharbor: "Sí, los sensores envían por Wi‑Fi", other: "Requiere la G1 Wi‑Fi Gateway (99,95 US$)" },
-      { capability: "Coste recurrente", probeharbor: "Plan Free; Member 4 US$/mes; Pro 10 US$/mes para SMS", other: "Ninguno; la nube de la pasarela no tiene cuota mensual" },
-      { capability: "Apto para espacios bajo cero", probeharbor: "Sí (sonda DS18B20: −55 °C a 125 °C (−67 °F a 257 °F))", other: "Sí (−40 °C a 60 °C (−40 °F a 140 °F))" },
-      { capability: "Canales de alerta", probeharbor: "Correo, push y apps de chat gratis; SMS y webhooks en Pro", other: "En la app y por correo; SMS no figura" },
-      { capability: "Alimentación", probeharbor: "USB en la placa", other: "Pilas: más de 1 año (HT1), más de 2 años (HT.w)" },
-      { capability: "API", probeharbor: "Envío HTTP en todos los planes; claves de API en Pro", other: "API para la nube de la pasarela" },
+      {
+        capability: "Hardware",
+        probeharbor: "Casero: ESP32 / Pico / Arduino + DS18B20 o DHT22",
+        other: "Sensor Bluetooth terminado",
+      },
+      {
+        capability: "Coste inicial",
+        probeharbor: "Unos 25 US$ en piezas por sonda",
+        other: "54,95 US$ (HT1) o 69,99 US$ (HT.w) por sensor",
+      },
+      {
+        capability: "Alertas fuera de casa",
+        probeharbor: "Sí, los sensores envían por Wi‑Fi",
+        other: "Requiere la G1 Wi‑Fi Gateway (99,95 US$)",
+      },
+      {
+        capability: "Coste recurrente",
+        probeharbor: "Plan Free; Member 4 US$/mes; Pro 10 US$/mes para SMS",
+        other: "Ninguno; la nube de la pasarela no tiene cuota mensual",
+      },
+      {
+        capability: "Apto para espacios bajo cero",
+        probeharbor: "Sí (sonda DS18B20: −55 °C a 125 °C (−67 °F a 257 °F))",
+        other: "Sí (−40 °C a 60 °C (−40 °F a 140 °F))",
+      },
+      {
+        capability: "Canales de alerta",
+        probeharbor: "Correo, push y apps de chat gratis; SMS y webhooks en Pro",
+        other: "En la app y por correo; SMS no figura",
+      },
+      {
+        capability: "Alimentación",
+        probeharbor: "USB en la placa",
+        other: "Pilas: más de 1 año (HT1), más de 2 años (HT.w)",
+      },
+      {
+        capability: "API",
+        probeharbor: "Envío HTTP en todos los planes; claves de API en Pro",
+        other: "API para la nube de la pasarela",
+      },
     ],
     faqs: [
       {
@@ -435,8 +633,7 @@ export default {
       "El Shelly H&T Gen3 es un buen sensor de ambiente de 40,99 US$, pero su rango es 0–40 °C: no sirve en un garaje que se congela. Así se diferencia una sonda.",
     summary:
       "El Shelly H&T Gen3 es un sensor Wi‑Fi de ambiente bien hecho de 40,99 US$, con pantalla, MQTT y webhooks. Pero Shelly lo especifica para 0 °C a 40 °C (32 °F a 105 °F), lo que lo descarta para espacios que de verdad se congelan. ProbeHarbor usa una sonda especificada muy por debajo de cero, montada sobre la tubería.",
-    lede:
-      "El Shelly H&T Gen3 cuesta 40,99 US$, funciona alrededor de un año con cuatro pilas AA o por USB‑C, muestra la temperatura y la humedad en una pantalla de tinta electrónica y habla Wi‑Fi, MQTT y webhooks. Es un buen sensor para una habitación con calefacción. Shelly indica una temperatura ambiente de funcionamiento de 0 °C a 40 °C (32 °F a 105 °F) y una humedad del 30–70 %, así que un garaje o sótano sin calefacción durante una ola de frío queda fuera de su rango. ProbeHarbor está hecho para esos espacios: una sonda DS18B20 impermeable especificada hasta −55 °C (−67 °F) sobre la tubería, con alertas de helada, fugas y desconexión, y avisos por pronóstico. Si ya usas dispositivos Shelly en interiores, sus lecturas pueden llegar a ProbeHarbor a través de Home Assistant o MQTT.",
+    lede: "El Shelly H&T Gen3 cuesta 40,99 US$, funciona alrededor de un año con cuatro pilas AA o por USB‑C, muestra la temperatura y la humedad en una pantalla de tinta electrónica y habla Wi‑Fi, MQTT y webhooks. Es un buen sensor para una habitación con calefacción. Shelly indica una temperatura ambiente de funcionamiento de 0 °C a 40 °C (32 °F a 105 °F) y una humedad del 30–70 %, así que un garaje o sótano sin calefacción durante una ola de frío queda fuera de su rango. ProbeHarbor está hecho para esos espacios: una sonda DS18B20 impermeable especificada hasta −55 °C (−67 °F) sobre la tubería, con alertas de helada, fugas y desconexión, y avisos por pronóstico. Si ya usas dispositivos Shelly en interiores, sus lecturas pueden llegar a ProbeHarbor a través de Home Assistant o MQTT.",
     whenProbeHarbor: [
       "El espacio puede bajar de 0 °C (32 °F), fuera del rango especificado del Shelly H&T",
       "Quieres la lectura en la tubería, bajo el aislamiento, no la del aire de la habitación",
@@ -450,13 +647,41 @@ export default {
       "La humedad de un espacio climatizado te importa más que la temperatura de las tuberías",
     ],
     rows: [
-      { capability: "Hardware", probeharbor: "Casero: ESP32 / Pico / Arduino + DS18B20 o DHT22", other: "Sensor Wi‑Fi terminado con pantalla de tinta electrónica" },
-      { capability: "Coste inicial", probeharbor: "Unos 25 US$ en piezas por sonda", other: "40,99 US$" },
-      { capability: "Temperatura de funcionamiento especificada", probeharbor: "Sonda DS18B20: −55 °C a 125 °C (−67 °F a 257 °F)", other: "0 °C a 40 °C (32 °F a 105 °F)" },
-      { capability: "Sonda montada en la tubería", probeharbor: "Sí (DS18B20 impermeable sobre la tubería)", other: "No; mide el aire junto al dispositivo" },
-      { capability: "Alimentación", probeharbor: "USB en la placa", other: "4 pilas AA (alrededor de 1 año) o USB‑C" },
-      { capability: "Integraciones locales", probeharbor: "Home Assistant (HACS), ESPHome, puente MQTT", other: "MQTT y webhooks (acciones URL)" },
-      { capability: "Sensores de fuga / inundación", probeharbor: "Sí, alertan automáticamente al mojarse", other: "No en este dispositivo" },
+      {
+        capability: "Hardware",
+        probeharbor: "Casero: ESP32 / Pico / Arduino + DS18B20 o DHT22",
+        other: "Sensor Wi‑Fi terminado con pantalla de tinta electrónica",
+      },
+      {
+        capability: "Coste inicial",
+        probeharbor: "Unos 25 US$ en piezas por sonda",
+        other: "40,99 US$",
+      },
+      {
+        capability: "Temperatura de funcionamiento especificada",
+        probeharbor: "Sonda DS18B20: −55 °C a 125 °C (−67 °F a 257 °F)",
+        other: "0 °C a 40 °C (32 °F a 105 °F)",
+      },
+      {
+        capability: "Sonda montada en la tubería",
+        probeharbor: "Sí (DS18B20 impermeable sobre la tubería)",
+        other: "No; mide el aire junto al dispositivo",
+      },
+      {
+        capability: "Alimentación",
+        probeharbor: "USB en la placa",
+        other: "4 pilas AA (alrededor de 1 año) o USB‑C",
+      },
+      {
+        capability: "Integraciones locales",
+        probeharbor: "Home Assistant (HACS), ESPHome, puente MQTT",
+        other: "MQTT y webhooks (acciones URL)",
+      },
+      {
+        capability: "Sensores de fuga / inundación",
+        probeharbor: "Sí, alertan automáticamente al mojarse",
+        other: "No en este dispositivo",
+      },
     ],
     faqs: [
       {

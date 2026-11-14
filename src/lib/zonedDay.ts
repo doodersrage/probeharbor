@@ -17,7 +17,9 @@ export function isValidTimeZone(timeZone: string | null | undefined): timeZone i
 }
 
 /** `timeZone` from the cookie when it's a real IANA zone, else "UTC". */
-export function timeZoneFromCookie(cookies: { get(name: string): { value?: string } | undefined }): string {
+export function timeZoneFromCookie(cookies: {
+  get(name: string): { value?: string } | undefined;
+}): string {
   const value = cookies.get(TIME_ZONE_COOKIE)?.value;
   const decoded = value ? decodeURIComponent(value) : "";
   return isValidTimeZone(decoded) ? decoded : "UTC";
@@ -36,7 +38,14 @@ function offsetMs(timeZone: string, utcMs: number): number {
     second: "2-digit",
   }).formatToParts(new Date(utcMs));
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
-  const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
+  const asUtc = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    get("hour"),
+    get("minute"),
+    get("second"),
+  );
   return asUtc - Math.floor(utcMs / 1000) * 1000;
 }
 
@@ -45,7 +54,8 @@ function parseDay(day: string): [number, number, number] | null {
   if (!m) return null;
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
   const check = new Date(Date.UTC(y, mo - 1, d));
-  if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d) return null;
+  if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d)
+    return null;
   return [y, mo, d];
 }
 
@@ -70,7 +80,9 @@ export function zonedDayEndIso(day: string, timeZone: string): string | null {
   if (!parsed) return null;
   const [y, mo, d] = parsed;
   const next = new Date(Date.UTC(y, mo - 1, d + 1));
-  return new Date(startMs(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), timeZone) - 1).toISOString();
+  return new Date(
+    startMs(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), timeZone) - 1,
+  ).toISOString();
 }
 
 /**
@@ -78,7 +90,11 @@ export function zonedDayEndIso(day: string, timeZone: string): string | null {
  * `timeZone` (start, or end when `endOfDay`); anything else must be a full
  * timestamp. undefined = not given; null = given but not a date.
  */
-export function parseRangeBound(raw: string | null, timeZone: string, endOfDay: boolean): string | null | undefined {
+export function parseRangeBound(
+  raw: string | null,
+  timeZone: string,
+  endOfDay: boolean,
+): string | null | undefined {
   const value = raw?.trim();
   if (!value) return undefined;
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {

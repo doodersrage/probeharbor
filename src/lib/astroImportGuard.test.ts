@@ -9,10 +9,7 @@ function allPageAstroFiles(): string[] {
 }
 
 function dashboardAstroFiles(): string[] {
-  return [
-    join(ROOT, "pages/dashboard.astro"),
-    ...listAstroFiles(join(ROOT, "pages/dashboard")),
-  ];
+  return [join(ROOT, "pages/dashboard.astro"), ...listAstroFiles(join(ROOT, "pages/dashboard"))];
 }
 
 function listAstroFiles(dir: string): string[] {
@@ -46,7 +43,10 @@ function importedNames(frontmatter: string): Set<string> {
   for (const match of frontmatter.matchAll(importRe)) {
     if (match[1]) {
       for (const part of match[1].split(",")) {
-        const name = part.trim().split(/\s+as\s+/)[0]?.trim();
+        const name = part
+          .trim()
+          .split(/\s+as\s+/)[0]
+          ?.trim();
         if (name) names.add(name);
       }
     }
@@ -64,11 +64,7 @@ function usedComponents(body: string): Set<string> {
   return tags;
 }
 
-const IGNORE_TAGS = new Set([
-  "Fragment",
-  "LiquidCrystal",
-  "ArduinoOTA",
-]);
+const IGNORE_TAGS = new Set(["Fragment", "LiquidCrystal", "ArduinoOTA"]);
 
 describe("astro import guard", () => {
   const pageFiles = allPageAstroFiles();

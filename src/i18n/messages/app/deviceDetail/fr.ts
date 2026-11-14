@@ -26,15 +26,18 @@ const fr: DeviceDetailMessages = {
     title: "État",
     health: "Santé",
     healthHowSummary: "Comment le score est calculé",
-    healthHow: "Le score reflète le problème le plus grave trouvé, vérifié dans cet ordre : désactivé (25) ou jamais vu (30) ; un capteur de fuite mouillé (10–20) ; aucun envoi depuis un jour (20) ou 2 heures (45) ; mesures bloquées (40) ; batterie à 15 % ou moins (55) ou prévue pour 14 jours ou moins (60) ; Wi‑Fi à votre seuil de signal ou en dessous (65). Sans rien de tout cela, tout va bien (95).",
-    batteryHow: "Les jours restants supposent que la batterie continue de baisser au rythme des 7 derniers jours. Ils n’apparaissent que si elle a perdu plus de 0,5 % par jour sur au moins une demi-journée.",
+    healthHow:
+      "Le score reflète le problème le plus grave trouvé, vérifié dans cet ordre : désactivé (25) ou jamais vu (30) ; un capteur de fuite mouillé (10–20) ; aucun envoi depuis un jour (20) ou 2 heures (45) ; mesures bloquées (40) ; batterie à 15 % ou moins (55) ou prévue pour 14 jours ou moins (60) ; Wi‑Fi à votre seuil de signal ou en dessous (65). Sans rien de tout cela, tout va bien (95).",
+    batteryHow:
+      "Les jours restants supposent que la batterie continue de baisser au rythme des 7 derniers jours. Ils n’apparaissent que si elle a perdu plus de 0,5 % par jour sur au moins une demi-journée.",
     lastSeen: "Dernier contact",
     never: "Jamais",
     battery: "Batterie",
     wifiSignal: "Signal Wi-Fi",
     firmware: "Firmware",
     updateTo: "Mettre à jour vers {version}",
-    tlsUnverified: "Cette sonde ne peut pas vérifier le certificat de ProbeHarbor : sa connexion n’est donc pas protégée contre la falsification. Les relevés arrivent toujours. Le plus souvent, l’autorité de certification du site a changé ; une mise à jour du firmware règle le problème.",
+    tlsUnverified:
+      "Cette sonde ne peut pas vérifier le certificat de ProbeHarbor : sa connexion n’est donc pas protégée contre la falsification. Les relevés arrivent toujours. Le plus souvent, l’autorité de certification du site a changé ; une mise à jour du firmware règle le problème.",
     state: "État",
     disabled: "Désactivé : les mesures sont ignorées",
     noReadingsYet:
@@ -67,9 +70,11 @@ const fr: DeviceDetailMessages = {
   },
   sensors: {
     title: "Capteurs ({count})",
-    noneYetPush: "Aucun pour l’instant : ils sont ajoutés automatiquement à partir des clés JSON du premier envoi.",
+    noneYetPush:
+      "Aucun pour l’instant : ils sont ajoutés automatiquement à partir des clés JSON du premier envoi.",
     noneYetPull: "Aucun pour l’instant : ils apparaissent après la prochaine récupération du flux.",
-    intro: "Renommez-les d’après ce qu’ils mesurent. Un seul Enregistrer s’applique à tous les capteurs.",
+    intro:
+      "Renommez-les d’après ce qu’ils mesurent. Un seul Enregistrer s’applique à tous les capteurs.",
     name: "Nom",
     latest: "Dernière",
     type: "Type",
@@ -86,7 +91,8 @@ const fr: DeviceDetailMessages = {
     deleteSensor: "Supprimer le capteur",
     saveSensors: "Enregistrer les capteurs",
     addByHand: "Ajouter un capteur manuellement",
-    addHint: "Utile seulement pour définir un nom avant le premier envoi ; sinon, les clés sont ajoutées automatiquement.",
+    addHint:
+      "Utile seulement pour définir un nom avant le premier envoi ; sinon, les clés sont ajoutées automatiquement.",
     addLabelPlaceholder: "Tuyau du garage",
     addSensor: "Ajouter le capteur",
   },
@@ -128,7 +134,8 @@ const fr: DeviceDetailMessages = {
   },
   connection: {
     title: "Connexion",
-    sendsJsonHtml: "L’appareil envoie du JSON à <code>{url}</code>. Sa clé commence par <code>{prefix}</code>.",
+    sendsJsonHtml:
+      "L’appareil envoie du JSON à <code>{url}</code>. Sa clé commence par <code>{prefix}</code>.",
     checkPayload: "Vérifier un payload",
     browserFlasher: "Flasheur dans le navigateur",
     ingestDocs: "Doc d’ingestion",
@@ -143,15 +150,18 @@ const fr: DeviceDetailMessages = {
     title: "Maintenance",
     downloadDiagnostics: "Télécharger le diagnostic",
     historyChart: "Graphique de l’historique",
-    diagnosticsHint: "Le diagnostic est un fichier JSON expurgé que vous pouvez joindre à un rapport de bug ou à un e-mail au support.",
+    diagnosticsHint:
+      "Le diagnostic est un fichier JSON expurgé que vous pouvez joindre à un rapport de bug ou à un e-mail au support.",
     moveTo: "Déplacer vers un autre bien",
     moveDevice: "Déplacer l’appareil",
   },
   danger: {
     title: "Clé et suppression",
     rotateTitle: "Renouveler la clé d’ingestion",
-    rotateBody: "Génère une nouvelle clé. L’ancienne cesse de fonctionner immédiatement ; reflashez ou mettez à jour l’appareil.",
-    rotateConfirm: "Renouveler cette clé d’ingestion ? L’ancienne clé cesse de fonctionner immédiatement.",
+    rotateBody:
+      "Génère une nouvelle clé. L’ancienne cesse de fonctionner immédiatement ; reflashez ou mettez à jour l’appareil.",
+    rotateConfirm:
+      "Renouveler cette clé d’ingestion ? L’ancienne clé cesse de fonctionner immédiatement.",
     rotateButton: "Renouveler la clé",
     deleteTitle: "Supprimer l’appareil",
     deleteBody: "Le supprime avec ses capteurs et leur historique. Action irréversible.",
@@ -163,7 +173,8 @@ const fr: DeviceDetailMessages = {
     title: "Remplacer un capteur",
     intro:
       "Vous avez changé une sonde défectueuse ou une carte entière ? Dès que le nouveau capteur a envoyé une mesure, transférez-lui l’historique de l’ancien pour que graphiques, rapports et alertes continuent comme pour un seul capteur.",
-    confirm: "Transférer tout l’historique de l’ancien capteur vers le nouveau et supprimer l’ancien ? Action irréversible.",
+    confirm:
+      "Transférer tout l’historique de l’ancien capteur vers le nouveau et supprimer l’ancien ? Action irréversible.",
     oldSensor: "Ancien capteur (retiré)",
     newSensor: "Nouveau capteur",
     choose: "Choisir…",

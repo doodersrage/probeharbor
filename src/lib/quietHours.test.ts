@@ -29,11 +29,7 @@ describe("quiet hours SMS critical", () => {
 
   it("does not allow SMS critical when setting is off", () => {
     expect(
-      quietHoursAllowsSmsCritical(
-        { ...base, quietHoursSmsCritical: false },
-        "threshold",
-        noon,
-      ),
+      quietHoursAllowsSmsCritical({ ...base, quietHoursSmsCritical: false }, "threshold", noon),
     ).toBe(false);
   });
 });
@@ -41,7 +37,8 @@ describe("quiet hours SMS critical", () => {
 describe("quiet hours across midnight and daylight saving", async () => {
   const { isWithinQuietWindow } = await import("./quietHours");
   // 22:00–07:00 in Chicago. CST is UTC-6 in January.
-  const chicago = (utc: string) => isWithinQuietWindow("22:00", "07:00", "America/Chicago", new Date(utc));
+  const chicago = (utc: string) =>
+    isWithinQuietWindow("22:00", "07:00", "America/Chicago", new Date(utc));
 
   it("wraps midnight: late evening and early morning are quiet, the day isn't", () => {
     expect(chicago("2026-01-15T05:30:00Z")).toBe(true); // 23:30 local
@@ -52,7 +49,8 @@ describe("quiet hours across midnight and daylight saving", async () => {
   });
 
   // 01:00–06:00 in New York on the DST change days.
-  const newYork = (utc: string) => isWithinQuietWindow("01:00", "06:00", "America/New_York", new Date(utc));
+  const newYork = (utc: string) =>
+    isWithinQuietWindow("01:00", "06:00", "America/New_York", new Date(utc));
 
   it("follows local wall time on the spring-forward night (2026-03-08)", () => {
     expect(newYork("2026-03-08T06:30:00Z")).toBe(true); // 01:30 EST
@@ -69,11 +67,17 @@ describe("quiet hours across midnight and daylight saving", async () => {
   });
 
   it("falls back to UTC for an unknown time zone instead of throwing", () => {
-    expect(isWithinQuietWindow("22:00", "07:00", "Not/AZone", new Date("2026-01-15T23:00:00Z"))).toBe(true);
-    expect(isWithinQuietWindow("22:00", "07:00", "Not/AZone", new Date("2026-01-15T12:00:00Z"))).toBe(false);
+    expect(
+      isWithinQuietWindow("22:00", "07:00", "Not/AZone", new Date("2026-01-15T23:00:00Z")),
+    ).toBe(true);
+    expect(
+      isWithinQuietWindow("22:00", "07:00", "Not/AZone", new Date("2026-01-15T12:00:00Z")),
+    ).toBe(false);
   });
 
   it("treats an unparseable time as no quiet window", () => {
-    expect(isWithinQuietWindow("25:00", "07:00", "UTC", new Date("2026-01-15T03:00:00Z"))).toBe(false);
+    expect(isWithinQuietWindow("25:00", "07:00", "UTC", new Date("2026-01-15T03:00:00Z"))).toBe(
+      false,
+    );
   });
 });

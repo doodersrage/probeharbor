@@ -42,9 +42,7 @@ export async function fetchPriorYearCompareBundle(
 
   const [localResult, earliestLocalReadingAt] = await Promise.all([
     fetchGarageTempChartDataPriorYear(userId, days, filters),
-    householdId
-      ? fetchEarliestSensorReadingAt(householdId)
-      : Promise.resolve(null),
+    householdId ? fetchEarliestSensorReadingAt(householdId) : Promise.resolve(null),
   ]);
 
   if (localResult.points.length > 0) {

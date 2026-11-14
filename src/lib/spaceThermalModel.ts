@@ -1,9 +1,10 @@
+import { estimateTimeToFreeze, formatDurationHours, type TempSample } from "./timeToFreeze";
 import {
-  estimateTimeToFreeze,
-  formatDurationHours,
-  type TempSample,
-} from "./timeToFreeze";
-import { displayTempInputValue, tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
+  displayTempInputValue,
+  tempUnitLabel,
+  toDisplayDelta,
+  toDisplayTemp,
+} from "./temperatureFormat";
 import { fmt, formatNumber, plural } from "../i18n/format";
 import { LOCALE_META, type Locale } from "../i18n/locales";
 import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
@@ -26,11 +27,7 @@ export type SpaceThermalParams = {
   fittedCoupling: boolean;
 };
 
-export type TimeToFreezeSource =
-  | "forecast_model"
-  | "trend"
-  | "already_below"
-  | "none";
+export type TimeToFreezeSource = "forecast_model" | "trend" | "already_below" | "none";
 
 export type TimeToFreezeConfidence = "low" | "medium" | "high";
 
@@ -84,9 +81,7 @@ export function outdoorPointsFromHourly(
 ): OutdoorHourlyPoint[] {
   return points
     .map((point) => {
-      const stamp = point.timestamp.endsWith("Z")
-        ? point.timestamp
-        : `${point.timestamp}Z`;
+      const stamp = point.timestamp.endsWith("Z") ? point.timestamp : `${point.timestamp}Z`;
       const tempF = point.tempF ?? point.tempf;
       return { atMs: Date.parse(stamp), tempF: tempF as number };
     })
@@ -94,10 +89,7 @@ export function outdoorPointsFromHourly(
     .sort((a, b) => a.atMs - b.atMs);
 }
 
-export function interpolateOutdoor(
-  outdoor: OutdoorHourlyPoint[],
-  atMs: number,
-): number | null {
+export function interpolateOutdoor(outdoor: OutdoorHourlyPoint[], atMs: number): number | null {
   if (outdoor.length === 0) return null;
   if (atMs <= outdoor[0]!.atMs) return outdoor[0]!.tempF;
   const last = outdoor[outdoor.length - 1]!;
@@ -145,9 +137,7 @@ function median(values: number[]): number {
   return sorted[mid]!;
 }
 
-export function fitSpaceThermalParams(
-  pairs: IndoorOutdoorPair[],
-): SpaceThermalParams | null {
+export function fitSpaceThermalParams(pairs: IndoorOutdoorPair[]): SpaceThermalParams | null {
   if (pairs.length < 3) return null;
 
   const offsetF = Math.max(-5, Math.min(35, median(pairs.map((p) => p.indoorF - p.outdoorF))));
@@ -171,9 +161,7 @@ export function fitSpaceThermalParams(
   }
 
   const fittedCoupling = couplings.length >= 3;
-  const couplingPerHour = fittedCoupling
-    ? median(couplings)
-    : DEFAULT_COUPLING_PER_HOUR;
+  const couplingPerHour = fittedCoupling ? median(couplings) : DEFAULT_COUPLING_PER_HOUR;
 
   return {
     offsetF,
@@ -289,9 +277,7 @@ function projectWithForecast(input: {
   lookAheadHours: number;
 }): { hours: number | null; hitsAtIso: string | null; endTempF: number } {
   const horizonMs = input.nowMs + Math.max(3, input.lookAheadHours) * 60 * 60 * 1000;
-  const k =
-    input.params.couplingPerHour *
-    (input.doorOpenNearby ? DOOR_OPEN_COUPLING_MULT : 1);
+  const k = input.params.couplingPerHour * (input.doorOpenNearby ? DOOR_OPEN_COUPLING_MULT : 1);
   const dtMs = STEP_HOURS * 60 * 60 * 1000;
   let temp = input.currentTempF;
   let atMs = input.nowMs;
@@ -339,18 +325,21 @@ function confidenceFor(
   return "low";
 }
 
-export function buildTimeToFreezeProjection(input: {
-  currentTempF: number;
-  freezeThresholdF: number;
-  indoorSamples: TempSample[];
-  outdoorPast?: OutdoorHourlyPoint[];
-  outdoorForecast?: OutdoorHourlyPoint[];
-  doorOpenNearby?: boolean;
-  nowMs?: number;
-  timeZone?: string;
-  lookAheadHours?: number;
-  useCelsius?: boolean;
-}, locale: Locale = "en"): TimeToFreezeProjection {
+export function buildTimeToFreezeProjection(
+  input: {
+    currentTempF: number;
+    freezeThresholdF: number;
+    indoorSamples: TempSample[];
+    outdoorPast?: OutdoorHourlyPoint[];
+    outdoorForecast?: OutdoorHourlyPoint[];
+    doorOpenNearby?: boolean;
+    nowMs?: number;
+    timeZone?: string;
+    lookAheadHours?: number;
+    useCelsius?: boolean;
+  },
+  locale: Locale = "en",
+): TimeToFreezeProjection {
   const nowMs = input.nowMs ?? Date.now();
   const lookAheadHours = input.lookAheadHours ?? 12;
   const timeZone = input.timeZone ?? "UTC";
@@ -371,7 +360,12 @@ export function buildTimeToFreezeProjection(input: {
     return {
       hours: 0,
       hitsAtIso: new Date(nowMs).toISOString(),
-      hitsAtLabel: formatHitsAtLabel(new Date(nowMs).toISOString(), timeZone, new Date(nowMs), locale),
+      hitsAtLabel: formatHitsAtLabel(
+        new Date(nowMs).toISOString(),
+        timeZone,
+        new Date(nowMs),
+        locale,
+      ),
       confidence: "high",
       source: "already_below",
       currentTempF: input.currentTempF,
@@ -436,12 +430,7 @@ export function buildTimeToFreezeProjection(input: {
       useCelsius,
     });
     if (projected.hours != null && projected.hitsAtIso) {
-      const hitsAtLabel = formatHitsAtLabel(
-        projected.hitsAtIso,
-        timeZone,
-        new Date(nowMs),
-        locale,
-      );
+      const hitsAtLabel = formatHitsAtLabel(projected.hitsAtIso, timeZone, new Date(nowMs), locale);
       const doorNote = input.doorOpenNearby ? t.doorNote : "";
       return {
         hours: projected.hours,
@@ -480,7 +469,11 @@ export function buildTimeToFreezeProjection(input: {
       message:
         fmt(t.noFreeze, { hours: rawNumber(lookAheadHours, locale) }) +
         (window
-          ? fmt(t.noFreezeColderNight, { band: deltaText(band, locale, useCelsius), unit, time: window.earliestLabel })
+          ? fmt(t.noFreezeColderNight, {
+              band: deltaText(band, locale, useCelsius),
+              unit,
+              time: window.earliestLabel,
+            })
           : ""),
       window,
       reasons,
@@ -493,8 +486,7 @@ export function buildTimeToFreezeProjection(input: {
     .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
   const elapsedHours =
     sorted.length >= 2
-      ? (Date.parse(sorted[sorted.length - 1]!.at) - Date.parse(sorted[0]!.at)) /
-        (60 * 60 * 1000)
+      ? (Date.parse(sorted[sorted.length - 1]!.at) - Date.parse(sorted[0]!.at)) / (60 * 60 * 1000)
       : null;
 
   if (trend.hours != null && trend.hours > 0) {
@@ -511,7 +503,10 @@ export function buildTimeToFreezeProjection(input: {
               unit,
               duration: formatDurationLabel(elapsedHours, locale),
             })
-          : fmt(t.reasons.trendCooling, { rate: rateText(trend.rateFPerHour, locale, useCelsius), unit })
+          : fmt(t.reasons.trendCooling, {
+              rate: rateText(trend.rateFPerHour, locale, useCelsius),
+              unit,
+            })
         : null,
       t.reasons.noForecast,
     ].filter((r): r is string => r != null);
@@ -585,7 +580,11 @@ export function localizedTrendMessage(
   });
 }
 
-function lowestForecastF(forecast: OutdoorHourlyPoint[], nowMs: number, lookAheadHours: number): number | null {
+function lowestForecastF(
+  forecast: OutdoorHourlyPoint[],
+  nowMs: number,
+  lookAheadHours: number,
+): number | null {
   const horizonMs = nowMs + lookAheadHours * 60 * 60 * 1000;
   const ahead = forecast.filter((p) => p.atMs >= nowMs && p.atMs <= horizonMs);
   return ahead.length > 0 ? Math.min(...ahead.map((p) => p.tempF)) : null;
@@ -610,13 +609,21 @@ function forecastReasons(input: {
   const reasons: string[] = [];
   const horizonMs = input.nowMs + input.lookAheadHours * 60 * 60 * 1000;
   const ahead = input.outdoorForecast.filter((p) => p.atMs >= input.nowMs && p.atMs <= horizonMs);
-  const low = ahead.reduce<OutdoorHourlyPoint | null>((min, p) => (!min || p.tempF < min.tempF ? p : min), null);
+  const low = ahead.reduce<OutdoorHourlyPoint | null>(
+    (min, p) => (!min || p.tempF < min.tempF ? p : min),
+    null,
+  );
   if (low) {
     reasons.push(
       fmt(t.forecastLow, {
         temp: fixed(Math.round(toDisplayTemp(low.tempF, useCelsius)) || 0, 0, locale),
         unit,
-        time: formatHitsAtLabel(new Date(low.atMs).toISOString(), input.timeZone, new Date(input.nowMs), locale),
+        time: formatHitsAtLabel(
+          new Date(low.atMs).toISOString(),
+          input.timeZone,
+          new Date(input.nowMs),
+          locale,
+        ),
       }),
     );
   }
@@ -625,10 +632,14 @@ function forecastReasons(input: {
   reasons.push(
     offset === 0
       ? t.offsetZero
-      : fmt(offset > 0 ? t.offsetWarmer : t.offsetColder, { offset: rawNumber(Math.abs(offset), locale), unit }),
+      : fmt(offset > 0 ? t.offsetWarmer : t.offsetColder, {
+          offset: rawNumber(Math.abs(offset), locale),
+          unit,
+        }),
   );
   // English as before: the raw count, no digit grouping.
-  const sampleVars: Record<string, string> = locale === "en" ? { count: String(input.params.sampleCount) } : {};
+  const sampleVars: Record<string, string> =
+    locale === "en" ? { count: String(input.params.sampleCount) } : {};
   reasons.push(
     plural(
       input.params.fittedCoupling ? t.couplingLearned : t.couplingDefault,
@@ -638,7 +649,9 @@ function forecastReasons(input: {
     ),
   );
   if (input.rateFPerHour != null && input.rateFPerHour < -0.05) {
-    reasons.push(fmt(t.coolingNow, { rate: rateText(input.rateFPerHour, locale, useCelsius), unit }));
+    reasons.push(
+      fmt(t.coolingNow, { rate: rateText(input.rateFPerHour, locale, useCelsius), unit }),
+    );
   }
   if (input.doorOpenNearby) reasons.push(t.doorOpen);
   reasons.push(fmt(t.band, { band: deltaText(input.band, locale, useCelsius), unit }));
@@ -662,7 +675,12 @@ export function shouldAlertOnRunway(
 }
 
 export function evaluateRunwayAlert(
-  settings: { enabled: boolean; runwayAlertEnabled: boolean; freezeThresholdF: number; forecastHoursAhead: number },
+  settings: {
+    enabled: boolean;
+    runwayAlertEnabled: boolean;
+    freezeThresholdF: number;
+    forecastHoursAhead: number;
+  },
   projection: TimeToFreezeProjection,
   locale: Locale = "en",
 ): string | null {

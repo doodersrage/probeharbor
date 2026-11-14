@@ -78,9 +78,7 @@ export async function sendMonthlyReportsForAllUsers(): Promise<{
       if (ok) sent += 1;
       else skipped += 1;
     } catch (error) {
-      errors.push(
-        `${userId}: ${error instanceof Error ? error.message : "unknown"}`,
-      );
+      errors.push(`${userId}: ${error instanceof Error ? error.message : "unknown"}`);
     }
   }
 
@@ -107,9 +105,7 @@ async function sendMonthlyReportForUser(userId: string): Promise<boolean> {
   const temps = points.map((p) => p.tempf);
   const minTemp = temps.length ? Math.min(...temps) : null;
   const maxTemp = temps.length ? Math.max(...temps) : null;
-  const avgTemp = temps.length
-    ? temps.reduce((a, b) => a + b, 0) / temps.length
-    : null;
+  const avgTemp = temps.length ? temps.reduce((a, b) => a + b, 0) / temps.length : null;
 
   const monthLabel = formatEmailDate(
     new Date(),

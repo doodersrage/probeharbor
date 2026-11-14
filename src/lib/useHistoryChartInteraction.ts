@@ -74,16 +74,13 @@ export function useHistoryChartInteraction(options: {
   const [lightboxSlotHeight, setLightboxSlotHeight] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
   const [isBrushing, setIsBrushing] = useState(false);
-  const [brushRange, setBrushRange] = useState<{ startX: number; endX: number } | null>(
-    null,
-  );
+  const [brushRange, setBrushRange] = useState<{ startX: number; endX: number } | null>(null);
   const setViewWindowRef = useRef(setViewWindow);
   setViewWindowRef.current = setViewWindow;
 
   const domain = useMemo(() => timeDomainFromPoints(points), [points]);
   const activeView = viewWindow && domain ? viewWindow : domain;
-  const zoomed =
-    !!domain && !!activeView && !isFullyZoomedOut(activeView, domain);
+  const zoomed = !!domain && !!activeView && !isFullyZoomedOut(activeView, domain);
   const activePreset = domain ? matchingPresetId(viewWindow, domain) : "all";
 
   useEffect(() => {
@@ -256,9 +253,7 @@ export function useHistoryChartInteraction(options: {
       const bounds = plotBoundsRef.current;
       const innerW = bounds.width - bounds.padLeft - bounds.padRight;
       const span = drag.startView.maxTs - drag.startView.minTs || 1;
-      setViewWindow(
-        panTimeWindow(drag.startView, domain, -(dx / Math.max(innerW, 1)) * span),
-      );
+      setViewWindow(panTimeWindow(drag.startView, domain, -(dx / Math.max(innerW, 1)) * span));
       hoverRef.current.clearHover();
       return;
     }
@@ -289,26 +284,26 @@ export function useHistoryChartInteraction(options: {
   }
 
   /** Attach wheel zoom; call from the host draw effect. Stable identity. */
-  const bindWheelZoom = useCallback((canvas: HTMLCanvasElement): (() => void) => {
-    const onWheel = (event: WheelEvent) => {
-      if (!domainRef.current || !plotBoundsRef.current) return;
-      event.preventDefault();
-      const currentDomain = domainRef.current;
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const anchor =
-        xToTimestamp(x, plotBoundsRef.current) ??
-        (currentDomain.minTs + currentDomain.maxTs) / 2;
-      const currentView = viewWindowRef.current ?? currentDomain;
-      const factor = event.deltaY > 0 ? 1.18 : 1 / 1.18;
-      const next = zoomTimeWindow(currentView, currentDomain, anchor, factor);
-      setViewWindowRef.current(
-        isFullyZoomedOut(next, currentDomain) ? null : next,
-      );
-    };
-    canvas.addEventListener("wheel", onWheel, { passive: false });
-    return () => canvas.removeEventListener("wheel", onWheel);
-  }, [plotBoundsRef]);
+  const bindWheelZoom = useCallback(
+    (canvas: HTMLCanvasElement): (() => void) => {
+      const onWheel = (event: WheelEvent) => {
+        if (!domainRef.current || !plotBoundsRef.current) return;
+        event.preventDefault();
+        const currentDomain = domainRef.current;
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const anchor =
+          xToTimestamp(x, plotBoundsRef.current) ?? (currentDomain.minTs + currentDomain.maxTs) / 2;
+        const currentView = viewWindowRef.current ?? currentDomain;
+        const factor = event.deltaY > 0 ? 1.18 : 1 / 1.18;
+        const next = zoomTimeWindow(currentView, currentDomain, anchor, factor);
+        setViewWindowRef.current(isFullyZoomedOut(next, currentDomain) ? null : next);
+      };
+      canvas.addEventListener("wheel", onWheel, { passive: false });
+      return () => canvas.removeEventListener("wheel", onWheel);
+    },
+    [plotBoundsRef],
+  );
 
   return {
     domain,

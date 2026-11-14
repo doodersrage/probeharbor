@@ -18,7 +18,9 @@ describe("getYubiKeyPublicIdsFromUser", () => {
 
   it("returns an empty array when the metadata value isn't an array", () => {
     expect(
-      getYubiKeyPublicIdsFromUser({ user_metadata: { [YUBIKEY_OTP_METADATA_KEY]: "not-an-array" } }),
+      getYubiKeyPublicIdsFromUser({
+        user_metadata: { [YUBIKEY_OTP_METADATA_KEY]: "not-an-array" },
+      }),
     ).toEqual([]);
   });
 

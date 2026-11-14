@@ -3,10 +3,7 @@ import { getAuthFromRequest } from "../../../../lib/auth";
 import { getOrCreateHouseholdForUser } from "../../../../lib/households";
 import { householdEditorCtx, requireHouseholdEditor } from "../../../../lib/householdAuth";
 import { isBayMood } from "../../../../lib/bayMood";
-import {
-  resolveBayMoodForHousehold,
-  setBayMoodOverride,
-} from "../../../../lib/pucks";
+import { resolveBayMoodForHousehold, setBayMoodOverride } from "../../../../lib/pucks";
 import { apiCommonMessages, apiLocale } from "../../../../i18n/messages/app/api/common";
 
 function json(status: number, payload: Record<string, unknown>) {
@@ -74,7 +71,9 @@ export const PUT: APIRoute = async ({ params, request, cookies, locals }) => {
   // Changing the mood is a write: view-only and alert-only members can't.
   const editor = await requireHouseholdEditor(user.id);
   if (!editor.ok) {
-    return json(editor.error === "No household" ? 500 : 403, { error: editor.error === "No household" ? "household" : tc.viewOnly });
+    return json(editor.error === "No household" ? 500 : 403, {
+      error: editor.error === "No household" ? "household" : tc.viewOnly,
+    });
   }
 
   const result = await setBayMoodOverride({

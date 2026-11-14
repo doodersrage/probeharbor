@@ -16,7 +16,8 @@ const es: AboutArticleMessages = {
   backToOverview: "Volver al resumen",
   convertBar: {
     label: "Prueba ProbeHarbor",
-    copyHtml: "<strong>Demo en vivo</strong>, sin cuenta. ¿Listo para conectar tus sondas? Gratis para siempre, sin tarjeta.",
+    copyHtml:
+      "<strong>Demo en vivo</strong>, sin cuenta. ¿Listo para conectar tus sondas? Gratis para siempre, sin tarjeta.",
     demo: "Probar la demo en vivo",
     startFree: "Empieza gratis",
   },

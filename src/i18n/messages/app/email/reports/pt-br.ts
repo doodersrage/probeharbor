@@ -10,7 +10,8 @@ const ptBr: ReportEmailMessages = {
   titleMonthly: "Relatório mensal",
   titleQuarterly: "Relatório trimestral",
   emailTitle: "Relatório das sondas — {label}",
-  snapshotIntro: "Panorama de {days} dias com base nas suas leituras salvas e na previsão do tempo.",
+  snapshotIntro:
+    "Panorama de {days} dias com base nas suas leituras salvas e na previsão do tempo.",
   readings: { one: "{count} leitura", other: "{count} leituras" },
 
   statReadings: "Leituras",
@@ -46,7 +47,8 @@ const ptBr: ReportEmailMessages = {
 
   viewHistory: "Ver histórico",
   manageAlerts: "Gerenciar alertas",
-  attachedEmail: "O relatório completo em HTML está em anexo — abra no navegador ou imprima em PDF.",
+  attachedEmail:
+    "O relatório completo em HTML está em anexo — abra no navegador ou imprima em PDF.",
   printHint: "Imprima esta página (Ctrl/Cmd+P) para salvar em PDF.",
   documentTitle: "Relatório ProbeHarbor — {label}",
 
@@ -67,7 +69,8 @@ const ptBr: ReportEmailMessages = {
     manageAlerts: "Gerenciar alertas: {url}",
     unsubscribe: "Cancelar inscrição: {url}",
     viewHistory: "Ver histórico: {url}",
-    attached: "O relatório completo em HTML está em anexo — abra no seu navegador ou imprima em PDF.",
+    attached:
+      "O relatório completo em HTML está em anexo — abra no seu navegador ou imprima em PDF.",
   },
 };
 

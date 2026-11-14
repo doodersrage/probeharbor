@@ -3,7 +3,8 @@ import type { AlertsMessages } from "./en";
 const fr: AlertsMessages = {
   page: {
     title: "Alertes",
-    subtitle: "Ce qui s’est déclenché et qui a été prévenu. Les paramètres décident quand et comment alerter.",
+    subtitle:
+      "Ce qui s’est déclenché et qui a été prévenu. Les paramètres décident quand et comment alerter.",
     tabsLabel: "Sections des alertes",
     tabActivity: "Activité",
     tabActivityCount: "Activité ({count})",
@@ -26,8 +27,10 @@ const fr: AlertsMessages = {
     yourEnabledChannels: "vos canaux activés",
     testIncomplete:
       "Aucun canal n’a pu envoyer : activez un canal et renseignez sa destination, puis réessayez.",
-    testNoChannels: "Aucun canal d’alerte n’est activé. Activez-en au moins un, enregistrez, puis réessayez.",
-    testFailed: "Impossible d’envoyer l’alerte de test. Vérifiez les paramètres des canaux et réessayez.",
+    testNoChannels:
+      "Aucun canal d’alerte n’est activé. Activez-en au moins un, enregistrez, puis réessayez.",
+    testFailed:
+      "Impossible d’envoyer l’alerte de test. Vérifiez les paramètres des canaux et réessayez.",
     ackOk: "Alerte marquée comme traitée.",
     ackError: "Impossible d’accuser réception de l’alerte.",
   },
@@ -41,16 +44,21 @@ const fr: AlertsMessages = {
   pause: {
     snoozedUntil: "Alertes de routine en pause jusqu’à {time}.",
     vacationUntil: "Mode vacances jusqu’à {time} : les alertes de routine sont retenues.",
-    stillSend: "Les alertes de gel, de fuite, de coupure de courant et de capteur hors ligne sont toujours envoyées.",
+    stillSend:
+      "Les alertes de gel, de fuite, de coupure de courant et de capteur hors ligne sont toujours envoyées.",
     resume: "Reprendre les alertes",
     endVacation: "Terminer les vacances",
-    householdSnoozedUntil: "Une intégration a mis en pause les alertes de routine de ce foyer jusqu’à {time}, pour tous ses membres.",
-    householdVacationUntil: "Une intégration a mis ce foyer en mode vacances jusqu’à {time} : les alertes de routine sont retenues pour tous ses membres.",
-    householdClearHint: "Pour y mettre fin plus tôt, envoyez clear_snooze ou clear_vacation depuis l’intégration.",
+    householdSnoozedUntil:
+      "Une intégration a mis en pause les alertes de routine de ce foyer jusqu’à {time}, pour tous ses membres.",
+    householdVacationUntil:
+      "Une intégration a mis ce foyer en mode vacances jusqu’à {time} : les alertes de routine sont retenues pour tous ses membres.",
+    householdClearHint:
+      "Pour y mettre fin plus tôt, envoyez clear_snooze ou clear_vacation depuis l’intégration.",
     /** Resume buttons for the household hold (owners and editors). */
     householdResume: "Reprendre les alertes pour tous",
     householdEndVacation: "Terminer les vacances pour tous",
-    householdResumeHint: "La reprise lève la pause de ce foyer pour tous ses membres ; l’intégration peut la réactiver.",
+    householdResumeHint:
+      "La reprise lève la pause de ce foyer pour tous ses membres ; l’intégration peut la réactiver.",
   },
   activity: {
     heading: "Activité récente des alertes",
@@ -132,7 +140,8 @@ const fr: AlertsMessages = {
   },
   ack: {
     imOnIt: "Je m’en occupe",
-    imOnItTitle: "Arrête les alertes répétées jusqu’à ce que l’espace repasse au-dessus de votre seuil",
+    imOnItTitle:
+      "Arrête les alertes répétées jusqu’à ce que l’espace repasse au-dessus de votre seuil",
     more: "Plus",
     snooze1h: "Traiter et mettre en pause 1 h",
     snooze4h: "Traiter et mettre en pause 4 h",
@@ -242,7 +251,8 @@ const fr: AlertsMessages = {
     fixPause: "Réglages de pause",
     heldTitle: "Retenue volontairement : personne n’a été prévenu.",
     failedTitle: "L’envoi a échoué, ou il manque au canal son adresse, son numéro ou son webhook.",
-    notSetUpTitle: "Aucun canal n’était actif pour cette alerte, ou les règles de routage n’en ont laissé aucun.",
+    notSetUpTitle:
+      "Aucun canal n’était actif pour cette alerte, ou les règles de routage n’en ont laissé aucun.",
   },
 };
 

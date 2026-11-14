@@ -103,7 +103,11 @@ export async function runFeedUptimeForAllUsers(): Promise<{
         .join("\n")
         .slice(0, 1500);
 
-      const payload = { title: alertJobsMessages(locale).feedUptime.title, body, kind: "outage" as const };
+      const payload = {
+        title: alertJobsMessages(locale).feedUptime.title,
+        body,
+        kind: "outage" as const,
+      };
       // English keeps the original call shape.
       if (locale === "en") await notifyUser(userId, settings.email, settings, payload);
       else await notifyUser(userId, settings.email, settings, payload, undefined, locale);
@@ -112,9 +116,7 @@ export async function runFeedUptimeForAllUsers(): Promise<{
 
       alertsSent += 1;
     } catch (err) {
-      errors.push(
-        `${userId}: ${err instanceof Error ? err.message : "Unknown error"}`,
-      );
+      errors.push(`${userId}: ${err instanceof Error ? err.message : "Unknown error"}`);
     }
   }
 

@@ -46,12 +46,7 @@ export default function FeedTestButton({ inputId, rootInputId, text = en.feedTes
 
   return (
     <div class="mt-2 flex flex-wrap items-center gap-3">
-      <button
-        type="button"
-        class="btn-secondary"
-        onClick={testFeed}
-        disabled={loading}
-      >
+      <button type="button" class="btn-secondary" onClick={testFeed} disabled={loading}>
         {loading ? text.testing : text.test}
       </button>
       {status && <span class="text-sm text-[var(--color-text-muted)]">{status}</span>}

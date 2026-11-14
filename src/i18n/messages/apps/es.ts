@@ -6,7 +6,8 @@ import type { AppsMessages } from "./en";
 
 const es: AppsMessages = {
   title: "Apps complementarias",
-  description: "Sigue {brand} desde Android, el escritorio, Bay Buddy o la PWA. Estos clientes inician sesión en tu cuenta; no miden la temperatura.",
+  description:
+    "Sigue {brand} desde Android, el escritorio, Bay Buddy o la PWA. Estos clientes inician sesión en tu cuenta; no miden la temperatura.",
   breadcrumbHome: "Inicio",
   breadcrumbApps: "Apps",
   kicker: "Apps",

@@ -12,7 +12,8 @@ const en = {
   unsupportedHtml:
     'This browser cannot talk to USB serial devices. Open this page in Chrome or Edge on a desktop or laptop, or use the <a class="text-link" href="/about/esp32-web-flash">other flashing options</a>.',
   notAllowed: "The installer needs a secure (https) page.",
-  noPort: "No port in the list? Try another cable (many are charge-only) and install the CP210x or CH340 driver for your board.",
+  noPort:
+    "No port in the list? Try another cable (many are charge-only) and install the CP210x or CH340 driver for your board.",
   connectTitle: "2. Connect it to Wi‑Fi and your account",
   connectCopy:
     "Close the installer, then send these settings over the same cable. They go straight to the board and are not stored on this page.",
@@ -21,35 +22,45 @@ const en = {
   passwordLabel: "Wi‑Fi password",
   keyLabel: "Device key",
   keyHintPrefilled: "Filled in for the device you just created.",
-  keyHint: "From Dashboard → Devices after you add a push device. Pasting the whole ingest URL works too.",
+  keyHint:
+    "From Dashboard → Devices after you add a push device. Pasting the whole ingest URL works too.",
   extrasLegend: "Also wired to this board (optional)",
   extraLeak: "Leak / water contact",
   extraDoor: "Door reed switch",
   extraBattery: "Battery (1:1 divider)",
   extrasHint:
-    "Tick only what you've connected: an unwired pin would read as \"dry\" or \"open\". DS18B20, DHT22 and I²C sensors (BME280, SHT31, AHT20) are found automatically.",
+    'Tick only what you\'ve connected: an unwired pin would read as "dry" or "open". DS18B20, DHT22 and I²C sensors (BME280, SHT31, AHT20) are found automatically.',
   /** Link to the pin table on /flash (#pins). */
   pinsLink: "Which pin each one uses",
   sendButton: "Send settings over USB",
   phoneSetupHtml:
     "No USB serial in your browser, or the board is already mounted somewhere else? Power it up and join the <strong>ProbeHarbor-Setup</strong> Wi‑Fi network from a phone to enter the same settings. Holding the BOOT button for five seconds erases them.",
   status: {
-    noSerial: "This browser has no USB serial support. Use Chrome or Edge on a computer, or the phone setup below.",
+    noSerial:
+      "This browser has no USB serial support. Use Chrome or Edge on a computer, or the phone setup below.",
     pickPort: "Pick the board's serial port…",
     waiting: "Waiting for the board to start…",
     sending: "Sending settings…",
     received: "Settings received. Joining Wi‑Fi…",
     wifiOk: "On Wi‑Fi. Sending the first reading…",
-    liveWithSensor: "First reading delivered from your {sensor}, with humidity. It's live: you can unplug it and mount it.",
+    liveWithSensor:
+      "First reading delivered from your {sensor}, with humidity. It's live: you can unplug it and mount it.",
     live: "First reading delivered. The probe is live: you can unplug it and mount it.",
-    wifiFailed: "Wi‑Fi failed: check the network name and password. ESP32 boards only join 2.4 GHz networks.",
+    wifiFailed:
+      "Wi‑Fi failed: check the network name and password. ESP32 boards only join 2.4 GHz networks.",
     keyRejected: "Key rejected: copy the device key again from Dashboard → Devices.",
-    configError: "The board didn't accept the settings. Fill in the network name and device key, then send again.",
-    noProbe: "No probe found: check the wiring (DS18B20 or DHT22 data on GPIO {pin}, 4.7kΩ pull-up to 3.3V).",
-    sensorNotReading: "Found the {sensor} but couldn't read it: check its 3.3V, GND, SDA and SCL wires, then try again.",
-    postUnreachable: "The board is on Wi‑Fi but couldn't reach ProbeHarbor. It keeps retrying; check that this network allows outgoing HTTPS (some guest networks block it).",
-    postConnectionLost: "The board's connection to ProbeHarbor dropped while sending (error {code}). It keeps retrying; a weak Wi‑Fi signal or an unsteady power supply can cause this.",
-    postRejected: "ProbeHarbor answered {code} to the board's reading. It keeps retrying; if this stays, check System status or try again in a few minutes.",
+    configError:
+      "The board didn't accept the settings. Fill in the network name and device key, then send again.",
+    noProbe:
+      "No probe found: check the wiring (DS18B20 or DHT22 data on GPIO {pin}, 4.7kΩ pull-up to 3.3V).",
+    sensorNotReading:
+      "Found the {sensor} but couldn't read it: check its 3.3V, GND, SDA and SCL wires, then try again.",
+    postUnreachable:
+      "The board is on Wi‑Fi but couldn't reach ProbeHarbor. It keeps retrying; check that this network allows outgoing HTTPS (some guest networks block it).",
+    postConnectionLost:
+      "The board's connection to ProbeHarbor dropped while sending (error {code}). It keeps retrying; a weak Wi‑Fi signal or an unsteady power supply can cause this.",
+    postRejected:
+      "ProbeHarbor answered {code} to the board's reading. It keeps retrying; if this stays, check System status or try again in a few minutes.",
     noReading:
       "The board has the settings but no reading arrived yet. Check the sensor wiring (data to GPIO 4, 4.7kΩ to 3.3V), then try again.",
     noAnswer: "No answer from the board. Make sure the firmware install finished, then try again.",

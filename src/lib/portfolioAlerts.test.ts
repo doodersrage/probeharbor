@@ -37,7 +37,9 @@ vi.mock("./entitlements", () => ({
 beforeEach(() => {
   mockOwnerUserIds.mockReset().mockResolvedValue([]);
   mockStampPortfolioAlert.mockReset().mockResolvedValue(undefined);
-  mockGetUserRecord.mockReset().mockResolvedValue({ email: "owner@example.com", user_metadata: {} });
+  mockGetUserRecord
+    .mockReset()
+    .mockResolvedValue({ email: "owner@example.com", user_metadata: {} });
   mockFetchCrossPropertySnapshots.mockReset().mockResolvedValue({ properties: [] });
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({
     enabled: true,
@@ -125,9 +127,7 @@ describe("sendPortfolioAlertsForAllUsers", () => {
       lastPortfolioAlertAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5h ago
     });
     mockFetchCrossPropertySnapshots.mockResolvedValue({
-      properties: [
-        { name: "Lakehouse", atRisk: true, minTempF: 28.4, freezeThresholdF: 32 },
-      ],
+      properties: [{ name: "Lakehouse", atRisk: true, minTempF: 28.4, freezeThresholdF: 32 }],
     });
     const { sendPortfolioAlertsForAllUsers } = await import("./portfolioAlerts");
 

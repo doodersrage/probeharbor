@@ -51,7 +51,9 @@ const RECOVERY_MARGIN_F = 2;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Closing alerts must never get in the way of sending them. */
-async function safeAutoResolve(...args: Parameters<typeof autoResolveAlerts>): Promise<AutoResolveResult> {
+async function safeAutoResolve(
+  ...args: Parameters<typeof autoResolveAlerts>
+): Promise<AutoResolveResult> {
   try {
     return await autoResolveAlerts(...args);
   } catch (error) {
@@ -74,7 +76,10 @@ async function resolveAndAnnounceRecovery(
   locale: Locale = "en",
   announce = true,
 ): Promise<void> {
-  const { resolved, channels } = await safeAutoResolve(userId, { kinds: [kind], reason: "recovered" });
+  const { resolved, channels } = await safeAutoResolve(userId, {
+    kinds: [kind],
+    reason: "recovered",
+  });
   if (!announce || resolved === 0 || channels.length === 0) return;
   try {
     await notifyUser(
@@ -100,13 +105,28 @@ export function formatFreezeRecoveryBody(
   const t = alertMessages(locale).recovery;
   if (readings.length === 0) return t.freezeBodyEmpty;
   const temps = readings
-    .map((reading) => fmt(t.freezeTemp, { label: reading.label, ...alertTemp(reading.tempf, locale, display, 1) }))
+    .map((reading) =>
+      fmt(t.freezeTemp, { label: reading.label, ...alertTemp(reading.tempf, locale, display, 1) }),
+    )
     .join(", ");
-  const threshold = alertTemp(settings.freezeThresholdF, locale, display, display?.useCelsius ? 1 : 0);
+  const threshold = alertTemp(
+    settings.freezeThresholdF,
+    locale,
+    display,
+    display?.useCelsius ? 1 : 0,
+  );
   return fmt(t.freezeBody, { temps, threshold: threshold.temp, unit: threshold.unit });
 }
-import { freezeThresholdForReading, readingIncludedInThresholdAlerts } from "./thresholdSensorScope";
-import { evaluateAlertRuleMatches, explainAlertRules, type RuleEvalContext, type RuleExplanation } from "./alertRules";
+import {
+  freezeThresholdForReading,
+  readingIncludedInThresholdAlerts,
+} from "./thresholdSensorScope";
+import {
+  evaluateAlertRuleMatches,
+  explainAlertRules,
+  type RuleEvalContext,
+  type RuleExplanation,
+} from "./alertRules";
 import {
   claimCooldown,
   getAlertSettingsForUser,
@@ -125,13 +145,8 @@ import {
   hasNumericReadingAboveSince,
 } from "./sensorReadings";
 import { isBoolSensorKind, isNumericSensorKind } from "./sensorKinds";
-import {
-  detectBatteryTrendDrop,
-  type BatterySample,
-} from "./batteryTrend";
-import {
-  deviceHealthFromDevices,
-} from "./deviceHealth";
+import { detectBatteryTrendDrop, type BatterySample } from "./batteryTrend";
+import { deviceHealthFromDevices } from "./deviceHealth";
 import {
   buildAlertReadingsFromLatestSensors,
   buildFloodReadingsFromLatestSensors,
@@ -154,10 +169,7 @@ import {
   evaluateRunwayAlert,
   outdoorPointsFromHourly,
 } from "./spaceThermalModel";
-import {
-  fetchOpenMeteoHourlyWindow,
-  splitOpenMeteoPastAndForecast,
-} from "./openMeteoHistory";
+import { fetchOpenMeteoHourlyWindow, splitOpenMeteoPastAndForecast } from "./openMeteoHistory";
 import { excludeDemoDevices, excludeDemoFeeds, excludeDemoRows, isDemoDevice } from "./demoFeed";
 
 export {
@@ -184,7 +196,9 @@ const fetchLatestSensorValues = fetchAlertSensorValues;
 /** Stuck-probe findings minus probes on demo devices. */
 function excludeDemoStuck(stuck: StuckSensor[], devices: DeviceWithSensors[]): StuckSensor[] {
   const demoSensorIds = new Set(
-    devices.filter((device) => isDemoDevice(device)).flatMap((device) => device.sensors.map((sensor) => sensor.id)),
+    devices
+      .filter((device) => isDemoDevice(device))
+      .flatMap((device) => device.sensors.map((sensor) => sensor.id)),
   );
   return stuck.filter((item) => !demoSensorIds.has(item.sensorId));
 }
@@ -221,9 +235,11 @@ async function recentFailedAttempt(userId: string, kind: string): Promise<boolea
 
 /** The most recent rule alert reached someone and nobody has closed it yet. */
 async function latestRuleAlert(userId: string) {
-  const { events } = await listRecentAlertEventsFiltered(userId, { limit: 1, kind: "rule" }).catch(() => ({
-    events: [],
-  }));
+  const { events } = await listRecentAlertEventsFiltered(userId, { limit: 1, kind: "rule" }).catch(
+    () => ({
+      events: [],
+    }),
+  );
   return events.find((event) => event.kind === "rule") ?? null;
 }
 
@@ -244,14 +260,19 @@ const RECOVERY_REARM_MS = 10 * 60 * 1000;
  * resolved as "recovered" after the cooldown started, at least 10 min ago), a
  * new one alerts right away instead of waiting out the rest of the 4 hours.
  */
-async function cooldownBlocks(userId: string, kind: string, lastSentAt: string | null | undefined): Promise<boolean> {
+async function cooldownBlocks(
+  userId: string,
+  kind: string,
+  lastSentAt: string | null | undefined,
+): Promise<boolean> {
   if (!isAlertCooldownActive(lastSentAt)) return false;
   const sentMs = Date.parse(lastSentAt as string);
   const { events } = await listRecentAlertEventsFiltered(userId, { limit: 5, kind }).catch(() => ({
     events: [],
   }));
   const recovered = events.some((event) => {
-    if (event.kind !== kind || event.meta?.autoResolved !== "recovered" || !event.acknowledged_at) return false;
+    if (event.kind !== kind || event.meta?.autoResolved !== "recovered" || !event.acknowledged_at)
+      return false;
     const recoveredMs = Date.parse(event.acknowledged_at);
     return recoveredMs >= sentMs && Date.now() - recoveredMs >= RECOVERY_REARM_MS;
   });
@@ -328,11 +349,17 @@ async function acknowledgedFreezeStillOngoing(
       reading.tempf <= freezeThresholdForReading(settings, reading),
   );
   // No household: readings can't be looked up, so never suppress.
-  if (!householdId || freezing.length === 0 || freezing.some((reading) => !reading.sensorId)) return false;
+  if (!householdId || freezing.length === 0 || freezing.some((reading) => !reading.sensorId))
+    return false;
   try {
     const recovered = await Promise.all(
       freezing.map((reading) =>
-        hasNumericReadingAboveSince(householdId, reading.sensorId!, ackedAt, freezeThresholdForReading(settings, reading)),
+        hasNumericReadingAboveSince(
+          householdId,
+          reading.sensorId!,
+          ackedAt,
+          freezeThresholdForReading(settings, reading),
+        ),
       ),
     );
     return !recovered.some(Boolean);
@@ -359,18 +386,13 @@ export async function sendThresholdAlertsIfNeeded(
   const display: AlertDisplay = { useCelsius: context?.useCelsius === true };
   const t = await alertText(locale);
 
-  let dwellSamplesBySensorId: Record<string, Array<{ at: string; tempF: number }>> =
-    {};
+  let dwellSamplesBySensorId: Record<string, Array<{ at: string; tempF: number }>> = {};
   // Readings are only read within the household (every caller passes one).
   if (settings.freezeDwellMinutes > 0 && householdId) {
-    const cutoffIso = new Date(
-      Date.now() - settings.freezeDwellMinutes * 60 * 1000,
-    ).toISOString();
+    const cutoffIso = new Date(Date.now() - settings.freezeDwellMinutes * 60 * 1000).toISOString();
     const sensorIds = [
       ...new Set(
-        readings
-          .map((reading) => reading.sensorId)
-          .filter((id): id is string => Boolean(id)),
+        readings.map((reading) => reading.sensorId).filter((id): id is string => Boolean(id)),
       ),
     ];
     const pairs = await Promise.all(
@@ -387,7 +409,9 @@ export async function sendThresholdAlertsIfNeeded(
   // the dwell wait and say so. Every caller passes a household today.
   let evalSettings = settings;
   if (settings.freezeDwellMinutes > 0 && !householdId) {
-    console.warn("threshold alerts: no household for the freeze dwell check; alerting without the dwell wait");
+    console.warn(
+      "threshold alerts: no household for the freeze dwell check; alerting without the dwell wait",
+    );
     evalSettings = { ...settings, freezeDwellMinutes: 0 };
   }
   const details = evaluateAlertDetails(evalSettings, readings, { dwellSamplesBySensorId });
@@ -401,24 +425,26 @@ export async function sendThresholdAlertsIfNeeded(
   const recovered =
     details.length === 0 &&
     !inScope.some((reading) => isStaleAlertReading(settings, reading)) &&
-    inScope.every((reading) => reading.tempf >= freezeThresholdForReading(settings, reading) + RECOVERY_MARGIN_F);
+    inScope.every(
+      (reading) =>
+        reading.tempf >= freezeThresholdForReading(settings, reading) + RECOVERY_MARGIN_F,
+    );
   if (recovered) {
     await resolveAndAnnounceRecovery(
       userId,
       email,
       settings,
       "threshold",
-      { title: t.recovery.freezeTitle, body: formatFreezeRecoveryBody(settings, inScope, locale, display) },
+      {
+        title: t.recovery.freezeTitle,
+        body: formatFreezeRecoveryBody(settings, inScope, locale, display),
+      },
       locale,
     );
   }
   if (messages.length > 0 && settings.escalationEnabled && settings.channelSms) {
-    const lastAlert = settings.lastAlertSentAt
-      ? Date.parse(settings.lastAlertSentAt)
-      : NaN;
-    const lastEsc = settings.lastEscalationAt
-      ? Date.parse(settings.lastEscalationAt)
-      : 0;
+    const lastAlert = settings.lastAlertSentAt ? Date.parse(settings.lastAlertSentAt) : NaN;
+    const lastEsc = settings.lastEscalationAt ? Date.parse(settings.lastEscalationAt) : 0;
     const sinceLastAlert = Date.now() - lastAlert;
     // Escalate only within the incident the last alert opened: once its
     // cooldown lapses, a fresh alert goes out below instead.
@@ -448,7 +474,16 @@ export async function sendThresholdAlertsIfNeeded(
   if (await cooldownBlocks(userId, "threshold", settings.lastAlertSentAt)) return;
   // A failed delivery skips the cooldown so it retries, but not on every reading.
   if (await recentFailedAttempt(userId, "threshold")) return;
-  if (await acknowledgedFreezeStillOngoing(userId, householdId, settings, readings, messages, dwellSamplesBySensorId)) {
+  if (
+    await acknowledgedFreezeStillOngoing(
+      userId,
+      householdId,
+      settings,
+      readings,
+      messages,
+      dwellSamplesBySensorId,
+    )
+  ) {
     return;
   }
 
@@ -462,43 +497,57 @@ export async function sendThresholdAlertsIfNeeded(
   // a bug in the thermostat-lookup path must never be able to block this
   // alert from sending.
   const coldest = readings.reduce((min, r) => (r.tempf < min.tempf ? r : min), readings[0]!);
-  const contextBlock = await buildFreezeAlertContext({
-    householdId,
-    settings,
-    weatherCityId: context?.weatherCityId ?? null,
-    coldestTempF: coldest.tempf,
-    coldestSensorId: coldest.sensorId ?? null,
-    latestSensors: context?.latestSensors,
-  }, locale).catch(() => null);
+  const contextBlock = await buildFreezeAlertContext(
+    {
+      householdId,
+      settings,
+      weatherCityId: context?.weatherCityId ?? null,
+      coldestTempF: coldest.tempf,
+      coldestSensorId: coldest.sensorId ?? null,
+      latestSensors: context?.latestSensors,
+    },
+    locale,
+  ).catch(() => null);
 
   const baseMessages = messages.join("\n");
   const body = contextBlock ? `${baseMessages}\n\n${contextBlock}` : baseMessages;
   const doorOpen = Boolean(
     context?.latestSensors?.some(
-      (row) =>
-        row.sensor.kind === "door" &&
-        (row.value_bool === true || row.value_text === "open"),
+      (row) => row.sensor.kind === "door" && (row.value_bool === true || row.value_text === "open"),
     ),
   );
   // Claim first so concurrent evaluations send this freeze alert once.
   const claim = await claimCooldown(userId, "last_alert_sent_at", settings.lastAlertSentAt);
   if (!claim.claimed) return;
-  const delivery = await notifyUser(userId, email, settings, {
-    title,
-    body,
-    kind: "threshold",
-    meta: {
-      thresholdF: settings.freezeThresholdF,
-      probeLabel: coldest.label ?? coldest.space ?? undefined,
-      probeTempF: coldest.tempf,
-      doorOpen,
-      reasonSummary: contextBlock ?? undefined,
+  const delivery = await notifyUser(
+    userId,
+    email,
+    settings,
+    {
+      title,
+      body,
+      kind: "threshold",
+      meta: {
+        thresholdF: settings.freezeThresholdF,
+        probeLabel: coldest.label ?? coldest.space ?? undefined,
+        probeTempF: coldest.tempf,
+        doorOpen,
+        reasonSummary: contextBlock ?? undefined,
+      },
     },
-  }, { space: alertSpace }, locale);
+    { space: alertSpace },
+    locale,
+  );
   if (reachedNoOne(delivery)) {
     // Nothing reached the user: release the claim so this retries
     // (throttled to every 30 min by recentFailedAttempt).
-    if (claim.claimedAt) await releaseCooldown(userId, "last_alert_sent_at", claim.claimedAt, settings.lastAlertSentAt);
+    if (claim.claimedAt)
+      await releaseCooldown(
+        userId,
+        "last_alert_sent_at",
+        claim.claimedAt,
+        settings.lastAlertSentAt,
+      );
     return;
   }
   if (!claim.claimedAt) await markCooldown(userId, "last_alert_sent_at");
@@ -585,7 +634,9 @@ export async function sendPowerAlertsIfNeeded(
   );
 }
 
-async function getWeatherConfigForUser(userId: string): Promise<import("./personalWeatherStations").PersonalWeatherConfig> {
+async function getWeatherConfigForUser(
+  userId: string,
+): Promise<import("./personalWeatherStations").PersonalWeatherConfig> {
   try {
     const data = { user: await getUserRecord(userId) };
     const meta = data.user?.user_metadata as Record<string, unknown> | undefined;
@@ -624,12 +675,24 @@ export async function maybeSendForecastFreezeAlert(
   if (!message) return;
 
   const t = await alertText(locale);
-  await sendThenArmCooldown(userId, "forecast", "last_forecast_alert_at", settings.lastForecastAlertAt, () =>
-    notifyUser(userId, email, settings, {
-      title: t.forecast.title,
-      body: message,
-      kind: "forecast",
-    }, undefined, locale),
+  await sendThenArmCooldown(
+    userId,
+    "forecast",
+    "last_forecast_alert_at",
+    settings.lastForecastAlertAt,
+    () =>
+      notifyUser(
+        userId,
+        email,
+        settings,
+        {
+          title: t.forecast.title,
+          body: message,
+          kind: "forecast",
+        },
+        undefined,
+        locale,
+      ),
   );
 }
 
@@ -689,32 +752,45 @@ export async function maybeSendRunwayAlert(
 
   const doorOpenNearby =
     latestSensors?.some(
-      (row) =>
-        row.sensor.kind === "door" &&
-        (row.value_bool === true || row.value_text === "open"),
+      (row) => row.sensor.kind === "door" && (row.value_bool === true || row.value_text === "open"),
     ) ?? false;
 
-  const projection = buildTimeToFreezeProjection({
-    currentTempF,
-    freezeThresholdF: settings.freezeThresholdF,
-    indoorSamples,
-    outdoorPast,
-    outdoorForecast,
-    doorOpenNearby,
-    timeZone: settings.quietHoursTimezone,
-    lookAheadHours: settings.forecastHoursAhead,
-  }, locale);
+  const projection = buildTimeToFreezeProjection(
+    {
+      currentTempF,
+      freezeThresholdF: settings.freezeThresholdF,
+      indoorSamples,
+      outdoorPast,
+      outdoorForecast,
+      doorOpenNearby,
+      timeZone: settings.quietHoursTimezone,
+      lookAheadHours: settings.forecastHoursAhead,
+    },
+    locale,
+  );
 
   const t = await alertText(locale);
   const message = evaluateRunwayAlert(settings, projection, locale);
   if (!message) return;
 
-  await sendThenArmCooldown(userId, "runway", "last_runway_alert_at", settings.lastRunwayAlertAt, () =>
-    notifyUser(userId, email, settings, {
-      title: t.runway.title,
-      body: message,
-      kind: "runway",
-    }, undefined, locale),
+  await sendThenArmCooldown(
+    userId,
+    "runway",
+    "last_runway_alert_at",
+    settings.lastRunwayAlertAt,
+    () =>
+      notifyUser(
+        userId,
+        email,
+        settings,
+        {
+          title: t.runway.title,
+          body: message,
+          kind: "runway",
+        },
+        undefined,
+        locale,
+      ),
   );
 }
 
@@ -750,11 +826,18 @@ export async function maybeSendNwsFreezeAlert(
   const body = first.headline?.trim() || first.event || t.nws.fallback;
 
   await sendThenArmCooldown(userId, "nws", "last_nws_alert_at", settings.lastNwsAlertAt, () =>
-    notifyUser(userId, email, settings, {
-      title: t.nws.title,
-      body,
-      kind: "nws",
-    }, undefined, locale),
+    notifyUser(
+      userId,
+      email,
+      settings,
+      {
+        title: t.nws.title,
+        body,
+        kind: "nws",
+      },
+      undefined,
+      locale,
+    ),
   );
 }
 
@@ -778,7 +861,11 @@ export async function maybeSendThresholdAlerts(
 ): Promise<void> {
   await ensureLocale(locale, ["app"]);
   const hold =
-    householdHold !== undefined ? householdHold : householdId ? await loadHouseholdAlertHold(householdId) : null;
+    householdHold !== undefined
+      ? householdHold
+      : householdId
+        ? await loadHouseholdAlertHold(householdId)
+        : null;
   // Held like the member's own snooze / vacation, for this household only.
   const settings = withHouseholdHold(await getAlertSettingsForUser(userId, userMetadata), hold);
   // Demo (simulated) feeds never alert: drop them before anything is read.
@@ -810,20 +897,32 @@ export async function maybeSendThresholdAlerts(
 
   // Read once: the threshold, flood, power and runway checks all use it.
   const latest = householdId ? await fetchLatestSensorValues(householdId) : [];
-  const sensorReadings: AlertReading[] = householdId ? buildAlertReadingsFromLatestSensors(latest) : [];
-  const floodReadings: FloodAlertReading[] = householdId ? buildFloodReadingsFromLatestSensors(latest) : [];
-  const powerOffReadings: FloodAlertReading[] = householdId ? buildPowerOffReadingsFromLatestSensors(latest) : [];
+  const sensorReadings: AlertReading[] = householdId
+    ? buildAlertReadingsFromLatestSensors(latest)
+    : [];
+  const floodReadings: FloodAlertReading[] = householdId
+    ? buildFloodReadingsFromLatestSensors(latest)
+    : [];
+  const powerOffReadings: FloodAlertReading[] = householdId
+    ? buildPowerOffReadingsFromLatestSensors(latest)
+    : [];
 
   const readings = mergeAlertReadings(feedReadings, sensorReadings);
   const weatherCityId =
-    typeof userMetadata?.weather_city_id === "string"
-      ? userMetadata.weather_city_id.trim()
-      : null;
-  await sendThresholdAlertsIfNeeded(userId, email, settings, readings, householdId, {
-    weatherCityId,
-    latestSensors: latest,
-    useCelsius: userMetadata?.use_celsius === true,
-  }, locale);
+    typeof userMetadata?.weather_city_id === "string" ? userMetadata.weather_city_id.trim() : null;
+  await sendThresholdAlertsIfNeeded(
+    userId,
+    email,
+    settings,
+    readings,
+    householdId,
+    {
+      weatherCityId,
+      latestSensors: latest,
+      useCelsius: userMetadata?.use_celsius === true,
+    },
+    locale,
+  );
   await sendFloodAlertsIfNeeded(userId, email, settings, floodReadings, locale);
   await sendPowerAlertsIfNeeded(userId, email, settings, powerOffReadings, locale);
   await maybeSendForecastFreezeAlert(userId, email, settings, undefined, locale, {
@@ -831,7 +930,11 @@ export async function maybeSendThresholdAlerts(
   });
   await maybeSendRunwayAlert(userId, email, settings, householdId, latest, locale);
   await maybeSendNwsFreezeAlert(userId, email, settings, undefined, locale);
-  await safeAutoResolve(userId, { kinds: ["forecast", "nws", "runway", "rate"], olderThanMs: DAY_MS, reason: "expired" });
+  await safeAutoResolve(userId, {
+    kinds: ["forecast", "nws", "runway", "rate"],
+    olderThanMs: DAY_MS,
+    reason: "expired",
+  });
   await safeAutoResolve(userId, { olderThanMs: 7 * DAY_MS, reason: "expired" });
 }
 
@@ -880,16 +983,25 @@ async function buildRuleContext(
         sensorIdByLabel.set(sensor.label, sensor.id);
         // True start even for a door open since before the 24 h window,
         // so "open longer than N minutes" measures the whole opening.
-        const sessions = await readDoorSessions(householdId, { id: sensor.id, label: sensor.label }, doorSince);
+        const sessions = await readDoorSessions(
+          householdId,
+          { id: sensor.id, label: sensor.label },
+          doorSince,
+        );
         doorOpenSessions.push(...sessions);
       }
     }
 
-    if (persist) try {
-      await persistDoorSessions(householdId, doorOpenSessions as import("./doorDuration").DoorOpenSession[], sensorIdByLabel);
-    } catch (err) {
-      console.error("persistDoorSessions failed:", err);
-    }
+    if (persist)
+      try {
+        await persistDoorSessions(
+          householdId,
+          doorOpenSessions as import("./doorDuration").DoorOpenSession[],
+          sensorIdByLabel,
+        );
+      } catch (err) {
+        console.error("persistDoorSessions failed:", err);
+      }
   }
 
   const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -935,7 +1047,11 @@ async function buildRuleContext(
   };
 }
 
-async function attachOutdoorTemp(userId: string, settings: AlertSettings, ctx: RuleEvalContext): Promise<void> {
+async function attachOutdoorTemp(
+  userId: string,
+  settings: AlertSettings,
+  ctx: RuleEvalContext,
+): Promise<void> {
   // Weather costs an API call, so only look it up when a live rule needs it.
   const needsOutdoor = settings.alertRules.some(
     (rule) => rule.enabled && rule.all?.some((condition) => condition.type === "outdoor_below"),
@@ -1003,7 +1119,11 @@ export async function maybeSendRuleAlerts(
   // During the cooldown, only evaluate when the last rule alert is still open
   // (to notice it ended) or has recovered (a new match may alert). Otherwise
   // skip the evaluation entirely, as before.
-  if (inCooldown && !(await latestRuleAlertOpen(userId)) && (await cooldownBlocks(userId, "rule", settings.lastRuleAlertAt))) {
+  if (
+    inCooldown &&
+    !(await latestRuleAlertOpen(userId)) &&
+    (await cooldownBlocks(userId, "rule", settings.lastRuleAlertAt))
+  ) {
     return;
   }
 
@@ -1035,12 +1155,19 @@ export async function maybeSendRuleAlerts(
 
   const doorRule = matches.some((match) => match.involvesDoor);
   await sendThenArmCooldown(userId, "rule", "last_rule_alert_at", settings.lastRuleAlertAt, () =>
-    notifyUser(userId, email, settings, {
-      title: t.rule.title,
-      body: matches.map((match) => match.message).join("\n"),
-      kind: "rule",
-      ...(doorRule ? { meta: { doorRule: true } } : {}),
-    }, undefined, locale),
+    notifyUser(
+      userId,
+      email,
+      settings,
+      {
+        title: t.rule.title,
+        body: matches.map((match) => match.message).join("\n"),
+        kind: "rule",
+        ...(doorRule ? { meta: { doorRule: true } } : {}),
+      },
+      undefined,
+      locale,
+    ),
   );
 }
 
@@ -1082,17 +1209,26 @@ export async function maybeSendRateAndOutageAlerts(
   if (outageMessages.length > 0 && !isAlertCooldownActive(settings.lastOutageAlertAt)) {
     const body =
       stillOutCount > 0
-        ? [
-            ...outageMessages,
-            plural(t.outage.stillOffline, stillOutCount, locale),
-          ]
+        ? [...outageMessages, plural(t.outage.stillOffline, stillOutCount, locale)]
         : outageMessages;
-    await sendThenArmCooldown(userId, "outage", "last_outage_alert_at", settings.lastOutageAlertAt, () =>
-      notifyUser(userId, email, settings, {
-        title: t.outage.title,
-        body: body.join("\n"),
-        kind: "outage",
-      }, undefined, locale),
+    await sendThenArmCooldown(
+      userId,
+      "outage",
+      "last_outage_alert_at",
+      settings.lastOutageAlertAt,
+      () =>
+        notifyUser(
+          userId,
+          email,
+          settings,
+          {
+            title: t.outage.title,
+            body: body.join("\n"),
+            kind: "outage",
+          },
+          undefined,
+          locale,
+        ),
     );
   }
 
@@ -1110,23 +1246,22 @@ export async function maybeSendRateAndOutageAlerts(
 
   if (rateMessages.length > 0 && !isAlertCooldownActive(settings.lastRateAlertAt)) {
     await sendThenArmCooldown(userId, "rate", "last_rate_alert_at", settings.lastRateAlertAt, () =>
-      notifyUser(userId, email, settings, {
-        title: t.rate.title,
-        body: rateMessages.join("\n"),
-        kind: "rate",
-      }, undefined, locale),
+      notifyUser(
+        userId,
+        email,
+        settings,
+        {
+          title: t.rate.title,
+          body: rateMessages.join("\n"),
+          kind: "rate",
+        },
+        undefined,
+        locale,
+      ),
     );
   }
 
-  await maybeSendRuleAlerts(
-    userId,
-    email,
-    devices,
-    settings,
-    readings,
-    householdId,
-    locale,
-  );
+  await maybeSendRuleAlerts(userId, email, devices, settings, readings, householdId, locale);
 }
 
 /** One stuck-probe alert a day at most; it stays open until the readings move again. */
@@ -1154,7 +1289,8 @@ export async function maybeSendStuckSensorAlerts(
   }
   const events = await listRecentAlertEvents(userId, 50).catch(() => []);
   const recentlySent = events.some(
-    (event) => event.kind === "stuck" && Date.now() - Date.parse(event.created_at) < STUCK_ALERT_COOLDOWN_MS,
+    (event) =>
+      event.kind === "stuck" && Date.now() - Date.parse(event.created_at) < STUCK_ALERT_COOLDOWN_MS,
   );
   if (recentlySent) return;
 
@@ -1162,12 +1298,19 @@ export async function maybeSendStuckSensorAlerts(
     stuck.length === 1
       ? fmt(t.stuck.titleOne, { label: stuck[0]!.label })
       : fmt(t.stuck.titleMany, { count: alertNumber(stuck.length, locale) });
-  await notifyUser(userId, email, settings, {
-    title,
-    body: stuck.map((sensor) => sensor.message).join("\n"),
-    kind: "stuck",
-    meta: { probeLabel: stuck[0]!.label },
-  }, undefined, locale);
+  await notifyUser(
+    userId,
+    email,
+    settings,
+    {
+      title,
+      body: stuck.map((sensor) => sensor.message).join("\n"),
+      kind: "stuck",
+      meta: { probeLabel: stuck[0]!.label },
+    },
+    undefined,
+    locale,
+  );
 }
 
 export async function maybeSendDeviceHealthAlerts(
@@ -1181,7 +1324,14 @@ export async function maybeSendDeviceHealthAlerts(
 ): Promise<void> {
   if (!settings.enabled) return;
   const t = await alertText(locale);
-  if (stuck) await maybeSendStuckSensorAlerts(userId, email, settings, excludeDemoStuck(stuck, devices), locale);
+  if (stuck)
+    await maybeSendStuckSensorAlerts(
+      userId,
+      email,
+      settings,
+      excludeDemoStuck(stuck, devices),
+      locale,
+    );
   devices = excludeDemoDevices(devices);
 
   const health = deviceHealthFromDevices(devices);
@@ -1190,23 +1340,25 @@ export async function maybeSendDeviceHealthAlerts(
   const notifyOpts = { snoozeUrl };
 
   const batteryMessages = evaluateBatteryHealth(settings, health, locale);
-  if (
-    batteryMessages.length > 0 &&
-    !isAlertCooldownActive(settings.lastBatteryAlertAt)
-  ) {
-    await sendThenArmCooldown(userId, "battery", "last_battery_alert_at", settings.lastBatteryAlertAt, () =>
-      notifyUser(
-        userId,
-        email,
-        settings,
-        {
-          title: t.battery.title,
-          body: batteryMessages.join("\n"),
-          kind: "battery",
-        },
-        notifyOpts,
-        locale,
-      ),
+  if (batteryMessages.length > 0 && !isAlertCooldownActive(settings.lastBatteryAlertAt)) {
+    await sendThenArmCooldown(
+      userId,
+      "battery",
+      "last_battery_alert_at",
+      settings.lastBatteryAlertAt,
+      () =>
+        notifyUser(
+          userId,
+          email,
+          settings,
+          {
+            title: t.battery.title,
+            body: batteryMessages.join("\n"),
+            kind: "battery",
+          },
+          notifyOpts,
+          locale,
+        ),
     );
   }
 
@@ -1231,21 +1383,31 @@ export async function maybeSendDeviceHealthAlerts(
   if (settings.batteryTrendAlertsEnabled) {
     for (const device of devices) {
       const history = device.meta?.battery_history as BatterySample[] | undefined;
-      const trend = detectBatteryTrendDrop(Array.isArray(history) ? history : [], undefined, undefined, locale);
+      const trend = detectBatteryTrendDrop(
+        Array.isArray(history) ? history : [],
+        undefined,
+        undefined,
+        locale,
+      );
       if (trend && !isAlertCooldownActive(settings.lastBatteryTrendAlertAt)) {
-        await sendThenArmCooldown(userId, "battery", "last_battery_trend_alert_at", settings.lastBatteryTrendAlertAt, () =>
-          notifyUser(
-            userId,
-            email,
-            settings,
-            {
-              title: t.battery.trendTitle,
-              body: fmt(t.battery.trendBody, { device: device.name, trend }),
-              kind: "battery",
-            },
-            notifyOpts,
-            locale,
-          ),
+        await sendThenArmCooldown(
+          userId,
+          "battery",
+          "last_battery_trend_alert_at",
+          settings.lastBatteryTrendAlertAt,
+          () =>
+            notifyUser(
+              userId,
+              email,
+              settings,
+              {
+                title: t.battery.trendTitle,
+                body: fmt(t.battery.trendBody, { device: device.name, trend }),
+                kind: "battery",
+              },
+              notifyOpts,
+              locale,
+            ),
         );
         break;
       }
@@ -1284,8 +1446,12 @@ export async function maybeSendQuietHoursSummary(
   if (isInQuietHours(settings, new Date(now))) return;
   if (!isInQuietHours(settings, new Date(now - QUIET_END_WINDOW_MS))) return;
 
-  const { events } = await listRecentAlertEventsFiltered(userId, { limit: 50 }).catch(() => ({ events: [] }));
-  const lastSummary = events.find((event) => event.kind === "digest" && event.meta?.quietHoursSummary);
+  const { events } = await listRecentAlertEventsFiltered(userId, { limit: 50 }).catch(() => ({
+    events: [],
+  }));
+  const lastSummary = events.find(
+    (event) => event.kind === "digest" && event.meta?.quietHoursSummary,
+  );
   const lastSummaryMs = lastSummary ? Date.parse(lastSummary.created_at) : -Infinity;
   if (now - lastSummaryMs < 30 * 60 * 1000) return;
 
@@ -1305,7 +1471,12 @@ export async function maybeSendQuietHoursSummary(
     userId,
     email,
     settings,
-    { title: t.title, body: `${t.intro}\n${lines.join("\n")}`, kind: "digest", meta: { quietHoursSummary: true } },
+    {
+      title: t.title,
+      body: `${t.intro}\n${lines.join("\n")}`,
+      kind: "digest",
+      meta: { quietHoursSummary: true },
+    },
     undefined,
     locale,
   );

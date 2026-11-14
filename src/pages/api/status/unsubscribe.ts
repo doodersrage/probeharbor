@@ -10,7 +10,5 @@ export const GET: APIRoute = async ({ url, redirect }) => {
   }
 
   const result = await unsubscribeStatusSubscription(token);
-  return redirect(
-    `/system-status?${result.ok ? "unsubscribed=1" : "status_error=invalid_token"}`,
-  );
+  return redirect(`/system-status?${result.ok ? "unsubscribed=1" : "status_error=invalid_token"}`);
 };

@@ -26,10 +26,7 @@ export const POST: APIRoute = async ({ request, redirect, clientAddress }) => {
     return redirect(withQuery(redirectTo, { status_error: "rate_limited" }));
   }
 
-  const turnstile = await verifyTurnstileToken(
-    getTurnstileToken(formData),
-    clientAddress,
-  );
+  const turnstile = await verifyTurnstileToken(getTurnstileToken(formData), clientAddress);
   if (!turnstile.success) {
     return redirect(withQuery(redirectTo, { status_error: "verification" }));
   }

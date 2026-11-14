@@ -19,7 +19,10 @@ const warnedMissing = new Set<string>();
 type RateLimiter = { limit: (options: { key: string }) => Promise<{ success: boolean }> };
 
 /** true = allowed, false = over the limit, null = no binding available (use the fallback). */
-export async function checkEdgeRateLimit(name: EdgeRateLimiterName, key: string): Promise<boolean | null> {
+export async function checkEdgeRateLimit(
+  name: EdgeRateLimiterName,
+  key: string,
+): Promise<boolean | null> {
   try {
     // Dynamic import: a static cloudflare:workers import breaks prerendered pages at build time.
     const { env } = await import("cloudflare:workers");

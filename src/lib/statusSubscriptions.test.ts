@@ -20,7 +20,6 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-
 const mockSendEmail = vi.fn();
 vi.mock("./mailer", () => ({
   sendEmail: (...args: unknown[]) => mockSendEmail(...args),
@@ -87,7 +86,10 @@ describe("subscribeToStatusUpdates", () => {
   });
 
   it("is a silent no-op for an already-confirmed subscriber (no duplicate email)", async () => {
-    db.findStatusSubscriber.mockResolvedValue({ id: "row1", confirmed_at: "2026-01-01T00:00:00.000Z" });
+    db.findStatusSubscriber.mockResolvedValue({
+      id: "row1",
+      confirmed_at: "2026-01-01T00:00:00.000Z",
+    });
 
     const { subscribeToStatusUpdates } = await import("./statusSubscriptions");
     const result = await subscribeToStatusUpdates("confirmed@example.com");
@@ -155,7 +157,9 @@ describe("unsubscribeStatusSubscription", () => {
 
   it("a signed link removes exactly its subscription; a forged or unsigned-env one does nothing", async () => {
     db.deleteStatusSubscriberById.mockResolvedValue(true);
-    const { signedStatusUnsubscribeToken, unsubscribeStatusSubscription } = await import("./statusSubscriptions");
+    const { signedStatusUnsubscribeToken, unsubscribeStatusSubscription } = await import(
+      "./statusSubscriptions"
+    );
     const id = "6f1c2c1e-7a55-4b39-9a0e-0c1d2e3f4a5b";
     const signed = await signedStatusUnsubscribeToken(id);
     expect(signed).toMatch(new RegExp(`^${id}\\.[0-9a-f]{64}$`));
@@ -166,7 +170,9 @@ describe("unsubscribeStatusSubscription", () => {
 
     db.deleteStatusSubscriberById.mockClear();
     const otherId = "00000000-0000-4000-8000-000000000000";
-    expect((await unsubscribeStatusSubscription(`${otherId}.${signed!.split(".")[1]}`)).ok).toBe(false);
+    expect((await unsubscribeStatusSubscription(`${otherId}.${signed!.split(".")[1]}`)).ok).toBe(
+      false,
+    );
     expect(db.deleteStatusSubscriberById).not.toHaveBeenCalled();
 
     env.values = {};
@@ -204,7 +210,9 @@ describe("statusUnsubscribeUrlFor", () => {
   it("signs the subscription id when the link secret is set (nothing written)", async () => {
     const { statusUnsubscribeUrlFor } = await import("./statusSubscriptions");
     const url = await statusUnsubscribeUrlFor({ id: "6f1c2c1e-7a55-4b39-9a0e-0c1d2e3f4a5b" });
-    expect(url).toMatch(/\/api\/status\/unsubscribe\?token=6f1c2c1e-7a55-4b39-9a0e-0c1d2e3f4a5b\.[0-9a-f]{64}$/);
+    expect(url).toMatch(
+      /\/api\/status\/unsubscribe\?token=6f1c2c1e-7a55-4b39-9a0e-0c1d2e3f4a5b\.[0-9a-f]{64}$/,
+    );
     expect(db.rotateStatusSubscriberTokenHash).not.toHaveBeenCalled();
   });
 

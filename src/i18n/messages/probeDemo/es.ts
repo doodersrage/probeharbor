@@ -14,8 +14,7 @@ const es: ProbeDemoMessages = {
   reset: "Reiniciar demo",
   updated: "Actualización simulada cada 2 segundos · Última actualización {time}",
   statusEyebrow: "Estado del espacio (simulado)",
-  coldestLine:
-    "Sonda más fría {coldest} · umbral {threshold} · exterior {outdoor}",
+  coldestLine: "Sonda más fría {coldest} · umbral {threshold} · exterior {outdoor}",
   riskNote:
     "En la app real, esto activaría tus alertas esenciales de helada (por correo electrónico por defecto), con la misma lógica que la tarjeta de estado del espacio de Overview.",
   readingsTitle: "Lecturas de las sondas en vivo",
@@ -56,12 +55,18 @@ const es: ProbeDemoMessages = {
   essentials: "Alertas esenciales de helada + correo",
   presets: {
     mild: { label: "Día templado", hint: "Lecturas típicas con el espacio cerrado" },
-    coldSnap: { label: "Ola de frío", hint: "Por debajo del umbral de helada en la sonda más fría" },
+    coldSnap: {
+      label: "Ola de frío",
+      hint: "Por debajo del umbral de helada en la sonda más fría",
+    },
     doorDraft: {
       label: "Corriente en la puerta",
       hint: "La puerta abierta mete aire exterior en una zona: mira cómo baja la barra de la puerta/entrada frente a las demás",
     },
-    sunny: { label: "Carga solar", hint: "La exposición del tejado / al oeste calienta la zona más cálida" },
+    sunny: {
+      label: "Carga solar",
+      hint: "La exposición del tejado / al oeste calienta la zona más cálida",
+    },
   },
   spaces: {
     garage: {
@@ -104,10 +109,10 @@ const es: ProbeDemoMessages = {
     nightsDetail:
       "Las condiciones exteriores son frías: comprueba las sondas en Live y confirma que las alertas de previsión están activadas.",
     nearTitle: "Cerca del umbral de helada",
-    nearDetail:
-      "Sonda más fría {coldest}, a menos de 2,8 °C (5 °F) de {threshold}.",
+    nearDetail: "Sonda más fría {coldest}, a menos de 2,8 °C (5 °F) de {threshold}.",
     okTitle: "Todo en orden",
-    okDetail: "Las sondas están enviando datos: nada en el umbral de helada y ningún contacto de inundación mojado.",
+    okDetail:
+      "Las sondas están enviando datos: nada en el umbral de helada y ningún contacto de inundación mojado.",
   },
 };
 

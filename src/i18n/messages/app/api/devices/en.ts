@@ -35,7 +35,10 @@ const en = {
     tooMany: "Too many feed tests. Try again shortly.",
     invalidUrl: "Enter a valid HTTPS feed URL.",
     requestFailed: "Feed request failed ({status}).",
-    found: { one: "Found {count} probe ({format} JSON).", other: "Found {count} probes ({format} JSON)." },
+    found: {
+      one: "Found {count} probe ({format} JSON).",
+      other: "Found {count} probes ({format} JSON).",
+    },
     foundWithAverage: {
       one: "Found {count} probe ({format} JSON), average {average}°F.",
       other: "Found {count} probes ({format} JSON), average {average}°F.",

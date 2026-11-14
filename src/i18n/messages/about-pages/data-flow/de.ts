@@ -1,4 +1,3 @@
-
 /** /about/data-flow body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
@@ -11,8 +10,10 @@ const de: Messages = {
   step2Title: "Schritt 2. JSON veröffentlichen",
   step2Html:
     'Die Platine oder ein Relay in der Nähe stellt JSON über HTTPS bereit. Ein Python-FastAPI-Dienst kann die Antworten in Redis zwischenspeichern, damit das offene Internet nie direkt auf den Hausanschluss zugreift: siehe <a class="text-link" href="/about/python-feeds">Python-Skripte und Feeds</a>.',
-  jsonAlt: "JSON-Ansicht im Browser mit den Fühlerschlüsseln 0, 1 und avg mit Fahrenheit, Celsius und Luftfeuchtigkeit",
-  jsonCaption: "Aufbau des Live-Feeds, den die Website verarbeitet, nachdem er das lokale Netz verlassen hat.",
+  jsonAlt:
+    "JSON-Ansicht im Browser mit den Fühlerschlüsseln 0, 1 und avg mit Fahrenheit, Celsius und Luftfeuchtigkeit",
+  jsonCaption:
+    "Aufbau des Live-Feeds, den die Website verarbeitet, nachdem er das lokale Netz verlassen hat.",
   step3Title: "Schritt 3. Abruf und Anzeige auf der Website",
   step3Html:
     "Wenn du die Startseite lädst, ruft der Server jede konfigurierte Feed-URL ab, liest die Fühlerschlüssel aus und zeigt die Messwertkarten an. Angemeldete Nutzer laden ihre Feed- und Fühlerzuordnungen aus der Datenbank (Neon Postgres) statt der Standardwerte. Wetterdaten nehmen parallel den Weg über OpenWeather, auf Wunsch mit deiner eigenen Stadt.",

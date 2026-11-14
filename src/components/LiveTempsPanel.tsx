@@ -167,7 +167,11 @@ function fill(template: string, vars: Record<string, string | number>): string {
 }
 
 /** Formatting helpers bound to the panel's copy and locale. */
-export function makeFormat(text: LiveTempsPanelText, locale: string | undefined, useCelsius = false) {
+export function makeFormat(
+  text: LiveTempsPanelText,
+  locale: string | undefined,
+  useCelsius = false,
+) {
   const localized = locale != null && !locale.toLowerCase().startsWith("en");
   const fixed = (n: number, digits: number) =>
     localized
@@ -207,7 +211,9 @@ export function makeFormat(text: LiveTempsPanelText, locale: string | undefined,
       return fill(source === "pull_url" ? text.freshness.polled : text.freshness.updated, { age });
     }
     if (source === "pull_url") {
-      return fill(flags.stale ? text.freshness.offlinePolled : text.freshness.awaitingPoll, { age });
+      return fill(flags.stale ? text.freshness.offlinePolled : text.freshness.awaitingPoll, {
+        age,
+      });
     }
     return fill(flags.stale ? text.freshness.offlineSeen : text.freshness.mayBeOffline, { age });
   };
@@ -215,7 +221,8 @@ export function makeFormat(text: LiveTempsPanelText, locale: string | undefined,
   const deg = (value: number | null, unit: "°F" | "°C") =>
     value != null && Number.isFinite(value) ? `${fixed(value, 1)}${unit}` : "—";
   /** The tile value in the preferred unit, from the reading as reported (tenths: finer than probe accuracy). */
-  const tempMain = (f: number | null, c: number | null) => (useCelsius ? deg(c, "°C") : deg(f, "°F"));
+  const tempMain = (f: number | null, c: number | null) =>
+    useCelsius ? deg(c, "°C") : deg(f, "°F");
   /** The second-line temperature (the unit that isn't the tile value). */
   const tempOther = (f: number | null, c: number | null) =>
     useCelsius ? deg(f, "°F") : deg(c, "°C");
@@ -240,7 +247,18 @@ export function makeFormat(text: LiveTempsPanelText, locale: string | undefined,
   const time = (iso: string) =>
     localized ? new Date(iso).toLocaleTimeString(locale) : new Date(iso).toLocaleTimeString();
 
-  return { fixed, count, plural, freshness, tempMain, tempOther, tempDetail, tempFromF, boolValue, time };
+  return {
+    fixed,
+    count,
+    plural,
+    freshness,
+    tempMain,
+    tempOther,
+    tempDetail,
+    tempFromF,
+    boolValue,
+    time,
+  };
 }
 
 type PanelFormat = ReturnType<typeof makeFormat>;
@@ -257,8 +275,7 @@ function formatSensorValue(
       if (sensor.temp) {
         // The API reports 0 when a probe has no humidity sensor; don't show
         // that as a real 0% reading.
-        const humidity =
-          pairedHumidity ?? (sensor.temp.h > 0 ? sensor.temp.h : null);
+        const humidity = pairedHumidity ?? (sensor.temp.h > 0 ? sensor.temp.h : null);
         return {
           primary: f.tempMain(sensor.temp.f, sensor.temp.c),
           detail:
@@ -270,7 +287,9 @@ function formatSensorValue(
       if (sensor.value_num != null) {
         return {
           // Stored temperatures are °F unless the sensor names its own unit.
-          primary: sensor.unit ? `${f.fixed(sensor.value_num, 1)} ${sensor.unit}` : f.tempFromF(sensor.value_num),
+          primary: sensor.unit
+            ? `${f.fixed(sensor.value_num, 1)} ${sensor.unit}`
+            : f.tempFromF(sensor.value_num),
           detail: sensor.deviceName,
         };
       }
@@ -336,10 +355,7 @@ function formatSensorValue(
     case "flood":
     case "motion":
       return {
-        primary:
-          sensor.value_bool == null
-            ? "—"
-            : f.boolValue(sensor.kind, sensor.value_bool),
+        primary: sensor.value_bool == null ? "—" : f.boolValue(sensor.kind, sensor.value_bool),
         detail: (text.details as Record<string, string>)[sensor.kind] ?? sensor.kind,
       };
     default:
@@ -394,7 +410,8 @@ export function compareLiveSensors(
   a: Pick<LiveSensor, "space" | "deviceName" | "kind" | "label">,
   b: Pick<LiveSensor, "space" | "deviceName" | "kind" | "label">,
 ): number {
-  const cmp = (x: string, y: string) => x.localeCompare(y, undefined, { numeric: true, sensitivity: "base" });
+  const cmp = (x: string, y: string) =>
+    x.localeCompare(y, undefined, { numeric: true, sensitivity: "base" });
   const spaceA = a.space?.trim() || null;
   const spaceB = b.space?.trim() || null;
   if (spaceA !== spaceB) {
@@ -414,9 +431,7 @@ export function compareLiveSensors(
 /** Distinct sensor kinds for the Type filter, in tile order (temperature, humidity, then A–Z). */
 export function sensorKindOptions(sensors: Pick<LiveSensor, "kind">[]): string[] {
   const kinds = [...new Set(sensors.map((s) => s.kind))];
-  return kinds.sort(
-    (a, b) => (KIND_ORDER[a] ?? 2) - (KIND_ORDER[b] ?? 2) || a.localeCompare(b),
-  );
+  return kinds.sort((a, b) => (KIND_ORDER[a] ?? 2) - (KIND_ORDER[b] ?? 2) || a.localeCompare(b));
 }
 
 export default function LiveTempsPanel({
@@ -437,53 +452,55 @@ export default function LiveTempsPanel({
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [offlineStale, setOfflineStale] = useState(false);
 
-  const loadReadings = useCallback(async (signal?: AbortSignal) => {
-    try {
-      const qs = spaceFilter
-        ? `?space=${encodeURIComponent(spaceFilter)}`
-        : "";
-      const response = await fetch(`/api/home/readings${qs}`, {
-        credentials: "same-origin",
-        signal,
-      });
+  const loadReadings = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const qs = spaceFilter ? `?space=${encodeURIComponent(spaceFilter)}` : "";
+        const response = await fetch(`/api/home/readings${qs}`, {
+          credentials: "same-origin",
+          signal,
+        });
 
-      if (signal?.aborted) return;
-      if (!response.ok) {
-        throw new Error(text.refreshError);
+        if (signal?.aborted) return;
+        if (!response.ok) {
+          throw new Error(text.refreshError);
+        }
+
+        const payload = (await response.json()) as {
+          groups: FeedGroup[];
+          sensors?: LiveSensor[];
+          spaces?: string[];
+          updatedAt: string;
+        };
+
+        if (signal?.aborted) return;
+        setGroups(payload.groups ?? []);
+        setSensors(payload.sensors ?? []);
+        if (payload.spaces) setSpaces(payload.spaces);
+        setUpdatedAt(payload.updatedAt);
+        setOfflineStale(
+          response.headers.get("X-ProbeHarbor-Stale") === "1" ||
+            response.headers.get("X-Garage-Temp-Stale") === "1",
+        );
+        setError(null);
+        setCountdown(intervalMs / 1000);
+      } catch (e) {
+        if (signal?.aborted || (e instanceof DOMException && e.name === "AbortError")) {
+          return;
+        }
+        // Network failures (TypeError) carry browser wording; show our own.
+        setError(
+          e instanceof Error &&
+            (!locale || locale.toLowerCase().startsWith("en") || !(e instanceof TypeError))
+            ? e.message
+            : text.refreshFailed,
+        );
+      } finally {
+        if (!signal?.aborted) setLoading(false);
       }
-
-      const payload = (await response.json()) as {
-        groups: FeedGroup[];
-        sensors?: LiveSensor[];
-        spaces?: string[];
-        updatedAt: string;
-      };
-
-      if (signal?.aborted) return;
-      setGroups(payload.groups ?? []);
-      setSensors(payload.sensors ?? []);
-      if (payload.spaces) setSpaces(payload.spaces);
-      setUpdatedAt(payload.updatedAt);
-      setOfflineStale(
-        response.headers.get("X-ProbeHarbor-Stale") === "1" ||
-          response.headers.get("X-Garage-Temp-Stale") === "1",
-      );
-      setError(null);
-      setCountdown(intervalMs / 1000);
-    } catch (e) {
-      if (signal?.aborted || (e instanceof DOMException && e.name === "AbortError")) {
-        return;
-      }
-      // Network failures (TypeError) carry browser wording; show our own.
-      setError(
-        e instanceof Error && (!locale || locale.toLowerCase().startsWith("en") || !(e instanceof TypeError))
-          ? e.message
-          : text.refreshFailed,
-      );
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, [intervalMs, spaceFilter, text, locale]);
+    },
+    [intervalMs, spaceFilter, text, locale],
+  );
 
   useEffect(() => {
     const ac = new AbortController();
@@ -548,7 +565,8 @@ export default function LiveTempsPanel({
         detail: {
           lastReadingAt,
           // So the top-bar badge judges it by that probe's interval (shared freshness rule).
-          reportIntervalMs: sensors.find((s) => s.recorded_at === lastReadingAt)?.reportIntervalMs ?? null,
+          reportIntervalMs:
+            sensors.find((s) => s.recorded_at === lastReadingAt)?.reportIntervalMs ?? null,
           sensorCount: sensors.length + groupCount,
         },
       }),
@@ -592,7 +610,12 @@ export default function LiveTempsPanel({
   const temperatureCards = useMemo(() => {
     const tempKeys = new Set(visibleSensors.filter((s) => s.kind === "temperature").map(pairKey));
     const rank = (s: LiveSensor) => {
-      const age = formatRelativeAge(s.recorded_at ?? null, undefined, undefined, s.reportIntervalMs);
+      const age = formatRelativeAge(
+        s.recorded_at ?? null,
+        undefined,
+        undefined,
+        s.reportIntervalMs,
+      );
       return age.stale ? 2 : age.lagging ? 1 : 0;
     };
     return visibleSensors
@@ -611,7 +634,12 @@ export default function LiveTempsPanel({
         if (!sensor.recorded_at) {
           return { sensor, age: formatRelativeAge(null) };
         }
-        const age = formatRelativeAge(sensor.recorded_at, undefined, undefined, sensor.reportIntervalMs);
+        const age = formatRelativeAge(
+          sensor.recorded_at,
+          undefined,
+          undefined,
+          sensor.reportIntervalMs,
+        );
         return age.lagging ? { sensor, age } : null;
       })
       .filter((row): row is { sensor: LiveSensor; age: ReturnType<typeof formatRelativeAge> } =>
@@ -621,37 +649,35 @@ export default function LiveTempsPanel({
 
   const renderClimateCard = (sensor: LiveSensor) => {
     const display = formatSensorValue(sensor, text, f, pairedHumidity.get(pairKey(sensor)) ?? null);
-    const age = formatRelativeAge(sensor.recorded_at ?? null, undefined, undefined, sensor.reportIntervalMs);
-    const freshnessClass = age.stale
-      ? " stat-item-stale"
-      : age.lagging
-        ? " stat-item-lagging"
-        : "";
+    const age = formatRelativeAge(
+      sensor.recorded_at ?? null,
+      undefined,
+      undefined,
+      sensor.reportIntervalMs,
+    );
+    const freshnessClass = age.stale ? " stat-item-stale" : age.lagging ? " stat-item-lagging" : "";
     return (
       <article
         class={`stat-item${freshnessClass}`}
         key={`${sensor.deviceId}:${sensor.key}:${sensor.kind}`}
       >
         <span class="stat-label">{sensor.label}</span>
-        {sensor.deviceDemo && <span class="feed-group-badge inline-block mb-2">{text.demoData}</span>}
+        {sensor.deviceDemo && (
+          <span class="feed-group-badge inline-block mb-2">{text.demoData}</span>
+        )}
         <p class="stat-value">{display.primary}</p>
         <p class="stat-detail">
           {display.detail}
           {sensor.deviceName ? ` · ${sensor.deviceName}` : ""}
         </p>
-        <p
-          class={`stat-detail m-0${
-            age.lagging ? " text-[var(--color-warning)]" : ""
-          }`}
-        >
+        <p class={`stat-detail m-0${age.lagging ? " text-[var(--color-warning)]" : ""}`}>
           {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null, sensor.reportIntervalMs)}
         </p>
       </article>
     );
   };
 
-  const hasAnySensors =
-    temperatureCards.length > 0 || groups.length > 0 || sensors.length > 0;
+  const hasAnySensors = temperatureCards.length > 0 || groups.length > 0 || sensors.length > 0;
 
   if (loading && groups.length === 0 && sensors.length === 0) {
     return (
@@ -677,9 +703,7 @@ export default function LiveTempsPanel({
                 id="space-filter"
                 class="form-input"
                 value={spaceFilter}
-                onChange={(e) =>
-                  setSpaceFilter((e.target as HTMLSelectElement).value)
-                }
+                onChange={(e) => setSpaceFilter((e.target as HTMLSelectElement).value)}
               >
                 <option value="">{text.allSpaces}</option>
                 {spaces.map((space) => (
@@ -742,7 +766,11 @@ export default function LiveTempsPanel({
                     ? `${sensor.deviceName} · ${sensor.label}`
                     : sensor.label}{" "}
                   —{" "}
-                  {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null, sensor.reportIntervalMs)}
+                  {f.freshness(
+                    sensor.recorded_at,
+                    sensor.deviceSource ?? null,
+                    sensor.reportIntervalMs,
+                  )}
                 </li>
               ))}
               {laggingSensors.length > 4 && (
@@ -753,9 +781,13 @@ export default function LiveTempsPanel({
             </ul>
           )}
           <p class="mb-0 mt-3 text-sm">
-            <a class="text-link" href="/dashboard/devices">{text.checkDevices}</a>
+            <a class="text-link" href="/dashboard/devices">
+              {text.checkDevices}
+            </a>
             {" · "}
-            <a class="text-link" href="/about/debugging-stale-readings">{text.debugStale}</a>
+            <a class="text-link" href="/about/debugging-stale-readings">
+              {text.debugStale}
+            </a>
           </p>
         </div>
       )}
@@ -809,7 +841,9 @@ export default function LiveTempsPanel({
                       {probe.data ? (
                         <>
                           <p class="stat-value">{f.tempMain(probe.data.f, probe.data.c)}</p>
-                          <p class="stat-detail">{f.tempDetail(probe.data.f, probe.data.c, probe.data.h)}</p>
+                          <p class="stat-detail">
+                            {f.tempDetail(probe.data.f, probe.data.c, probe.data.h)}
+                          </p>
                         </>
                       ) : (
                         <p class="stat-detail">{fill(text.noReadingForKey, { key: probe.key })}</p>
@@ -863,19 +897,21 @@ export default function LiveTempsPanel({
                   key={`${sensor.deviceId}:${sensor.key}:${sensor.kind}`}
                 >
                   <span class="stat-label">{sensor.label}</span>
-                  {sensor.deviceDemo && <span class="feed-group-badge inline-block mb-2">{text.demoData}</span>}
+                  {sensor.deviceDemo && (
+                    <span class="feed-group-badge inline-block mb-2">{text.demoData}</span>
+                  )}
                   <p class={`stat-value${alert ? " text-[var(--color-danger)]" : ""}`}>
                     {display.primary}
                   </p>
                   <p class="stat-detail">
                     {display.detail} · {sensor.deviceName}
                   </p>
-                  <p
-                    class={`stat-detail m-0${
-                      age.lagging ? " text-[var(--color-warning)]" : ""
-                    }`}
-                  >
-                    {f.freshness(sensor.recorded_at, sensor.deviceSource ?? null, sensor.reportIntervalMs)}
+                  <p class={`stat-detail m-0${age.lagging ? " text-[var(--color-warning)]" : ""}`}>
+                    {f.freshness(
+                      sensor.recorded_at,
+                      sensor.deviceSource ?? null,
+                      sensor.reportIntervalMs,
+                    )}
                   </p>
                 </article>
               );

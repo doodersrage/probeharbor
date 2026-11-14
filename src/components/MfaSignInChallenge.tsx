@@ -56,9 +56,7 @@ export default function MfaSignInChallenge({
           <button class="btn-primary" type="submit">
             {text.verifyCode}
           </button>
-          <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0">
-            {text.totpHint}
-          </p>
+          <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0">{text.totpHint}</p>
         </form>
 
         <div class="pt-4 border-t border-[var(--color-border)]">
@@ -82,16 +80,10 @@ export default function MfaSignInChallenge({
                 }}
               />
             </div>
-            <button
-              class="btn-secondary w-full"
-              type="submit"
-              disabled={!yubikeyReady}
-            >
+            <button class="btn-secondary w-full" type="submit" disabled={!yubikeyReady}>
               {text.verifyYubikey}
             </button>
-            <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0">
-              {text.otpHint}
-            </p>
+            <p class="text-sm text-[var(--color-text-muted)] mt-3 mb-0">{text.otpHint}</p>
           </form>
         </div>
 

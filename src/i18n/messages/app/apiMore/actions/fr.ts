@@ -8,10 +8,12 @@ const fr: ApiMoreActionsMessages = {
   displayPrefsSaveFailed: "Impossible d’enregistrer les préférences d’affichage.",
   displayPrefsSaved: "Préférences d’affichage enregistrées.",
   expectedFormData: "Données de formulaire attendues.",
-  invalidWebhookUrl: "L’une de vos URL de webhook n’est pas une adresse https:// valide ou pointe vers un réseau privé.",
+  invalidWebhookUrl:
+    "L’une de vos URL de webhook n’est pas une adresse https:// valide ou pointe vers un réseau privé.",
   weakTelegramSecret: "Le secret du webhook Telegram doit contenir au moins 16 caractères.",
   alertSettingsSaveFailed: "Impossible d’enregistrer les paramètres d’alerte.",
-  alertSettingsSavedIncomplete: "Paramètres d’alerte enregistrés — certains canaux n’ont pas de destination.",
+  alertSettingsSavedIncomplete:
+    "Paramètres d’alerte enregistrés — certains canaux n’ont pas de destination.",
   alertSettingsSaved: "Paramètres d’alerte enregistrés.",
   snoozed24h: "Alertes mises en pause pendant 24 heures.",
   vacation7d: "Mode vacances activé pendant 7 jours.",
@@ -19,13 +21,15 @@ const fr: ApiMoreActionsMessages = {
   vacationUntil: "En vacances jusqu’au {date}.",
   snoozeCleared: "Pause annulée.",
   vacationEnded: "Vacances terminées.",
-  managersOnlyInvite: "Seuls le propriétaire et les éditeurs du foyer peuvent envoyer des invitations.",
+  managersOnlyInvite:
+    "Seuls le propriétaire et les éditeurs du foyer peuvent envoyer des invitations.",
   portfolioRequired: "Les invitations de gestionnaire immobilier nécessitent l’offre Portfolio.",
   inviteFailed: "Impossible de créer l’invitation.",
   inviteSent: "Invitation envoyée à {email}.",
   ownerOnlyRename: "Seul le propriétaire du foyer peut le renommer.",
   householdNameSaved: "Nom du foyer enregistré.",
-  ownerOnlyFreezeMap: "Seul le propriétaire du foyer peut modifier les paramètres de la carte du gel.",
+  ownerOnlyFreezeMap:
+    "Seul le propriétaire du foyer peut modifier les paramètres de la carte du gel.",
   freezeMapSaved: "Paramètres de la carte du gel enregistrés.",
   deviceRenamed: "Appareil renommé.",
   deviceSpaceSaved: "Espace de l’appareil enregistré.",

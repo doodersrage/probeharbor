@@ -36,7 +36,10 @@ export async function listConnections(householdId: string): Promise<ConnectionRo
   }
 }
 
-export async function getConnection(householdId: string, provider: string): Promise<ConnectionRow | null> {
+export async function getConnection(
+  householdId: string,
+  provider: string,
+): Promise<ConnectionRow | null> {
   try {
     const [row] = await query<ConnectionRow>(
       `select ${COLUMNS} from public.household_thermostat_connections where household_id = $1 and provider = $2`,
@@ -104,19 +107,24 @@ export async function updateTokens(
   }
 }
 
-export async function deleteConnection(householdId: string, provider: string): Promise<{ error: string | null }> {
+export async function deleteConnection(
+  householdId: string,
+  provider: string,
+): Promise<{ error: string | null }> {
   try {
-    await query("delete from public.household_thermostat_connections where household_id = $1 and provider = $2", [
-      householdId,
-      provider,
-    ]);
+    await query(
+      "delete from public.household_thermostat_connections where household_id = $1 and provider = $2",
+      [householdId, provider],
+    );
     return { error: null };
   } catch (error) {
     return { error: message(error) };
   }
 }
 
-export async function insertSnapshot(row: ThermostatSnapshotRow): Promise<{ error: string | null }> {
+export async function insertSnapshot(
+  row: ThermostatSnapshotRow,
+): Promise<{ error: string | null }> {
   try {
     await query(
       `insert into public.thermostat_snapshots
@@ -144,7 +152,10 @@ export async function snapshotSeries(
   householdId: string,
   fromIso: string,
   toIso: string | undefined,
-): Promise<{ rows: Array<{ recorded_at: string; ambient_temp_f: number | null }>; capped: boolean }> {
+): Promise<{
+  rows: Array<{ recorded_at: string; ambient_temp_f: number | null }>;
+  capped: boolean;
+}> {
   const rows = await query<{ recorded_at: string; ambient_temp_f: number | null }>(
     `select recorded_at, ambient_temp_f from public.thermostat_snapshots
      where household_id = $1 and recorded_at >= $2 and ($3::timestamptz is null or recorded_at <= $3)

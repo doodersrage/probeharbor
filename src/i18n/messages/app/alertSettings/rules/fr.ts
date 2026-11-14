@@ -44,18 +44,54 @@ const fr: AlertRulesMessages = {
   matched: "La règle « {name} » s’est déclenchée ({parts}).",
 
   nouns: {
-    temperatureProbe: { name: "sondes de température", count: { one: "{count} sonde de température", other: "{count} sondes de température" } },
-    humidityReading: { name: "mesures d’humidité", count: { one: "{count} mesure d’humidité", other: "{count} mesures d’humidité" } },
-    doorSensor: { name: "capteurs de porte", count: { one: "{count} capteur de porte", other: "{count} capteurs de porte" } },
-    leakSensor: { name: "capteurs de fuite", count: { one: "{count} capteur de fuite", other: "{count} capteurs de fuite" } },
-    powerSensor: { name: "capteurs d’alimentation", count: { one: "{count} capteur d’alimentation", other: "{count} capteurs d’alimentation" } },
-    co2Sensor: { name: "capteurs de CO₂", count: { one: "{count} capteur de CO₂", other: "{count} capteurs de CO₂" } },
-    pressureSensor: { name: "capteurs de pression", count: { one: "{count} capteur de pression", other: "{count} capteurs de pression" } },
-    pm25Sensor: { name: "capteurs PM2,5", count: { one: "{count} capteur PM2,5", other: "{count} capteurs PM2,5" } },
-    vocSensor: { name: "capteurs de COV", count: { one: "{count} capteur de COV", other: "{count} capteurs de COV" } },
-    levelSensor: { name: "capteurs de niveau", count: { one: "{count} capteur de niveau", other: "{count} capteurs de niveau" } },
-    energySensor: { name: "capteurs d’énergie", count: { one: "{count} capteur d’énergie", other: "{count} capteurs d’énergie" } },
-    motionSensor: { name: "détecteurs de mouvement", count: { one: "{count} détecteur de mouvement", other: "{count} détecteurs de mouvement" } },
+    temperatureProbe: {
+      name: "sondes de température",
+      count: { one: "{count} sonde de température", other: "{count} sondes de température" },
+    },
+    humidityReading: {
+      name: "mesures d’humidité",
+      count: { one: "{count} mesure d’humidité", other: "{count} mesures d’humidité" },
+    },
+    doorSensor: {
+      name: "capteurs de porte",
+      count: { one: "{count} capteur de porte", other: "{count} capteurs de porte" },
+    },
+    leakSensor: {
+      name: "capteurs de fuite",
+      count: { one: "{count} capteur de fuite", other: "{count} capteurs de fuite" },
+    },
+    powerSensor: {
+      name: "capteurs d’alimentation",
+      count: { one: "{count} capteur d’alimentation", other: "{count} capteurs d’alimentation" },
+    },
+    co2Sensor: {
+      name: "capteurs de CO₂",
+      count: { one: "{count} capteur de CO₂", other: "{count} capteurs de CO₂" },
+    },
+    pressureSensor: {
+      name: "capteurs de pression",
+      count: { one: "{count} capteur de pression", other: "{count} capteurs de pression" },
+    },
+    pm25Sensor: {
+      name: "capteurs PM2,5",
+      count: { one: "{count} capteur PM2,5", other: "{count} capteurs PM2,5" },
+    },
+    vocSensor: {
+      name: "capteurs de COV",
+      count: { one: "{count} capteur de COV", other: "{count} capteurs de COV" },
+    },
+    levelSensor: {
+      name: "capteurs de niveau",
+      count: { one: "{count} capteur de niveau", other: "{count} capteurs de niveau" },
+    },
+    energySensor: {
+      name: "capteurs d’énergie",
+      count: { one: "{count} capteur d’énergie", other: "{count} capteurs d’énergie" },
+    },
+    motionSensor: {
+      name: "détecteurs de mouvement",
+      count: { one: "{count} détecteur de mouvement", other: "{count} détecteurs de mouvement" },
+    },
     coolingProbe: {
       name: "sondes qui ont refroidi au cours de la dernière heure",
       count: {
@@ -63,7 +99,10 @@ const fr: AlertRulesMessages = {
         other: "{count} sondes qui ont refroidi au cours de la dernière heure",
       },
     },
-    outdoorReading: { name: "mesures extérieures", count: { one: "{count} mesure extérieure", other: "{count} mesures extérieures" } },
+    outdoorReading: {
+      name: "mesures extérieures",
+      count: { one: "{count} mesure extérieure", other: "{count} mesures extérieures" },
+    },
     device: { name: "appareils", count: { one: "{count} appareil", other: "{count} appareils" } },
   },
   states: {
@@ -86,7 +125,8 @@ const fr: AlertRulesMessages = {
   doorOpenFor: "{label} est ouverte depuis {minutes} min (≥ {min} min).",
   doorOpenShort: "{label} est ouverte depuis {minutes} min ; il faut {min}.",
   rateDropped: "{label} a baissé de {drop} au cours de la dernière heure.",
-  rateBiggest: "Plus forte baisse : {label} a baissé de {drop} au cours de la dernière heure ; il faut {threshold}.",
+  rateBiggest:
+    "Plus forte baisse : {label} a baissé de {drop} au cours de la dernière heure ; il faut {threshold}.",
   outdoorUnknown: "Température extérieure inconnue : cette condition n’est donc jamais remplie.",
   unknownCondition: "Type de condition inconnu.",
 };

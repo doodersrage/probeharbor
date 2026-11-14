@@ -112,10 +112,22 @@ const ptBr: DemoMessages = {
     title: "Continue explorando",
     lede: "Já provocou uma onda de frio simulada? Veja a oficina de demonstração movida pelo clima e depois experimente uma história de inundação ou vazamento, consulte o mapa de uma cidade ou configure o QR do kit.",
     items: [
-      { label: "Simulador interativo de sondas", hint: "A principal demo mão na massa: porta, sol, ar externo, limite de congelamento" },
-      { label: "Mapa comunitário de congelamento", hint: "Dados agregados por cidade, com participação opcional, sem conta" },
-      { label: "Configuração do kit por QR", hint: "Criar dispositivo → escanear QR de ingestão → primeiro POST" },
-      { label: "Cenário de congelamento", hint: "Como é uma falha do aquecedor às 2 da manhã, alerta por alerta" },
+      {
+        label: "Simulador interativo de sondas",
+        hint: "A principal demo mão na massa: porta, sol, ar externo, limite de congelamento",
+      },
+      {
+        label: "Mapa comunitário de congelamento",
+        hint: "Dados agregados por cidade, com participação opcional, sem conta",
+      },
+      {
+        label: "Configuração do kit por QR",
+        hint: "Criar dispositivo → escanear QR de ingestão → primeiro POST",
+      },
+      {
+        label: "Cenário de congelamento",
+        hint: "Como é uma falha do aquecedor às 2 da manhã, alerta por alerta",
+      },
     ],
   },
   faqLede:

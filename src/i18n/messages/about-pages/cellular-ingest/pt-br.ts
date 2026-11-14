@@ -1,4 +1,3 @@
-
 /** Body copy for /about/cellular-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -18,10 +17,12 @@ const ptBr: Messages = {
   resistorPart: "Resistor de 4.7kΩ",
   resistorWhy: "Pull-up da linha de dados do DS18B20 para 3.3V.",
   planPart: "Plano de dados celular",
-  planWhy: "Nuvem da Particle + dados da operadora. Planeje o orçamento para locais remotos que só acordam de hora em hora.",
+  planWhy:
+    "Nuvem da Particle + dados da operadora. Planeje o orçamento para locais remotos que só acordam de hora em hora.",
   planBuy: "Cobrança pelo Particle Console ou seu próprio nano-SIM, quando o SKU permitir.",
   bluesPart: "Opcional: Blues Notecard",
-  bluesWhy: "Caminho celular alternativo por uma rota de webhook do Notehub (mesma URL de ingestão).",
+  bluesWhy:
+    "Caminho celular alternativo por uma rota de webhook do Notehub (mesma URL de ingestão).",
   wiringTitle: "Ligação",
   wiringHtml: [
     "DS18B20 VDD → Boron <strong>3V3</strong>",

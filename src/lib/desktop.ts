@@ -1,6 +1,5 @@
 /** ProbeHarbor Desktop companion (Tauri dashboard). */
-export const DESKTOP_REPO_URL =
-  "https://github.com/doodersrage/probeharbor-desktop";
+export const DESKTOP_REPO_URL = "https://github.com/doodersrage/probeharbor-desktop";
 
 export const DESKTOP_RELEASES_URL = `${DESKTOP_REPO_URL}/releases/latest`;
 

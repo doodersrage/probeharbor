@@ -7,7 +7,8 @@
 const en = {
   threshold: {
     freezeDetail: "{label} is {temp}{unit} (at or below freeze threshold {threshold}{unit}).",
-    freezeDetailDwell: "{label} is {temp}{unit} (at or below freeze threshold {threshold}{unit} for {minutes}+ min).",
+    freezeDetailDwell:
+      "{label} is {temp}{unit} (at or below freeze threshold {threshold}{unit} for {minutes}+ min).",
     /** Appended to a freeze line when the reading is a few minutes old or more. */
     readingAge: " Last reading {age}.",
     humidityDetail: "{label} humidity is {humidity}% (above threshold {threshold}%).",
@@ -31,7 +32,8 @@ const en = {
   },
   forecast: {
     title: "Forecast freeze risk",
-    detail: "Outdoor forecast reaches {temp}{unit} within {hours}h (freeze threshold {threshold}{unit}).",
+    detail:
+      "Outdoor forecast reaches {temp}{unit} within {hours}h (freeze threshold {threshold}{unit}).",
   },
   rate: {
     title: "Rapid temperature change",
@@ -79,18 +81,23 @@ const en = {
   recovery: {
     freezeTitle: "Recovered: temperatures are back to normal",
     freezeBodyEmpty: "Back to normal. The alert is closed; nothing to do.",
-    freezeBody: "Back to normal: {temps} (freeze line {threshold}{unit}). The alert is closed; nothing to do.",
+    freezeBody:
+      "Back to normal: {temps} (freeze line {threshold}{unit}). The alert is closed; nothing to do.",
     freezeTemp: "{label} {temp}{unit}",
     floodTitle: "Recovered: leak sensors are dry",
-    floodBody: "No leak sensor reads wet anymore. The alert is closed; check the spot once to be sure.",
+    floodBody:
+      "No leak sensor reads wet anymore. The alert is closed; check the spot once to be sure.",
     powerTitle: "Recovered: power is back",
-    powerBody: "Every power sensor reads on again. The alert is closed; check that heaters and pumps restarted.",
+    powerBody:
+      "Every power sensor reads on again. The alert is closed; check that heaters and pumps restarted.",
     outageTitle: "Recovered: devices are reporting again",
     outageBody: "Every device has checked in again. The outage alert is closed.",
     stuckTitle: "Recovered: probe readings are changing again",
-    stuckBody: "The probe that looked stuck is reporting changing temperatures again. The alert is closed.",
+    stuckBody:
+      "The probe that looked stuck is reporting changing temperatures again. The alert is closed.",
     doorTitle: "Recovered: door alert cleared",
-    doorBody: "The door rule that alerted no longer matches (for example, the door was closed). The alert is closed.",
+    doorBody:
+      "The door rule that alerted no longer matches (for example, the door was closed). The alert is closed.",
   },
   context: {
     doorOpen: "A door sensor is open. Expect faster heat loss until it closes.",

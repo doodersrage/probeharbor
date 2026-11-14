@@ -8,11 +8,13 @@ export default {
     },
     history: {
       title: "Datos e historial",
-      description: "Instantáneas guardadas, exportaciones y cómo llegan las lecturas al almacenamiento.",
+      description:
+        "Instantáneas guardadas, exportaciones y cómo llegan las lecturas al almacenamiento.",
     },
     hardware: {
       title: "Hardware y firmware",
-      description: "Firmware para Arduino, ESP32, Pico W, STM32, CH32V y ensamblador AVR, cableado y la pantalla LCD local.",
+      description:
+        "Firmware para Arduino, ESP32, Pico W, STM32, CH32V y ensamblador AVR, cableado y la pantalla LCD local.",
     },
     software: {
       title: "Backend y sitio web",
@@ -40,7 +42,8 @@ export default {
     },
     "first-dht22": {
       title: "Cablear mi primer DHT22",
-      description: "Conceptos básicos del sensor, cableado de pines y el sketch de Arduino que publica JSON.",
+      description:
+        "Conceptos básicos del sensor, cableado de pines y el sketch de Arduino que publica JSON.",
       ctaLabel: "Abrir la introducción a Arduino",
       steps: [
         { label: "Introducción al DHT22" },
@@ -84,7 +87,8 @@ export default {
     },
     "share-household": {
       title: "Compartir con mi hogar",
-      description: "Invita a tu familia, entiende los roles y reúne las alertas de congelación y fugas en un solo lugar.",
+      description:
+        "Invita a tu familia, entiende los roles y reúne las alertas de congelación y fugas en un solo lugar.",
       ctaLabel: "Crear una cuenta gratis",
       steps: [
         { label: "Guía para compartir" },

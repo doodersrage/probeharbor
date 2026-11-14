@@ -1,9 +1,6 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../../lib/auth";
-import {
-  redirectUnlessEditor,
-  requireHouseholdEditor,
-} from "../../../../lib/householdAuth";
+import { redirectUnlessEditor, requireHouseholdEditor } from "../../../../lib/householdAuth";
 import { formRedirectPath, withQuery } from "../../../../lib/siteUrl";
 import {
   deleteUserTempFeed,
@@ -13,7 +10,10 @@ import {
 
 function withPullQuery(redirectTo: string, params: Record<string, string>): string {
   const target = new URL(redirectTo, "https://probeharbor.local");
-  return withQuery(redirectTo, target.searchParams.has("tab") ? params : { tab: "pull", ...params });
+  return withQuery(
+    redirectTo,
+    target.searchParams.has("tab") ? params : { tab: "pull", ...params },
+  );
 }
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
@@ -53,9 +53,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
     const enabled = action === "enable";
     const idSet = new Set(feedIds);
-    const feeds = current.feeds.map((feed) =>
-      idSet.has(feed.id) ? { ...feed, enabled } : feed,
-    );
+    const feeds = current.feeds.map((feed) => (idSet.has(feed.id) ? { ...feed, enabled } : feed));
     const result = await saveUserTempConfig(user.id, feeds, current.probes);
     if (result.error) {
       return redirect(withPullQuery(redirectTo, { bulk_error: "1" }));

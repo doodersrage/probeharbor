@@ -79,7 +79,8 @@ export async function getHouseholdPeopleAccess(
   email?: string | null,
 ): Promise<HouseholdPeopleAccess> {
   const ownedId = await getOwnedHouseholdId(userId);
-  const householdId = ownedId ?? ((await getOrCreateHouseholdForUser(userId, email)).householdId || null);
+  const householdId =
+    ownedId ?? ((await getOrCreateHouseholdForUser(userId, email)).householdId || null);
   const role = householdId ? await getUserHouseholdRole(userId, householdId) : null;
   return {
     householdId,

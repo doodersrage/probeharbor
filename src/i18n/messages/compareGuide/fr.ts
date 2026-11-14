@@ -15,7 +15,8 @@ const fr: CompareGuideMessages = {
   chooseOther: "Choisissez {competitor} si",
   faqLede: "Des réponses claires pour ceux qui comparent ProbeHarbor à {competitor}.",
   sourcesTitle: "Sources",
-  sourcesNote: "Les informations sur {competitor} proviennent de ses propres pages, vérifiées en {checkedOn}. Les prix évoluent : vérifiez avant d’acheter.",
+  sourcesNote:
+    "Les informations sur {competitor} proviennent de ses propres pages, vérifiées en {checkedOn}. Les prix évoluent : vérifiez avant d’acheter.",
   relatedTitle: "Réponses associées",
   forecastLink: "Mes canalisations vont-elles geler cette nuit ? (prévision)",
   calculatorLink: "Calculateur du délai de gel des canalisations",

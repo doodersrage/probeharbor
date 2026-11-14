@@ -43,8 +43,10 @@ const de: PricingMessages = {
     saveApprox: "~20 % sparen",
     saveVsMonthly: "{pct} günstiger als monatlich",
     switchToAnnual: "Mit jährlicher Zahlung {pct} sparen",
-    monthlyHint: "Du siehst die Monatspreise. Bei jährlicher Zahlung sparst du {pct} ({memberAnnual} / {proAnnual} pro Jahr).",
-    annualHint: "Du siehst die Jahressummen. Wechsle zu Monatlich, um {memberMonthly} / {proMonthly} pro Monat zu sehen.",
+    monthlyHint:
+      "Du siehst die Monatspreise. Bei jährlicher Zahlung sparst du {pct} ({memberAnnual} / {proAnnual} pro Jahr).",
+    annualHint:
+      "Du siehst die Jahressummen. Wechsle zu Monatlich, um {memberMonthly} / {proMonthly} pro Monat zu sehen.",
     withTrial: "{sub} · 14 Tage kostenlos testen",
   },
   cards: {
@@ -73,8 +75,7 @@ const de: PricingMessages = {
       forecastNws: "Frostwarnungen aus der Prognose + offizielle NWS-Warnungen",
       thermostatHtml:
         'Anbindung von <a class="text-link" href="/about/thermostat-oauth">Nest / Ecobee</a>-Thermostaten (Haus vs. Sensor)',
-      claimsHtml:
-        '<a class="text-link" href="/claims-pack">Nachweispaket für die Versicherung</a>',
+      claimsHtml: '<a class="text-link" href="/claims-pack">Nachweispaket für die Versicherung</a>',
       automationHtml:
         'SMS, Webhooks, Pro-Freigabeumfänge &amp; <a class="text-link" href="/docs/api">API-Schlüssel</a>',
       properties: "Bis zu {n} eigene Objekte (Ferienhaus, Mietobjekt, Werkstatt)",
@@ -84,7 +85,8 @@ const de: PricingMessages = {
     },
     portfolio: {
       badge: "Für größere Bestände",
-      tagline: "Für Bestände über der Pro-Grenze von {proMax} Objekten: Verwalter ohne Zugriff auf die Abrechnung",
+      tagline:
+        "Für Bestände über der Pro-Grenze von {proMax} Objekten: Verwalter ohne Zugriff auf die Abrechnung",
       everythingInPro: "Alles aus Pro, dazu: ",
       properties: "Bis zu {max} eigene Objekte (Pro deckt bereits bis zu {proMax} ab)",
       crossProperty: "Objektübergreifendes Frostrisiko-Dashboard",
@@ -113,7 +115,8 @@ const de: PricingMessages = {
     title: "Vollständiger Funktionsvergleich",
     subtitleHtml:
       'Die maßgebliche Tarifübersicht für Free / Member / Pro / Portfolio: Geräteanzahl, Aufbewahrung, Frost- und Leckalarme, Thermostat und Verwalter-Logins. Du vergleichst ProbeHarbor mit MQTT, Govee oder einer Wetterstation? <a class="text-link" href="/compare">Alternativen ansehen</a> (Vergleichsratgeber, keine zweite Kopie dieser Tabelle).',
-    noteHtml: 'Portfolio enthält alles aus Pro, hebt dann die Grenze für eigene Objekte an (Pro erlaubt bereits bis zu {proMax}, Portfolio bis zu {portfolioMax}) und ergänzt Logins für die Hausverwaltung: siehe die Portfolio-Karte oben und <a class="text-link" href="/property-management">Hausverwaltung</a>.',
+    noteHtml:
+      'Portfolio enthält alles aus Pro, hebt dann die Grenze für eigene Objekte an (Pro erlaubt bereits bis zu {proMax}, Portfolio bis zu {portfolioMax}) und ergänzt Logins für die Hausverwaltung: siehe die Portfolio-Karte oben und <a class="text-link" href="/property-management">Hausverwaltung</a>.',
   },
   hosted: {
     title: "Gehostet am Edge von Cloudflare",

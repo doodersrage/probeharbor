@@ -25,13 +25,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   } else {
     const n = Number(raw);
     const maxDays =
-      entitlements.tier === "pro" || entitlements.tier === "admin"
-        ? 730
-        : entitlements.historyDays;
+      entitlements.tier === "pro" || entitlements.tier === "admin" ? 730 : entitlements.historyDays;
     settings.dataRetentionDays =
-      Number.isFinite(n) && n >= 30
-        ? Math.min(Math.floor(n), maxDays)
-        : settings.dataRetentionDays;
+      Number.isFinite(n) && n >= 30 ? Math.min(Math.floor(n), maxDays) : settings.dataRetentionDays;
   }
 
   const { error } = await saveAlertSettingsForUser(user.id, settings);

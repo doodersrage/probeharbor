@@ -39,9 +39,7 @@ describe("pickInboundSignatureHeader", () => {
         new Headers({ "X-GarageTemp-Signature": "legacy", "X-Signature": "generic" }),
       ),
     ).toBe("legacy");
-    expect(pickInboundSignatureHeader(new Headers({ "X-Signature": "generic" }))).toBe(
-      "generic",
-    );
+    expect(pickInboundSignatureHeader(new Headers({ "X-Signature": "generic" }))).toBe("generic");
   });
 });
 
@@ -56,13 +54,18 @@ describe("verifyInboundRequest", () => {
 
   it("accepts a fresh timestamped (v2) signature", async () => {
     const headers = await v2Headers(now - 60_000);
-    expect(await verifyInboundRequest(secret, body, headers, now)).toEqual({ ok: true, format: "v2" });
+    expect(await verifyInboundRequest(secret, body, headers, now)).toEqual({
+      ok: true,
+      format: "v2",
+    });
   });
 
   it("signs timestamp.body, not the body alone", async () => {
     const headers = await v2Headers(now);
     const ts = headers.get("X-ProbeHarbor-Timestamp");
-    expect(headers.get("X-ProbeHarbor-Signature-V2")).toBe(`sha256=${await hmacHex(secret, `${ts}.${body}`)}`);
+    expect(headers.get("X-ProbeHarbor-Signature-V2")).toBe(
+      `sha256=${await hmacHex(secret, `${ts}.${body}`)}`,
+    );
   });
 
   it("rejects a replay older than 5 minutes", async () => {
@@ -96,8 +99,12 @@ describe("verifyInboundRequest", () => {
   });
 
   it("rejects v2 with a tampered body, wrong secret, or missing/garbled timestamp", async () => {
-    expect((await verifyInboundRequest(secret, `${body} `, await v2Headers(now), now)).ok).toBe(false);
-    expect((await verifyInboundRequest(secret, body, await v2Headers(now, body, "other"), now)).ok).toBe(false);
+    expect((await verifyInboundRequest(secret, `${body} `, await v2Headers(now), now)).ok).toBe(
+      false,
+    );
+    expect(
+      (await verifyInboundRequest(secret, body, await v2Headers(now, body, "other"), now)).ok,
+    ).toBe(false);
     const noTs = await v2Headers(now);
     noTs.delete("X-ProbeHarbor-Timestamp");
     expect((await verifyInboundRequest(secret, body, noTs, now)).ok).toBe(false);
@@ -114,16 +121,27 @@ describe("verifyInboundRequest", () => {
 
   it("rejects a correct body-only signature, in every legacy header, as v2_required", async () => {
     const sig = await hmacHex(secret, body);
-    for (const name of ["X-ProbeHarbor-Signature", "X-ThermalTrace-Signature", "X-GarageTemp-Signature", "X-Signature"]) {
+    for (const name of [
+      "X-ProbeHarbor-Signature",
+      "X-ThermalTrace-Signature",
+      "X-GarageTemp-Signature",
+      "X-Signature",
+    ]) {
       const headers = new Headers({ [name]: `sha256=${sig}` });
-      expect(await verifyInboundRequest(secret, body, headers, now)).toEqual({ ok: false, reason: "v2_required" });
+      expect(await verifyInboundRequest(secret, body, headers, now)).toEqual({
+        ok: false,
+        reason: "v2_required",
+      });
     }
   });
 
   it("generated secrets round-trip through the verifier", async () => {
     const generated = randomSigningSecret();
     const headers = await v2Headers(now, body, generated);
-    expect(await verifyInboundRequest(generated, body, headers, now)).toEqual({ ok: true, format: "v2" });
+    expect(await verifyInboundRequest(generated, body, headers, now)).toEqual({
+      ok: true,
+      format: "v2",
+    });
   });
 
   it("fails closed without a secret", async () => {

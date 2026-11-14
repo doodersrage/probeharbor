@@ -32,7 +32,8 @@ vi.mock("../../lib/households", () => ({
     error: null,
   }),
   getUserHouseholdRole: (...a: unknown[]) => mockRole(...a),
-  canEditHousehold: (role: string | null) => role === "owner" || role === "member" || role === "property_manager",
+  canEditHousehold: (role: string | null) =>
+    role === "owner" || role === "member" || role === "property_manager",
   canManageHousehold: (role: string | null) => role === "owner" || role === "member",
   getOwnedHouseholdId: vi.fn(async () => null),
   updateHouseholdName: vi.fn(),
@@ -78,11 +79,15 @@ vi.mock("../../lib/db/remaining", () => ({
   userByTelegramSecret: (...a: unknown[]) => mockUserByTelegramSecret(...a),
   setDigestOptIn: (...a: unknown[]) => mockSetDigestOptIn(...a),
 }));
-const mockGetHouseholdAlertHold = vi.fn(async (_householdId: string) => ({ snoozeUntil: null, vacationUntil: null }));
+const mockGetHouseholdAlertHold = vi.fn(async (_householdId: string) => ({
+  snoozeUntil: null,
+  vacationUntil: null,
+}));
 const mockSetHouseholdSnoozeUntil = vi.fn(async (_householdId: string, _until: string | null) => 1);
 vi.mock("../../lib/db/householdHolds", () => ({
   getHouseholdAlertHold: (householdId: string) => mockGetHouseholdAlertHold(householdId),
-  setHouseholdSnoozeUntil: (householdId: string, until: string | null) => mockSetHouseholdSnoozeUntil(householdId, until),
+  setHouseholdSnoozeUntil: (householdId: string, until: string | null) =>
+    mockSetHouseholdSnoozeUntil(householdId, until),
   setHouseholdVacationUntil: vi.fn(async () => 1),
 }));
 vi.mock("../../lib/userRecords", () => ({
@@ -97,7 +102,10 @@ const mockFetchLatestSensorValues = vi.fn();
 vi.mock("../../lib/sensorReadings", () => ({
   fetchLatestSensorValues: (...a: unknown[]) => mockFetchLatestSensorValues(...a),
   fetchRecentBoolReadings: vi.fn(async () => []),
-  fetchLatestSensorValuesResult: async (...a: unknown[]) => ({ rows: await mockFetchLatestSensorValues(...a), error: null }),
+  fetchLatestSensorValuesResult: async (...a: unknown[]) => ({
+    rows: await mockFetchLatestSensorValues(...a),
+    error: null,
+  }),
 }));
 vi.mock("../../lib/weatherContext", () => ({ fetchWeatherForUser: async () => null }));
 const mockDeleteUserTempFeed = vi.fn();
@@ -146,10 +154,16 @@ vi.mock("../../lib/alertEvents", () => ({
 }));
 
 vi.mock("../../lib/inboundWebhooks", () => ({
-  resolveInboundWebhook: async () => ({ householdId: "house-theirs", webhookId: "wh", signingSecret: "s" }),
+  resolveInboundWebhook: async () => ({
+    householdId: "house-theirs",
+    webhookId: "wh",
+    signingSecret: "s",
+  }),
   recordInboundSignatureFormat: async () => {},
 }));
-vi.mock("../../lib/inboundSigning", () => ({ verifyInboundRequest: async () => ({ ok: true, format: "v2" }) }));
+vi.mock("../../lib/inboundSigning", () => ({
+  verifyInboundRequest: async () => ({ ok: true, format: "v2" }),
+}));
 
 // Astro Actions: defineAction returns its definition so the handlers can be called directly.
 vi.mock("astro:actions", () => ({
@@ -175,7 +189,8 @@ function signedIn(userId = "user-1") {
 }
 
 const cookies = { get: () => undefined, set: () => {}, delete: () => {}, has: () => false };
-const redirect = (location: string) => new Response(null, { status: 302, headers: { Location: location } });
+const redirect = (location: string) =>
+  new Response(null, { status: 302, headers: { Location: location } });
 
 function jsonCtx(path: string, body: unknown, headers: Record<string, string> = {}): APIContext {
   const request = new Request(`https://example.com${path}`, {
@@ -183,7 +198,14 @@ function jsonCtx(path: string, body: unknown, headers: Record<string, string> = 
     headers: { "content-type": "application/json", accept: "application/json", ...headers },
     body: JSON.stringify(body),
   });
-  return { request, url: new URL(request.url), cookies, redirect, locals: { locale: "en" }, clientAddress: "1.2.3.4" } as unknown as APIContext;
+  return {
+    request,
+    url: new URL(request.url),
+    cookies,
+    redirect,
+    locals: { locale: "en" },
+    clientAddress: "1.2.3.4",
+  } as unknown as APIContext;
 }
 
 function formCtx(path: string, fields: Record<string, string>): APIContext {
@@ -191,24 +213,70 @@ function formCtx(path: string, fields: Record<string, string>): APIContext {
     method: "POST",
     body: new URLSearchParams(fields),
   });
-  return { request, url: new URL(request.url), cookies, redirect, locals: { locale: "en" } } as unknown as APIContext;
+  return {
+    request,
+    url: new URL(request.url),
+    cookies,
+    redirect,
+    locals: { locale: "en" },
+  } as unknown as APIContext;
 }
 
 function getCtx(path: string): APIContext {
   const request = new Request(`https://example.com${path}`);
-  return { request, url: new URL(request.url), cookies, redirect, locals: { locale: "en" } } as unknown as APIContext;
+  return {
+    request,
+    url: new URL(request.url),
+    cookies,
+    redirect,
+    locals: { locale: "en" },
+  } as unknown as APIContext;
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   signedIn();
   mockPreferredHousehold.mockResolvedValue(OURS);
-  mockRole.mockImplementation(async (_user: string, household: string) => (household === OURS ? "owner" : null));
+  mockRole.mockImplementation(async (_user: string, household: string) =>
+    household === OURS ? "owner" : null,
+  );
   mockListHouseholdDevices.mockImplementation(async (household: string) => ({
     devices:
       household === OURS
-        ? [{ id: "dev-ours", source: "push", sensors: [{ id: "sen-ours", key: "t1", label: "Garage", kind: "temperature", unit: "F", offset_num: 0, visible: true }] }]
-        : [{ id: "dev-theirs", source: "push", sensors: [{ id: "sen-theirs", key: "t1", label: "Theirs", kind: "temperature", unit: "F", offset_num: 0, visible: true }] }],
+        ? [
+            {
+              id: "dev-ours",
+              source: "push",
+              sensors: [
+                {
+                  id: "sen-ours",
+                  key: "t1",
+                  label: "Garage",
+                  kind: "temperature",
+                  unit: "F",
+                  offset_num: 0,
+                  visible: true,
+                },
+              ],
+            },
+          ]
+        : [
+            {
+              id: "dev-theirs",
+              source: "push",
+              sensors: [
+                {
+                  id: "sen-theirs",
+                  key: "t1",
+                  label: "Theirs",
+                  kind: "temperature",
+                  unit: "F",
+                  offset_num: 0,
+                  visible: true,
+                },
+              ],
+            },
+          ],
     error: null,
   }));
   mockFetchLatestSensorValues.mockResolvedValue([]);
@@ -219,7 +287,9 @@ describe("pucks/claim: view-only members can't claim a bay", () => {
   it("claim/start refuses a viewer with 403 and starts nothing", async () => {
     mockRole.mockResolvedValue("viewer");
     const { POST } = await import("./pucks/claim/start");
-    const res = await POST(jsonCtx("/api/pucks/claim/start", { device_id: "a".repeat(32), bay_id: "bay-a" }));
+    const res = await POST(
+      jsonCtx("/api/pucks/claim/start", { device_id: "a".repeat(32), bay_id: "bay-a" }),
+    );
     expect(res.status).toBe(403);
     expect(mockStartPuckClaim).not.toHaveBeenCalled();
   });
@@ -228,7 +298,12 @@ describe("pucks/claim: view-only members can't claim a bay", () => {
     mockRole.mockResolvedValue("viewer");
     const { POST } = await import("./pucks/claim/finish");
     const res = await POST(
-      jsonCtx("/api/pucks/claim/finish", { device_id: "a".repeat(32), bay_id: "bay-a", nonce_hex: "00", response_hex: "00" }),
+      jsonCtx("/api/pucks/claim/finish", {
+        device_id: "a".repeat(32),
+        bay_id: "bay-a",
+        nonce_hex: "00",
+        response_hex: "00",
+      }),
     );
     expect(res.status).toBe(403);
     expect(mockFinishPuckClaim).not.toHaveBeenCalled();
@@ -243,7 +318,11 @@ describe("v1/devices/sensors-batch: only the key's household's sensors", () => {
     mockUpdateDeviceSensor.mockResolvedValue({ error: null });
     const { POST } = await import("./v1/devices/sensors-batch");
     const res = await POST(
-      jsonCtx("/api/v1/devices/sensors-batch", { sensors: [{ id: "sen-theirs", label: "pwned", visible: false }] }, { Authorization: "Bearer gtm_x" }),
+      jsonCtx(
+        "/api/v1/devices/sensors-batch",
+        { sensors: [{ id: "sen-theirs", label: "pwned", visible: false }] },
+        { Authorization: "Bearer gtm_x" },
+      ),
     );
     expect(res.status).toBe(200);
     expect(mockListHouseholdDevices).toHaveBeenCalledWith(OURS);
@@ -256,7 +335,10 @@ describe("v1/devices/sensors-batch: only the key's household's sensors", () => {
 describe("inbound/[token]: acts on the token's household only", () => {
   it("status reads devices and readings of the resolved webhook's household", async () => {
     const { POST } = await import("./inbound/[token]");
-    const ctx = { ...jsonCtx("/api/inbound/gtw_x", { action: "status", household_id: OURS }), params: { token: "gtw_x" } };
+    const ctx = {
+      ...jsonCtx("/api/inbound/gtw_x", { action: "status", household_id: OURS }),
+      params: { token: "gtw_x" },
+    };
     const res = await POST(ctx as unknown as APIContext);
     expect(res.status).toBe(200);
     // household_id in the body is ignored: the token decides.
@@ -269,7 +351,10 @@ describe("inbound/[token]: acts on the token's household only", () => {
 
   it("snooze sets the resolved webhook's household hold, never a body household or members' settings", async () => {
     const { POST } = await import("./inbound/[token]");
-    const ctx = { ...jsonCtx("/api/inbound/gtw_x", { action: "snooze", hours: 2, household_id: OURS }), params: { token: "gtw_x" } };
+    const ctx = {
+      ...jsonCtx("/api/inbound/gtw_x", { action: "snooze", hours: 2, household_id: OURS }),
+      params: { token: "gtw_x" },
+    };
     const res = await POST(ctx as unknown as APIContext);
     expect(res.status).toBe(200);
     expect(mockSetHouseholdSnoozeUntil).toHaveBeenCalledTimes(1);
@@ -282,11 +367,17 @@ describe("telegram/webhook: /status reads the linked user's household", () => {
   it("looks up the household of the user the secret belongs to", async () => {
     mockUserByTelegramSecret.mockResolvedValue("linked-user");
     mockGetAlertSettings.mockResolvedValue({ telegramBotToken: "bot", telegramChatId: "42" });
-    mockPreferredHousehold.mockImplementation(async (userId: string) => (userId === "linked-user" ? THEIRS : OURS));
+    mockPreferredHousehold.mockImplementation(async (userId: string) =>
+      userId === "linked-user" ? THEIRS : OURS,
+    );
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"));
     const { POST } = await import("./telegram/webhook");
     const res = await POST(
-      jsonCtx("/api/telegram/webhook", { message: { text: "/status", chat: { id: 42 } } }, { "X-Telegram-Bot-Api-Secret-Token": "s3cret-value" }),
+      jsonCtx(
+        "/api/telegram/webhook",
+        { message: { text: "/status", chat: { id: 42 } } },
+        { "X-Telegram-Bot-Api-Secret-Token": "s3cret-value" },
+      ),
     );
     expect(res.status).toBe(200);
     expect(mockPreferredHousehold).toHaveBeenCalledWith("linked-user");
@@ -301,7 +392,9 @@ describe("user/history-views: saved views are the caller's", () => {
   it("delete passes the session user, so another user's view id can't be removed", async () => {
     mockDeleteView.mockResolvedValue({ ok: false });
     const { POST } = await import("./user/history-views");
-    const res = await POST(formCtx("/api/user/history-views", { action: "delete", id: "view-of-someone-else" }));
+    const res = await POST(
+      formCtx("/api/user/history-views", { action: "delete", id: "view-of-someone-else" }),
+    );
     expect(mockDeleteView).toHaveBeenCalledWith("user-1", "view-of-someone-else");
     expect(res.headers.get("Location")).toContain("view_error=1");
   });
@@ -309,7 +402,9 @@ describe("user/history-views: saved views are the caller's", () => {
   it("set_default refuses a view id that isn't in the caller's list", async () => {
     mockListViews.mockResolvedValue([{ id: "mine" }]);
     const { POST } = await import("./user/history-views");
-    const res = await POST(formCtx("/api/user/history-views", { action: "set_default", id: "not-mine" }));
+    const res = await POST(
+      formCtx("/api/user/history-views", { action: "set_default", id: "not-mine" }),
+    );
     expect(mockListViews).toHaveBeenCalledWith("user-1");
     expect(mockUpdateSessionMetadata).not.toHaveBeenCalled();
     expect(res.headers.get("Location")).toContain("view_error=1");
@@ -338,7 +433,9 @@ describe("user/alert-events/ack: events are looked up for the session user", () 
     mockExecutePlaybook.mockResolvedValue({ ok: false, message: "not found" });
     const { POST } = await import("./user/alert-events/ack");
     const res = await POST(jsonCtx("/api/user/alert-events/ack", { event_id: 999, action: "ack" }));
-    expect(mockExecutePlaybook).toHaveBeenCalledWith(expect.objectContaining({ userId: "user-1", eventId: 999 }));
+    expect(mockExecutePlaybook).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: "user-1", eventId: 999 }),
+    );
     expect(res.status).toBe(400);
   });
 });
@@ -366,7 +463,9 @@ describe("user/pull-setup/bulk and user/dashboard-snapshot", () => {
   it("bulk delete/disable refuses a viewer and changes no feed", async () => {
     mockRole.mockResolvedValue("viewer");
     const { POST } = await import("./user/pull-setup/bulk");
-    const res = await POST(formCtx("/api/user/pull-setup/bulk", { action: "delete", feed_id: "feed-1" }));
+    const res = await POST(
+      formCtx("/api/user/pull-setup/bulk", { action: "delete", feed_id: "feed-1" }),
+    );
     expect(res.headers.get("Location")).toContain("error=viewer");
     expect(mockDeleteUserTempFeed).not.toHaveBeenCalled();
     expect(mockSaveUserTempConfig).not.toHaveBeenCalled();
@@ -399,7 +498,11 @@ async function action(name: string): Promise<Handler> {
   const { server } = await import("../../actions/index");
   return (server as unknown as Record<string, { handler: Handler }>)[name]!.handler;
 }
-const actionCtx = { cookies, request: new Request("https://example.com/_actions"), locals: { locale: "en" } };
+const actionCtx = {
+  cookies,
+  request: new Request("https://example.com/_actions"),
+  locals: { locale: "en" },
+};
 
 describe("actions: device and sensor changes stay inside the caller's household", () => {
   it("updateSensor refuses another household's device", async () => {
@@ -413,7 +516,9 @@ describe("actions: device and sensor changes stay inside the caller's household"
 
   it("deleteSensor refuses another household's device", async () => {
     const run = await action("deleteSensor");
-    await expect(run({ sensor_id: "sen-theirs", device_id: "dev-theirs" }, actionCtx)).rejects.toMatchObject({
+    await expect(
+      run({ sensor_id: "sen-theirs", device_id: "dev-theirs" }, actionCtx),
+    ).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
     expect(mockDeleteDeviceSensor).not.toHaveBeenCalled();
@@ -421,7 +526,9 @@ describe("actions: device and sensor changes stay inside the caller's household"
 
   it("addSensor refuses another household's device", async () => {
     const run = await action("addSensor");
-    await expect(run({ device_id: "dev-theirs", key: "t9", label: "x" }, actionCtx)).rejects.toMatchObject({
+    await expect(
+      run({ device_id: "dev-theirs", key: "t9", label: "x" }, actionCtx),
+    ).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
     expect(mockUpsertDeviceSensor).not.toHaveBeenCalled();
@@ -435,7 +542,9 @@ describe("actions: device and sensor changes stay inside the caller's household"
 
     mockRenamePushDevice.mockClear();
     mockRole.mockResolvedValue("viewer");
-    await expect(run({ device_id: "dev-ours", name: "renamed" }, actionCtx)).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(run({ device_id: "dev-ours", name: "renamed" }, actionCtx)).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
     expect(mockRenamePushDevice).not.toHaveBeenCalled();
   });
 });

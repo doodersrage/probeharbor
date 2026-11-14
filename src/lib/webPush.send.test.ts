@@ -142,14 +142,20 @@ describe("sendWebPushToUser request building", () => {
     const { deletes } = makeDb([browser.row]);
     fetchMock.mockResolvedValue(new Response(null, { status: 201 }));
 
-    const result = await sendWebPushToUser("user-1", { title: "Garage freezing", body: "29.5°F at 02:10" });
+    const result = await sendWebPushToUser("user-1", {
+      title: "Garage freezing",
+      body: "29.5°F at 02:10",
+    });
 
     expect(mockListPushSubscriptions).toHaveBeenCalledWith("user-1");
     expect(result).toEqual({ delivered: 1, failed: 0, skippedReason: null });
     expect(deletes).toEqual([]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit & { headers: Record<string, string> }];
+    const [url, init] = fetchMock.mock.calls[0] as [
+      string,
+      RequestInit & { headers: Record<string, string> },
+    ];
     expect(url).toBe(ENDPOINT);
     expect(init.method).toBe("post");
     expect(init.signal).toBeInstanceOf(AbortSignal);
@@ -219,8 +225,8 @@ describe("sendWebPushToUser delivery accounting", () => {
     const good = await generateBrowserSubscription(ENDPOINT);
     const gone = await generateBrowserSubscription("https://push.example.test/send/old");
     const { deletes } = makeDb([gone.row, good.row]);
-    fetchMock.mockImplementation(async (url: string) =>
-      new Response(null, { status: url === ENDPOINT ? 201 : 410 }),
+    fetchMock.mockImplementation(
+      async (url: string) => new Response(null, { status: url === ENDPOINT ? 201 : 410 }),
     );
 
     const result = await sendWebPushToUser("user-1", { title: "t", body: "b" });

@@ -91,22 +91,16 @@ describe("POST /api/user/account/delete", () => {
 
     const response = await POST(makeContext({ confirm: "nope" }));
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/settings?delete_error=confirm",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/settings?delete_error=confirm");
   });
 
   it("redirects with password error when password verification fails", async () => {
     mockVerifyPassword.mockRejectedValue(new Error("INVALID_PASSWORD"));
     const { POST } = await import("./delete");
 
-    const response = await POST(
-      makeContext({ confirm: "DELETE", password: "wrong" }),
-    );
+    const response = await POST(makeContext({ confirm: "DELETE", password: "wrong" }));
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/settings?delete_error=password",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/settings?delete_error=password");
   });
 
   it("redirects with password error when no password is given", async () => {
@@ -115,9 +109,7 @@ describe("POST /api/user/account/delete", () => {
     const response = await POST(makeContext({ confirm: "DELETE" }));
 
     expect(mockVerifyPassword).not.toHaveBeenCalled();
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/settings?delete_error=password",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/settings?delete_error=password");
   });
 
   it("requires email confirmation for accounts without a password", async () => {
@@ -128,9 +120,7 @@ describe("POST /api/user/account/delete", () => {
       makeContext({ confirm: "DELETE", confirm_email: "other@example.com" }),
     );
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/settings?delete_error=email",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/settings?delete_error=email");
   });
 
   it("redirects with mfa error when step-up is missing", async () => {
@@ -138,13 +128,9 @@ describe("POST /api/user/account/delete", () => {
     mockIsElevated.mockResolvedValue(false);
     const { POST } = await import("./delete");
 
-    const response = await POST(
-      makeContext({ confirm: "DELETE", password: "secret" }),
-    );
+    const response = await POST(makeContext({ confirm: "DELETE", password: "secret" }));
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/settings?delete_error=mfa",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/settings?delete_error=mfa");
     expect(mockDeleteUserAccount).not.toHaveBeenCalled();
   });
 
@@ -153,21 +139,15 @@ describe("POST /api/user/account/delete", () => {
     mockIsElevated.mockResolvedValue(false);
     const { POST } = await import("./delete");
 
-    const response = await POST(
-      makeContext({ confirm: "DELETE", password: "secret" }),
-    );
+    const response = await POST(makeContext({ confirm: "DELETE", password: "secret" }));
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/settings?delete_error=mfa",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/settings?delete_error=mfa");
   });
 
   it("deletes the account, clears cookies, and redirects", async () => {
     const { POST } = await import("./delete");
 
-    const response = await POST(
-      makeContext({ confirm: "DELETE", password: "secret" }),
-    );
+    const response = await POST(makeContext({ confirm: "DELETE", password: "secret" }));
 
     expect(mockDeleteUserAccount).toHaveBeenCalledWith("user-1");
     expect(mockClearMfaStepUpCookie).toHaveBeenCalled();
@@ -180,12 +160,8 @@ describe("POST /api/user/account/delete", () => {
     mockDeleteUserAccount.mockResolvedValue({ error: { message: "boom" } });
     const { POST } = await import("./delete");
 
-    const response = await POST(
-      makeContext({ confirm: "DELETE", password: "secret" }),
-    );
+    const response = await POST(makeContext({ confirm: "DELETE", password: "secret" }));
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/settings?delete_error=1",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/settings?delete_error=1");
   });
 });

@@ -70,10 +70,7 @@ describe("space thermal model", () => {
       { timestamp: "2026-01-14T21:00:00Z", tempF: 24 },
       { timestamp: "2026-01-15T00:00:00Z", tempF: 20 },
     ]);
-    const outdoorForecast = hourlyOutdoor(
-      nowMs,
-      [20, 15, 10, 8, 6, 5, 4, 4, 5, 8, 12, 16],
-    );
+    const outdoorForecast = hourlyOutdoor(nowMs, [20, 15, 10, 8, 6, 5, 4, 4, 5, 8, 12, 16]);
     const projection = buildTimeToFreezeProjection({
       currentTempF: 38,
       freezeThresholdF: 32,
@@ -154,7 +151,13 @@ describe("runway alerts", () => {
     };
     expect(shouldAlertOnRunway(projection, 12)).toBe(true);
     const message = evaluateRunwayAlert(
-      { ...DEFAULT_ALERT_SETTINGS, enabled: true, runwayAlertEnabled: true, freezeThresholdF: 32, forecastHoursAhead: 12 },
+      {
+        ...DEFAULT_ALERT_SETTINGS,
+        enabled: true,
+        runwayAlertEnabled: true,
+        freezeThresholdF: 32,
+        forecastHoursAhead: 12,
+      },
       projection,
     );
     expect(message).toMatch(/projected to hit 32°F/i);
@@ -238,7 +241,10 @@ describe("time-to-freeze window", () => {
     at: new Date(nowMs - (12 - hour) * 3600_000).toISOString(),
     tempF: 44 - hour * 0.5,
   }));
-  const outdoorPast = hourlyOutdoor(nowMs - 12 * 3600_000, Array.from({ length: 13 }, (_, i) => 30 - i));
+  const outdoorPast = hourlyOutdoor(
+    nowMs - 12 * 3600_000,
+    Array.from({ length: 13 }, (_, i) => 30 - i),
+  );
 
   it("brackets a forecast hit with earlier and later edges and says why", () => {
     const projection = buildTimeToFreezeProjection({

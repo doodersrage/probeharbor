@@ -119,9 +119,7 @@ ${batch2Entries}
 /** Parse existing batch1 metadata objects from aboutExpandedPages.ts */
 function readBatch1Meta() {
   const src = readFileSync(metaPath, "utf8");
-  const match = src.match(
-    /export const expandedAboutPageMeta[^=]*=\s*\[([\s\S]*?)\n\];/,
-  );
+  const match = src.match(/export const expandedAboutPageMeta[^=]*=\s*\[([\s\S]*?)\n\];/);
   if (!match) {
     throw new Error("Could not parse expandedAboutPageMeta from aboutExpandedPages.ts");
   }
@@ -141,9 +139,7 @@ function readBatch1Meta() {
   }
 
   if (entries.length !== batch1Pages.length) {
-    throw new Error(
-      `Parsed ${entries.length} batch1 meta entries, expected ${batch1Pages.length}`,
-    );
+    throw new Error(`Parsed ${entries.length} batch1 meta entries, expected ${batch1Pages.length}`);
   }
 
   return entries;

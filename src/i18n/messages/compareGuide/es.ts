@@ -15,7 +15,8 @@ const es: CompareGuideMessages = {
   chooseOther: "Elige {competitor} si",
   faqLede: "Respuestas directas para quienes comparan ProbeHarbor con {competitor}.",
   sourcesTitle: "Fuentes",
-  sourcesNote: "Los datos de {competitor} provienen de sus propias páginas, revisadas en {checkedOn}. Los precios cambian; compruébalos antes de comprar.",
+  sourcesNote:
+    "Los datos de {competitor} provienen de sus propias páginas, revisadas en {checkedOn}. Los precios cambian; compruébalos antes de comprar.",
   relatedTitle: "Respuestas relacionadas",
   forecastLink: "¿Se congelarán mis tuberías esta noche? (pronóstico)",
   calculatorLink: "Calculadora de tiempo de congelación de tuberías",

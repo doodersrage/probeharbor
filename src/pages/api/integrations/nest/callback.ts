@@ -67,7 +67,9 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
 
   const probe = await fetchNestSnapshotDetailed(tokens.accessToken);
   if (!probe.ok && probe.errorCode === "sdm_api_disabled") {
-    return redirect(thermostatReturnUrl({ thermostat_connected: "nest", thermostat_error: "sdm_api_disabled" }));
+    return redirect(
+      thermostatReturnUrl({ thermostat_connected: "nest", thermostat_error: "sdm_api_disabled" }),
+    );
   }
 
   return redirect(thermostatReturnUrl({ thermostat_connected: "nest" }));

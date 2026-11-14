@@ -84,9 +84,7 @@ export function labelForPushSensorKey(
   kind: SensorKind,
 ): string | null {
   if (kind === "humidity") {
-    const temp = discovered.find(
-      (item) => item.key === key && item.withHumiditySibling,
-    );
+    const temp = discovered.find((item) => item.key === key && item.withHumiditySibling);
     return temp ? `${temp.label} humidity` : null;
   }
   const match = discovered.find((item) => item.key === key && item.kind === kind);

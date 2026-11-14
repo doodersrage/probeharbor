@@ -12,7 +12,8 @@ export default {
     },
     hardware: {
       title: "Hardware e firmware",
-      description: "Firmware para Arduino, ESP32, Pico W, STM32, CH32V e assembly AVR, fiação e o LCD local.",
+      description:
+        "Firmware para Arduino, ESP32, Pico W, STM32, CH32V e assembly AVR, fiação e o LCD local.",
     },
     software: {
       title: "Backend e site",
@@ -40,7 +41,8 @@ export default {
     },
     "first-dht22": {
       title: "Ligar meu primeiro DHT22",
-      description: "Noções básicas do sensor, fiação dos pinos e o sketch Arduino que publica JSON.",
+      description:
+        "Noções básicas do sensor, fiação dos pinos e o sketch Arduino que publica JSON.",
       ctaLabel: "Abrir a visão geral do Arduino",
       steps: [
         { label: "Visão geral do DHT22" },
@@ -84,7 +86,8 @@ export default {
     },
     "share-household": {
       title: "Compartilhar com minha casa",
-      description: "Convide a família, entenda os papéis e mantenha os alertas de congelamento e vazamento em um só lugar.",
+      description:
+        "Convide a família, entenda os papéis e mantenha os alertas de congelamento e vazamento em um só lugar.",
       ctaLabel: "Criar uma conta grátis",
       steps: [
         { label: "Guia de compartilhamento" },

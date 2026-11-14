@@ -34,9 +34,7 @@ function humanizeProbeKey(key: string): string {
   if (trimmed === "avg") return "Average";
   if (/^\d+$/.test(trimmed)) return `Probe ${trimmed}`;
   if (trimmed === "state") return "Sensor";
-  return trimmed
-    .replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return trimmed.replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function extractSenMLLabelHints(payload: unknown): Map<string, string> {
@@ -100,9 +98,7 @@ function extractHomeAssistantLabelHints(payload: unknown): Map<string, string> {
       hints.set(probeKey, humanizeProbeKey(probeKey));
       continue;
     }
-    const probeKey = entityKey.includes(".")
-      ? entityKey.split(".").slice(1).join("_")
-      : entityKey;
+    const probeKey = entityKey.includes(".") ? entityKey.split(".").slice(1).join("_") : entityKey;
     hints.set(probeKey, attributes.friendly_name.trim());
   }
   return hints;
@@ -128,10 +124,7 @@ function probesFromReadings(
 }
 
 /** Parse a pull-feed payload and return probe keys with suggested Home labels. */
-export function discoverFeedProbes(
-  payload: unknown,
-  jsonRootHint?: string,
-): FeedDiscoveryResult {
+export function discoverFeedProbes(payload: unknown, jsonRootHint?: string): FeedDiscoveryResult {
   const hint = jsonRootHint ? sanitizeJsonRoot(jsonRootHint) : "temp";
   const rootsToTry = [...new Set([hint, ...ROOT_CANDIDATES])];
 
@@ -141,11 +134,7 @@ export function discoverFeedProbes(
       return {
         format: "senml",
         jsonRoot: hint,
-        probes: probesFromReadings(
-          parsed.tempProbes,
-          extractSenMLLabelHints(payload),
-          "senml",
-        ),
+        probes: probesFromReadings(parsed.tempProbes, extractSenMLLabelHints(payload), "senml"),
       };
     }
   }
@@ -223,10 +212,7 @@ export function formatProbeReading(probe: DiscoveredProbe): string {
 }
 
 function ingestLabelHints(payload: unknown): Map<string, string> {
-  return new Map([
-    ...extractSenMLLabelHints(payload),
-    ...extractHomeAssistantLabelHints(payload),
-  ]);
+  return new Map([...extractSenMLLabelHints(payload), ...extractHomeAssistantLabelHints(payload)]);
 }
 
 /**
@@ -243,7 +229,8 @@ function applyDeviceNames(
   deviceName: string,
 ): void {
   const temps = discovered.filter(
-    (d) => d.kind === "temperature" && d.key !== "avg" && !explicitlyNamed.has(`${d.key}::temperature`),
+    (d) =>
+      d.kind === "temperature" && d.key !== "avg" && !explicitlyNamed.has(`${d.key}::temperature`),
   );
   const nameFor = (key: string): string => {
     if (temps.length === 1) return deviceName;
@@ -263,7 +250,10 @@ function applyDeviceNames(
 }
 
 /** Discover push-ingest sensors with suggested labels (temp pairs, typed, flat keys). */
-export function discoverIngestPayload(payload: unknown, deviceName?: string | null): DiscoveredPushSensor[] {
+export function discoverIngestPayload(
+  payload: unknown,
+  deviceName?: string | null,
+): DiscoveredPushSensor[] {
   const { tempProbes, typed } = parseIngestPayload(payload);
   const hints = ingestLabelHints(payload);
   const discovered: DiscoveredPushSensor[] = [];

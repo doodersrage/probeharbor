@@ -57,8 +57,13 @@ vi.mock("../lib/householdRecord", () => ({
 vi.mock("../lib/entitlements", () => ({
   getUserEntitlements: async () => ({ tier: "pro", maxOwnedHouseholds: 3 }),
 }));
-vi.mock("../lib/secretFlash", () => ({ FLASH_INVITE_LINK: "invite_link", setSecretFlash: vi.fn() }));
-vi.mock("../lib/stripe", () => ({ buildSiteUrl: (_r: unknown, path: string) => `https://example.com${path}` }));
+vi.mock("../lib/secretFlash", () => ({
+  FLASH_INVITE_LINK: "invite_link",
+  setSecretFlash: vi.fn(),
+}));
+vi.mock("../lib/stripe", () => ({
+  buildSiteUrl: (_r: unknown, path: string) => `https://example.com${path}`,
+}));
 
 type Handler = (input: Record<string, string>, ctx: unknown) => Promise<unknown>;
 async function inviteAction(): Promise<Handler> {
@@ -80,21 +85,34 @@ beforeEach(() => {
   mockOwned.mockReset().mockResolvedValue(null);
   mockActive.mockReset().mockResolvedValue({ householdId: "house-1", error: null });
   mockRole.mockReset().mockResolvedValue("owner");
-  mockCreateInvite.mockReset().mockResolvedValue({ invite: { id: "inv-1" }, token: "tok", error: null });
+  mockCreateInvite
+    .mockReset()
+    .mockResolvedValue({ invite: { id: "inv-1" }, token: "tok", error: null });
   mockSendInviteEmail.mockReset().mockResolvedValue(undefined);
 });
 
 describe("inviteHouseholdMember action", () => {
-  it.each(["owner", "member"])("lets a %s invite (same rule as POST /api/household)", async (role) => {
-    mockRole.mockResolvedValue(role);
-    const run = await inviteAction();
+  it.each(["owner", "member"])(
+    "lets a %s invite (same rule as POST /api/household)",
+    async (role) => {
+      mockRole.mockResolvedValue(role);
+      const run = await inviteAction();
 
-    await expect(run({ email: "New@Example.com", role: "viewer" }, ctx)).resolves.toMatchObject({ ok: true });
+      await expect(run({ email: "New@Example.com", role: "viewer" }, ctx)).resolves.toMatchObject({
+        ok: true,
+      });
 
-    expect(mockRole).toHaveBeenCalledWith("user-1", "house-1");
-    expect(mockCreateInvite).toHaveBeenCalledWith("house-1", "new@example.com", "user-1", 7, "viewer");
-    expect(mockSendInviteEmail).toHaveBeenCalled();
-  });
+      expect(mockRole).toHaveBeenCalledWith("user-1", "house-1");
+      expect(mockCreateInvite).toHaveBeenCalledWith(
+        "house-1",
+        "new@example.com",
+        "user-1",
+        7,
+        "viewer",
+      );
+      expect(mockSendInviteEmail).toHaveBeenCalled();
+    },
+  );
 
   it.each(["viewer", "alert_only", "property_manager"])("refuses a %s", async (role) => {
     mockRole.mockResolvedValue(role);
@@ -110,19 +128,29 @@ describe("inviteHouseholdMember action", () => {
 
   it("invites into the owned household, checking the role there", async () => {
     mockOwned.mockResolvedValue("own-1");
-    mockRole.mockImplementation(async (_u: string, h: string) => (h === "own-1" ? "owner" : "viewer"));
+    mockRole.mockImplementation(async (_u: string, h: string) =>
+      h === "own-1" ? "owner" : "viewer",
+    );
     const run = await inviteAction();
 
     await run({ email: "new@example.com" }, ctx);
 
-    expect(mockCreateInvite).toHaveBeenCalledWith("own-1", "new@example.com", "user-1", 7, "member");
+    expect(mockCreateInvite).toHaveBeenCalledWith(
+      "own-1",
+      "new@example.com",
+      "user-1",
+      7,
+      "member",
+    );
   });
 
   it("refuses when the user has no household", async () => {
     mockActive.mockResolvedValue({ householdId: "", error: "db down" });
     const run = await inviteAction();
 
-    await expect(run({ email: "new@example.com" }, ctx)).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(run({ email: "new@example.com" }, ctx)).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
     expect(mockCreateInvite).not.toHaveBeenCalled();
   });
 });

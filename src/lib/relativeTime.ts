@@ -13,8 +13,14 @@ export const STALE_MS = 2 * 60 * 60 * 1000; // 2 hours
  * offline" after 3 missed reports, "offline" after twice that. Never less than
  * the fixed 30 min / 2 h, so fast devices behave as before.
  */
-export function freshnessThresholds(reportIntervalMs?: number | null): { lagMs: number; staleMs: number } {
-  const interval = reportIntervalMs != null && Number.isFinite(reportIntervalMs) && reportIntervalMs > 0 ? reportIntervalMs : 0;
+export function freshnessThresholds(reportIntervalMs?: number | null): {
+  lagMs: number;
+  staleMs: number;
+} {
+  const interval =
+    reportIntervalMs != null && Number.isFinite(reportIntervalMs) && reportIntervalMs > 0
+      ? reportIntervalMs
+      : 0;
   const lagMs = Math.max(LAG_MS, 3 * interval);
   return { lagMs, staleMs: Math.max(STALE_MS, 2 * lagMs) };
 }
@@ -98,7 +104,12 @@ export function formatRelativeAge(
     : new Date(parsed).toLocaleString(LOCALE_META[locale].intl);
 
   if (ms < 0) {
-    return { label: english ? "just now" : justNowLabel(locale), lagging: false, stale: false, absolute };
+    return {
+      label: english ? "just now" : justNowLabel(locale),
+      lagging: false,
+      stale: false,
+      absolute,
+    };
   }
 
   const minutes = Math.floor(ms / 60000);
@@ -108,10 +119,7 @@ export function formatRelativeAge(
     else if (minutes < 60) label = `${minutes}m ago`;
     else {
       const hours = Math.floor(minutes / 60);
-      label =
-        hours < 48
-          ? `${hours}h ago`
-          : `${Math.floor(hours / 24)}d ago`;
+      label = hours < 48 ? `${hours}h ago` : `${Math.floor(hours / 24)}d ago`;
     }
   } else if (minutes < 1) {
     label = justNowLabel(locale);
@@ -135,7 +143,10 @@ export function formatRelativeAge(
 
 /** "now" / "ahora" / "maintenant" / "jetzt" / "agora". */
 function justNowLabel(locale: Locale): string {
-  return new Intl.RelativeTimeFormat(LOCALE_META[locale].intl, { numeric: "auto" }).format(0, "second");
+  return new Intl.RelativeTimeFormat(LOCALE_META[locale].intl, { numeric: "auto" }).format(
+    0,
+    "second",
+  );
 }
 
 /** `{age}` templates for {@link freshnessDetail}; server code passes `libTextMessages(locale).freshness`. */

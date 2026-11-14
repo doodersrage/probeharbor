@@ -1,4 +1,3 @@
-
 /**
  * /about/esp32-freeze-kit body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Dashboard UI paths such as
@@ -51,14 +50,16 @@ const ptBr: Esp32FreezeKitMessages = {
     pullupWhy: "Obrigatório na linha de dados 1-Wire se o pacote da sonda não incluir um",
     amazonResistor: "4,7k na Amazon",
     powerPart: "Alimentação USB",
-    powerWhy: "Fonte de tomada ou cabo USB-C; quando der, deixe a placa num lugar mais quente que o da sonda",
+    powerWhy:
+      "Fonte de tomada ou cabo USB-C; quando der, deixe a placa num lugar mais quente que o da sonda",
     powerBuyHtml: "Qualquer fonte USB de 5&nbsp;V com ≥500&nbsp;mA",
   },
   bomNoteHtml:
     "Os anúncios de produtos mudam: use a Adafruit como lista de referência. Os links <code>/dp/</code> da Amazon em <code>bomLinks</code> são alternativas compatíveis com o programa de Associados enquanto o anúncio estiver ativo. Kits genéricos “ESP32 + DS18B20” costumam vir com um DHT11 em vez de uma sonda à prova d’água — evite-os.",
   wire: {
     title: "Faça a ligação",
-    diagramAlt: "Diagrama de ligação: ESP32 DevKit a um DS18B20 à prova d’água com pull-up de 4,7 quilo-ohms no GPIO 4",
+    diagramAlt:
+      "Diagrama de ligação: ESP32 DevKit a um DS18B20 à prova d’água com pull-up de 4,7 quilo-ohms no GPIO 4",
     captionHtml:
       "Vermelho → 3,3&nbsp;V, preto → GND, dados amarelo/branco → GPIO 4, com um pull-up de 4,7&nbsp;kΩ entre dados e 3,3&nbsp;V. O sketch de exemplo usa o GPIO 4 por padrão.",
     itemsHtml: [

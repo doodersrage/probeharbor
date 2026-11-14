@@ -20,7 +20,13 @@ import {
   type PlotBounds,
   type TimeWindow,
 } from "../lib/historyChartInteraction";
-import { COLOR_ABOVE, COLOR_BELOW, HOUSE_COLOR, HUMIDITY_COLOR, PROBE_COLORS } from "./historyChartColors";
+import {
+  COLOR_ABOVE,
+  COLOR_BELOW,
+  HOUSE_COLOR,
+  HUMIDITY_COLOR,
+  PROBE_COLORS,
+} from "./historyChartColors";
 import type { HistoryChartUi } from "./historyChartUi";
 
 export type Point = {
@@ -32,17 +38,28 @@ export type Point = {
 };
 
 /** A humidity reading to draw; `tempf` null when the sensor has no paired temperature (no dew point). */
-export type HumiditySample = { timestamp: string; humidity: number; tempf: number | null; probeLabel: string };
+export type HumiditySample = {
+  timestamp: string;
+  humidity: number;
+  tempf: number | null;
+  probeLabel: string;
+};
 
 /** One humidity line (and its dew-point line) to draw. */
-export type HumiditySeries = { label: string; humidityColor: string; dewColor: string; points: HumiditySample[] };
+export type HumiditySeries = {
+  label: string;
+  humidityColor: string;
+  dewColor: string;
+  points: HumiditySample[];
+};
 
 /** Height of one per-door row above the plot, and the step between rows. */
 const DOOR_LANE_H = 8;
 const DOOR_LANE_STEP = 12;
 
 /** `formatAxisTime`, in `locale` when a non-English one is given. */
-const axisTime = (ts: number, spanMs: number, locale?: string): string => formatAxisTime(ts, spanMs, locale);
+const axisTime = (ts: number, spanMs: number, locale?: string): string =>
+  formatAxisTime(ts, spanMs, locale);
 
 function segmentColor(
   tempf: number,
@@ -97,7 +114,35 @@ export function drawHistoryChart(
   g: CanvasRenderingContext2D,
   input: DrawHistoryChartInput,
 ): PlotBounds {
-  const { points, priorYearPoints, housePoints, byProbe, visibleProbes, houseVisible, freezeThresholdF, highTempF, targetAmbientF, humidityOn, humiditySeries, humidityPoints, celsius, unit, locale, t, sampleIntervalMs, lanes, visibleDoorBands, activeView, alertMarkers, highlightAlertId, hoverTs, hoverHits, hoverMarker, hoverDoors, brushRange } = input;
+  const {
+    points,
+    priorYearPoints,
+    housePoints,
+    byProbe,
+    visibleProbes,
+    houseVisible,
+    freezeThresholdF,
+    highTempF,
+    targetAmbientF,
+    humidityOn,
+    humiditySeries,
+    humidityPoints,
+    celsius,
+    unit,
+    locale,
+    t,
+    sampleIntervalMs,
+    lanes,
+    visibleDoorBands,
+    activeView,
+    alertMarkers,
+    highlightAlertId,
+    hoverTs,
+    hoverHits,
+    hoverMarker,
+    hoverDoors,
+    brushRange,
+  } = input;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const width = Math.max(1, canvas.clientWidth);
   const height = Math.max(1, canvas.clientHeight);
@@ -127,27 +172,18 @@ export function drawHistoryChart(
   const tsRange = maxTs - minTs || 1;
   const inView = (ts: number) => ts >= minTs && ts <= maxTs;
 
-  const guideTemps = [
-    freezeThresholdF,
-    highTempF,
-    targetAmbientF,
-  ].filter((v): v is number => v != null && Number.isFinite(v));
-
-  const visiblePoints = points.filter((p) =>
-    visibleProbes.has(p.probeLabel || t.probe),
+  const guideTemps = [freezeThresholdF, highTempF, targetAmbientF].filter(
+    (v): v is number => v != null && Number.isFinite(v),
   );
-  const houseForScale =
-    houseVisible && housePoints.length >= 2 ? housePoints : [];
 
-  const scaleSource = (
-    visiblePoints.length > 0 ? visiblePoints : points
-  ).filter((p) => inView(Date.parse(p.timestamp)));
-  const houseInView = houseForScale.filter((p) =>
+  const visiblePoints = points.filter((p) => visibleProbes.has(p.probeLabel || t.probe));
+  const houseForScale = houseVisible && housePoints.length >= 2 ? housePoints : [];
+
+  const scaleSource = (visiblePoints.length > 0 ? visiblePoints : points).filter((p) =>
     inView(Date.parse(p.timestamp)),
   );
-  const priorInView = priorYearPoints.filter((p) =>
-    inView(Date.parse(p.timestamp)),
-  );
+  const houseInView = houseForScale.filter((p) => inView(Date.parse(p.timestamp)));
+  const priorInView = priorYearPoints.filter((p) => inView(Date.parse(p.timestamp)));
   const dewInView = plotHumidity
     ? humidityPoints
         .filter((p) => inView(Date.parse(p.timestamp)))
@@ -184,12 +220,9 @@ export function drawHistoryChart(
     maxTemp: max,
   };
 
-  const yFor = (tempf: number) =>
-    pad.top + innerH - ((tempf - min) / range) * innerH;
-  const yForRh = (rh: number) =>
-    pad.top + innerH - (Math.min(100, Math.max(0, rh)) / 100) * innerH;
-  const xFor = (ts: number) =>
-    pad.left + ((ts - minTs) / tsRange) * innerW;
+  const yFor = (tempf: number) => pad.top + innerH - ((tempf - min) / range) * innerH;
+  const yForRh = (rh: number) => pad.top + innerH - (Math.min(100, Math.max(0, rh)) / 100) * innerH;
+  const xFor = (ts: number) => pad.left + ((ts - minTs) / tsRange) * innerW;
 
   g.clearRect(0, 0, width, height);
   g.fillStyle = "#0f1f2c";
@@ -217,12 +250,7 @@ export function drawHistoryChart(
   }
 
   const edgeLabels = { below: 0, above: 0 };
-  function drawGuide(
-    tempf: number | null,
-    color: string,
-    label: string,
-    dash: number[],
-  ) {
+  function drawGuide(tempf: number | null, color: string, label: string, dash: number[]) {
     if (tempf == null || !Number.isFinite(tempf)) return;
     const off = offscale.find((o) => o.value === tempf);
     if (off) {
@@ -233,7 +261,11 @@ export function drawHistoryChart(
       g.textAlign = "left";
       const stack = edgeLabels[off.side]++ * 12;
       const edgeY = off.side === "below" ? pad.top + innerH - 4 - stack : pad.top + 12 + stack;
-      g.fillText(`${label} ${fixed(tempf, 0, locale)}${unit} ${off.side === "below" ? "↓" : "↑"}`, pad.left + 4, edgeY);
+      g.fillText(
+        `${label} ${fixed(tempf, 0, locale)}${unit} ${off.side === "below" ? "↓" : "↑"}`,
+        pad.left + 4,
+        edgeY,
+      );
       g.restore();
       return;
     }
@@ -290,10 +322,11 @@ export function drawHistoryChart(
 
   function drawSeriesColored(series: Point[], baseColor: string) {
     if (series.length < 2) return;
-    const ordered = [...series].sort(
-      (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
+    const ordered = [...series].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+    const gapMs = gapThresholdMs(
+      ordered.map((p) => Date.parse(p.timestamp)),
+      sampleIntervalMs,
     );
-    const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)), sampleIntervalMs);
     for (let i = 1; i < ordered.length; i++) {
       const a = ordered[i - 1]!;
       const b = ordered[i]!;
@@ -309,8 +342,14 @@ export function drawHistoryChart(
   }
 
   /** Path through the points, lifting the pen across stretches with no data. */
-  function traceBrokenAtGaps<P extends { timestamp: string }>(ordered: P[], yOf: (point: P) => number) {
-    const gapMs = gapThresholdMs(ordered.map((p) => Date.parse(p.timestamp)), sampleIntervalMs);
+  function traceBrokenAtGaps<P extends { timestamp: string }>(
+    ordered: P[],
+    yOf: (point: P) => number,
+  ) {
+    const gapMs = gapThresholdMs(
+      ordered.map((p) => Date.parse(p.timestamp)),
+      sampleIntervalMs,
+    );
     let prevTs: number | null = null;
     for (const point of ordered) {
       const ts = Date.parse(point.timestamp);
@@ -324,9 +363,7 @@ export function drawHistoryChart(
 
   function drawSeriesFlat(series: Point[], color: string) {
     if (series.length < 2) return;
-    const ordered = [...series].sort(
-      (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-    );
+    const ordered = [...series].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
     g.strokeStyle = color;
     g.lineWidth = 2;
     g.beginPath();
@@ -336,9 +373,7 @@ export function drawHistoryChart(
 
   function drawSeriesDashed(series: Point[], color: string) {
     if (series.length < 2) return;
-    const ordered = [...series].sort(
-      (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-    );
+    const ordered = [...series].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
     g.save();
     g.strokeStyle = color;
     g.lineWidth = 2;

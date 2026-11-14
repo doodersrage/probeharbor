@@ -1,4 +1,3 @@
-
 /** /about/temperature-probes body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 
 const en = {
@@ -24,7 +23,8 @@ const en = {
   multipleHtml:
     "Garages, workshops, and attics are not uniform boxes. A single sensor might read 45 °F near the floor while the ceiling bay is 58 °F on a sunny winter afternoon. Multiple probes reveal gradients, bad insulation spots, and which area represents the risk you care about. The firmware averages active probes so the history page still has one summary snapshot per load while preserving per-probe detail on the home page.",
   boardAlt: "ProbeHarbor probe controller board with Ethernet connectivity and DHT22 sensors",
-  boardCaption: "Revision two of the ProbeHarbor probe board. Ethernet, LCD, and dual DHT22 inputs.",
+  boardCaption:
+    "Revision two of the ProbeHarbor probe board. Ethernet, LCD, and dual DHT22 inputs.",
   webTitle: "From probe wire to web page",
   webHtml:
     'Probes do not talk to the website directly. The Arduino sketch reads each sensor on a schedule, validates ranges, and publishes JSON over HTTPS. The site fetches that feed, maps keys to human labels you configure in the dashboard, and optionally saves readings when you are signed in. Try the <a class="text-link" href="/about/probe-demo">interactive probe demo</a> to see how multiple zones and averages behave, or read the <a class="text-link" href="/about/data-flow">end-to-end data flow</a> guide.',

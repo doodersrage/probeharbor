@@ -1,4 +1,3 @@
-
 /** /about/mqtt-bridge body copy. Code blocks stay in the page. `*Html` keys are trusted inline HTML. */
 import type { Messages } from "./en";
 

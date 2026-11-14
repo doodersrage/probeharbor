@@ -18,10 +18,7 @@ const ANALYTICS_EXCLUDED_PREFIXES = ["/dashboard", "/api/", "/app/oauth"];
 export function resolveGaMeasurementId(
   env?: Pick<ImportMetaEnv, "GA_MEASUREMENT_ID">,
 ): string | null {
-  const fromEnv =
-    env?.GA_MEASUREMENT_ID?.trim() ||
-    import.meta.env.GA_MEASUREMENT_ID?.trim() ||
-    "";
+  const fromEnv = env?.GA_MEASUREMENT_ID?.trim() || import.meta.env.GA_MEASUREMENT_ID?.trim() || "";
 
   if (fromEnv === "off" || fromEnv === "false" || fromEnv === "0") {
     return null;

@@ -17,11 +17,14 @@ const ptBr: StatusEmailMessages = {
     subjectDegraded: "ProbeHarbor: serviço instável",
     titleHealthy: "O ProbeHarbor voltou ao normal",
     titleDegraded: "O ProbeHarbor está instável",
-    introHealthy: "As tarefas agendadas e o monitoramento de ingestão estão funcionando normalmente de novo.",
-    introDegraded: "Estamos vendo falhas em tarefas ou execuções agendadas perdidas. Estamos investigando.",
+    introHealthy:
+      "As tarefas agendadas e o monitoramento de ingestão estão funcionando normalmente de novo.",
+    introDegraded:
+      "Estamos vendo falhas em tarefas ou execuções agendadas perdidas. Estamos investigando.",
     cta: "Ver status do sistema",
     unsubscribe: "Cancelar inscrição nas atualizações de status",
-    footerNote: "Você está recebendo isto porque se inscreveu nas atualizações de status do ProbeHarbor.",
+    footerNote:
+      "Você está recebendo isto porque se inscreveu nas atualizações de status do ProbeHarbor.",
   },
 };
 

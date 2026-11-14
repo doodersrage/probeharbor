@@ -42,8 +42,12 @@ beforeEach(() => {
   mockFetchOpenMeteoHourlyHistory.mockReset().mockResolvedValue([]);
   mockOpenMeteoPointsToChartPoints.mockReset().mockReturnValue([]);
   mockFetchOpenMeteoHourlyWindow.mockReset().mockResolvedValue([]);
-  mockSplitOpenMeteoPastAndForecast.mockReset().mockImplementation((points: unknown[]) => ({ past: points, forecast: [] }));
-  mockPriorYearWindow.mockReset().mockReturnValue({ start: new Date("2023-06-08"), end: new Date("2023-06-15") });
+  mockSplitOpenMeteoPastAndForecast
+    .mockReset()
+    .mockImplementation((points: unknown[]) => ({ past: points, forecast: [] }));
+  mockPriorYearWindow
+    .mockReset()
+    .mockReturnValue({ start: new Date("2023-06-08"), end: new Date("2023-06-15") });
 });
 
 describe("fetchPriorYearCompareBundle", () => {
@@ -135,7 +139,9 @@ describe("fetchPriorYearCompareBundle", () => {
     const hourly = [{ timestamp: "t", tempf: 30 }];
     mockFetchOpenMeteoHourlyHistory.mockResolvedValue(hourly);
     mockAverageOpenMeteoTempF.mockReturnValue(30);
-    const chartPoints = [{ timestamp: "t", tempf: 30, humidity: 0, probeLabel: "Outdoor (estimated)" }];
+    const chartPoints = [
+      { timestamp: "t", tempf: 30, humidity: 0, probeLabel: "Outdoor (estimated)" },
+    ];
     mockOpenMeteoPointsToChartPoints.mockReturnValue(chartPoints);
     const { fetchPriorYearCompareBundle } = await import("./priorYearCompare");
 
@@ -155,7 +161,9 @@ describe("fetchPriorYearCompareBundle", () => {
     mockFetchOpenMeteoHourlyHistory.mockResolvedValue([{ timestamp: "t", tempf: 30 }]);
     const recent = [{ timestamp: "r", tempf: 50 }];
     mockFetchOpenMeteoHourlyWindow.mockResolvedValue(recent);
-    mockAverageOpenMeteoTempF.mockImplementation((points: Array<{ tempf: number }>) => points[0]?.tempf ?? null);
+    mockAverageOpenMeteoTempF.mockImplementation(
+      (points: Array<{ tempf: number }>) => points[0]?.tempf ?? null,
+    );
     const { fetchPriorYearCompareBundle } = await import("./priorYearCompare");
 
     const plain = await fetchPriorYearCompareBundle("user-1", 7);
@@ -165,7 +173,10 @@ describe("fetchPriorYearCompareBundle", () => {
     const withOutdoor = await fetchPriorYearCompareBundle("user-1", 7, {}, null, {
       includeThisWindowOutdoor: true,
     });
-    expect(mockFetchOpenMeteoHourlyWindow).toHaveBeenCalledWith(39.7, -104.9, { pastDays: 7, forecastDays: 1 });
+    expect(mockFetchOpenMeteoHourlyWindow).toHaveBeenCalledWith(39.7, -104.9, {
+      pastDays: 7,
+      forecastDays: 1,
+    });
     expect(withOutdoor.thisWindowOutdoorAvgF).toBe(50);
   });
 

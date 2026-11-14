@@ -14,7 +14,9 @@ export const POST: APIRoute = async ({ cookies, redirect, request }) => {
   const { session } = await getAuthFromCookies(cookies);
   if (!session) return redirect("/signin");
 
-  const revoked = await withBetterAuth(request, (auth) => auth.api.revokeSessions({ headers: request.headers })).then(
+  const revoked = await withBetterAuth(request, (auth) =>
+    auth.api.revokeSessions({ headers: request.headers }),
+  ).then(
     () => true,
     (error: unknown) => {
       console.error("sign out everywhere failed:", error instanceof Error ? error.message : error);

@@ -85,7 +85,8 @@ export default {
         "Beaucoup d’espaces non chauffés (garages, ateliers, vides sanitaires) démarrent vers 2–3 °C (35–38 °F) pour être prévenus avant que les tuyaux ne gèlent franchement. Ajustez une fois que vous connaissez les minimales nocturnes de votre zone la plus froide.",
     },
     {
-      question: "Faut-il déclencher les alertes sur les prévisions extérieures ou sur les sondes intérieures ?",
+      question:
+        "Faut-il déclencher les alertes sur les prévisions extérieures ou sur les sondes intérieures ?",
       answer:
         "Les deux si possible : les sondes surveillent votre espace ; les prévisions et les alertes du NWS (États-Unis) repèrent les vagues de froid régionales avant que l’air intérieur ne baisse.",
     },
@@ -186,7 +187,8 @@ export default {
         "Utilisez le push pour les nœuds ESP/Arduino capables d’envoyer un POST HTTPS sortant. Utilisez le pull si vous disposez déjà d’un flux JSON HTTPS public (ou d’un relais TLS) que ProbeHarbor peut récupérer à intervalles réguliers.",
     },
     {
-      question: "Pourquoi les relevés n’apparaissent-ils pas dans Home alors que l’ingestion réussit ?",
+      question:
+        "Pourquoi les relevés n’apparaissent-ils pas dans Home alors que l’ingestion réussit ?",
       answer:
         "Envoyez d’abord du JSON en POST : les clés des capteurs s’importent automatiquement dans Devices. Si Home reste vide, vérifiez que l’appareil a bien reçu un POST et consultez Devices → Device health. Flux pull : racine JSON correcte (temp par défaut), sauf si l’URL renvoie du SenML ou du JSON REST Home Assistant, détectés automatiquement.",
     },
@@ -224,7 +226,8 @@ export default {
   ],
   "esp32-ota-firmware": [
     {
-      question: "Les ESP32 peuvent-ils mettre à jour leur firmware tout en envoyant des données à ProbeHarbor ?",
+      question:
+        "Les ESP32 peuvent-ils mettre à jour leur firmware tout en envoyant des données à ProbeHarbor ?",
       answer:
         "Oui : faites les mises à jour OTA du firmware sur votre réseau local et laissez l’ingestion push envoyer les relevés à l’API cloud. Les champs batterie et RSSI sont facultatifs dans le payload. Téléchargez un sketch préconfiguré depuis Dashboard → Devices pour le premier flashage en USB.",
     },
@@ -339,8 +342,7 @@ export default {
     },
     {
       question: "Est-ce de l’Arduino ou du XC8 ?",
-      answer:
-        "XC8 / MPLAB X sur la démo Ethernet MLA. Pas un .ino Arduino.",
+      answer: "XC8 / MPLAB X sur la démo Ethernet MLA. Pas un .ino Arduino.",
     },
   ],
   "teensy41-ingest": [

@@ -28,14 +28,22 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function home(email: string) {
   const id = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [id]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [id],
+  );
   return { id, home: m!.household_id };
 }
 
 async function device(householdId: string, source: "push" | "pull_url" = "push", name = "Probe") {
   const [d] = await sql<{ id: string }>(
     `insert into public.devices (household_id, name, source, pull_url) values ($1, $2, $3, $4) returning id`,
-    [householdId, name, source, source === "pull_url" ? `https://feeds.example/${Math.random()}` : null],
+    [
+      householdId,
+      name,
+      source,
+      source === "pull_url" ? `https://feeds.example/${Math.random()}` : null,
+    ],
   );
   return d!.id;
 }
@@ -63,10 +71,12 @@ describe("devices.ts: SQL refuses another household's device (isolation audit)",
     const theirs = await device(b.home, "push", "Theirs");
     await sql("update public.devices set space = 'Shed' where id = $1", [theirs]);
 
-    await expect(devices.updateDeviceDetails(a.home, theirs, true, "Hijacked", false, "Mine")).resolves.toEqual({ error: null });
-    expect(await sql("select name, enabled, space from public.devices where id = $1", [theirs])).toEqual([
-      { name: "Theirs", enabled: true, space: "Shed" },
-    ]);
+    await expect(
+      devices.updateDeviceDetails(a.home, theirs, true, "Hijacked", false, "Mine"),
+    ).resolves.toEqual({ error: null });
+    expect(
+      await sql("select name, enabled, space from public.devices where id = $1", [theirs]),
+    ).toEqual([{ name: "Theirs", enabled: true, space: "Shed" }]);
   });
 
   it("replaceDeviceSensor refuses a sensor from another household, in either position, and moves no readings", async () => {
@@ -74,7 +84,10 @@ describe("devices.ts: SQL refuses another household's device (isolation audit)",
     const b = await home("b@example.com");
     const mine = await sensor(await device(a.home), "t");
     const theirs = await sensor(await device(b.home), "t");
-    await sql("insert into public.sensor_readings (sensor_id, household_id, value_num) values ($1, $2, 40)", [theirs, b.home]);
+    await sql(
+      "insert into public.sensor_readings (sensor_id, household_id, value_num) values ($1, $2, 40)",
+      [theirs, b.home],
+    );
 
     const pull = await devices.replaceDeviceSensor(a.home, theirs, mine); // pull their history into my sensor
     expect(pull.error).toContain("sensor_not_found");
@@ -92,20 +105,35 @@ describe("devices.ts: SQL refuses another household's device (isolation audit)",
     const b = await home("b@example.com");
     const theirs = await device(b.home);
     const theirSensor = await sensor(theirs, "t");
-    const patch = { key: "x", label: "Hijacked", kind: "humidity" as const, unit: "%", offsetNum: 5 };
-    await expect(devices.updateDeviceSensor(a.home, theirSensor, theirs, patch)).resolves.toEqual({ error: null });
-    await expect(devices.deleteDeviceSensor(a.home, theirSensor, theirs)).resolves.toEqual({ error: null });
-    expect(await sql("select key, label, kind, unit, offset_num from public.device_sensors where id = $1", [theirSensor])).toEqual([
-      { key: "t", label: "t", kind: "temperature", unit: "F", offset_num: 0 },
-    ]);
+    const patch = {
+      key: "x",
+      label: "Hijacked",
+      kind: "humidity" as const,
+      unit: "%",
+      offsetNum: 5,
+    };
+    await expect(devices.updateDeviceSensor(a.home, theirSensor, theirs, patch)).resolves.toEqual({
+      error: null,
+    });
+    await expect(devices.deleteDeviceSensor(a.home, theirSensor, theirs)).resolves.toEqual({
+      error: null,
+    });
+    expect(
+      await sql(
+        "select key, label, kind, unit, offset_num from public.device_sensors where id = $1",
+        [theirSensor],
+      ),
+    ).toEqual([{ key: "t", label: "t", kind: "temperature", unit: "F", offset_num: 0 }]);
 
     // B's own household still can.
     await devices.updateDeviceSensor(b.home, theirSensor, theirs, { ...patch, visible: false });
-    expect(await sql("select label, visible from public.device_sensors where id = $1", [theirSensor])).toEqual([
-      { label: "Hijacked", visible: false },
-    ]);
+    expect(
+      await sql("select label, visible from public.device_sensors where id = $1", [theirSensor]),
+    ).toEqual([{ label: "Hijacked", visible: false }]);
     await devices.deleteDeviceSensor(b.home, theirSensor, theirs);
-    await expect(sql("select 1 from public.device_sensors where id = $1", [theirSensor])).resolves.toEqual([]);
+    await expect(
+      sql("select 1 from public.device_sensors where id = $1", [theirSensor]),
+    ).resolves.toEqual([]);
   });
 
   it("savePullDevicesForHousehold never updates or deletes another household's pull device with the same URL", async () => {
@@ -119,13 +147,21 @@ describe("devices.ts: SQL refuses another household's device (isolation audit)",
     const theirSensor = await sensor(theirs!.id, "0");
 
     const feed = { id: "f1", name: "Mine", url, enabled: false, jsonRoot: "temp" };
-    await expect(devices.savePullDevicesForHousehold(a.home, [feed], [])).resolves.toEqual({ error: null });
-    await expect(devices.savePullDevicesForHousehold(a.home, [], [])).resolves.toEqual({ error: null });
+    await expect(devices.savePullDevicesForHousehold(a.home, [feed], [])).resolves.toEqual({
+      error: null,
+    });
+    await expect(devices.savePullDevicesForHousehold(a.home, [], [])).resolves.toEqual({
+      error: null,
+    });
 
-    expect(await sql("select name, enabled, household_id from public.devices where id = $1", [theirs!.id])).toEqual([
-      { name: "Theirs", enabled: true, household_id: b.home },
-    ]);
-    expect(await sql("select 1 from public.device_sensors where id = $1", [theirSensor])).toHaveLength(1);
+    expect(
+      await sql("select name, enabled, household_id from public.devices where id = $1", [
+        theirs!.id,
+      ]),
+    ).toEqual([{ name: "Theirs", enabled: true, household_id: b.home }]);
+    expect(
+      await sql("select 1 from public.device_sensors where id = $1", [theirSensor]),
+    ).toHaveLength(1);
   });
 });
 
@@ -139,8 +175,14 @@ describe("pucks.ts: SQL scoped to the household (isolation audit)", () => {
     const expires = new Date(Date.now() + 60_000).toISOString();
     await pucks.savePendingClaim(DEVICE, "bay-1", "ab".repeat(16), expires);
 
-    await expect(pucks.bindClaimedBay(DEVICE, b.home, "bay-1", "ab".repeat(16), "Theirs")).resolves.toBe("gone");
-    await expect(pucks.getPuck(DEVICE)).resolves.toMatchObject({ household_id: a.home, bay_id: null, space_name: null });
+    await expect(
+      pucks.bindClaimedBay(DEVICE, b.home, "bay-1", "ab".repeat(16), "Theirs"),
+    ).resolves.toBe("gone");
+    await expect(pucks.getPuck(DEVICE)).resolves.toMatchObject({
+      household_id: a.home,
+      bay_id: null,
+      space_name: null,
+    });
   });
 
   it("bindClaimedBay with the wrong household leaves the pending claim for the real owner", async () => {
@@ -150,25 +192,45 @@ describe("pucks.ts: SQL scoped to the household (isolation audit)", () => {
     const expires = new Date(Date.now() + 60_000).toISOString();
     await pucks.savePendingClaim(DEVICE, "bay-1", "ab".repeat(16), expires);
 
-    await expect(pucks.bindClaimedBay(DEVICE, b.home, "bay-1", "ab".repeat(16), "Theirs")).resolves.toBe("gone");
-    await expect(pucks.getPendingClaim(DEVICE)).resolves.toMatchObject({ bay_id: "bay-1", nonce_hex: "ab".repeat(16) });
+    await expect(
+      pucks.bindClaimedBay(DEVICE, b.home, "bay-1", "ab".repeat(16), "Theirs"),
+    ).resolves.toBe("gone");
+    await expect(pucks.getPendingClaim(DEVICE)).resolves.toMatchObject({
+      bay_id: "bay-1",
+      nonce_hex: "ab".repeat(16),
+    });
 
-    await expect(pucks.bindClaimedBay(DEVICE, a.home, "bay-1", "ab".repeat(16), "Garage")).resolves.toBe("ok");
+    await expect(
+      pucks.bindClaimedBay(DEVICE, a.home, "bay-1", "ab".repeat(16), "Garage"),
+    ).resolves.toBe("ok");
     await expect(pucks.getPendingClaim(DEVICE)).resolves.toBeNull();
-    await expect(pucks.getPuck(DEVICE)).resolves.toMatchObject({ household_id: a.home, bay_id: "bay-1", space_name: "Garage" });
+    await expect(pucks.getPuck(DEVICE)).resolves.toMatchObject({
+      household_id: a.home,
+      bay_id: "bay-1",
+      space_name: "Garage",
+    });
     // Used once: a replay is "gone".
-    await expect(pucks.bindClaimedBay(DEVICE, a.home, "bay-1", "ab".repeat(16), "Garage")).resolves.toBe("gone");
+    await expect(
+      pucks.bindClaimedBay(DEVICE, a.home, "bay-1", "ab".repeat(16), "Garage"),
+    ).resolves.toBe("gone");
   });
 
   it("bayPuck and setMoodOverride only see the household's own bay", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
     await pucks.registerPuck(DEVICE, "a".repeat(64), a.home, a.id);
-    await sql("update public.pucks set bay_id = 'bay-1', space_name = 'Garage' where device_id = $1", [DEVICE]);
+    await sql(
+      "update public.pucks set bay_id = 'bay-1', space_name = 'Garage' where device_id = $1",
+      [DEVICE],
+    );
 
     await expect(pucks.bayPuck(b.home, "bay-1")).resolves.toBeNull();
     await expect(pucks.setMoodOverride(b.home, "bay-1", "panic")).resolves.toBe(false);
-    await expect(pucks.bayPuck(a.home, "bay-1")).resolves.toEqual({ space_name: "Garage", mood_override: null, mood_override_at: null });
+    await expect(pucks.bayPuck(a.home, "bay-1")).resolves.toEqual({
+      space_name: "Garage",
+      mood_override: null,
+      mood_override_at: null,
+    });
   });
 
   it("firstOwnerAlertSettings returns the household's own owner, never another household's", async () => {
@@ -184,12 +246,20 @@ describe("thermostats.ts (isolation audit)", () => {
   it("saveConnection for one household never overwrites another's connection", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
-    const base = { provider: "nest", accessToken: null, accessTokenExpiresAt: null, externalDeviceId: null, connectedBy: null };
+    const base = {
+      provider: "nest",
+      accessToken: null,
+      accessTokenExpiresAt: null,
+      externalDeviceId: null,
+      connectedBy: null,
+    };
     await thermostats.saveConnection({ ...base, householdId: a.home, refreshToken: "a-secret" });
     await thermostats.saveConnection({ ...base, householdId: b.home, refreshToken: "b-secret" });
     expect((await thermostats.getConnection(a.home, "nest"))?.refresh_token).toBe("a-secret");
     expect((await thermostats.getConnection(b.home, "nest"))?.refresh_token).toBe("b-secret");
-    expect((await thermostats.listConnections(b.home)).map((c) => c.household_id)).toEqual([b.home]);
+    expect((await thermostats.listConnections(b.home)).map((c) => c.household_id)).toEqual([
+      b.home,
+    ]);
   });
 });
 
@@ -215,10 +285,12 @@ describe("pushTokens.ts: one user's registrations (isolation audit)", () => {
     // Without the route's hand-off delete, saving as A adds A's own row only.
     await push.savePushSubscription(a.id, "https://push.example/x", "a-key", "a-auth");
     await push.saveFcmToken(a.id, TOKEN, "ios", "a.app");
-    await expect(push.listPushSubscriptions(b.id)).resolves.toEqual([{ endpoint: "https://push.example/x", p256dh: "b-key", auth: "b-auth" }]);
-    expect(await sql("select platform, app_id from public.fcm_device_tokens where user_id = $1", [b.id])).toEqual([
-      { platform: "android", app_id: "b.app" },
+    await expect(push.listPushSubscriptions(b.id)).resolves.toEqual([
+      { endpoint: "https://push.example/x", p256dh: "b-key", auth: "b-auth" },
     ]);
+    expect(
+      await sql("select platform, app_id from public.fcm_device_tokens where user_id = $1", [b.id]),
+    ).toEqual([{ platform: "android", app_id: "b.app" }]);
   });
 
   it("deletePushSubscription / deleteFcmToken (the SQL) remove only the caller's row", async () => {
@@ -240,7 +312,9 @@ describe("remaining.ts (isolation audit)", () => {
     await remaining.saveEstimateSnapshot(b.home, { v: "b" }, "2026-11-01T00:00:00.000Z");
     await expect(remaining.getEstimateSnapshot(a.home)).resolves.toBeNull();
     await remaining.saveEstimateSnapshot(a.home, { v: "a" }, "2026-11-02T00:00:00.000Z");
-    await expect(remaining.getEstimateSnapshot(b.home)).resolves.toMatchObject({ data: { v: "b" } });
+    await expect(remaining.getEstimateSnapshot(b.home)).resolves.toMatchObject({
+      data: { v: "b" },
+    });
   });
 
   it("stampPortfolioAlert stamps only that user", async () => {
@@ -251,13 +325,19 @@ describe("remaining.ts (isolation audit)", () => {
     const rows = await sql<{ user_id: string; stamped: boolean }>(
       "select user_id, last_portfolio_alert_at is not null as stamped from public.alert_settings",
     );
-    expect(Object.fromEntries(rows.map((r) => [r.user_id, r.stamped]))).toEqual({ [a.id]: true, [b.id]: false });
+    expect(Object.fromEntries(rows.map((r) => [r.user_id, r.stamped]))).toEqual({
+      [a.id]: true,
+      [b.id]: false,
+    });
   });
 
   it("a Telegram secret two users share resolves to nobody", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
-    await sql("insert into public.alert_settings (user_id, telegram_command_secret) values ($1, 'dup'), ($2, 'dup')", [a.id, b.id]);
+    await sql(
+      "insert into public.alert_settings (user_id, telegram_command_secret) values ($1, 'dup'), ($2, 'dup')",
+      [a.id, b.id],
+    );
     await expect(remaining.userByTelegramSecret("dup")).resolves.toBeNull();
   });
 
@@ -265,7 +345,9 @@ describe("remaining.ts (isolation audit)", () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
     await expect(remaining.setDigestOptIn(b.home, a.id, true)).resolves.toEqual({ error: null });
-    expect(await sql("select count(*)::int as n from public.household_members where digest_opt_in")).toEqual([{ n: 0 }]);
+    expect(
+      await sql("select count(*)::int as n from public.household_members where digest_opt_in"),
+    ).toEqual([{ n: 0 }]);
     await expect(remaining.getDigestOptIn(b.home, a.id)).resolves.toBeNull();
   });
 });

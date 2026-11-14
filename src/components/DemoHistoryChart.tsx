@@ -36,7 +36,11 @@ export default function DemoHistoryChart({
   useEffect(() => {
     let cancelled = false;
     fetch("/api/home/demo-history")
-      .then((res) => (res.ok ? (res.json() as Promise<DemoHistory>) : Promise.reject(new Error(String(res.status)))))
+      .then((res) =>
+        res.ok
+          ? (res.json() as Promise<DemoHistory>)
+          : Promise.reject(new Error(String(res.status))),
+      )
       .then((body) => {
         if (!cancelled) setData(body);
       })
@@ -52,13 +56,19 @@ export default function DemoHistoryChart({
     return <p class="m-0 text-sm text-[var(--color-text-muted)]">{text.unavailable}</p>;
   }
   if (!data) {
-    return <div class="history-chart-wrap" aria-busy="true"><p class="m-0 text-sm text-[var(--color-text-muted)]">{text.loading}</p></div>;
+    return (
+      <div class="history-chart-wrap" aria-busy="true">
+        <p class="m-0 text-sm text-[var(--color-text-muted)]">{text.loading}</p>
+      </div>
+    );
   }
   return (
     <HistoryChart
       points={data.points}
       housePoints={data.outdoor}
-      houseLegend={data.location ? text.outdoorAt.replace("{location}", data.location) : text.outdoor}
+      houseLegend={
+        data.location ? text.outdoorAt.replace("{location}", data.location) : text.outdoor
+      }
       title={text.title}
       freezeThresholdF={freezeThresholdF}
       guest

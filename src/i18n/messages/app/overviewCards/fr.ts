@@ -4,7 +4,8 @@ const fr: OverviewCardsMessages = {
   garageRisk: {
     noDevices: {
       title: "Ajoutez une sonde pour commencer",
-      detail: "Créez un appareil push puis envoyez une mesure par POST, ou essayez le flux de démonstration sans matériel.",
+      detail:
+        "Créez un appareil push puis envoyez une mesure par POST, ou essayez le flux de démonstration sans matériel.",
       action: "Connecter un appareil",
     },
     waiting: {
@@ -44,7 +45,8 @@ const fr: OverviewCardsMessages = {
     freezeLater: {
       title: "Gel plus tard aujourd’hui",
       titleAt: "Gel vers {time}",
-      detail: "Environ {hours} heures avant {threshold} {unit}, selon le décalage de cet espace par rapport à l’extérieur.",
+      detail:
+        "Environ {hours} heures avant {threshold} {unit}, selon le décalage de cet espace par rapport à l’extérieur.",
     },
     nightsAtRisk: {
       one: "{count} nuit à risque de gel",
@@ -52,10 +54,12 @@ const fr: OverviewCardsMessages = {
     },
     coldSnap: {
       title: "Vague de froid en approche",
-      detail: "Il fait froid dehors : suivez la liste de contrôle et vérifiez que les alertes de prévision sont activées.",
+      detail:
+        "Il fait froid dehors : suivez la liste de contrôle et vérifiez que les alertes de prévision sont activées.",
     },
     nights: {
-      detail: "Il fait froid dehors : vérifiez les sondes dans En direct et que les alertes de prévision sont activées.",
+      detail:
+        "Il fait froid dehors : vérifiez les sondes dans En direct et que les alertes de prévision sont activées.",
     },
     finishAlerts: {
       title: "L’espace va bien : finalisez les alertes",
@@ -75,7 +79,8 @@ const fr: OverviewCardsMessages = {
     },
     ok: {
       title: "Tout va bien",
-      detail: "Les sondes envoient leurs mesures : rien au seuil de gel, aucun contact d’inondation humide.",
+      detail:
+        "Les sondes envoient leurs mesures : rien au seuil de gel, aucun contact d’inondation humide.",
     },
     actions: {
       openLive: "Ouvrir En direct",
@@ -160,7 +165,8 @@ const fr: OverviewCardsMessages = {
   heating: {
     rapidDrop: {
       label: "Chute rapide de température",
-      detail: "L’espace perd environ {rate} {unit}/h. Vérifiez les portes, les chauffages et l’isolation.",
+      detail:
+        "L’espace perd environ {rate} {unit}/h. Vérifiez les portes, les chauffages et l’isolation.",
     },
     doorOpen: {
       label: "Une porte cause peut-être des pertes de chaleur",
@@ -172,7 +178,8 @@ const fr: OverviewCardsMessages = {
     },
     coldSnap: {
       label: "Vague de froid dehors",
-      detail: "Extérieur {outdoor} {unit} : {margin} {unit} de marge au-dessus de votre alerte de gel.",
+      detail:
+        "Extérieur {outdoor} {unit} : {margin} {unit} de marge au-dessus de votre alerte de gel.",
     },
     condensation: {
       label: "Risque de condensation",
@@ -216,23 +223,28 @@ const fr: OverviewCardsMessages = {
       tooClose: "Les mesures sont trop rapprochées pour dégager une tendance.",
       rising: "La température monte : aucun risque de gel selon la tendance actuelle.",
       stable: "La température est stable : la tendance n’indique pas de gel imminent.",
-      cooling: "Refroidissement de ~{rate} {unit}/h : environ {duration} avant {threshold} {unit} à ce rythme.",
+      cooling:
+        "Refroidissement de ~{rate} {unit}/h : environ {duration} avant {threshold} {unit} à ce rythme.",
     },
     forecastHit:
       "Atteint {threshold} vers {time} (dans environ {duration}). D’après les prévisions et le décalage de cet espace par rapport à l’extérieur.",
     doorNote: " Une porte est ouverte : la chaleur se perdra plus vite jusqu’à sa fermeture.",
     noFreeze:
       "Pas de gel dans les {hours} prochaines heures avec le décalage habituel de cet espace par rapport aux prévisions extérieures.",
-    noFreezeColderNight: " Une nuit plus froide de {band} {unit} que prévu l’atteindrait vers {time}.",
+    noFreezeColderNight:
+      " Une nuit plus froide de {band} {unit} que prévu l’atteindrait vers {time}.",
     trendHit: "{message} Vers {time} si ce rythme de refroidissement se maintient.",
     reasons: {
       forecastLow: "Minimale extérieure prévue de {temp} {unit} vers {time}.",
       offsetZero: "Cet espace est généralement à la température extérieure.",
-      offsetWarmer: "Cet espace est généralement environ {offset} {unit} plus chaud que l’extérieur.",
-      offsetColder: "Cet espace est généralement environ {offset} {unit} plus froid que l’extérieur.",
+      offsetWarmer:
+        "Cet espace est généralement environ {offset} {unit} plus chaud que l’extérieur.",
+      offsetColder:
+        "Cet espace est généralement environ {offset} {unit} plus froid que l’extérieur.",
       couplingLearned: {
         one: "La vitesse à laquelle il suit l’air extérieur est apprise à partir de {count} paire de mesures.",
-        other: "La vitesse à laquelle il suit l’air extérieur est apprise à partir de {count} paires de mesures.",
+        other:
+          "La vitesse à laquelle il suit l’air extérieur est apprise à partir de {count} paires de mesures.",
       },
       couplingDefault: {
         one: "La vitesse à laquelle il suit l’air extérieur est une valeur par défaut en attendant plus d’historique ({count} paire de mesures pour l’instant).",
@@ -262,10 +274,14 @@ const fr: OverviewCardsMessages = {
     rate: "L’espace est passé de « {from} » à « {to} ».",
     cooling: "refroidit de {rate} {unit}/h",
     notCooling: "ne refroidit pas",
-    offset: "Son décalage appris par rapport à l’air extérieur est passé de {from} {unit} à {to} {unit}.",
-    nowForecast: "L’estimation utilise désormais la prévision extérieure, pas seulement le rythme de refroidissement.",
-    nowTrend: "Aucune prévision extérieure utilisable pour l’instant : l’estimation repose sur le seul rythme de refroidissement.",
-    noSingle: "Mesures et heures de prévision plus récentes ; aucune donnée n’a beaucoup changé à elle seule.",
+    offset:
+      "Son décalage appris par rapport à l’air extérieur est passé de {from} {unit} à {to} {unit}.",
+    nowForecast:
+      "L’estimation utilise désormais la prévision extérieure, pas seulement le rythme de refroidissement.",
+    nowTrend:
+      "Aucune prévision extérieure utilisable pour l’instant : l’estimation repose sur le seul rythme de refroidissement.",
+    noSingle:
+      "Mesures et heures de prévision plus récentes ; aucune donnée n’a beaucoup changé à elle seule.",
   },
 
   riskCard: {
@@ -279,8 +295,10 @@ const fr: OverviewCardsMessages = {
   timeToFreezeCard: {
     title: "Délai avant gel",
     subtitle: {
-      forecast_model: "Estimation selon les prévisions pour cet espace, par rapport à votre seuil de {threshold}.",
-      trend: "Estimation selon le rythme de refroidissement, par rapport à votre seuil de {threshold}.",
+      forecast_model:
+        "Estimation selon les prévisions pour cet espace, par rapport à votre seuil de {threshold}.",
+      trend:
+        "Estimation selon le rythme de refroidissement, par rapport à votre seuil de {threshold}.",
       already_below: "Au seuil maintenant, par rapport à votre seuil de {threshold}.",
       none: "Pas encore assez de données, par rapport à votre seuil de {threshold}.",
     },
@@ -294,8 +312,10 @@ const fr: OverviewCardsMessages = {
     window: "Plage : de {from} à {to}",
     windowEarliest: "Plage : dès {from} ; une nuit plus douce pourrait ne pas l’atteindre",
     basedOn: "Sur quoi repose cette estimation",
-    estimateNote: "Une estimation fondée sur l’historique de cet espace et la prévision extérieure, pas une mesure.",
-    confidenceHelp: "Confiance élevée : le modèle de prévision est ajusté sur au moins 24 mesures associées à la météo extérieure. Moyenne : au moins 8 mesures associées, ou une tendance au refroidissement sur 2 heures ou plus. Faible : moins de données. La fenêtre s’élargit quand la confiance baisse.",
+    estimateNote:
+      "Une estimation fondée sur l’historique de cet espace et la prévision extérieure, pas une mesure.",
+    confidenceHelp:
+      "Confiance élevée : le modèle de prévision est ajusté sur au moins 24 mesures associées à la météo extérieure. Moyenne : au moins 8 mesures associées, ou une tendance au refroidissement sur 2 heures ou plus. Faible : moins de données. La fenêtre s’élargit quand la confiance baisse.",
     learnMore: "Comment le temps avant le gel est estimé",
     cooling: "Refroidissement {rate} {unit}/h",
     offset: "Décalage habituel {offset} {unit} par rapport à l’extérieur",
@@ -319,7 +339,8 @@ const fr: OverviewCardsMessages = {
     outdoorUnavailable: "La moyenne extérieure de cette semaine n’est pas disponible",
     colder: "Plus froid que l’an dernier",
     warmer: "Plus chaud ou similaire",
-    noPriorStarts: "Aucune donnée de sonde pour cette semaine l’an dernier. L’historique commence le {date}.",
+    noPriorStarts:
+      "Aucune donnée de sonde pour cette semaine l’an dernier. L’historique commence le {date}.",
     noPrior: "Pas encore de données de sonde pour cette semaine l’an dernier.",
   },
   heatingCard: {
@@ -345,8 +366,10 @@ const fr: OverviewCardsMessages = {
     mapSettings: "Paramètres de la carte",
     yourRegion: "votre région",
     typical: "Dans la moyenne des autres foyers ProbeHarbor de {city} ce soir.",
-    colderMessage: "{delta} {unit} de moins que les foyers ProbeHarbor habituels de {city} en ce moment.",
-    warmerMessage: "{delta} {unit} de plus que les foyers ProbeHarbor habituels de {city} en ce moment.",
+    colderMessage:
+      "{delta} {unit} de moins que les foyers ProbeHarbor habituels de {city} en ce moment.",
+    warmerMessage:
+      "{delta} {unit} de plus que les foyers ProbeHarbor habituels de {city} en ce moment.",
   },
   nightsCard: {
     title: "Nuits à risque cette semaine",
@@ -374,7 +397,8 @@ const fr: OverviewCardsMessages = {
     cardTitle: "Température ({days} derniers jours)",
     subtitleHtml:
       'Chaque sonde par rapport à votre ligne de gel.\n        <a class="text-link" href="/dashboard/history">Ouvrez Historique</a> pour les filtres, les exports et la comparaison annuelle.',
-    empty: "Le graphique se remplit à mesure que les mesures arrivent : comptez une heure ou deux après votre première mesure.",
+    empty:
+      "Le graphique se remplit à mesure que les mesures arrivent : comptez une heure ou deux après votre première mesure.",
   },
   metricCard: {
     pin: "Épingler {label}",

@@ -1,7 +1,4 @@
-import {
-  DEFAULT_ALERT_SETTINGS,
-  type AlertSettings,
-} from "./alerts";
+import { DEFAULT_ALERT_SETTINGS, type AlertSettings } from "./alerts";
 import { parseAlertRulesFromForm } from "./alertRules";
 import { parseAlertPlaybooksFromForm } from "./alertPlaybooks";
 import { parseSpaceChannelRouting } from "./spaceChannelRouting";
@@ -17,11 +14,7 @@ function formCheckbox(formData: FormData, key: string): boolean {
   return formData.get(key)?.toString() === "true";
 }
 
-function formString(
-  formData: FormData,
-  key: string,
-  fallback?: string | null,
-): string | null {
+function formString(formData: FormData, key: string, fallback?: string | null): string | null {
   if (!formData.has(key)) {
     return fallback ?? null;
   }
@@ -29,11 +22,7 @@ function formString(
   return value || null;
 }
 
-function formNumber(
-  formData: FormData,
-  key: string,
-  fallback: number,
-): number {
+function formNumber(formData: FormData, key: string, fallback: number): number {
   if (!formData.has(key)) return fallback;
   const raw = formData.get(key);
   if (raw == null || raw === "") return fallback;
@@ -113,16 +102,10 @@ export function buildAlertSettingsFromFormData(
       0,
       Math.min(
         120,
-        Math.round(
-          formNumber(formData, "freeze_dwell_minutes", existing.freezeDwellMinutes),
-        ),
+        Math.round(formNumber(formData, "freeze_dwell_minutes", existing.freezeDwellMinutes)),
       ),
     ),
-    humidityThreshold: formNumber(
-      formData,
-      "humidity_threshold",
-      existing.humidityThreshold,
-    ),
+    humidityThreshold: formNumber(formData, "humidity_threshold", existing.humidityThreshold),
     // A rate is a difference per hour: °C/h × 9/5, no 32° offset.
     rateChangeF: formData.has("rate_change_f")
       ? parseDisplayTempInput(
@@ -136,10 +119,7 @@ export function buildAlertSettingsFromFormData(
     // If the checkbox field is absent (older clients / partial forms), keep existing hours.
     outageHours: formData.has("outage_alerts_enabled")
       ? formCheckbox(formData, "outage_alerts_enabled")
-        ? Math.max(
-            0.5,
-            formNumber(formData, "outage_hours", existing.outageHours || 2),
-          )
+        ? Math.max(0.5, formNumber(formData, "outage_hours", existing.outageHours || 2))
         : 0
       : formNumber(formData, "outage_hours", existing.outageHours),
     email: formString(formData, "alert_email", existing.email),
@@ -151,11 +131,9 @@ export function buildAlertSettingsFromFormData(
     channelTeams: formCheckbox(formData, "channel_teams"),
     channelNtfy: formCheckbox(formData, "channel_ntfy"),
     channelPushover: formCheckbox(formData, "channel_pushover"),
-    channelWhatsapp:
-      formCheckbox(formData, "channel_whatsapp") && entitlements.canUseSms,
+    channelWhatsapp: formCheckbox(formData, "channel_whatsapp") && entitlements.canUseSms,
     channelPush: formCheckbox(formData, "channel_push") && entitlements.canUsePush,
-    channelWebhook:
-      formCheckbox(formData, "channel_webhook") && entitlements.canUseOutboundWebhook,
+    channelWebhook: formCheckbox(formData, "channel_webhook") && entitlements.canUseOutboundWebhook,
     discordWebhookUrl: formString(formData, "discord_webhook_url", existing.discordWebhookUrl),
     teamsWebhookUrl: formString(formData, "teams_webhook_url", existing.teamsWebhookUrl),
     ntfyTopic: formString(formData, "ntfy_topic", existing.ntfyTopic),
@@ -182,28 +160,21 @@ export function buildAlertSettingsFromFormData(
     lastRunwayAlertAt: existing.lastRunwayAlertAt,
     lastRuleAlertAt: existing.lastRuleAlertAt,
     forecastFreezeEnabled:
-      formCheckbox(formData, "forecast_freeze_enabled") &&
-      entitlements.canUseForecastAlerts,
+      formCheckbox(formData, "forecast_freeze_enabled") && entitlements.canUseForecastAlerts,
     runwayAlertEnabled: formCheckbox(formData, "runway_alert_enabled"),
     nwsFreezeAlertsEnabled:
-      formCheckbox(formData, "nws_freeze_alerts_enabled") &&
-      entitlements.canUseNwsAlerts,
+      formCheckbox(formData, "nws_freeze_alerts_enabled") && entitlements.canUseNwsAlerts,
     lastNwsAlertAt: existing.lastNwsAlertAt,
     lastFloodAlertAt: existing.lastFloodAlertAt,
     powerAlertsEnabled: formCheckbox(formData, "power_alerts_enabled"),
     lastPowerAlertAt: existing.lastPowerAlertAt,
-    forecastHoursAhead: formNumber(
-      formData,
-      "forecast_hours_ahead",
-      existing.forecastHoursAhead,
-    ),
+    forecastHoursAhead: formNumber(formData, "forecast_hours_ahead", existing.forecastHoursAhead),
     quietHoursEnabled: formCheckbox(formData, "quiet_hours_enabled"),
     quietHoursStart:
       formString(formData, "quiet_hours_start", existing.quietHoursStart) ||
       existing.quietHoursStart,
     quietHoursEnd:
-      formString(formData, "quiet_hours_end", existing.quietHoursEnd) ||
-      existing.quietHoursEnd,
+      formString(formData, "quiet_hours_end", existing.quietHoursEnd) || existing.quietHoursEnd,
     quietHoursTimezone:
       formString(formData, "quiet_hours_timezone", existing.quietHoursTimezone) ||
       existing.quietHoursTimezone,
@@ -230,11 +201,7 @@ export function buildAlertSettingsFromFormData(
       existing.batteryThresholdPct,
     ),
     rssiAlertsEnabled: formCheckbox(formData, "rssi_alerts_enabled"),
-    rssiThreshold: formNumber(
-      formData,
-      "rssi_threshold",
-      existing.rssiThreshold,
-    ),
+    rssiThreshold: formNumber(formData, "rssi_threshold", existing.rssiThreshold),
     snoozeUntil: existing.snoozeUntil,
     vacationUntil: existing.vacationUntil,
     lastBatteryAlertAt: existing.lastBatteryAlertAt,
@@ -242,22 +209,15 @@ export function buildAlertSettingsFromFormData(
     lastRssiAlertAt: existing.lastRssiAlertAt,
     lastMonthlyReportAt: existing.lastMonthlyReportAt,
     escalationEnabled: formCheckbox(formData, "escalation_enabled"),
-    escalationMinutes: formNumber(
-      formData,
-      "escalation_minutes",
-      existing.escalationMinutes,
-    ),
+    escalationMinutes: formNumber(formData, "escalation_minutes", existing.escalationMinutes),
     alertTemplates: (() => {
       if (!formData.has("alert_templates_json")) return existing.alertTemplates;
       try {
         const raw = formData.get("alert_templates_json")?.toString();
-        const parsed = raw
-          ? parseAlertTemplates(JSON.parse(raw))
-          : existing.alertTemplates;
+        const parsed = raw ? parseAlertTemplates(JSON.parse(raw)) : existing.alertTemplates;
         return Object.fromEntries(
           Object.entries(parsed).filter(
-            (entry): entry is [string, { title?: string; body?: string }] =>
-              Boolean(entry[1]),
+            (entry): entry is [string, { title?: string; body?: string }] => Boolean(entry[1]),
           ),
         );
       } catch {
@@ -277,9 +237,7 @@ export function buildAlertSettingsFromFormData(
         const raw = formData.get("channel_severity_json")?.toString();
         if (!raw) return existing.channelSeverity;
         const parsed = JSON.parse(raw) as Record<string, string[]>;
-        return parsed && typeof parsed === "object"
-          ? parsed
-          : existing.channelSeverity;
+        return parsed && typeof parsed === "object" ? parsed : existing.channelSeverity;
       } catch {
         return existing.channelSeverity;
       }
@@ -294,9 +252,7 @@ export function buildAlertSettingsFromFormData(
       }
       try {
         const raw = formData.get("space_channel_routing_json")?.toString();
-        return raw
-          ? parseSpaceChannelRouting(JSON.parse(raw))
-          : existing.spaceChannelRouting;
+        return raw ? parseSpaceChannelRouting(JSON.parse(raw)) : existing.spaceChannelRouting;
       } catch {
         return existing.spaceChannelRouting;
       }
@@ -343,13 +299,11 @@ export function alertChannelsIncomplete(settings: AlertSettings): boolean {
   return (
     // Email falls back to the account address at send time; blank is not incomplete.
     (settings.channelDiscord && !settings.discordWebhookUrl) ||
-    (settings.channelTelegram &&
-      (!settings.telegramBotToken || !settings.telegramChatId)) ||
+    (settings.channelTelegram && (!settings.telegramBotToken || !settings.telegramChatId)) ||
     (settings.channelSlack && !settings.slackWebhookUrl) ||
     (settings.channelTeams && !settings.teamsWebhookUrl) ||
     (settings.channelNtfy && !settings.ntfyTopic) ||
-    (settings.channelPushover &&
-      (!settings.pushoverUserKey || !settings.pushoverAppToken)) ||
+    (settings.channelPushover && (!settings.pushoverUserKey || !settings.pushoverAppToken)) ||
     (settings.channelWhatsapp && !settings.whatsappPhone) ||
     (settings.channelSms && !settings.smsPhone) ||
     (settings.channelWebhook && !settings.outboundWebhookUrl)
@@ -398,9 +352,7 @@ export function isWeakTelegramSecret(secret: string | null): boolean {
 }
 
 /** Rebuild FormData from an Astro Action form input object. */
-export function objectToFormData(
-  input: Record<string, unknown>,
-): FormData {
+export function objectToFormData(input: Record<string, unknown>): FormData {
   const formData = new FormData();
   for (const [key, value] of Object.entries(input)) {
     if (value == null) continue;

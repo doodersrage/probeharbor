@@ -81,13 +81,7 @@ describe("createHouseholdInvite", () => {
     });
     const { createHouseholdInvite } = await import("./householdInvites");
 
-    const result = await createHouseholdInvite(
-      "house-1",
-      "  A@B.com  ",
-      "user-1",
-      3,
-      "viewer",
-    );
+    const result = await createHouseholdInvite("house-1", "  A@B.com  ", "user-1", 3, "viewer");
 
     expect(result.error).toBeNull();
     expect(result.invite?.id).toBe("invite-1");
@@ -153,7 +147,9 @@ describe("getInviteByToken", () => {
 
     await getInviteByToken("  some-new-token ");
 
-    expect(mockFindInviteByTokenKeys).toHaveBeenCalledWith(await inviteTokenLookupKeys("some-new-token"));
+    expect(mockFindInviteByTokenKeys).toHaveBeenCalledWith(
+      await inviteTokenLookupKeys("some-new-token"),
+    );
     expect((await inviteTokenLookupKeys("some-new-token"))[0]).toMatch(/^[0-9a-f]{64}$/);
   });
 
@@ -177,10 +173,18 @@ describe("getInviteByToken", () => {
 
 describe("getInviteTokenState", () => {
   it("returns only the flags and household, looked up by the token's hash", async () => {
-    mockFindInviteStateByTokenKeys.mockResolvedValue({ household_id: "house-1", accepted: false, expired: true });
+    mockFindInviteStateByTokenKeys.mockResolvedValue({
+      household_id: "house-1",
+      accepted: false,
+      expired: true,
+    });
     const { getInviteTokenState, inviteTokenLookupKeys } = await import("./householdInvites");
 
-    await expect(getInviteTokenState(" tok ")).resolves.toEqual({ householdId: "house-1", accepted: false, expired: true });
+    await expect(getInviteTokenState(" tok ")).resolves.toEqual({
+      householdId: "house-1",
+      accepted: false,
+      expired: true,
+    });
     expect(mockFindInviteStateByTokenKeys).toHaveBeenCalledWith(await inviteTokenLookupKeys("tok"));
   });
 
@@ -217,7 +221,11 @@ describe("acceptHouseholdInvite", () => {
 
   it("short-circuits successfully when the invite was already accepted", async () => {
     // The lookup returns only usable invites; the state lookup says it was accepted.
-    mockFindInviteStateByTokenKeys.mockResolvedValue({ household_id: "house-1", accepted: true, expired: false });
+    mockFindInviteStateByTokenKeys.mockResolvedValue({
+      household_id: "house-1",
+      accepted: true,
+      expired: false,
+    });
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
@@ -228,7 +236,11 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("already accepted wins over expired, as before", async () => {
-    mockFindInviteStateByTokenKeys.mockResolvedValue({ household_id: "house-1", accepted: true, expired: true });
+    mockFindInviteStateByTokenKeys.mockResolvedValue({
+      household_id: "house-1",
+      accepted: true,
+      expired: true,
+    });
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     await expect(acceptHouseholdInvite("tok", "user-1", "member@example.com")).resolves.toEqual({
@@ -238,7 +250,11 @@ describe("acceptHouseholdInvite", () => {
   });
 
   it("rejects an expired invite", async () => {
-    mockFindInviteStateByTokenKeys.mockResolvedValue({ household_id: "house-1", accepted: false, expired: true });
+    mockFindInviteStateByTokenKeys.mockResolvedValue({
+      household_id: "house-1",
+      accepted: false,
+      expired: true,
+    });
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
     const result = await acceptHouseholdInvite("tok", "user-1", "member@example.com");
@@ -250,7 +266,9 @@ describe("acceptHouseholdInvite", () => {
   it("still refuses an accepted or expired row if the lookup ever returned one (second layer)", async () => {
     const { acceptHouseholdInvite } = await import("./householdInvites");
 
-    mockFindInviteByTokenKeys.mockResolvedValue(invite({ accepted_at: "2020-02-01T00:00:00.000Z" }));
+    mockFindInviteByTokenKeys.mockResolvedValue(
+      invite({ accepted_at: "2020-02-01T00:00:00.000Z" }),
+    );
     await expect(acceptHouseholdInvite("tok", "user-1", "member@example.com")).resolves.toEqual({
       householdId: "house-1",
       error: null,
@@ -399,14 +417,18 @@ describe("sendInviteEmail", () => {
 
 describe("reissueHouseholdInvite", () => {
   it("stores a new hash, extends expiry, and returns the new raw token", async () => {
-    mockReissueInvite.mockResolvedValue({ invite: { id: "invite-1", email: "a@b.com" }, error: null });
+    mockReissueInvite.mockResolvedValue({
+      invite: { id: "invite-1", email: "a@b.com" },
+      error: null,
+    });
     const { reissueHouseholdInvite } = await import("./householdInvites");
 
     const result = await reissueHouseholdInvite("house-1", "invite-1");
 
     expect(result.token).toMatch(/^[0-9a-f]{48}$/);
     expect(result.invite).toEqual({ id: "invite-1", email: "a@b.com" });
-    const [householdId, inviteId, tokenHash, expiresAt] = mockReissueInvite.mock.calls[0]! as string[];
+    const [householdId, inviteId, tokenHash, expiresAt] = mockReissueInvite.mock
+      .calls[0]! as string[];
     expect(householdId).toBe("house-1");
     expect(inviteId).toBe("invite-1");
     expect(tokenHash).toMatch(/^[0-9a-f]{64}$/);

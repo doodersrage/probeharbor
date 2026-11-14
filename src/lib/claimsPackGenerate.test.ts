@@ -54,7 +54,9 @@ beforeEach(() => {
   mockGetUserHouseholdId.mockReset().mockResolvedValue("house-1");
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [], error: null });
   mockListAlertEventsInRange.mockReset().mockResolvedValue([]);
-  mockGetHouseholdFields.mockReset().mockResolvedValue({ data: { name: "The Smiths" }, error: null });
+  mockGetHouseholdFields
+    .mockReset()
+    .mockResolvedValue({ data: { name: "The Smiths" }, error: null });
   mockBuildClaimsPackData.mockReset().mockReturnValue({ exportedAt: "stub" });
   mockReadingCounts.mockReset().mockResolvedValue({ total: 4321, below: 12, approximate: false });
 });
@@ -105,7 +107,12 @@ describe("generateClaimsPackForUser", () => {
   it("defaults the range to the plan's history window ending now", async () => {
     const { generateClaimsPackForUser } = await import("./claimsPackGenerate");
 
-    const result = await generateClaimsPackForUser(baseUser, entitlements({ historyDays: 30 }), {}, "https://example.com");
+    const result = await generateClaimsPackForUser(
+      baseUser,
+      entitlements({ historyDays: 30 }),
+      {},
+      "https://example.com",
+    );
 
     // historyCutoffIso(min(30, 30)) from "now" (2024-06-15T12:00:00Z) = 2024-05-16T12:00:00.000Z
     expect(result.fromQ).toBe("2024-05-16");
@@ -144,7 +151,12 @@ describe("generateClaimsPackForUser", () => {
     mockGetUserHouseholdId.mockResolvedValue(null);
     const { generateClaimsPackForUser } = await import("./claimsPackGenerate");
 
-    const result = await generateClaimsPackForUser(baseUser, entitlements(), {}, "https://example.com");
+    const result = await generateClaimsPackForUser(
+      baseUser,
+      entitlements(),
+      {},
+      "https://example.com",
+    );
 
     expect(mockListHouseholdDevices).not.toHaveBeenCalled();
     expect(mockGetHouseholdFields).not.toHaveBeenCalled();
@@ -175,7 +187,11 @@ describe("generateClaimsPackForUser", () => {
     expect(mockBuildClaimsPackData).toHaveBeenCalledWith(
       expect.objectContaining({
         devices: [
-          { name: "Garage", space: "Outbuilding", sensors: [{ label: "Probe 1", kind: "temperature" }] },
+          {
+            name: "Garage",
+            space: "Outbuilding",
+            sensors: [{ label: "Probe 1", kind: "temperature" }],
+          },
         ],
       }),
     );
@@ -220,10 +236,10 @@ describe("generateClaimsPackForUser", () => {
 
     expect(mockBuildClaimsPackData).toHaveBeenCalledWith(
       expect.objectContaining({
-        readingsCsvUrl: "https://example.com/api/garage-temps/export.csv?from=2024-06-01&to=2024-06-10",
+        readingsCsvUrl:
+          "https://example.com/api/garage-temps/export.csv?from=2024-06-01&to=2024-06-10",
         alertsCsvUrl: "https://example.com/api/alerts/export.csv?from=2024-06-01&to=2024-06-10",
-        historyUrl:
-          "https://example.com/dashboard/history?from=2024-06-01&to=2024-06-10",
+        historyUrl: "https://example.com/dashboard/history?from=2024-06-01&to=2024-06-10",
       }),
     );
   });
@@ -273,7 +289,12 @@ describe("generateClaimsPackForUser", () => {
       { from: "2026-10-01", to: "2026-10-05" },
       "https://probeharbor.dev",
     );
-    expect(mockReadingCounts).toHaveBeenCalledWith("house-1", expect.any(String), expect.any(String), expect.any(Number));
+    expect(mockReadingCounts).toHaveBeenCalledWith(
+      "house-1",
+      expect.any(String),
+      expect.any(String),
+      expect.any(Number),
+    );
     expect(mockBuildClaimsPackData).toHaveBeenCalledWith(
       expect.objectContaining({ readingCounts: { total: 4321, below: 12, approximate: false } }),
     );

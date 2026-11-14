@@ -69,7 +69,9 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { status_regenerated: "1" }));
   }
 
-  const label = formData.get("label")?.toString() || apiMoreCommonMessages(apiLocale(context)).defaults.statusPage;
+  const label =
+    formData.get("label")?.toString() ||
+    apiMoreCommonMessages(apiLocale(context)).defaults.statusPage;
   const { token, error } = await createStatusPageToken(householdId, label);
   if (error || !token) {
     return redirect(withQuery(redirectTo, { status_error: "1" }));

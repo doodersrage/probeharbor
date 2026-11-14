@@ -2,7 +2,8 @@
 
 type HumidityCandidate = { timestamp: string; humidity: number | null; probeLabel: string };
 
-const measured = (p: HumidityCandidate) => p.humidity != null && Number.isFinite(p.humidity) && p.humidity > 0;
+const measured = (p: HumidityCandidate) =>
+  p.humidity != null && Number.isFinite(p.humidity) && p.humidity > 0;
 
 /**
  * Which probe's humidity (and dew point) the chart draws. The chart has one

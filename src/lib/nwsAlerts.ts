@@ -24,10 +24,7 @@ export function isFreezeRelatedNwsText(text: string): boolean {
 }
 
 /** Active US weather alerts from weather.gov (no API key). */
-export async function fetchNwsAlerts(
-  lat: number,
-  lon: number,
-): Promise<NwsAlertSummary | null> {
+export async function fetchNwsAlerts(lat: number, lon: number): Promise<NwsAlertSummary | null> {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
 
   try {

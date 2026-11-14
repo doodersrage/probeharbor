@@ -4,9 +4,7 @@ const CODE_CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
 
 function randomCode(length = 8): string {
   const bytes = crypto.getRandomValues(new Uint8Array(length));
-  return [...bytes]
-    .map((b) => CODE_CHARS[b % CODE_CHARS.length])
-    .join("");
+  return [...bytes].map((b) => CODE_CHARS[b % CODE_CHARS.length]).join("");
 }
 
 export async function getOrCreateReferralCode(userId: string): Promise<string> {
@@ -46,7 +44,9 @@ export function referralBonusTrialDays(referredByCode: string | null | undefined
 }
 
 /** Extra trial days earned when friends subscribe (stored in referrer metadata). */
-export function referralRewardTrialDays(metadata: Record<string, unknown> | null | undefined): number {
+export function referralRewardTrialDays(
+  metadata: Record<string, unknown> | null | undefined,
+): number {
   const raw = metadata?.referral_reward_days;
   const days = typeof raw === "number" ? raw : Number(raw);
   if (!Number.isFinite(days) || days <= 0) return 0;
@@ -87,9 +87,7 @@ export type ReferralStats = {
   topReferrers: { userId: string; count: number }[];
 };
 
-export async function grantReferrerRewardOnSubscription(
-  referredUserId: string,
-): Promise<void> {
+export async function grantReferrerRewardOnSubscription(referredUserId: string): Promise<void> {
   const referrer = await neonReferrals.claimReferralReward(referredUserId);
   if (referrer) await neonReferrals.addReferralRewardDays(referrer);
 }

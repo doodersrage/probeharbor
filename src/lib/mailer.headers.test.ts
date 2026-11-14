@@ -11,7 +11,11 @@ vi.mock("cloudflare:email", () => ({
   },
 }));
 vi.mock("cloudflare:workers", () => ({
-  env: { MAILER: { send: async (message: { from: string; to: string; raw: string }) => void sent.push(message) } },
+  env: {
+    MAILER: {
+      send: async (message: { from: string; to: string; raw: string }) => void sent.push(message),
+    },
+  },
 }));
 vi.mock("./emailSuppressions", () => ({
   isEmailSuppressed: async () => false,
@@ -45,7 +49,9 @@ describe("sendEmail headers", () => {
     // Unfold continuation lines (RFC 5322) before matching.
     const unfolded = sent[0]!.raw.replace(/\r?\n[ \t]+/g, " ");
     if (process.env.PRINT_RAW) console.log(sent[0]!.raw.split(/\r?\n\r?\n/)[0]);
-    expect(unfolded).toMatch(/^List-Unsubscribe: <https:\/\/probeharbor\.dev\/api\/email\/unsubscribe\?uid=/m);
+    expect(unfolded).toMatch(
+      /^List-Unsubscribe: <https:\/\/probeharbor\.dev\/api\/email\/unsubscribe\?uid=/m,
+    );
     expect(unfolded).toContain(url);
     expect(unfolded).toMatch(/^List-Unsubscribe-Post: List-Unsubscribe=One-Click$/m);
   });

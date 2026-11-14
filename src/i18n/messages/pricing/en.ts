@@ -42,8 +42,10 @@ const en = {
     saveApprox: "Save ~20%",
     saveVsMonthly: "Save {pct} vs monthly",
     switchToAnnual: "Switch to annual to save {pct}",
-    monthlyHint: "You’re viewing monthly prices. Annual locks in {pct} off ({memberAnnual} / {proAnnual} per year).",
-    annualHint: "You’re viewing yearly totals. Toggle Monthly to see {memberMonthly} / {proMonthly} per month.",
+    monthlyHint:
+      "You’re viewing monthly prices. Annual locks in {pct} off ({memberAnnual} / {proAnnual} per year).",
+    annualHint:
+      "You’re viewing yearly totals. Toggle Monthly to see {memberMonthly} / {proMonthly} per month.",
     withTrial: "{sub} · 14-day free trial",
   },
   cards: {
@@ -110,7 +112,8 @@ const en = {
     title: "Full feature comparison",
     subtitleHtml:
       'Canonical plan matrix for Free / Member / Pro / Portfolio: device counts, retention, freeze and leak alerts, thermostat, and manager logins. Comparing ProbeHarbor against MQTT, Govee, or a weather station? <a class="text-link" href="/compare">See alternatives</a> (competitor guides, not a second copy of this table).',
-    noteHtml: 'Portfolio includes everything under Pro, then raises the owned-property ceiling (Pro already allows up to {proMax}; Portfolio up to {portfolioMax}) and adds property-manager logins: see the Portfolio card above and <a class="text-link" href="/property-management">property management</a>.',
+    noteHtml:
+      'Portfolio includes everything under Pro, then raises the owned-property ceiling (Pro already allows up to {proMax}; Portfolio up to {portfolioMax}) and adds property-manager logins: see the Portfolio card above and <a class="text-link" href="/property-management">property management</a>.',
   },
   hosted: {
     title: "Hosted on Cloudflare’s edge",

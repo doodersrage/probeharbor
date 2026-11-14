@@ -1,5 +1,4 @@
-const link = (slug, text) =>
-  `<a class="text-link" href="/about/${slug}">${text}</a>`;
+const link = (slug, text) => `<a class="text-link" href="/about/${slug}">${text}</a>`;
 
 /** Build a page with intro paragraph, figure, and remaining blocks. */
 function page(slug, parentSlug, title, description, summary, intro, figAlt, figCaption, rest) {

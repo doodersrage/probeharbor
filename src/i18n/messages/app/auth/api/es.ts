@@ -6,8 +6,10 @@ const es: AuthApiMessages = {
     invalidCode: "Introduce un código válido de 6 dígitos",
     verificationFailed: "La verificación falló",
     passwordIncorrect: "La contraseña no es correcta.",
-    totpAlreadyEnabled: "Ya hay una app de autenticación configurada. Elimínala primero para configurar otra.",
-    securityKeysMoved: "Las llaves de seguridad pasan a ser llaves de acceso (passkeys). Vuelve a añadir tu llave como passkey cuando aparezca esa opción aquí.",
+    totpAlreadyEnabled:
+      "Ya hay una app de autenticación configurada. Elimínala primero para configurar otra.",
+    securityKeysMoved:
+      "Las llaves de seguridad pasan a ser llaves de acceso (passkeys). Vuelve a añadir tu llave como passkey cuando aparezca esa opción aquí.",
     challengeFailed: "No se pudo iniciar la verificación",
     yubikeyNotConfigured: "YubiKey OTP no está configurado en este sitio",
     tapYubikey: "Toca tu YubiKey en el campo OTP",

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { localizePath, splitLocalePath } from "./locales";
-import { getAlternatePaths, hasIndexedTranslations, isLocalizablePath, localizeHtmlLinks } from "./routes";
+import {
+  getAlternatePaths,
+  hasIndexedTranslations,
+  isLocalizablePath,
+  localizeHtmlLinks,
+} from "./routes";
 import { mergeTranslation, translateList } from "./translate";
 
 describe("locale paths", () => {
@@ -33,7 +38,9 @@ describe("locale paths", () => {
     expect(getAlternatePaths("/compare/nest")).toEqual([]);
     // Still translated and linked in the visitor's language.
     expect(isLocalizablePath("/compare/nest")).toBe(true);
-    expect(localizeHtmlLinks('<a href="/compare/nest">n</a>', "de")).toContain('href="/de/compare/nest"');
+    expect(localizeHtmlLinks('<a href="/compare/nest">n</a>', "de")).toContain(
+      'href="/de/compare/nest"',
+    );
   });
 });
 
@@ -62,17 +69,31 @@ describe("localizeHtmlLinks", () => {
 
 describe("translations", () => {
   it("overlays text and keeps English structure", () => {
-    const base = { title: "Hi", href: "/x", n: 3, items: [{ q: "a", id: 1 }, { q: "b", id: 2 }] };
+    const base = {
+      title: "Hi",
+      href: "/x",
+      n: 3,
+      items: [
+        { q: "a", id: 1 },
+        { q: "b", id: 2 },
+      ],
+    };
     expect(mergeTranslation(base, { title: "Hola", items: [{ q: "A" }] })).toEqual({
       title: "Hola",
       href: "/x",
       n: 3,
-      items: [{ q: "A", id: 1 }, { q: "b", id: 2 }],
+      items: [
+        { q: "A", id: 1 },
+        { q: "b", id: 2 },
+      ],
     });
   });
 
   it("translates lists by key and falls back to English", () => {
-    const list = [{ slug: "a", t: "One" }, { slug: "b", t: "Two" }];
+    const list = [
+      { slug: "a", t: "One" },
+      { slug: "b", t: "Two" },
+    ];
     const out = translateList("fr", list, { fr: { b: { t: "Deux" } } }, (i) => i.slug);
     expect(out.map((i) => i.t)).toEqual(["One", "Deux"]);
     expect(translateList("de", list, { fr: { b: { t: "Deux" } } }, (i) => i.slug)).toEqual(list);

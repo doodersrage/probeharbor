@@ -3,7 +3,10 @@
  * The flasher's raw log keeps them as-is; its status line uses the page's
  * language. Unknown lines (newer firmware) fall back to the board's own words.
  */
-export function flasherFailureMessage(line: string, text: Record<string, string | undefined>): string {
+export function flasherFailureMessage(
+  line: string,
+  text: Record<string, string | undefined>,
+): string {
   const own = line.charAt(3).toUpperCase() + line.slice(4);
   const pick = (key: string) => text[key] || own;
   if (line.startsWith("TT wifi failed")) return pick("wifiFailed");
@@ -16,7 +19,9 @@ export function flasherFailureMessage(line: string, text: Record<string, string 
   if (line.startsWith("TT nothing sent")) {
     // firmware 1.2.6+: "TT nothing sent: AHT20 found but not reading"
     const sensor = /^TT nothing sent: (\S+) found/.exec(line)?.[1];
-    return sensor && text.sensorNotReading ? text.sensorNotReading.replace("{sensor}", sensor) : own;
+    return sensor && text.sensorNotReading
+      ? text.sensorNotReading.replace("{sensor}", sensor)
+      : own;
   }
   return own;
 }

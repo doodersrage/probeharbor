@@ -14,14 +14,18 @@ const ENV: Record<string, string> = {
   CRON_SECRET: "test-step-up-secret-0123456789",
 };
 vi.mock("../../../lib/runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => (key === "DATABASE_URL" ? testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!) : ENV[key]),
+  getRuntimeEnv: (key: string) =>
+    key === "DATABASE_URL" ? testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!) : ENV[key],
   hasRuntimeEnv: () => false,
 }));
 vi.mock("@neondatabase/serverless", async (orig) => ({
   ...(await orig<typeof import("@neondatabase/serverless")>()),
   Pool: (await import("pg")).default.Pool,
 }));
-vi.mock("../../../lib/turnstile", () => ({ getTurnstileToken: () => "ok", verifyTurnstileToken: async () => ({ success: true }) }));
+vi.mock("../../../lib/turnstile", () => ({
+  getTurnstileToken: () => "ok",
+  verifyTurnstileToken: async () => ({ success: true }),
+}));
 vi.mock("../../../lib/mailer", () => ({ sendEmail: async () => {} }));
 let lastTotpUri = "";
 vi.mock("../../../lib/qrSvg", async (orig) => {
@@ -34,7 +38,10 @@ vi.mock("../../../lib/qrSvg", async (orig) => {
     },
   };
 });
-let yubiResult: { ok: true; publicId: string } | { ok: false; error: string } = { ok: false, error: "no" };
+let yubiResult: { ok: true; publicId: string } | { ok: false; error: string } = {
+  ok: false,
+  error: "no",
+};
 vi.mock("../../../lib/yubikeyOtp", async (orig) => ({
   ...(await orig<typeof import("../../../lib/yubikeyOtp")>()),
   isYubiKeyOtpConfigured: () => true,
@@ -71,7 +78,12 @@ function remember(browser: Browser, res: Response) {
     else browser.set(name, value);
   }
 }
-function ctx(browser: Browser, method: "GET" | "POST", path: string, opts: { form?: Record<string, string>; json?: unknown } = {}) {
+function ctx(
+  browser: Browser,
+  method: "GET" | "POST",
+  path: string,
+  opts: { form?: Record<string, string>; json?: unknown } = {},
+) {
   const headers = new Headers({ cookie: [...browser].map(([n, v]) => `${n}=${v}`).join("; ") });
   if (opts.json) {
     headers.set("content-type", "application/json");
@@ -80,15 +92,22 @@ function ctx(browser: Browser, method: "GET" | "POST", path: string, opts: { for
   const request = new Request(`http://localhost:4321${path}`, {
     method,
     headers,
-    body: opts.json ? JSON.stringify(opts.json) : opts.form ? new URLSearchParams(opts.form) : undefined,
+    body: opts.json
+      ? JSON.stringify(opts.json)
+      : opts.form
+        ? new URLSearchParams(opts.form)
+        : undefined,
   });
-  const cookies = fakeCookies(Object.fromEntries([...browser].map(([n, v]) => [n, decodeURIComponent(v)])));
+  const cookies = fakeCookies(
+    Object.fromEntries([...browser].map(([n, v]) => [n, decodeURIComponent(v)])),
+  );
   return Object.assign(
     {
       request,
       url: new URL(request.url),
       cookies,
-      redirect: (location: string) => new Response(null, { status: 302, headers: { Location: location } }),
+      redirect: (location: string) =>
+        new Response(null, { status: 302, headers: { Location: location } }),
       clientAddress: "127.0.0.1",
       locals: { locale: "en" },
       site: undefined,
@@ -97,11 +116,16 @@ function ctx(browser: Browser, method: "GET" | "POST", path: string, opts: { for
   );
 }
 /** Run a route and keep the cookies it set, both Better Auth's (headers) and the app's (Astro cookies). */
-async function call(browser: Browser, route: (c: APIContext) => Promise<Response> | Response, c: ReturnType<typeof ctx>) {
+async function call(
+  browser: Browser,
+  route: (c: APIContext) => Promise<Response> | Response,
+  c: ReturnType<typeof ctx>,
+) {
   const before = new Map(c.appCookies.jar);
   const res = await route(c);
   remember(browser, res);
-  for (const [n, v] of c.appCookies.jar) if (before.get(n) !== v) browser.set(n, encodeURIComponent(v));
+  for (const [n, v] of c.appCookies.jar)
+    if (before.get(n) !== v) browser.set(n, encodeURIComponent(v));
   return res;
 }
 const loc = (res: Response) => res.headers.get("Location") ?? "";
@@ -110,7 +134,10 @@ const body = async (res: Response) => (await res.clone().json()) as Record<strin
 async function signUpConfirmed(email: string, password = "pw-123456") {
   const { createBetterAuth } = await import("../../../lib/betterAuthConfig");
   const pg = (await import("pg")).default;
-  const pool = new pg.Pool({ connectionString: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!), max: 1 });
+  const pool = new pg.Pool({
+    connectionString: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!),
+    max: 1,
+  });
   const auth = createBetterAuth({
     database: pool,
     secret: ENV.BETTER_AUTH_SECRET!,
@@ -122,21 +149,37 @@ async function signUpConfirmed(email: string, password = "pw-123456") {
   await auth.api.signUpEmail({ body: { email, password, name: email } });
   await pool.end();
   await sql(`update public.auth_users set "emailVerified" = true where email = $1`, [email]);
-  const [u] = await sql<{ id: string }>("select id from public.auth_users where email = $1", [email]);
+  const [u] = await sql<{ id: string }>("select id from public.auth_users where email = $1", [
+    email,
+  ]);
   return u!.id;
 }
 async function signIn(email: string, password = "pw-123456") {
   const browser = newBrowser();
-  const res = await call(browser, signin, ctx(browser, "POST", "/api/auth/signin", { form: { email, password } }));
+  const res = await call(
+    browser,
+    signin,
+    ctx(browser, "POST", "/api/auth/signin", { form: { email, password } }),
+  );
   return { browser, res };
 }
 const secretOf = (uri: string) => new URL(uri).searchParams.get("secret")!;
 /** Set TOTP up through the settings routes; returns the secret. */
 async function setUpTotp(browser: Browser, password = "pw-123456") {
-  const enrolled = await call(browser, manage, ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll", password } }));
+  const enrolled = await call(
+    browser,
+    manage,
+    ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll", password } }),
+  );
   expect(enrolled.status).toBe(200);
   const secret = secretOf(lastTotpUri);
-  const verified = await call(browser, manage, ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "verify", factorId: "totp", code: totp(secret) } }));
+  const verified = await call(
+    browser,
+    manage,
+    ctx(browser, "POST", "/api/auth/mfa-manage", {
+      json: { action: "verify", factorId: "totp", code: totp(secret) },
+    }),
+  );
   expect(verified.status).toBe(200);
   return secret;
 }
@@ -154,51 +197,101 @@ describe("TOTP in settings (Neon)", () => {
     const listed = await body(await listFactors(ctx(browser, "GET", "/api/auth/mfa-manage")));
     expect(listed).toMatchObject({ totp: [], passwordRequired: true, webauthn: [] });
 
-    const noPw = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll" } }));
+    const noPw = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll" } }),
+    );
     expect(noPw.status).toBe(400);
-    const wrongPw = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll", password: "nope-nope" } }));
+    const wrongPw = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "enroll", password: "nope-nope" },
+      }),
+    );
     expect(await body(wrongPw)).toEqual({ error: "That password isn't right." });
 
-    const enrolled = await call(browser, manage, ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll", password: "pw-123456" } }));
-    expect(await body(enrolled)).toMatchObject({ factorId: "totp", qrCode: expect.stringMatching(/^data:image\/svg\+xml/) });
-    expect((await body(await listFactors(ctx(browser, "GET", "/api/auth/mfa-manage")))).totp).toEqual([
-      { id: "totp", friendly_name: null, status: "unverified" },
-    ]);
+    const enrolled = await call(
+      browser,
+      manage,
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "enroll", password: "pw-123456" },
+      }),
+    );
+    expect(await body(enrolled)).toMatchObject({
+      factorId: "totp",
+      qrCode: expect.stringMatching(/^data:image\/svg\+xml/),
+    });
+    expect(
+      (await body(await listFactors(ctx(browser, "GET", "/api/auth/mfa-manage")))).totp,
+    ).toEqual([{ id: "totp", friendly_name: null, status: "unverified" }]);
 
     const secret = secretOf(lastTotpUri);
-    const bad = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "verify", code: "000000" } }));
+    const bad = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "verify", code: "000000" } }),
+    );
     expect(bad.status).toBe(400);
-    const ok = await call(browser, manage, ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "verify", code: totp(secret) } }));
+    const ok = await call(
+      browser,
+      manage,
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "verify", code: totp(secret) },
+      }),
+    );
     expect(ok.status).toBe(200);
-    expect((await body(await listFactors(ctx(browser, "GET", "/api/auth/mfa-manage")))).totp).toEqual([
-      { id: "totp", friendly_name: null, status: "verified" },
-    ]);
+    expect(
+      (await body(await listFactors(ctx(browser, "GET", "/api/auth/mfa-manage")))).totp,
+    ).toEqual([{ id: "totp", friendly_name: null, status: "verified" }]);
 
-    const again = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll", password: "pw-123456" } }));
+    const again = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "enroll", password: "pw-123456" },
+      }),
+    );
     expect((await body(again)).error).toMatch(/already set up/);
 
-    const removeWrong = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "unenroll", factorId: "totp", password: "nope-nope" } }));
+    const removeWrong = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "unenroll", factorId: "totp", password: "nope-nope" },
+      }),
+    );
     expect(removeWrong.status).toBe(400);
-    expect((await sql<{ t: boolean }>(`select "twoFactorEnabled" as t from public.auth_users`))[0]!.t).toBe(true);
-    const removed = await call(browser, manage, ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "unenroll", factorId: "totp", password: "pw-123456" } }));
+    expect(
+      (await sql<{ t: boolean }>(`select "twoFactorEnabled" as t from public.auth_users`))[0]!.t,
+    ).toBe(true);
+    const removed = await call(
+      browser,
+      manage,
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "unenroll", factorId: "totp", password: "pw-123456" },
+      }),
+    );
     expect(removed.status).toBe(200);
-    expect((await sql<{ t: boolean }>(`select "twoFactorEnabled" as t from public.auth_users`))[0]!.t).toBe(false);
+    expect(
+      (await sql<{ t: boolean }>(`select "twoFactorEnabled" as t from public.auth_users`))[0]!.t,
+    ).toBe(false);
   });
 
   it("an account without a password (OAuth-only) isn't asked for one", async () => {
     const id = await signUpConfirmed("oauth@example.com");
     const { browser } = await signIn("oauth@example.com");
     await sql(`delete from public.auth_accounts where "userId" = $1`, [id]);
-    await sql(`insert into public.auth_accounts ("accountId", "providerId", "userId", "updatedAt") values ('g1', 'google', $1, now())`, [id]);
-    expect((await body(await listFactors(ctx(browser, "GET", "/api/auth/mfa-manage")))).passwordRequired).toBe(false);
-    const enrolled = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll" } }));
+    await sql(
+      `insert into public.auth_accounts ("accountId", "providerId", "userId", "updatedAt") values ('g1', 'google', $1, now())`,
+      [id],
+    );
+    expect(
+      (await body(await listFactors(ctx(browser, "GET", "/api/auth/mfa-manage")))).passwordRequired,
+    ).toBe(false);
+    const enrolled = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll" } }),
+    );
     expect(enrolled.status).toBe(200);
   });
 
   it("security-key actions say they moved to passkeys", async () => {
     await signUpConfirmed("a@example.com");
     const { browser } = await signIn("a@example.com");
-    const res = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "webauthn_enroll" } }));
+    const res = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "webauthn_enroll" } }),
+    );
     expect((await body(res)).error).toMatch(/passkeys/);
   });
 });
@@ -206,11 +299,18 @@ describe("TOTP in settings (Neon)", () => {
 describe("account with both an authenticator app and a YubiKey (Neon)", () => {
   async function bothFactors(email: string) {
     const id = await signUpConfirmed(email);
-    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [id, JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] })]);
+    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [
+      id,
+      JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] }),
+    ]);
     const first = await signIn(email);
     // Adding TOTP needs the YubiKey step first (a second factor).
     yubiResult = { ok: true, publicId: "ccccccbcdefg" };
-    await call(first.browser, mfaVerify, ctx(first.browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }));
+    await call(
+      first.browser,
+      mfaVerify,
+      ctx(first.browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }),
+    );
     await setUpTotp(first.browser);
     await sql("delete from public.auth_sessions");
     const second = await signIn(email);
@@ -221,14 +321,22 @@ describe("account with both an authenticator app and a YubiKey (Neon)", () => {
   it("the YubiKey finishes the pending challenge; the session then counts as verified", async () => {
     const { id, browser } = await bothFactors("both@example.com");
     yubiResult = { ok: true, publicId: "ccccccbcdefg" };
-    const done = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "y".repeat(44), next: "/dashboard/alerts" } }));
+    const done = await call(
+      browser,
+      mfaVerify,
+      ctx(browser, "POST", "/api/auth/mfa-verify", {
+        form: { yubikey_otp: "y".repeat(44), next: "/dashboard/alerts" },
+      }),
+    );
     expect(loc(done)).toBe("/dashboard/alerts");
     expect(await sql("select 1 from public.auth_sessions")).toHaveLength(1);
 
     const { getAuthFromRequest } = await import("../../../lib/auth");
     const { betterAuthNeedsStepUp } = await import("../../../lib/betterAuthMfaGate");
     const cookie = [...browser].map(([n, v]) => `${n}=${v}`).join("; ");
-    const { user } = await getAuthFromRequest(new Request("http://x/", { headers: { cookie } }), { get: () => undefined } as never);
+    const { user } = await getAuthFromRequest(new Request("http://x/", { headers: { cookie } }), {
+      get: () => undefined,
+    } as never);
     expect(user?.id).toBe(id);
     // No second prompt for the YubiKey (or the app) on the next page.
     await expect(betterAuthNeedsStepUp(user, async () => false)).resolves.toBe(false);
@@ -237,10 +345,18 @@ describe("account with both an authenticator app and a YubiKey (Neon)", () => {
   it("another key or a replayed code doesn't finish it", async () => {
     const { browser } = await bothFactors("both@example.com");
     yubiResult = { ok: true, publicId: "cccccchijklm" };
-    const other = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "y".repeat(44) } }));
+    const other = await call(
+      browser,
+      mfaVerify,
+      ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "y".repeat(44) } }),
+    );
     expect(loc(other)).toContain("error=yubikey_not_enrolled");
     yubiResult = { ok: false, error: "OTP already used" };
-    const replay = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "y".repeat(44) } }));
+    const replay = await call(
+      browser,
+      mfaVerify,
+      ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "y".repeat(44) } }),
+    );
     expect(loc(replay)).toContain("error=replayed_otp");
     expect(await sql("select 1 from public.auth_sessions")).toHaveLength(0);
   });
@@ -255,53 +371,104 @@ describe("sign-in challenge (Neon)", () => {
 
     const { browser, res } = await signIn("a@example.com");
     expect(loc(res)).toBe("/signin/mfa");
-    const wrong = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { code: "000000", next: "/dashboard/alerts" } }));
+    const wrong = await call(
+      browser,
+      mfaVerify,
+      ctx(browser, "POST", "/api/auth/mfa-verify", {
+        form: { code: "000000", next: "/dashboard/alerts" },
+      }),
+    );
     expect(loc(wrong)).toContain("error=invalid_code");
     expect(await sql("select 1 from public.auth_sessions")).toHaveLength(0);
-    const right = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { code: totp(secret, Date.now() + 30_000), next: "/dashboard/alerts" } }));
+    const right = await call(
+      browser,
+      mfaVerify,
+      ctx(browser, "POST", "/api/auth/mfa-verify", {
+        form: { code: totp(secret, Date.now() + 30_000), next: "/dashboard/alerts" },
+      }),
+    );
     expect(loc(right)).toBe("/dashboard/alerts");
     expect(await sql("select 1 from public.auth_sessions")).toHaveLength(1);
   });
 
   it("YubiKey: an enrolled key's OTP sets the step-up proof; another key is refused", async () => {
     const id = await signUpConfirmed("y@example.com");
-    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [id, JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] })]);
+    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [
+      id,
+      JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] }),
+    ]);
     const { browser } = await signIn("y@example.com");
 
     yubiResult = { ok: true, publicId: "cccccchijklm" };
-    const other = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }));
+    const other = await call(
+      browser,
+      mfaVerify,
+      ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }),
+    );
     expect(loc(other)).toContain("error=yubikey_not_enrolled");
     expect(browser.has("sb-mfa-stepup")).toBe(false);
 
     yubiResult = { ok: true, publicId: "ccccccbcdefg" };
-    const ok = await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }));
+    const ok = await call(
+      browser,
+      mfaVerify,
+      ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }),
+    );
     expect(loc(ok)).toBe("/dashboard");
     expect(browser.has("sb-mfa-stepup")).toBe(true);
   });
 
   it("a YubiKey-only user must step up before adding TOTP; removing the key needs that key's OTP", async () => {
     const id = await signUpConfirmed("y@example.com");
-    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [id, JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] })]);
+    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [
+      id,
+      JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] }),
+    ]);
     const { browser } = await signIn("y@example.com");
 
-    const blocked = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll", password: "pw-123456" } }));
+    const blocked = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "enroll", password: "pw-123456" },
+      }),
+    );
     expect(blocked.status).toBe(401);
 
-    const noTap = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "yubikey_unenroll", publicId: "ccccccbcdefg" } }));
+    const noTap = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "yubikey_unenroll", publicId: "ccccccbcdefg" },
+      }),
+    );
     expect(noTap.status).toBe(400);
     yubiResult = { ok: true, publicId: "ccccccbcdefg" };
-    const removed = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "yubikey_unenroll", publicId: "ccccccbcdefg", otp: "x".repeat(44) } }));
+    const removed = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "yubikey_unenroll", publicId: "ccccccbcdefg", otp: "x".repeat(44) },
+      }),
+    );
     expect(removed.status).toBe(200);
-    expect(await sql("select metadata from public.user_profiles where user_id = $1", [id])).toEqual([{ metadata: { yubikey_otp_public_ids: [] } }]);
+    expect(await sql("select metadata from public.user_profiles where user_id = $1", [id])).toEqual(
+      [{ metadata: { yubikey_otp_public_ids: [] } }],
+    );
   });
 
   it("after the YubiKey step-up, adding TOTP is allowed", async () => {
     const id = await signUpConfirmed("y@example.com");
-    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [id, JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] })]);
+    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [
+      id,
+      JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] }),
+    ]);
     const { browser } = await signIn("y@example.com");
     yubiResult = { ok: true, publicId: "ccccccbcdefg" };
-    await call(browser, mfaVerify, ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }));
-    const enrolled = await manage(ctx(browser, "POST", "/api/auth/mfa-manage", { json: { action: "enroll", password: "pw-123456" } }));
+    await call(
+      browser,
+      mfaVerify,
+      ctx(browser, "POST", "/api/auth/mfa-verify", { form: { yubikey_otp: "x".repeat(44) } }),
+    );
+    const enrolled = await manage(
+      ctx(browser, "POST", "/api/auth/mfa-manage", {
+        json: { action: "enroll", password: "pw-123456" },
+      }),
+    );
     expect(enrolled.status).toBe(200);
   });
 });
@@ -310,7 +477,8 @@ describe("sign-in challenge (Neon)", () => {
 function totp(base32Secret: string, now = Date.now()): string {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
   let bits = "";
-  for (const ch of base32Secret.replace(/=+$/, "").toUpperCase()) bits += alphabet.indexOf(ch).toString(2).padStart(5, "0");
+  for (const ch of base32Secret.replace(/=+$/, "").toUpperCase())
+    bits += alphabet.indexOf(ch).toString(2).padStart(5, "0");
   const key = Buffer.from(bits.match(/.{8}/g)!.map((b) => parseInt(b, 2)));
   const counter = Buffer.alloc(8);
   counter.writeBigUInt64BE(BigInt(Math.floor(now / 30000)));

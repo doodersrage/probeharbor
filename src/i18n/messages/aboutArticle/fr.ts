@@ -16,7 +16,8 @@ const fr: AboutArticleMessages = {
   backToOverview: "Retour à la vue d’ensemble",
   convertBar: {
     label: "Essayer ProbeHarbor",
-    copyHtml: "<strong>Démo en direct</strong>, sans compte. Prêt à connecter vos sondes ? Gratuit pour toujours, sans carte.",
+    copyHtml:
+      "<strong>Démo en direct</strong>, sans compte. Prêt à connecter vos sondes ? Gratuit pour toujours, sans carte.",
     demo: "Essayer la démo en direct",
     startFree: "Commencer gratuitement",
   },

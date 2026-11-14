@@ -94,8 +94,7 @@ export const coreAboutPages: AboutPage[] = [
     title: "End-to-end monitoring data flow",
     description:
       "Follow a reading from the probe wire through JSON feeds, storage, and the signed-in history dashboard.",
-    summary:
-      "Hardware, relay, website fetch, Postgres storage, and CSV export in one pipeline.",
+    summary: "Hardware, relay, website fetch, Postgres storage, and CSV export in one pipeline.",
   },
   {
     slug: "accounts-and-dashboard",
@@ -142,8 +141,7 @@ export const coreAboutPages: AboutPage[] = [
     title: "Install as an app (PWA)",
     description:
       "Install ProbeHarbor as a PWA on desktop, Android, or iOS for faster dashboard access and optional browser push freeze and leak alerts.",
-    summary:
-      "Desktop, Android, and iOS install steps, plus Web Push limits on Apple devices.",
+    summary: "Desktop, Android, and iOS install steps, plus Web Push limits on Apple devices.",
   },
 ];
 

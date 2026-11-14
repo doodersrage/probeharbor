@@ -12,14 +12,17 @@ import { alertMessages } from "../i18n/messages/app/alertMessages";
  * Extra lines appended to freeze threshold alert bodies (never suppresses alerts).
  * Runway and regional-benchmark lines come from their own modules (English for now).
  */
-export async function buildFreezeAlertContext(input: {
-  householdId?: string | null;
-  settings: AlertSettings;
-  weatherCityId?: string | null;
-  coldestTempF: number;
-  coldestSensorId?: string | null;
-  latestSensors?: LatestSensorRow[];
-}, locale: Locale = "en"): Promise<string | null> {
+export async function buildFreezeAlertContext(
+  input: {
+    householdId?: string | null;
+    settings: AlertSettings;
+    weatherCityId?: string | null;
+    coldestTempF: number;
+    coldestSensorId?: string | null;
+    latestSensors?: LatestSensorRow[];
+  },
+  locale: Locale = "en",
+): Promise<string | null> {
   const parts: string[] = [];
 
   const annotation = await fetchThermostatAnnotationForHousehold(input.householdId, locale).catch(
@@ -28,26 +31,31 @@ export async function buildFreezeAlertContext(input: {
   if (annotation) parts.push(annotation);
 
   if (input.householdId && Number.isFinite(input.coldestTempF)) {
-    const benchmark = await fetchRegionalBenchmark({
-      householdId: input.householdId,
-      yourTempF: input.coldestTempF,
-    }, locale).catch(() => null);
+    const benchmark = await fetchRegionalBenchmark(
+      {
+        householdId: input.householdId,
+        yourTempF: input.coldestTempF,
+      },
+      locale,
+    ).catch(() => null);
     const benchLine = formatBenchmarkAlertSuffix(benchmark);
     if (benchLine) parts.push(benchLine);
   }
 
   const doorOpenNearby =
     input.latestSensors?.some(
-      (s) =>
-        s.sensor.kind === "door" &&
-        (s.value_bool === true || s.value_text === "open"),
+      (s) => s.sensor.kind === "door" && (s.value_bool === true || s.value_text === "open"),
     ) ?? false;
 
   if (input.coldestSensorId) {
     const since1h = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     // Readings are read within the household only; without one there is no trend.
     const samples = input.householdId
-      ? await getRecentNumericReadingSamples(input.householdId, input.coldestSensorId, since1h).catch(() => [])
+      ? await getRecentNumericReadingSamples(
+          input.householdId,
+          input.coldestSensorId,
+          since1h,
+        ).catch(() => [])
       : [];
 
     const forecast = input.weatherCityId
@@ -56,14 +64,17 @@ export async function buildFreezeAlertContext(input: {
         )
       : null;
 
-    const runway = buildThermalRunway({
-      currentTempF: input.coldestTempF,
-      freezeThresholdF: input.settings.freezeThresholdF,
-      recentSamples: samples,
-      forecastMinTempF: forecast?.minTempF ?? null,
-      forecastHoursAhead: input.settings.forecastHoursAhead,
-      doorOpenNearby,
-    }, locale);
+    const runway = buildThermalRunway(
+      {
+        currentTempF: input.coldestTempF,
+        freezeThresholdF: input.settings.freezeThresholdF,
+        recentSamples: samples,
+        forecastMinTempF: forecast?.minTempF ?? null,
+        forecastHoursAhead: input.settings.forecastHoursAhead,
+        doorOpenNearby,
+      },
+      locale,
+    );
     const runwayLine = formatRunwayAlertSuffix(runway, locale);
     if (runwayLine) parts.push(runwayLine);
   } else if (doorOpenNearby) {

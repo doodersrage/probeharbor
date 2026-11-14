@@ -82,8 +82,12 @@ beforeEach(() => {
   mockIsUserAdmin.mockReset().mockResolvedValue(true);
   mockGetUserRecord.mockReset().mockResolvedValue({ id: "user-1", email: "user@example.com" });
   mockResolveSiteUrl.mockReset().mockReturnValue("https://probeharbor.dev");
-  mockBuildDripEmail.mockReset().mockReturnValue({ subject: "Drip", text: "text", html: "<p>html</p>" });
-  mockBuildTrialReminderEmail.mockReset().mockReturnValue({ subject: "Trial", text: "text", html: "<p>html</p>" });
+  mockBuildDripEmail
+    .mockReset()
+    .mockReturnValue({ subject: "Drip", text: "text", html: "<p>html</p>" });
+  mockBuildTrialReminderEmail
+    .mockReset()
+    .mockReturnValue({ subject: "Trial", text: "text", html: "<p>html</p>" });
   mockBuildWeeklyDigestParts.mockReset().mockReturnValue({
     subject: "Weekly",
     text: "wtext",
@@ -143,12 +147,9 @@ describe("POST /api/admin/email-test", () => {
     await POST(makeContext(null));
 
     expect(mockBuildDripEmail).toHaveBeenCalledWith("day1", "https://probeharbor.dev");
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      "user@example.com",
-      "[Test] Drip",
-      "text",
-      { html: "<p>html</p>" },
-    );
+    expect(mockSendEmail).toHaveBeenCalledWith("user@example.com", "[Test] Drip", "text", {
+      html: "<p>html</p>",
+    });
   });
 
   it("builds the drip_day3 template", async () => {
@@ -169,12 +170,9 @@ describe("POST /api/admin/email-test", () => {
       remaining: 3,
       siteUrl: "https://probeharbor.dev",
     });
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      "user@example.com",
-      "[Test] Trial",
-      "text",
-      { html: "<p>html</p>" },
-    );
+    expect(mockSendEmail).toHaveBeenCalledWith("user@example.com", "[Test] Trial", "text", {
+      html: "<p>html</p>",
+    });
   });
 
   it("builds the weekly digest sample", async () => {
@@ -183,12 +181,9 @@ describe("POST /api/admin/email-test", () => {
     await POST(makeContext({ kind: "weekly_digest" }));
 
     expect(mockBuildWeeklyDigestParts).toHaveBeenCalled();
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      "user@example.com",
-      "[Test] Weekly",
-      "wtext",
-      { html: "<p>weekly</p>" },
-    );
+    expect(mockSendEmail).toHaveBeenCalledWith("user@example.com", "[Test] Weekly", "wtext", {
+      html: "<p>weekly</p>",
+    });
   });
 
   it("builds the monthly report sample", async () => {
@@ -198,12 +193,9 @@ describe("POST /api/admin/email-test", () => {
 
     expect(mockFormatPeriodReportSubject).toHaveBeenCalled();
     expect(mockBuildMonthlyReportHtmlEmail).toHaveBeenCalled();
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      "user@example.com",
-      "[Test] Monthly",
-      "mtext",
-      { html: "<p>monthly</p>" },
-    );
+    expect(mockSendEmail).toHaveBeenCalledWith("user@example.com", "[Test] Monthly", "mtext", {
+      html: "<p>monthly</p>",
+    });
   });
 
   it("builds the freeze drill sample", async () => {

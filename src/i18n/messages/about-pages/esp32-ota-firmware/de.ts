@@ -1,4 +1,3 @@
-
 /** /about/esp32-ota-firmware body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 import type { Esp32OtaFirmwareMessages } from "./en";
 

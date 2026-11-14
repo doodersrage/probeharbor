@@ -6,7 +6,9 @@ export const LOCALE_COOKIE = "ph_locale";
 export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 /** Account language saved in `user_metadata.locale`, if any. */
-export function getSavedUserLocale(user: Pick<User, "user_metadata"> | null | undefined): Locale | null {
+export function getSavedUserLocale(
+  user: Pick<User, "user_metadata"> | null | undefined,
+): Locale | null {
   const value = user?.user_metadata?.locale;
   return isLocale(value) ? value : null;
 }

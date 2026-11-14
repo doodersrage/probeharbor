@@ -9,7 +9,10 @@ vi.mock("./runtimeEnv", () => ({
   getRuntimeEnv: () => undefined,
   hasRuntimeEnv: () => false,
 }));
-const sent = vi.hoisted(() => ({ to: [] as string[], mails: [] as Array<{ to: string; subject: string; text: string }> }));
+const sent = vi.hoisted(() => ({
+  to: [] as string[],
+  mails: [] as Array<{ to: string; subject: string; text: string }>,
+}));
 vi.mock("./mailer", () => ({
   sendEmail: async (to: string, subject: string, text: string) => {
     sent.to.push(to);
@@ -61,11 +64,13 @@ type Row = {
   last_alert_night: string | null;
 };
 const row = async (email: string) =>
-  (await sql<Row>(
-    `select id, token, confirmed_at::text, place_label, lat, lon, last_alert_night::text
+  (
+    await sql<Row>(
+      `select id, token, confirmed_at::text, place_label, lat, lon, last_alert_night::text
      from public.freeze_alert_subscriptions where email = $1`,
-    [email],
-  ))[0];
+      [email],
+    )
+  )[0];
 /** The query string of the move link in the last email to `to`. */
 const lastMoveLink = (to: string) => {
   const mail = sent.mails.filter((m) => m.to === to).at(-1);
@@ -85,7 +90,9 @@ beforeEach(() => {
 
 describe("freeze alert sign-up (Neon)", () => {
   it("subscribe → confirm → re-subscribing the same place changes nothing", async () => {
-    await expect(subscribeToFreezeAlerts({ email: " Pat@Example.com ", ...place })).resolves.toEqual({ ok: true });
+    await expect(
+      subscribeToFreezeAlerts({ email: " Pat@Example.com ", ...place }),
+    ).resolves.toEqual({ ok: true });
     const first = await row("pat@example.com");
     expect(first?.confirmed_at).toBeNull();
     expect(sent.to).toEqual(["pat@example.com"]); // confirmation email
@@ -102,7 +109,9 @@ describe("freeze alert sign-up (Neon)", () => {
   it("a new place for a confirmed address leaves it confirmed and unchanged until the emailed link is used", async () => {
     await subscribeToFreezeAlerts({ email: "sam@example.com", ...place });
     await confirmFreezeAlerts((await row("sam@example.com"))!.token);
-    await sql("update public.freeze_alert_subscriptions set last_alert_night = '2026-11-30' where email = 'sam@example.com'");
+    await sql(
+      "update public.freeze_alert_subscriptions set last_alert_night = '2026-11-30' where email = 'sam@example.com'",
+    );
     const before = await row("sam@example.com");
     sent.mails = [];
 
@@ -113,18 +122,28 @@ describe("freeze alert sign-up (Neon)", () => {
     // ...but the subscription is untouched and keeps alerting for Boston.
     expect(await row("sam@example.com")).toEqual(before);
     expect(sent.mails).toHaveLength(1);
-    expect(sent.mails[0]).toMatchObject({ to: "sam@example.com", subject: "Switch freeze alerts to NYC?" });
+    expect(sent.mails[0]).toMatchObject({
+      to: "sam@example.com",
+      subject: "Switch freeze alerts to NYC?",
+    });
     expect(sent.mails[0]!.text).toContain("Boston");
 
     // A tampered link does nothing.
     const link = lastMoveLink("sam@example.com");
-    for (const [key, value] of [["lat", "33.75"], ["label", "Atlanta"], ["sid", before!.id.replace(/.$/, (last) => (last === "0" ? "1" : "0"))], ["sig", "f".repeat(64)]]) {
+    for (const [key, value] of [
+      ["lat", "33.75"],
+      ["label", "Atlanta"],
+      ["sid", before!.id.replace(/.$/, (last) => (last === "0" ? "1" : "0"))],
+      ["sig", "f".repeat(64)],
+    ]) {
       const tampered = new URLSearchParams(link);
       tampered.set(key!, value!);
       await expect(applyFreezeAlertMove(tampered)).resolves.toEqual({ ok: false });
     }
     // An expired link does nothing.
-    await expect(applyFreezeAlertMove(link, Date.now() + MOVE_LINK_TTL_MS + 60_000)).resolves.toEqual({ ok: false });
+    await expect(
+      applyFreezeAlertMove(link, Date.now() + MOVE_LINK_TTL_MS + 60_000),
+    ).resolves.toEqual({ ok: false });
     expect(await row("sam@example.com")).toEqual(before);
 
     // The real link switches the place, stays confirmed, keeps the token (unsubscribe links still work).
@@ -151,7 +170,12 @@ describe("freeze alert sign-up (Neon)", () => {
     await subscribeToFreezeAlerts({ email: "new@example.com", ...place });
     const first = await row("new@example.com");
     sent.mails = [];
-    await subscribeToFreezeAlerts({ email: "new@example.com", lat: 40.71, lon: -74.0, label: "NYC" });
+    await subscribeToFreezeAlerts({
+      email: "new@example.com",
+      lat: 40.71,
+      lon: -74.0,
+      label: "NYC",
+    });
     const replaced = await row("new@example.com");
     expect(replaced).toMatchObject({ confirmed_at: null, lat: 40.71, place_label: "NYC" });
     expect(replaced?.token).not.toBe(first!.token);
@@ -165,9 +189,13 @@ describe("freeze alert sign-up (Neon)", () => {
     await subscribeToFreezeAlerts({ email: "race@example.com", ...place });
     await confirmFreezeAlerts((await row("race@example.com"))!.token);
     const before = await row("race@example.com");
-    await expect(writeUnconfirmed("race@example.com", "NYC", 40.71, -74.0, "x".repeat(48))).resolves.toBe(false);
+    await expect(
+      writeUnconfirmed("race@example.com", "NYC", 40.71, -74.0, "x".repeat(48)),
+    ).resolves.toBe(false);
     expect(await row("race@example.com")).toEqual(before);
-    await expect(writeUnconfirmed("fresh@example.com", "NYC", 40.71, -74.0, "y".repeat(48))).resolves.toBe(true);
+    await expect(
+      writeUnconfirmed("fresh@example.com", "NYC", 40.71, -74.0, "y".repeat(48)),
+    ).resolves.toBe(true);
   });
 
   it("two sign-ups for the same address at once leave one row", async () => {
@@ -175,7 +203,9 @@ describe("freeze alert sign-up (Neon)", () => {
       subscribeToFreezeAlerts({ email: "twin@example.com", ...place }),
       subscribeToFreezeAlerts({ email: "twin@example.com", ...place }),
     ]);
-    expect(await sql("select 1 from public.freeze_alert_subscriptions where email = 'twin@example.com'")).toHaveLength(1);
+    expect(
+      await sql("select 1 from public.freeze_alert_subscriptions where email = 'twin@example.com'"),
+    ).toHaveLength(1);
   });
 
   it("unknown tokens fail; unsubscribe removes the row", async () => {

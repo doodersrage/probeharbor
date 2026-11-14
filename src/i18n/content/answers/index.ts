@@ -23,7 +23,5 @@ export function getLocalizedAnswersRelatedTo(
   limit = 3,
 ): Answer[] {
   const slugs = getAnswersRelatedTo(path, fallbackSlugs, limit).map((a) => a.slug);
-  return slugs
-    .map((slug) => getLocalizedAnswer(slug, locale))
-    .filter((a): a is Answer => !!a);
+  return slugs.map((slug) => getLocalizedAnswer(slug, locale)).filter((a): a is Answer => !!a);
 }

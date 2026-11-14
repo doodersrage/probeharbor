@@ -3,7 +3,12 @@ import { sendEmail } from "./mailer";
 import { brandedEmailParts, formatEmailDate } from "./emailLayout";
 import { unsubscribeHeaders } from "./emailUnsubscribe";
 import { resolveSiteUrl } from "./schemaMarkup";
-import { describeFreezeNight, HIGH_RISK_LOW_F, WINDY_MPH, type FreezeNight } from "./pipeFreezeForecast";
+import {
+  describeFreezeNight,
+  HIGH_RISK_LOW_F,
+  WINDY_MPH,
+  type FreezeNight,
+} from "./pipeFreezeForecast";
 import { fetchPipeFreezeForecast, pipeFreezeCacheKey } from "./pipeFreezeForecastFetch";
 import { formatTemp, formatWind } from "./tempUnits";
 import type { Locale } from "../i18n/locales";
@@ -60,7 +65,9 @@ export function freezeAlertUnsubscribeUrl(token: string): string {
   return `${siteUrl()}/api/freeze-alerts/unsubscribe?token=${token}`;
 }
 
-export function freezeForecastUrl(sub: Pick<FreezeAlertSubscriber, "lat" | "lon" | "place_label">): string {
+export function freezeForecastUrl(
+  sub: Pick<FreezeAlertSubscriber, "lat" | "lon" | "place_label">,
+): string {
   const params = new URLSearchParams({
     lat: sub.lat.toFixed(2),
     lon: sub.lon.toFixed(2),
@@ -69,7 +76,12 @@ export function freezeForecastUrl(sub: Pick<FreezeAlertSubscriber, "lat" | "lon"
   return `${siteUrl()}/pipe-freeze-forecast?${params.toString()}`;
 }
 
-async function sendConfirmEmail(email: string, token: string, place: string, locale: Locale = "en"): Promise<void> {
+async function sendConfirmEmail(
+  email: string,
+  token: string,
+  place: string,
+  locale: Locale = "en",
+): Promise<void> {
   const t = alertJobsMessages(locale).freeze.confirm;
   const { text, html } = brandedEmailParts(
     {
@@ -107,7 +119,13 @@ export async function freezeAlertMoveUrl(
   place: { label: string; lat: number; lon: number },
   now = Date.now(),
 ): Promise<string | null> {
-  const move: FreezeAlertMove = { id, label: place.label, lat: place.lat, lon: place.lon, exp: now + MOVE_LINK_TTL_MS };
+  const move: FreezeAlertMove = {
+    id,
+    label: place.label,
+    lat: place.lat,
+    lon: place.lon,
+    exp: now + MOVE_LINK_TTL_MS,
+  };
   const sig = await signWithAlertLinkSecret(movePayload(move));
   if (!sig) return null;
   const params = new URLSearchParams({
@@ -122,7 +140,10 @@ export async function freezeAlertMoveUrl(
 }
 
 /** The move a link asks for, or null when it is malformed, tampered with or expired. */
-export async function readFreezeAlertMove(params: URLSearchParams, now = Date.now()): Promise<FreezeAlertMove | null> {
+export async function readFreezeAlertMove(
+  params: URLSearchParams,
+  now = Date.now(),
+): Promise<FreezeAlertMove | null> {
   const id = params.get("sid")?.trim() ?? "";
   const label = params.get("label") ?? "";
   const lat = Number(params.get("lat"));
@@ -130,15 +151,25 @@ export async function readFreezeAlertMove(params: URLSearchParams, now = Date.no
   const exp = Number(params.get("exp"));
   const sig = params.get("sig")?.trim() ?? "";
   if (!id || !sig || !label.trim() || label.length > MAX_LABEL_LENGTH) return null;
-  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180)
+    return null;
   if (!Number.isSafeInteger(exp) || exp < now) return null;
-  const move: FreezeAlertMove = { id, label, lat: roundCoordinate(lat), lon: roundCoordinate(lon), exp };
+  const move: FreezeAlertMove = {
+    id,
+    label,
+    lat: roundCoordinate(lat),
+    lon: roundCoordinate(lon),
+    exp,
+  };
   if (!(await verifyWithAlertLinkSecret(movePayload(move), sig))) return null;
   return move;
 }
 
 /** Apply a move link: the confirmed row takes the new place and stays confirmed. */
-export async function applyFreezeAlertMove(params: URLSearchParams, now = Date.now()): Promise<{ ok: boolean }> {
+export async function applyFreezeAlertMove(
+  params: URLSearchParams,
+  now = Date.now(),
+): Promise<{ ok: boolean }> {
   const move = await readFreezeAlertMove(params, now);
   if (!move) return { ok: false };
   return { ok: await neonFreeze.moveConfirmed(move.id, move.label, move.lat, move.lon) };
@@ -179,30 +210,47 @@ async function sendMoveEmail(
  * - Confirmed elsewhere: left alone and still alerting; the address gets a
  *   signed link that switches it to the new place only when clicked.
  */
-export async function subscribeToFreezeAlerts(input: {
-  email: string;
-  lat: number;
-  lon: number;
-  label: string;
-}, locale: Locale = "en"): Promise<{ ok: boolean; error?: string }> {
+export async function subscribeToFreezeAlerts(
+  input: {
+    email: string;
+    lat: number;
+    lon: number;
+    label: string;
+  },
+  locale: Locale = "en",
+): Promise<{ ok: boolean; error?: string }> {
   const errors = alertJobsMessages(locale).freeze.errors;
   const email = normalizeFreezeAlertEmail(input.email);
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { ok: false, error: errors.invalidEmail };
   }
-  if (!Number.isFinite(input.lat) || !Number.isFinite(input.lon) || Math.abs(input.lat) > 90 || Math.abs(input.lon) > 180) {
+  if (
+    !Number.isFinite(input.lat) ||
+    !Number.isFinite(input.lon) ||
+    Math.abs(input.lat) > 90 ||
+    Math.abs(input.lon) > 180
+  ) {
     return { ok: false, error: errors.pickLocation };
   }
   const lat = roundCoordinate(input.lat);
   const lon = roundCoordinate(input.lon);
-  const label = input.label.trim().slice(0, MAX_LABEL_LENGTH) || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+  const label =
+    input.label.trim().slice(0, MAX_LABEL_LENGTH) || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
 
-  const offerMove = async (found: { id: string; place_label: string; lat: number; lon: number }) => {
+  const offerMove = async (found: {
+    id: string;
+    place_label: string;
+    lat: number;
+    lon: number;
+  }) => {
     if (found.lat === lat && found.lon === lon) return;
     try {
       await sendMoveEmail(email, found, { label, lat, lon }, locale);
     } catch (sendError) {
-      console.error("Failed to send freeze alert move email:", sendError instanceof Error ? sendError.message : sendError);
+      console.error(
+        "Failed to send freeze alert move email:",
+        sendError instanceof Error ? sendError.message : sendError,
+      );
     }
   };
 
@@ -210,7 +258,10 @@ export async function subscribeToFreezeAlerts(input: {
   try {
     found = await neonFreeze.findByEmail(email);
   } catch (lookupError) {
-    console.error("freeze alert subscribe lookup failed:", lookupError instanceof Error ? lookupError.message : lookupError);
+    console.error(
+      "freeze alert subscribe lookup failed:",
+      lookupError instanceof Error ? lookupError.message : lookupError,
+    );
     return { ok: false, error: errors.generic };
   }
   if (found?.confirmed_at) {
@@ -222,7 +273,10 @@ export async function subscribeToFreezeAlerts(input: {
   try {
     wrote = await neonFreeze.writeUnconfirmed(email, label, lat, lon, token);
   } catch (writeError) {
-    console.error("freeze alert subscribe write failed:", writeError instanceof Error ? writeError.message : writeError);
+    console.error(
+      "freeze alert subscribe write failed:",
+      writeError instanceof Error ? writeError.message : writeError,
+    );
     return { ok: false, error: errors.generic };
   }
   if (!wrote) {
@@ -231,7 +285,10 @@ export async function subscribeToFreezeAlerts(input: {
       const now = await neonFreeze.findByEmail(email);
       if (now?.confirmed_at) await offerMove(now);
     } catch (lookupError) {
-      console.error("freeze alert subscribe re-lookup failed:", lookupError instanceof Error ? lookupError.message : lookupError);
+      console.error(
+        "freeze alert subscribe re-lookup failed:",
+        lookupError instanceof Error ? lookupError.message : lookupError,
+      );
     }
     return { ok: true };
   }
@@ -276,7 +333,15 @@ function previousDate(date: string): string {
 
 export type AlertDecision =
   | { send: true; night: FreezeNight; reason: "high" | "cold_spell_start" }
-  | { send: false; reason: "no_forecast" | "outside_window" | "no_freeze_tonight" | "already_sent" | "cold_spell_continues" };
+  | {
+      send: false;
+      reason:
+        | "no_forecast"
+        | "outside_window"
+        | "no_freeze_tonight"
+        | "already_sent"
+        | "cold_spell_continues";
+    };
 
 /**
  * Email between 2 and 6 PM local time before a freezing night:
@@ -299,7 +364,8 @@ export function decideFreezeAlert(
   if (!tonight || tonight.risk === "low") return { send: false, reason: "no_freeze_tonight" };
   if (lastAlertNight === tonight.date) return { send: false, reason: "already_sent" };
   if (tonight.risk === "high") return { send: true, night: tonight, reason: "high" };
-  if (lastAlertNight === previousDate(tonight.date)) return { send: false, reason: "cold_spell_continues" };
+  if (lastAlertNight === previousDate(tonight.date))
+    return { send: false, reason: "cold_spell_continues" };
   return { send: true, night: tonight, reason: "cold_spell_start" };
 }
 
@@ -317,8 +383,10 @@ export function describeFreezeNightLocalized(night: FreezeNight, locale: Locale 
   const t = alertJobsMessages(locale).freeze.night;
   const low = freezeTemp(night.lowF, locale);
   const parts: string[] = [];
-  if (night.risk === "high") parts.push(fmt(t.high, { low, mark: freezeTemp(HIGH_RISK_LOW_F, locale) }));
-  else if (night.risk === "watch") parts.push(plural(t.watch, night.hoursAtOrBelow32, locale, { low }));
+  if (night.risk === "high")
+    parts.push(fmt(t.high, { low, mark: freezeTemp(HIGH_RISK_LOW_F, locale) }));
+  else if (night.risk === "watch")
+    parts.push(plural(t.watch, night.hoursAtOrBelow32, locale, { low }));
   else parts.push(fmt(t.above, { low }));
   if (night.maxFreezingWindMph != null && night.maxFreezingWindMph >= WINDY_MPH) {
     const wind = `${formatWind(night.maxFreezingWindMph, "C")} (${formatWind(night.maxFreezingWindMph, "F")})`;
@@ -364,7 +432,12 @@ export function buildFreezeAlertEmail(
           ? [
               fmt(t.alsoLater, {
                 nights: coming
-                  .map((n) => fmt(t.laterNight, { date: nightDate(n.date, locale), low: freezeTemp(n.lowF, locale) }))
+                  .map((n) =>
+                    fmt(t.laterNight, {
+                      date: nightDate(n.date, locale),
+                      low: freezeTemp(n.lowF, locale),
+                    }),
+                  )
                   .join(", "),
               }),
             ]
@@ -384,7 +457,12 @@ export function buildFreezeAlertEmail(
 // ---------------------------------------------------------------------------
 // Hourly job
 
-export type FreezeAlertRunResult = { sent: number; skipped: number; locations: number; errors: string[] };
+export type FreezeAlertRunResult = {
+  sent: number;
+  skipped: number;
+  locations: number;
+  errors: string[];
+};
 
 /** Called from the hourly cron. Fetches each location once, however many subscribers share it. */
 export async function sendFreezeAlerts(now = new Date()): Promise<FreezeAlertRunResult> {
@@ -409,7 +487,8 @@ export async function sendFreezeAlerts(now = new Date()): Promise<FreezeAlertRun
     const forecast = await fetchPipeFreezeForecast(lat, lon, 5);
     if (!forecast.ok) {
       result.skipped += subs.length;
-      if (forecast.error !== "us_only") result.errors.push(`forecast ${lat},${lon}: ${forecast.error}`);
+      if (forecast.error !== "us_only")
+        result.errors.push(`forecast ${lat},${lon}: ${forecast.error}`);
       continue;
     }
     const nights = forecast.body.nights;

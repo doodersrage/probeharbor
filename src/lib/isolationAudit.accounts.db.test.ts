@@ -25,7 +25,10 @@ const signedIn: { id: string | null } = { id: null };
 vi.mock("./auth", () => {
   const result = () =>
     signedIn.id
-      ? { session: { access_token: "t", refresh_token: "" }, user: { id: signedIn.id, app_metadata: {}, user_metadata: {} } }
+      ? {
+          session: { access_token: "t", refresh_token: "" },
+          user: { id: signedIn.id, app_metadata: {}, user_metadata: {} },
+        }
       : { session: null, user: null };
   return {
     getAuthFromCookies: async () => result(),
@@ -69,7 +72,10 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function person(email: string) {
   const id = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [id]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [id],
+  );
   return { id, home: m!.household_id };
 }
 
@@ -107,7 +113,10 @@ const subRow = (userId: string, subId: string, status = "active", tier = "pro") 
 });
 
 /** Minimal Astro context for the routes under test. */
-function ctx(path: string, opts: { method?: string; form?: Record<string, string>; cookies?: Record<string, string> } = {}) {
+function ctx(
+  path: string,
+  opts: { method?: string; form?: Record<string, string>; cookies?: Record<string, string> } = {},
+) {
   const method = opts.method ?? "POST";
   const request = new Request(`http://localhost:4321${path}`, {
     method,
@@ -123,7 +132,8 @@ function ctx(path: string, opts: { method?: string; form?: Record<string, string
       delete: (n: string) => void jar.delete(n),
       has: (n: string) => jar.has(n),
     },
-    redirect: (location: string) => new Response(null, { status: 302, headers: { Location: location } }),
+    redirect: (location: string) =>
+      new Response(null, { status: 302, headers: { Location: location } }),
     clientAddress: "127.0.0.1",
     locals: { locale: "en" },
     site: undefined,
@@ -138,18 +148,30 @@ describe("user settings (user_profiles.metadata) stay per user", () => {
     const b = await person("b@example.com");
     await mergeUserMetadata(a.id, { theme: "dark", active_household_id: a.home });
     await expect(getUserMetadata(b.id)).resolves.toEqual({});
-    await expect(getUserMetadata(a.id)).resolves.toEqual({ theme: "dark", active_household_id: a.home });
+    await expect(getUserMetadata(a.id)).resolves.toEqual({
+      theme: "dark",
+      active_household_id: a.home,
+    });
   });
 
   it("mergeUserMetadata changes only that user's row, and never the server-only app_metadata", async () => {
     const a = await person("a@example.com");
     const b = await person("b@example.com");
-    await sql(`insert into public.user_profiles (user_id, metadata, app_metadata) values ($1, '{"theme":"light"}', '{"referral_reward_days": 7}')`, [
-      a.id,
-    ]);
+    await sql(
+      `insert into public.user_profiles (user_id, metadata, app_metadata) values ($1, '{"theme":"light"}', '{"referral_reward_days": 7}')`,
+      [a.id],
+    );
     // A patch naming trusted keys only lands in the user-facing metadata.
-    await mergeUserMetadata(b.id, { theme: "dark", referral_reward_days: 28, referred_by: "x", app_metadata: { referral_reward_days: 28 } });
-    expect(await profile(a.id)).toEqual({ metadata: { theme: "light" }, app_metadata: { referral_reward_days: 7 } });
+    await mergeUserMetadata(b.id, {
+      theme: "dark",
+      referral_reward_days: 28,
+      referred_by: "x",
+      app_metadata: { referral_reward_days: 28 },
+    });
+    expect(await profile(a.id)).toEqual({
+      metadata: { theme: "light" },
+      app_metadata: { referral_reward_days: 7 },
+    });
     expect((await profile(b.id))?.app_metadata).toEqual({});
     expect((await getUserRecord(b.id))?.app_metadata).toEqual({});
   });
@@ -159,7 +181,10 @@ describe("user settings (user_profiles.metadata) stay per user", () => {
     const b = await person("b@example.com");
     await mergeUserMetadata(b.id, { active_household_id: a.home });
     // a.home has devices, so without the membership check it would win even as a fallback.
-    await sql("insert into public.devices (household_id, name, source) values ($1, 'Probe', 'push')", [a.home]);
+    await sql(
+      "insert into public.devices (household_id, name, source) values ($1, 'Probe', 'push')",
+      [a.home],
+    );
     await expect(getPreferredHouseholdId(b.id)).resolves.toBe(b.home);
     await expect(getUserHouseholdRole(b.id, a.home)).resolves.toBeNull();
   });
@@ -176,13 +201,22 @@ describe("account deletion touches only the deleting user's households", () => {
     const friend = await person("friend@example.com"); // member of a's second household
     await addHouseholdMemberByUserId(shared.home, a.id, "member");
     await addHouseholdMemberByUserId(shared.home, peer.id, "member");
-    const [second] = await sql<{ id: string }>("insert into public.households (name) values ('A second') returning id");
-    await sql("insert into public.household_members (household_id, user_id, role) values ($1, $2, 'owner')", [second!.id, a.id]);
+    const [second] = await sql<{ id: string }>(
+      "insert into public.households (name) values ('A second') returning id",
+    );
+    await sql(
+      "insert into public.household_members (household_id, user_id, role) values ($1, $2, 'owner')",
+      [second!.id, a.id],
+    );
     await addHouseholdMemberByUserId(second!.id, friend.id, "member");
 
     const deleted = await releaseOwnedHouseholds(a.id);
     expect(deleted).toEqual([a.home]);
-    expect(await sql("select id from public.households where id = any($1)", [[shared.home, bystander.home, second!.id, friend.home]])).toHaveLength(4);
+    expect(
+      await sql("select id from public.households where id = any($1)", [
+        [shared.home, bystander.home, second!.id, friend.home],
+      ]),
+    ).toHaveLength(4);
     // Where a was only a member, nobody gets promoted and the owner stays.
     await expect(getUserHouseholdRole(shared.id, shared.home)).resolves.toBe("owner");
     await expect(getUserHouseholdRole(peer.id, shared.home)).resolves.toBe("member");
@@ -220,8 +254,13 @@ describe("subscription rows and plan groups stay per user", () => {
     const b = await person("b@example.com");
     expect((await upsertSubscriptionRow(subRow(a.id, "sub_a"))).error).toBeNull();
     await expect(storedSubscription(b.id)).resolves.toBeNull();
-    expect((await upsertSubscriptionRow(subRow(b.id, "sub_b", "canceled", "member"))).error).toBeNull();
-    await expect(storedSubscription(a.id)).resolves.toEqual({ stripe_subscription_id: "sub_a", status: "active" });
+    expect(
+      (await upsertSubscriptionRow(subRow(b.id, "sub_b", "canceled", "member"))).error,
+    ).toBeNull();
+    await expect(storedSubscription(a.id)).resolves.toEqual({
+      stripe_subscription_id: "sub_a",
+      status: "active",
+    });
   });
 
   it("a second user's row can't take over another user's Stripe subscription id", async () => {
@@ -250,8 +289,12 @@ describe("subscription rows and plan groups stay per user", () => {
     await claimWebhookEvent("evt_a", "invoice.paid");
     await claimWebhookEvent("evt_b", "invoice.paid");
     await releaseWebhookEvent("evt_a");
-    await expect(claimWebhookEvent("evt_b", "invoice.paid")).resolves.toEqual({ alreadyProcessed: true });
-    await expect(claimWebhookEvent("evt_a", "invoice.paid")).resolves.toEqual({ alreadyProcessed: false });
+    await expect(claimWebhookEvent("evt_b", "invoice.paid")).resolves.toEqual({
+      alreadyProcessed: true,
+    });
+    await expect(claimWebhookEvent("evt_a", "invoice.paid")).resolves.toEqual({
+      alreadyProcessed: false,
+    });
   });
 });
 
@@ -265,7 +308,9 @@ describe("referral rows and trusted referral fields stay per user", () => {
     await expect(findReferralCode(b.id)).resolves.toBeNull();
     await expect(insertReferralCode(b.id, "aaaa1111")).resolves.toBe(false);
     await expect(insertReferralCode(a.id, "bbbb2222")).resolves.toBe(false); // one code per user, not replaced
-    expect(await sql("select user_id, code from public.referral_codes")).toEqual([{ user_id: a.id, code: "aaaa1111" }]);
+    expect(await sql("select user_id, code from public.referral_codes")).toEqual([
+      { user_id: a.id, code: "aaaa1111" },
+    ]);
   });
 
   it("referredBy / setReferredBy: per user, and an existing referral is never overwritten", async () => {
@@ -287,9 +332,12 @@ describe("referral rows and trusted referral fields stay per user", () => {
     await recordSignup(r2.id, f2.id);
     await expect(claimReferralReward(f1.id)).resolves.toBe(r1.id);
     await expect(claimReferralReward(f1.id)).resolves.toBeNull();
-    expect(await sql("select referrer_rewarded_at from public.referral_signups where referred_user_id = $1", [f2.id])).toEqual([
-      { referrer_rewarded_at: null },
-    ]);
+    expect(
+      await sql(
+        "select referrer_rewarded_at from public.referral_signups where referred_user_id = $1",
+        [f2.id],
+      ),
+    ).toEqual([{ referrer_rewarded_at: null }]);
     await addReferralRewardDays(r1.id);
     expect((await profile(r1.id))?.app_metadata).toEqual({ referral_reward_days: 7 });
     expect(await profile(r2.id)).toBeUndefined();
@@ -313,11 +361,16 @@ describe("referral rows and trusted referral fields stay per user", () => {
   it("an existing account can't claim a referral by visiting /api/auth/oauth-done?new=1", async () => {
     const referrer = await person("ref@example.com");
     const old = await person("old@example.com");
-    await sql(`update public.auth_users set "createdAt" = now() - interval '30 days' where id = $1`, [old.id]);
+    await sql(
+      `update public.auth_users set "createdAt" = now() - interval '30 days' where id = $1`,
+      [old.id],
+    );
     const code = await getOrCreateReferralCode(referrer.id);
     signedIn.id = old.id;
     try {
-      await oauthDone(ctx("/api/auth/oauth-done?new=1", { method: "GET", cookies: { oauth_ref: code } }));
+      await oauthDone(
+        ctx("/api/auth/oauth-done?new=1", { method: "GET", cookies: { oauth_ref: code } }),
+      );
     } finally {
       signedIn.id = null;
     }
@@ -330,10 +383,20 @@ describe("referral rows and trusted referral fields stay per user", () => {
 describe("admin-only paths refuse non-admins", () => {
   it("count_managed_users and list_managed_users both refuse a non-admin caller", async () => {
     const user = await person("user@example.com");
-    const listed = await listManagedUsers({ callerId: user.id, page: 1, pageSize: 20, search: null, group: null, sortBy: "created_at", sortDir: "desc" });
+    const listed = await listManagedUsers({
+      callerId: user.id,
+      page: 1,
+      pageSize: 20,
+      search: null,
+      group: null,
+      sortBy: "created_at",
+      sortDir: "desc",
+    });
     expect(listed).toMatchObject({ users: [], total: 0 });
     expect(listed.error).toMatch(/Forbidden/);
-    await expect(sql("select public.count_managed_users($1, null, null)", [user.id])).rejects.toThrow(/Forbidden/);
+    await expect(
+      sql("select public.count_managed_users($1, null, null)", [user.id]),
+    ).rejects.toThrow(/Forbidden/);
   });
 
   it("a non-admin can't remove another user's admin access", async () => {
@@ -348,7 +411,9 @@ describe("admin-only paths refuse non-admins", () => {
     const user = await person("user@example.com");
     signedIn.id = user.id;
     try {
-      const res = await toggleAdmin(ctx("/api/admin/users/toggle-admin", { form: { user_id: user.id, make_admin: "true" } }));
+      const res = await toggleAdmin(
+        ctx("/api/admin/users/toggle-admin", { form: { user_id: user.id, make_admin: "true" } }),
+      );
       expect(res.headers.get("Location")).toBe("/dashboard");
     } finally {
       signedIn.id = null;
@@ -366,12 +431,18 @@ describe("admin-only paths refuse non-admins", () => {
       const csv = await contactsCsv(ctx("/api/contacts/export.csv", { method: "GET" }));
       expect(csv.status).toBe(403);
       expect(await csv.text()).not.toContain("alice@example.com");
-      const upd = await contactStatus(ctx("/api/admin/contacts/status", { form: { id: String(c!.id), status: "spam", admin_notes: "x" } }));
+      const upd = await contactStatus(
+        ctx("/api/admin/contacts/status", {
+          form: { id: String(c!.id), status: "spam", admin_notes: "x" },
+        }),
+      );
       expect(upd.status).toBe(403);
     } finally {
       signedIn.id = null;
     }
-    expect(await sql("select status, admin_notes from public.contacts")).toEqual([{ status: "new", admin_notes: null }]);
+    expect(await sql("select status, admin_notes from public.contacts")).toEqual([
+      { status: "new", admin_notes: null },
+    ]);
 
     // The same routes work for an admin (so the 403 above is the gate, not a broken route).
     const admin = await person("admin@example.com");

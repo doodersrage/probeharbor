@@ -2,12 +2,15 @@ import type { AuthApiMessages } from "./en";
 
 const de: AuthApiMessages = {
   mfa: {
-    verifyBeforeAdding: "Bestätige zuerst die MFA, bevor du einen weiteren Authenticator hinzufügst",
+    verifyBeforeAdding:
+      "Bestätige zuerst die MFA, bevor du einen weiteren Authenticator hinzufügst",
     invalidCode: "Gib einen gültigen 6-stelligen Code ein",
     verificationFailed: "Überprüfung fehlgeschlagen",
     passwordIncorrect: "Das Passwort ist nicht korrekt.",
-    totpAlreadyEnabled: "Es ist bereits eine Authenticator-App eingerichtet. Entferne sie zuerst, um eine neue einzurichten.",
-    securityKeysMoved: "Sicherheitsschlüssel werden zu Passkeys. Füge deinen Schlüssel erneut als Passkey hinzu, sobald die Option hier erscheint.",
+    totpAlreadyEnabled:
+      "Es ist bereits eine Authenticator-App eingerichtet. Entferne sie zuerst, um eine neue einzurichten.",
+    securityKeysMoved:
+      "Sicherheitsschlüssel werden zu Passkeys. Füge deinen Schlüssel erneut als Passkey hinzu, sobald die Option hier erscheint.",
     challengeFailed: "Die Überprüfung konnte nicht gestartet werden",
     yubikeyNotConfigured: "YubiKey OTP ist auf dieser Website nicht eingerichtet",
     tapYubikey: "Berühre deinen YubiKey im OTP-Feld",

@@ -26,6 +26,8 @@ export const POST: APIRoute = async (context) => {
   // also pads the timing). Sent in the language of the page the form was on.
   await withBetterAuth(request, (auth) => auth.api.sendVerificationEmail({ body: { email } }), {
     emailLocale: requestLocale(context),
-  }).catch((error: unknown) => console.error("resend confirmation failed:", error instanceof Error ? error.message : error));
+  }).catch((error: unknown) =>
+    console.error("resend confirmation failed:", error instanceof Error ? error.message : error),
+  );
   return redirect("/resend-confirmation?sent=1");
 };

@@ -83,9 +83,7 @@ describe("weekly digest freeze + subject", () => {
   it("summarizes freeze exposure against the user threshold", () => {
     expect(formatDigestFreezeLine(points, 34)).toContain("at or below 34°F");
     expect(formatDigestFreezeLine(points, 34)).toContain("30.0°F");
-    expect(formatDigestFreezeLine(points, 20)).toBe(
-      "Freeze exposure: none at or below 20°F",
-    );
+    expect(formatDigestFreezeLine(points, 20)).toBe("Freeze exposure: none at or below 20°F");
   });
 
   it("puts the coldest day in the subject line", () => {
@@ -161,7 +159,11 @@ describe("alert delivery in the weekly digest", () => {
     const summary = summarizeAlertDelivery([
       { kind: "threshold", channels_sent: ["email", "sms"], channels_skipped: [] },
       { kind: "flood", channels_sent: [], channels_skipped: ["discord"] },
-      { kind: "rule", channels_sent: ["email"], channels_skipped: ["discord", "sms_not_configured"] },
+      {
+        kind: "rule",
+        channels_sent: ["email"],
+        channels_skipped: ["discord", "sms_not_configured"],
+      },
       { kind: "threshold", channels_sent: [], channels_skipped: ["quiet_hours"] },
       { kind: "generic", channels_sent: [], channels_skipped: ["slack"] },
       { kind: "digest", channels_sent: ["push"], channels_skipped: null },
@@ -212,7 +214,11 @@ describe("alert delivery in the weekly digest", () => {
       delivery: summarizeAlertDelivery([]),
     });
     expect(quiet.text).toContain("No alerts went out this week");
-    const none = buildWeeklyDigestParts({ points, freezeThresholdF: 34, siteUrl: "https://probeharbor.dev" });
+    const none = buildWeeklyDigestParts({
+      points,
+      freezeThresholdF: 34,
+      siteUrl: "https://probeharbor.dev",
+    });
     expect(none.text).not.toContain("Alert delivery");
     expect(none.text).not.toContain("No alerts went out");
   });

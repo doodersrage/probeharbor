@@ -4,7 +4,8 @@ const de: OverviewCardsMessages = {
   garageRisk: {
     noDevices: {
       title: "Füge einen Fühler hinzu, um zu starten",
-      detail: "Lege ein Push-Gerät an und sende dann per POST einen Messwert, oder probiere den Demo-Feed ohne Hardware aus.",
+      detail:
+        "Lege ein Push-Gerät an und sende dann per POST einen Messwert, oder probiere den Demo-Feed ohne Hardware aus.",
       action: "Gerät verbinden",
     },
     waiting: {
@@ -44,7 +45,8 @@ const de: OverviewCardsMessages = {
     freezeLater: {
       title: "Frost später heute",
       titleAt: "Frost gegen {time}",
-      detail: "Etwa {hours} Stunden bis {threshold} {unit}, basierend auf der Verzögerung dieses Bereichs gegenüber der Außentemperatur.",
+      detail:
+        "Etwa {hours} Stunden bis {threshold} {unit}, basierend auf der Verzögerung dieses Bereichs gegenüber der Außentemperatur.",
     },
     nightsAtRisk: {
       one: "{count} Nacht mit Frostgefahr",
@@ -52,10 +54,12 @@ const de: OverviewCardsMessages = {
     },
     coldSnap: {
       title: "Kälteeinbruch steht bevor",
-      detail: "Draußen wird es kalt: Geh die Checkliste durch und prüfe, ob die Prognosealarme aktiv sind.",
+      detail:
+        "Draußen wird es kalt: Geh die Checkliste durch und prüfe, ob die Prognosealarme aktiv sind.",
     },
     nights: {
-      detail: "Draußen wird es kalt: Prüfe die Fühler unter Live und ob die Prognosealarme aktiv sind.",
+      detail:
+        "Draußen wird es kalt: Prüfe die Fühler unter Live und ob die Prognosealarme aktiv sind.",
     },
     finishAlerts: {
       title: "Bereich sieht gut aus: Alarme fertig einrichten",
@@ -216,14 +220,16 @@ const de: OverviewCardsMessages = {
       tooClose: "Die Messwerte liegen für einen Trend zu dicht beieinander.",
       rising: "Die Temperatur steigt, laut aktuellem Trend keine Frostgefahr.",
       stable: "Die Temperatur ist stabil: Der Trend deutet nicht auf baldigen Frost hin.",
-      cooling: "Kühlt um ~{rate} {unit}/h ab: bei diesem Tempo etwa {duration} bis {threshold} {unit}.",
+      cooling:
+        "Kühlt um ~{rate} {unit}/h ab: bei diesem Tempo etwa {duration} bis {threshold} {unit}.",
     },
     forecastHit:
       "Erreicht gegen {time} {threshold} (in etwa {duration}). Auf Basis der Prognose und der Verzögerung dieses Bereichs gegenüber außen.",
     doorNote: " Eine Tür ist offen: Bis sie geschlossen wird, geht Wärme schneller verloren.",
     noFreeze:
       "Kein Frost in den nächsten {hours} Std. bei der üblichen Verzögerung dieses Bereichs gegenüber der Außenprognose.",
-    noFreezeColderNight: " Eine Nacht, die {band} {unit} kälter ist als erwartet, würde ihn gegen {time} erreichen.",
+    noFreezeColderNight:
+      " Eine Nacht, die {band} {unit} kälter ist als erwartet, würde ihn gegen {time} erreichen.",
     trendHit: "{message} Gegen {time}, wenn dieses Abkühltempo anhält.",
     reasons: {
       forecastLow: "Vorhergesagter Tiefstwert draußen: {temp} {unit} gegen {time}.",
@@ -240,7 +246,8 @@ const de: OverviewCardsMessages = {
           "Wie schnell er der Außenluft folgt, ist ein Standardwert, bis mehr Verlauf vorliegt (bisher {count} Messwertpaare).",
       },
       coolingNow: "Kühlt gerade um etwa {rate} {unit}/h ab.",
-      doorOpen: "In der Nähe ist eine Tür offen, daher wird ein schnellerer Wärmeverlust angenommen.",
+      doorOpen:
+        "In der Nähe ist eine Tür offen, daher wird ein schnellerer Wärmeverlust angenommen.",
       band: "Das Zeitfenster geht davon aus, dass der Bereich bis zu {band} {unit} kälter oder milder als üblich sein kann.",
       trendCooling: "Kühlt um etwa {rate} {unit}/h ab.",
       trendCoolingOver: "Kühlt um etwa {rate} {unit}/h ab (Zeitraum: {duration}).",
@@ -262,10 +269,13 @@ const de: OverviewCardsMessages = {
     rate: "Der Bereich ging von „{from}“ zu „{to}“ über.",
     cooling: "kühlt um {rate} {unit}/h ab",
     notCooling: "kühlt nicht ab",
-    offset: "Die gelernte Verzögerung gegenüber der Außenluft hat sich von {from} {unit} auf {to} {unit} verändert.",
+    offset:
+      "Die gelernte Verzögerung gegenüber der Außenluft hat sich von {from} {unit} auf {to} {unit} verändert.",
     nowForecast: "Die Schätzung nutzt jetzt die Außenprognose, nicht nur das Abkühltempo.",
-    nowTrend: "Derzeit keine brauchbare Außenprognose, daher nutzt die Schätzung nur das Abkühltempo.",
-    noSingle: "Neuere Messwerte und Prognosestunden; kein einzelner Faktor hat sich stark verändert.",
+    nowTrend:
+      "Derzeit keine brauchbare Außenprognose, daher nutzt die Schätzung nur das Abkühltempo.",
+    noSingle:
+      "Neuere Messwerte und Prognosestunden; kein einzelner Faktor hat sich stark verändert.",
   },
 
   riskCard: {
@@ -279,7 +289,8 @@ const de: OverviewCardsMessages = {
   timeToFreezeCard: {
     title: "Zeit bis Frost",
     subtitle: {
-      forecast_model: "Prognosebasiert für diesen Bereich, bezogen auf deinen Schwellenwert von {threshold}.",
+      forecast_model:
+        "Prognosebasiert für diesen Bereich, bezogen auf deinen Schwellenwert von {threshold}.",
       trend: "Schätzung nach Abkühltempo, bezogen auf deinen Schwellenwert von {threshold}.",
       already_below: "Jetzt am Schwellenwert, bezogen auf deinen Schwellenwert von {threshold}.",
       none: "Noch nicht genug Daten, bezogen auf deinen Schwellenwert von {threshold}.",
@@ -292,10 +303,13 @@ const de: OverviewCardsMessages = {
     atNow: "Jetzt bei {threshold}",
     hitsAround: "Erreicht {threshold} gegen {time}",
     window: "Zeitfenster: {from} bis {to}",
-    windowEarliest: "Zeitfenster: frühestens {from}; in einer milderen Nacht wird er vielleicht nicht erreicht",
+    windowEarliest:
+      "Zeitfenster: frühestens {from}; in einer milderen Nacht wird er vielleicht nicht erreicht",
     basedOn: "Worauf das basiert",
-    estimateNote: "Eine Schätzung aus dem Verlauf dieses Bereichs und der Außenprognose, keine Messung.",
-    confidenceHelp: "Hohe Sicherheit: Das Vorhersagemodell ist aus mindestens 24 Messwerten mit passendem Außenwetter berechnet. Mittel: mindestens 8 solche Messwerte oder ein Abkühltrend über 2+ Stunden. Niedrig: weniger Daten. Das Zeitfenster wird breiter, je geringer die Sicherheit ist.",
+    estimateNote:
+      "Eine Schätzung aus dem Verlauf dieses Bereichs und der Außenprognose, keine Messung.",
+    confidenceHelp:
+      "Hohe Sicherheit: Das Vorhersagemodell ist aus mindestens 24 Messwerten mit passendem Außenwetter berechnet. Mittel: mindestens 8 solche Messwerte oder ein Abkühltrend über 2+ Stunden. Niedrig: weniger Daten. Das Zeitfenster wird breiter, je geringer die Sicherheit ist.",
     learnMore: "So wird die Zeit bis zum Frost geschätzt",
     cooling: "Kühlt um {rate} {unit}/h ab",
     offset: "Typischer Abstand {offset} {unit} zu außen",
@@ -319,7 +333,8 @@ const de: OverviewCardsMessages = {
     outdoorUnavailable: "Der Außendurchschnitt dieser Woche ist nicht verfügbar",
     colder: "Kälter als im Vorjahr",
     warmer: "Wärmer oder ähnlich",
-    noPriorStarts: "Keine Fühlerdaten aus dieser Woche im Vorjahr. Der Verlauf beginnt hier am {date}.",
+    noPriorStarts:
+      "Keine Fühlerdaten aus dieser Woche im Vorjahr. Der Verlauf beginnt hier am {date}.",
     noPrior: "Noch keine Fühlerdaten aus dieser Woche im Vorjahr.",
   },
   heatingCard: {
@@ -350,7 +365,8 @@ const de: OverviewCardsMessages = {
   },
   nightsCard: {
     title: "Nächte mit Frostgefahr diese Woche",
-    subtitle: "Vorhergesagte nächtliche Tiefstwerte im Vergleich zu deinem Frost-Schwellenwert ({threshold} {unit}).",
+    subtitle:
+      "Vorhergesagte nächtliche Tiefstwerte im Vergleich zu deinem Frost-Schwellenwert ({threshold} {unit}).",
     atRiskCount: {
       one: "{count} Nacht sieht gefährdet aus.",
       other: "{count} Nächte sehen gefährdet aus.",
@@ -374,7 +390,8 @@ const de: OverviewCardsMessages = {
     cardTitle: "Temperatur (letzte {days} Tage)",
     subtitleHtml:
       'Jeder Fühler im Vergleich zu deiner Frostlinie.\n        <a class="text-link" href="/dashboard/history">Öffne Verlauf</a> für Filter, Exporte und den Vorjahresvergleich.',
-    empty: "Das Diagramm füllt sich, sobald Messwerte eintreffen: Gib ihm nach deinem ersten Messwert ein bis zwei Stunden.",
+    empty:
+      "Das Diagramm füllt sich, sobald Messwerte eintreffen: Gib ihm nach deinem ersten Messwert ein bis zwei Stunden.",
   },
   metricCard: {
     pin: "{label} anheften",

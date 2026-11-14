@@ -49,7 +49,15 @@ export async function recordAlertEvent(input: {
     const [row] = await query<{ id: number }>(
       `insert into public.alert_events (user_id, kind, title, body, channels_sent, channels_skipped, meta)
        values ($1, $2, $3, $4, $5::text[], $6::text[], $7::jsonb) returning id`,
-      [input.userId, input.kind, input.title, input.body, input.channelsSent, input.channelsSkipped, JSON.stringify(input.meta ?? {})],
+      [
+        input.userId,
+        input.kind,
+        input.title,
+        input.body,
+        input.channelsSent,
+        input.channelsSkipped,
+        JSON.stringify(input.meta ?? {}),
+      ],
     );
     return row?.id ?? null;
   } catch (error) {
@@ -94,7 +102,10 @@ export async function updateAlertEventChannels(
   }
 }
 
-export async function acknowledgeAlertEvent(userId: string, eventId: number): Promise<{ ok: boolean; error?: string }> {
+export async function acknowledgeAlertEvent(
+  userId: string,
+  eventId: number,
+): Promise<{ ok: boolean; error?: string }> {
   try {
     await query(
       "update public.alert_events set acknowledged_at = now() where id = $1 and user_id = $2 and acknowledged_at is null",
@@ -147,7 +158,9 @@ export async function acknowledgeAllUnackedAlerts(
        returning id`,
       [userId, informational, safety, limit],
     );
-    return rows.length > 0 ? { ok: true, count: rows.length } : { ok: false, count: 0, error: noneMessage };
+    return rows.length > 0
+      ? { ok: true, count: rows.length }
+      : { ok: false, count: 0, error: noneMessage };
   } catch (error) {
     return { ok: false, count: 0, error: message(error) };
   }
@@ -160,7 +173,12 @@ export async function autoResolveAlerts(
   safety: readonly string[],
   options: { kinds?: string[]; olderThanIso?: string; reason: "recovered" | "expired" },
 ): Promise<{ resolved: number; channels: string[] }> {
-  const params: unknown[] = [userId, informational, safety, JSON.stringify({ autoResolved: options.reason })];
+  const params: unknown[] = [
+    userId,
+    informational,
+    safety,
+    JSON.stringify({ autoResolved: options.reason }),
+  ];
   let extra = "";
   if (options.kinds?.length) {
     params.push(options.kinds);
@@ -181,7 +199,10 @@ export async function autoResolveAlerts(
        returning channels_sent`,
       params,
     );
-    return { resolved: rows.length, channels: [...new Set(rows.flatMap((r) => r.channels_sent ?? []))] };
+    return {
+      resolved: rows.length,
+      channels: [...new Set(rows.flatMap((r) => r.channels_sent ?? []))],
+    };
   } catch {
     return { resolved: 0, channels: [] }; // a failure resolves nothing (as before the move)
   }
@@ -191,7 +212,13 @@ export async function listRecentAlertEventsFiltered(
   userId: string,
   informational: readonly string[],
   safety: readonly string[],
-  options: { limit: number; offset: number; kind?: string | null; kinds?: readonly string[] | null; unackedOnly?: boolean },
+  options: {
+    limit: number;
+    offset: number;
+    kind?: string | null;
+    kinds?: readonly string[] | null;
+    unackedOnly?: boolean;
+  },
 ): Promise<{ events: AlertEventRow[]; hasMore: boolean }> {
   const params: unknown[] = [userId];
   const clauses = ["user_id = $1"];
@@ -214,25 +241,34 @@ export async function listRecentAlertEventsFiltered(
        order by created_at desc, id desc limit $${params.length - 1} offset $${params.length}`,
       params,
     );
-    return { events: rows.slice(0, options.limit).map(withMeta), hasMore: rows.length > options.limit };
+    return {
+      events: rows.slice(0, options.limit).map(withMeta),
+      hasMore: rows.length > options.limit,
+    };
   } catch {
     return { events: [], hasMore: false };
   }
 }
 
-export async function getAlertEventForUser(userId: string, eventId: number): Promise<AlertEventRow | null> {
+export async function getAlertEventForUser(
+  userId: string,
+  eventId: number,
+): Promise<AlertEventRow | null> {
   try {
-    const [row] = await query<AlertEventRow>("select * from public.alert_events where user_id = $1 and id = $2", [
-      userId,
-      eventId,
-    ]);
+    const [row] = await query<AlertEventRow>(
+      "select * from public.alert_events where user_id = $1 and id = $2",
+      [userId, eventId],
+    );
     return row ? withMeta(row) : null;
   } catch {
     return null;
   }
 }
 
-export async function listRecentAlertEvents(userId: string, limit: number): Promise<AlertEventRow[]> {
+export async function listRecentAlertEvents(
+  userId: string,
+  limit: number,
+): Promise<AlertEventRow[]> {
   try {
     const rows = await query<AlertEventRow>(
       "select * from public.alert_events where user_id = $1 order by created_at desc, id desc limit $2",

@@ -26,7 +26,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { digest_error: "1" }));
   }
 
-  return redirect(
-    `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}digest_saved=1`,
-  );
+  return redirect(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}digest_saved=1`);
 };

@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // One household with a push device and the example pull feed, as on a real account.
 const savePullDevicesForHousehold = vi.fn().mockResolvedValue({ error: null });
-const exampleFeed = { id: "dev-example", name: "Workshop", url: "https://probeharbor.dev/api/feeds/example", enabled: true, jsonRoot: "temp" };
+const exampleFeed = {
+  id: "dev-example",
+  name: "Workshop",
+  url: "https://probeharbor.dev/api/feeds/example",
+  enabled: true,
+  jsonRoot: "temp",
+};
 vi.mock("./devices", () => ({
   getUserDevicesAsTempConfig: vi.fn().mockResolvedValue({
     householdId: "h1",
@@ -13,7 +19,9 @@ vi.mock("./devices", () => ({
   }),
   savePullDevicesForHousehold,
 }));
-vi.mock("./households", () => ({ getOrCreateHouseholdForUser: vi.fn().mockResolvedValue({ householdId: "h1" }) }));
+vi.mock("./households", () => ({
+  getOrCreateHouseholdForUser: vi.fn().mockResolvedValue({ householdId: "h1" }),
+}));
 
 beforeEach(() => savePullDevicesForHousehold.mockClear());
 
@@ -37,7 +45,11 @@ describe("getUserTempConfig", () => {
       error: null,
     } as never);
     const { getUserTempConfig } = await import("./userTempConfig");
-    const config = await getUserTempConfig({ id: "user-1", email: "a@example.com", user_metadata: {} } as never);
+    const config = await getUserTempConfig({
+      id: "user-1",
+      email: "a@example.com",
+      user_metadata: {},
+    } as never);
     expect(config.feeds).toEqual([]);
   });
 });

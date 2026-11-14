@@ -42,7 +42,8 @@ const en = {
     /** At the device limit with push devices that never reported; device links follow. */
     neverReported: {
       one: "{count} of your devices has never sent a reading. Delete it if you don't need it, or reuse it for the hardware you're setting up (Rotate key on its page gives you a fresh key):",
-      other: "{count} of your devices have never sent a reading. Delete one you don't need, or reuse one for the hardware you're setting up (Rotate key on its page gives you a fresh key):",
+      other:
+        "{count} of your devices have never sent a reading. Delete one you don't need, or reuse one for the hardware you're setting up (Rotate key on its page gives you a fresh key):",
     },
   },
   tabs: {
@@ -111,7 +112,8 @@ const en = {
       lede: "Most first readings arrive within a minute of the device joining Wi-Fi. If nothing has shown up yet, check these:",
       wifi: "Wi-Fi: most boards (ESP32, Pico W) only join 2.4 GHz networks, not 5 GHz. Check the network name and password you gave the device.",
       key: "Key: if you typed or pasted the key yourself, it must match your key exactly, with no extra spaces. Lost it? Use Rotate key on the device card and update the device.",
-      network: "Network: the device needs to reach the internet over HTTPS (port 443). Guest networks and Wi-Fi that needs a sign-in page usually block it.",
+      network:
+        "Network: the device needs to reach the internet over HTTPS (port 443). Guest networks and Wi-Fi that needs a sign-in page usually block it.",
       payloadChecker: "Check a payload",
       staleGuide: "Debugging missing readings",
       troubleshooting: "Troubleshooting guide",

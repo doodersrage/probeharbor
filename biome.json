@@ -48,9 +48,7 @@
   },
   "overrides": [
     {
-      "includes": [
-        "**/*.astro"
-      ],
+      "includes": ["**/*.astro"],
       "formatter": {
         "enabled": false
       },
@@ -65,11 +63,7 @@
       }
     },
     {
-      "includes": [
-        "**/*.test.ts",
-        "e2e/**",
-        "src/test/**"
-      ],
+      "includes": ["**/*.test.ts", "e2e/**", "src/test/**"],
       "linter": {
         "rules": {
           "suspicious": {

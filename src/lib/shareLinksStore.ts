@@ -17,7 +17,9 @@ export type ShareLinkRow = {
 };
 
 /** The household's links, newest first. */
-export async function listShareLinks(householdId: string): Promise<{ links: ShareLinkRow[]; error: string | null }> {
+export async function listShareLinks(
+  householdId: string,
+): Promise<{ links: ShareLinkRow[]; error: string | null }> {
   try {
     return { links: await neonShare.listShareLinks(householdId), error: null };
   } catch (error) {
@@ -29,7 +31,10 @@ export async function deleteShareLink(householdId: string, id: string): Promise<
   return neonShare.deleteShareLink(householdId, id);
 }
 
-export async function findShareLink(householdId: string, id: string): Promise<{ id: string; scope: string } | null> {
+export async function findShareLink(
+  householdId: string,
+  id: string,
+): Promise<{ id: string; scope: string } | null> {
   return neonShare.findShareLink(householdId, id);
 }
 

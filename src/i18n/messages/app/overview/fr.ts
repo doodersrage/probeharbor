@@ -8,7 +8,8 @@ const fr: OverviewMessages = {
     devices: "Appareils",
     debugGuide: "Guide de dépannage",
   },
-  offlineBanner: "Affichage du dernier état connu du tableau de bord (hors ligne ou cache obsolète).",
+  offlineBanner:
+    "Affichage du dernier état connu du tableau de bord (hors ligne ou cache obsolète).",
   viewOnly:
     "Accès en lecture seule : vous voyez les données en direct, mais ne pouvez modifier ni les appareils, ni les alertes, ni le partage.",
   attentionTitle: "Points à vérifier",
@@ -24,7 +25,8 @@ const fr: OverviewMessages = {
   },
   glance: {
     title: "En un coup d’œil",
-    firstRunDesc: "L’essentiel seulement, tant que le gel, l’e-mail et une alerte de test ne sont pas configurés.",
+    firstRunDesc:
+      "L’essentiel seulement, tant que le gel, l’e-mail et une alerte de test ne sont pas configurés.",
     descHtml:
       'Chiffres clés de ce bien. Touchez ★ sur une carte pour l’épingler. La mesure de chaque sonde se trouve dans <a class="text-link" href="/dashboard/live">En direct</a>.',
     pinMetrics: "Épingler des indicateurs",
@@ -48,12 +50,18 @@ const fr: OverviewMessages = {
   },
   metricsHow: {
     summary: "Comment ces chiffres sont calculés",
-    freezeHours: "Heures de gel : temps des 7 derniers jours pendant lequel une sonde était à votre seuil de gel de {threshold} {unit} ou en dessous. Les {unit}·h (degrés-heures) cumulent l’écart et la durée : 2 {unit} en dessous pendant 3 heures font 6 {unit}·h.",
-    coldestMargin: "Marge la plus froide : votre sonde active la plus froide moins le seuil de gel de {threshold} {unit}. Orange à moins de {band}, rouge au seuil ou en dessous.",
-    indoorOutdoor: "Intérieur − extérieur : la sonde la plus froide (ou le thermostat de la maison) moins la température extérieure actuelle. Sous {band} (orange), l’espace suit de près l’air extérieur et se refroidira vite par une nuit froide.",
-    probeSpread: "Écart entre sondes : la sonde active la plus chaude moins la plus froide. À partir de {band} (orange), cela peut signaler un point froid, de l’air stratifié ou un capteur défaillant.",
-    condensation: "Condensation : heures des 7 derniers jours où l’air était à moins de {band} de son point de rosée (calculé à partir de la température et de l’humidité), quand les surfaces peuvent devenir humides. Orange à partir de 6 heures, ou à moins de {nowBand} en ce moment.",
-    feedHealth: "État des flux : combien de vos flux pull ont répondu à l’instant, pas une disponibilité dans le temps.",
+    freezeHours:
+      "Heures de gel : temps des 7 derniers jours pendant lequel une sonde était à votre seuil de gel de {threshold} {unit} ou en dessous. Les {unit}·h (degrés-heures) cumulent l’écart et la durée : 2 {unit} en dessous pendant 3 heures font 6 {unit}·h.",
+    coldestMargin:
+      "Marge la plus froide : votre sonde active la plus froide moins le seuil de gel de {threshold} {unit}. Orange à moins de {band}, rouge au seuil ou en dessous.",
+    indoorOutdoor:
+      "Intérieur − extérieur : la sonde la plus froide (ou le thermostat de la maison) moins la température extérieure actuelle. Sous {band} (orange), l’espace suit de près l’air extérieur et se refroidira vite par une nuit froide.",
+    probeSpread:
+      "Écart entre sondes : la sonde active la plus chaude moins la plus froide. À partir de {band} (orange), cela peut signaler un point froid, de l’air stratifié ou un capteur défaillant.",
+    condensation:
+      "Condensation : heures des 7 derniers jours où l’air était à moins de {band} de son point de rosée (calculé à partir de la température et de l’humidité), quand les surfaces peuvent devenir humides. Orange à partir de 6 heures, ou à moins de {nowBand} en ce moment.",
+    feedHealth:
+      "État des flux : combien de vos flux pull ont répondu à l’instant, pas une disponibilité dans le temps.",
     measured: "Tout cela provient de vos mesures et des données météo ; rien n’est une prévision.",
   },
   metric: {
@@ -85,7 +93,10 @@ const fr: OverviewMessages = {
     pinCount: "{count} sur {max} épinglés.",
     pinRoomHint: "Décochez-en un pour faire de la place.",
     updatedJustNow: "Mis à jour à l’instant",
-    updatedMinutesAgo: { one: "Mis à jour il y a {count} min", other: "Mis à jour il y a {count} min" },
+    updatedMinutesAgo: {
+      one: "Mis à jour il y a {count} min",
+      other: "Mis à jour il y a {count} min",
+    },
     unhandledAlerts: { one: "alerte non traitée.", other: "alertes non traitées." },
     ackLatest: "Accuser réception de la dernière",
     alertsClear: "Aucune alerte en attente",
@@ -145,7 +156,8 @@ const fr: OverviewMessages = {
         detail:
           "Étape 1 sur 3 : ajoutez un appareil sur la page Appareils (flasheur ESP32 ou Home Assistant). Un flux de démo sert à découvrir et ne compte pas.",
         waitingTitle: "En attente du premier relevé",
-        waitingDetail: "Étape 1 sur 3 : votre appareil est ajouté mais n’a encore rien envoyé. Ouvrez Appareils pour vérifier sa configuration.",
+        waitingDetail:
+          "Étape 1 sur 3 : votre appareil est ajouté mais n’a encore rien envoyé. Ouvrez Appareils pour vérifier sa configuration.",
       },
       alerts: {
         title: "Régler le seuil de gel + l’e-mail",
@@ -166,11 +178,13 @@ const fr: OverviewMessages = {
       },
       rename: {
         title: "Renommer les capteurs importés",
-        detail: "Acceptez les noms suggérés sur la carte de l’appareil pour que la vue d’ensemble et les alertes soient claires.",
+        detail:
+          "Acceptez les noms suggérés sur la carte de l’appareil pour que la vue d’ensemble et les alertes soient claires.",
       },
       qr: {
         title: "Facultatif : autocollant QR",
-        detail: "Imprimez le QR d’ingestion depuis Appareils pour configurer un téléphone en un seul scan.",
+        detail:
+          "Imprimez le QR d’ingestion depuis Appareils pour configurer un téléphone en un seul scan.",
       },
     },
     next: {

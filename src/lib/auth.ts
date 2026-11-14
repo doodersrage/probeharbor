@@ -14,7 +14,10 @@ export type AuthResult = {
 };
 
 /** Lazy: the Better Auth runtime loads cloudflare:workers (middleware and prerendering import this file). */
-async function betterAuthResult(request: Request | undefined, headers: Headers): Promise<AuthResult> {
+async function betterAuthResult(
+  request: Request | undefined,
+  headers: Headers,
+): Promise<AuthResult> {
   try {
     const [{ withBetterAuth }, { authResultFromHeaders }] = await Promise.all([
       import("./betterAuthRuntime"),
@@ -22,7 +25,10 @@ async function betterAuthResult(request: Request | undefined, headers: Headers):
     ]);
     return await withBetterAuth(request, (auth) => authResultFromHeaders(auth, headers));
   } catch (error) {
-    console.error("Better Auth session lookup failed:", error instanceof Error ? error.message : error);
+    console.error(
+      "Better Auth session lookup failed:",
+      error instanceof Error ? error.message : error,
+    );
     return { session: null, user: null, source: "better-auth" };
   }
 }
@@ -36,7 +42,10 @@ export const MFA_HEADER = "x-sb-mfa-required";
  * The signed-in user from the Better Auth session cookie (web) or an
  * `Authorization: Bearer` token (desktop and mobile apps).
  */
-export async function getAuthFromRequest(request: Request, _cookies: AstroCookies): Promise<AuthResult> {
+export async function getAuthFromRequest(
+  request: Request,
+  _cookies: AstroCookies,
+): Promise<AuthResult> {
   return betterAuthResult(request, request.headers);
 }
 

@@ -124,7 +124,8 @@ export default {
     title: "Fixação e caixas para sondas",
     description:
       "Instale as sondas para ter leituras estáveis em espaços sem aquecimento: altura, proteção contra sol e correntes de ar e caixas ventiladas.",
-    summary: "Na altura dos ombros, longe de portas e fontes de calor, em caixas que deixam o ar circular.",
+    summary:
+      "Na altura dos ombros, longe de portas e fontes de calor, em caixas que deixam o ar circular.",
   },
   "multi-zone-garage-layout": {
     title: "Garagem dividida em várias zonas",
@@ -144,14 +145,14 @@ export default {
     title: "Oscilações de temperatura pelo portão da garagem",
     description:
       "Por que abrir o portão da garagem muda rapidamente a temperatura e a umidade, e como interpretar os picos nas sondas.",
-    summary: "Infiltração de ar e estratificação térmica quando a maior abertura da parede se move.",
+    summary:
+      "Infiltração de ar e estratificação térmica quando a maior abertura da parede se move.",
   },
   "sun-load-garage-walls": {
     title: "Sol nas paredes da garagem",
     description:
       "Como o sol nas paredes voltadas para sul e oeste atrasa o pico de calor da tarde, faz as sondas variarem e dá falsa segurança em relação ao clima externo.",
-    summary:
-      "Paredes aquecidas, picos internos atrasados e por que só o clima externo engana.",
+    summary: "Paredes aquecidas, picos internos atrasados e por que só o clima externo engana.",
   },
   "infiltration-wind-drafts": {
     title: "Infiltração, vento e correntes de ar",
@@ -164,8 +165,7 @@ export default {
     title: "Padrões sazonais na garagem",
     description:
       "Leia meses de histórico no ProbeHarbor: mínimas de inverno, picos de verão e meia-estação, para que uma única noite fria não distorça suas decisões.",
-    summary:
-      "Contexto de longo prazo para que picos de um único dia não levem a decisões ruins.",
+    summary: "Contexto de longo prazo para que picos de um único dia não levem a decisões ruins.",
   },
   "history-dashboard-browsing": {
     title: "Navegar pelo dashboard de histórico",
@@ -203,19 +203,22 @@ export default {
     title: "Esquema JSON de saída das sondas",
     description:
       "Chaves JSON estáveis, unidades de temperatura, campos de umidade e cálculo da média para quem consome os dados no dashboard.",
-    summary: "O contrato entre o firmware e todos os clientes que consomem os dados, incluindo este site.",
+    summary:
+      "O contrato entre o firmware e todos os clientes que consomem os dados, incluindo este site.",
   },
   "firmware-watchdog-recovery": {
     title: "Watchdog e recuperação do firmware",
     description:
       "Recupere-se de raros travamentos de rede e erros no barramento do sensor sem subir na escada para reiniciar a placa.",
-    summary: "Timers de watchdog, novas tentativas e estratégias de reinício para instalações sem supervisão.",
+    summary:
+      "Timers de watchdog, novas tentativas e estratégias de reinício para instalações sem supervisão.",
   },
   "breadboard-power-rails": {
     title: "Trilhas de alimentação da protoboard",
     description:
       "Distribua a alimentação USB ou de fonte P4 pela protoboard para sensores, LCD e resistores de pull-up, com terra comum.",
-    summary: "Trilhas de alimentação limpas reduzem o ruído que aparece como picos falsos de umidade.",
+    summary:
+      "Trilhas de alimentação limpas reduzem o ruído que aparece como picos falsos de umidade.",
   },
   "ethernet-shield-stacking": {
     title: "Encaixe do shield Ethernet",
@@ -251,7 +254,8 @@ export default {
     title: "Erros de leitura do DHT22 e novas tentativas",
     description:
       "Trate falhas de checksum e violações de tempo com backoff para que uma leitura ruim não deixe o feed em branco.",
-    summary: "Lógica de novas tentativas e intervalos mínimos mantêm o JSON estável em locais com correntes de ar.",
+    summary:
+      "Lógica de novas tentativas e intervalos mínimos mantêm o JSON estável em locais com correntes de ar.",
   },
   "lcd-local-display-format": {
     title: "Formato do display LCD local",

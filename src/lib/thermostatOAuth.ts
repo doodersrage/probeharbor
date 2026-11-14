@@ -273,18 +273,14 @@ export async function forceRefreshAccessTokenForHousehold(
   return tokens.accessToken;
 }
 
-async function refreshNestTokensForHousehold(
-  refreshToken: string,
-): Promise<OAuthTokens | null> {
+async function refreshNestTokensForHousehold(refreshToken: string): Promise<OAuthTokens | null> {
   const clientId = getRuntimeEnv("NEST_CLIENT_ID");
   const clientSecret = getRuntimeEnv("NEST_CLIENT_SECRET");
   if (!clientId || !clientSecret) return null;
   return refreshNestTokens(clientId, clientSecret, refreshToken);
 }
 
-async function refreshEcobeeTokensForHousehold(
-  refreshToken: string,
-): Promise<OAuthTokens | null> {
+async function refreshEcobeeTokensForHousehold(refreshToken: string): Promise<OAuthTokens | null> {
   const clientId = getRuntimeEnv("ECOBEE_CLIENT_ID");
   if (!clientId) return null;
   return refreshEcobeeTokens(clientId, refreshToken);

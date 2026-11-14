@@ -1,4 +1,7 @@
-import { LIVE_TEMPS_PANEL_TEXT_EN, type LiveTempsPanelText } from "../../../../components/LiveTempsPanel";
+import {
+  LIVE_TEMPS_PANEL_TEXT_EN,
+  type LiveTempsPanelText,
+} from "../../../../components/LiveTempsPanel";
 import { WEATHER_PANEL_TEXT_EN, type WeatherPanelText } from "../../../../components/WeatherPanel";
 
 /** Dashboard → Live (`src/pages/dashboard/live.astro`) and its islands. */

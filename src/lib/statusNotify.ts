@@ -5,16 +5,16 @@ import { brandedEmailParts } from "./emailLayout";
 import { resolveSiteUrl } from "./schemaMarkup";
 import type { Locale } from "../i18n/locales";
 import { statusEmailMessages } from "../i18n/messages/app/email/status";
-import {
-  listConfirmedStatusSubscribers,
-  statusUnsubscribeUrlFor,
-} from "./statusSubscriptions";
+import { listConfirmedStatusSubscribers, statusUnsubscribeUrlFor } from "./statusSubscriptions";
 
 async function readLastKnownHealthy(): Promise<boolean | null | undefined> {
   try {
     return await neonStatus.readLastKnownHealthy();
   } catch (error) {
-    console.error("status-notify: failed to read state:", error instanceof Error ? error.message : error);
+    console.error(
+      "status-notify: failed to read state:",
+      error instanceof Error ? error.message : error,
+    );
     return undefined; // "couldn't determine", distinct from "no row yet"
   }
 }
@@ -47,12 +47,7 @@ async function sendStatusChangeEmail(
     locale,
   );
 
-  await sendEmail(
-    to,
-    healthy ? t.subjectHealthy : t.subjectDegraded,
-    text,
-    { html },
-  );
+  await sendEmail(to, healthy ? t.subjectHealthy : t.subjectDegraded, text, { html });
 }
 
 export type StatusNotifyResult = {
@@ -104,9 +99,7 @@ export async function checkAndNotifyStatusSubscribers(): Promise<StatusNotifyRes
       );
       sent += 1;
     } catch (error) {
-      errors.push(
-        `${subscriber.email}: ${error instanceof Error ? error.message : "send failed"}`,
-      );
+      errors.push(`${subscriber.email}: ${error instanceof Error ? error.message : "send failed"}`);
     }
   }
 

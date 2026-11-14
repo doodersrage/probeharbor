@@ -4,7 +4,8 @@ const de: DripEmailMessages = {
   day1: {
     subject: "Verbinde deinen ersten Fühler mit ProbeHarbor",
     eyebrow: "Erste Schritte",
-    preheader: "Geräteschlüssel anlegen, JSON per POST senden, Sensoren werden automatisch übernommen – etwa 10 Minuten.",
+    preheader:
+      "Geräteschlüssel anlegen, JSON per POST senden, Sensoren werden automatisch übernommen – etwa 10 Minuten.",
     title: "Verbinde deinen ersten Fühler",
     intro:
       "Willkommen bei ProbeHarbor. Dein kostenloses Konto ist bereit – als Nächstes kommt ein Live-Messwert in der Übersicht.",
@@ -89,7 +90,8 @@ const de: DripEmailMessages = {
   confirm: {
     subject: "Bestätige deine E-Mail-Adresse, um ProbeHarbor fertig einzurichten",
     eyebrow: "Nur noch ein Schritt",
-    preheader: "Dein Konto wartet auf die Bestätigung deiner E-Mail-Adresse; Links laufen ab, hol dir also einen neuen.",
+    preheader:
+      "Dein Konto wartet auf die Bestätigung deiner E-Mail-Adresse; Links laufen ab, hol dir also einen neuen.",
     title: "Bestätige deine E-Mail-Adresse, um dich anzumelden",
     intro:
       "Du hast ein ProbeHarbor-Konto angelegt, aber die Adresse wurde nie bestätigt – die Anmeldung ist daher noch gesperrt.",

@@ -196,7 +196,10 @@ export default {
       { label: "Comment créer une alerte gel avec ESPHome ?" },
     ],
     sources: [
-      { label: "Waterproof DS18B20 digital temperature sensor : caractéristiques techniques (Adafruit)" },
+      {
+        label:
+          "Waterproof DS18B20 digital temperature sensor : caractéristiques techniques (Adafruit)",
+      },
       { label: "Fiche technique AM2302 / DHT22 (Aosong, hébergée par Adafruit)" },
     ],
   },
@@ -294,7 +297,8 @@ export default {
     ],
   },
   "landlord-vacant-rental-freeze-monitoring": {
-    question: "Comment un propriétaire bailleur peut-il surveiller le gel dans un logement vacant ?",
+    question:
+      "Comment un propriétaire bailleur peut-il surveiller le gel dans un logement vacant ?",
     description:
       "Chauffage à 13 °C (55 °F) minimum, un capteur de température près de la plomberie de chaque logement, et des alertes pour qui peut arriver le plus vite.",
     shortAnswer:
@@ -339,8 +343,6 @@ export default {
       { label: "Dossier de preuves pour sinistre" },
       { label: "À quelle température laisser sa maison en hiver quand on s’absente ?" },
     ],
-    sources: [
-      { label: "Frozen pipes: prevention and thawing (Croix-Rouge américaine)" },
-    ],
+    sources: [{ label: "Frozen pipes: prevention and thawing (Croix-Rouge américaine)" }],
   },
 } satisfies AnswerOverlay;

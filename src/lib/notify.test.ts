@@ -82,7 +82,9 @@ describe("getAlertSettingsForUser", () => {
   });
 
   it("returns the row another request created first", async () => {
-    mockGetRow.mockResolvedValueOnce(null).mockResolvedValueOnce({ user_id: "user-1", freeze_threshold_f: 28 });
+    mockGetRow
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ user_id: "user-1", freeze_threshold_f: 28 });
     const { getAlertSettingsForUser } = await import("./notify");
 
     const settings = await getAlertSettingsForUser("user-1", {});
@@ -130,7 +132,11 @@ describe("markCooldown", () => {
 
     await markCooldown("user-1", "last_outage_alert_at");
 
-    expect(mockMarkCooldown).toHaveBeenCalledWith("user-1", "last_outage_alert_at", expect.any(Object));
+    expect(mockMarkCooldown).toHaveBeenCalledWith(
+      "user-1",
+      "last_outage_alert_at",
+      expect.any(Object),
+    );
   });
 });
 

@@ -22,10 +22,8 @@ const en = {
     namePlaceholder: "Workshop",
     url: "HTTPS URL",
     jsonRoot: "JSON root key",
-    jsonRootTitle:
-      "Letter or underscore, then letters, numbers, or underscores",
-    jsonRootHintHtml:
-      "Object that holds probe keys (usually <code>temp</code>).",
+    jsonRootTitle: "Letter or underscore, then letters, numbers, or underscores",
+    jsonRootHintHtml: "Object that holds probe keys (usually <code>temp</code>).",
     enabled: "Enabled",
     delete: "Delete",
     deleteConfirm: "Delete this feed?",
@@ -47,8 +45,7 @@ const en = {
     test: "Test feed URL",
   },
   probeMapper: {
-    importedAuto:
-      "Imported probe keys from your feed — rename below, then save.",
+    importedAuto: "Imported probe keys from your feed — rename below, then save.",
     enterUrl: "Enter a feed URL first.",
     noProbes: "No probes found in feed.",
     imported: {
@@ -72,8 +69,7 @@ const en = {
     showOnHome: "Show on Home",
     remove: "Remove",
     importing: "Reading feed and importing probe keys…",
-    emptyHint:
-      "Save a feed URL to auto-import keys, or click Discover from feed.",
+    emptyHint: "Save a feed URL to auto-import keys, or click Discover from feed.",
     savePullSetup: "Save pull setup",
     acceptSuggested: "Accept suggested names",
     hideAvg: "Hide avg on Home",
@@ -83,8 +79,7 @@ const en = {
     enterUrl: "Enter a feed URL first.",
     saving: "Saving…",
     save: "Save pull setup",
-    hintWithFeeds:
-      "Feed URL or probe label changes are not saved until you click Save pull setup.",
+    hintWithFeeds: "Feed URL or probe label changes are not saved until you click Save pull setup.",
     hintNoFeeds: "Add a feed URL, then save to auto-import probe keys.",
   },
   fetch: {

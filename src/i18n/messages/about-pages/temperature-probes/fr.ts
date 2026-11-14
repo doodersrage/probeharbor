@@ -1,4 +1,3 @@
-
 /** /about/temperature-probes body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
@@ -25,7 +24,8 @@ const fr: Messages = {
   multipleHtml:
     "Garages, ateliers et combles ne sont pas des boîtes homogènes. Un seul capteur peut indiquer 7 °C (45 °F) près du sol alors que le haut du local est à 14 °C (58 °F) par un après-midi d’hiver ensoleillé. Plusieurs sondes révèlent les gradients, les défauts d’isolation et la zone qui représente vraiment le risque qui vous préoccupe. Le firmware fait la moyenne des sondes actives : la page d’historique conserve ainsi un instantané de synthèse par chargement, tandis que la page d’accueil garde le détail par sonde.",
   boardAlt: "Carte contrôleur de sondes ProbeHarbor avec connexion Ethernet et capteurs DHT22",
-  boardCaption: "Deuxième révision de la carte de sondes ProbeHarbor : Ethernet, écran LCD et deux entrées DHT22.",
+  boardCaption:
+    "Deuxième révision de la carte de sondes ProbeHarbor : Ethernet, écran LCD et deux entrées DHT22.",
   webTitle: "Du fil de la sonde à la page web",
   webHtml:
     'Les sondes ne communiquent pas directement avec le site. Le sketch Arduino lit chaque capteur à intervalles réguliers, valide les plages de valeurs et publie du JSON en HTTPS. Le site récupère ce flux, associe les clés aux libellés lisibles que vous configurez dans le tableau de bord et, si vous êtes connecté, peut enregistrer les mesures. Essayez la <a class="text-link" href="/about/probe-demo">démo interactive des sondes</a> pour voir comment se comportent plusieurs zones et les moyennes, ou lisez le guide du <a class="text-link" href="/about/data-flow">flux de données de bout en bout</a>.',

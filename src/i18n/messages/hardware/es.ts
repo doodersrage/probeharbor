@@ -19,7 +19,8 @@ const es: HardwareMessages = {
   setupLabel: "Instalación: ",
   watchesLabel: "Vigila: ",
   labelsTitle: "Qué significan las etiquetas",
-  verifiedExplain: "hemos probado esta combinación en una placa real y hemos visto llegar las lecturas.",
+  verifiedExplain:
+    "hemos probado esta combinación en una placa real y hemos visto llegar las lecturas.",
   builtInExplain:
     "el firmware del instalador lo admite, pero todavía no lo hemos cableado nosotros. Cuéntanos si te funciona.",
   guideExplain:

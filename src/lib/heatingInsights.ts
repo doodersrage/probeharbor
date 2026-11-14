@@ -5,7 +5,12 @@ import { isThermostatCooling, isThermostatHeating } from "./thermostatCorrelatio
 import { fmt, formatNumber } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { overviewCardsMessages } from "../i18n/messages/app/overviewCards";
-import { displayTempInputValue, tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
+import {
+  displayTempInputValue,
+  tempUnitLabel,
+  toDisplayDelta,
+  toDisplayTemp,
+} from "./temperatureFormat";
 
 export type HeatingInsight = {
   label: string;
@@ -18,15 +23,12 @@ export function estimateHeatingLossRate(
   indoorPoints: ChartPoint[],
   outdoorTempF: number | null,
 ): number | null {
-  const temps = indoorPoints
-    .filter((p) => Number.isFinite(p.tempf))
-    .slice(-12);
+  const temps = indoorPoints.filter((p) => Number.isFinite(p.tempf)).slice(-12);
   if (temps.length < 2) return null;
 
   const first = temps[0]!;
   const last = temps[temps.length - 1]!;
-  const hours =
-    (Date.parse(last.timestamp) - Date.parse(first.timestamp)) / (60 * 60 * 1000);
+  const hours = (Date.parse(last.timestamp) - Date.parse(first.timestamp)) / (60 * 60 * 1000);
   if (hours <= 0) return null;
 
   const rate = (last.tempf - first.tempf) / hours;
@@ -74,8 +76,10 @@ export function buildHeatingInsights(
   const unit = tempUnitLabel(useCelsius);
   const shownThreshold = displayTempInputValue(options.freezeThresholdF, useCelsius);
   const threshold = locale === "en" ? String(shownThreshold) : formatNumber(shownThreshold, locale);
-  const temp = (valueF: number, digits: number) => fixed(toDisplayTemp(valueF, useCelsius), digits, locale);
-  const delta = (valueF: number, digits: number) => fixed(toDisplayDelta(valueF, useCelsius), digits, locale);
+  const temp = (valueF: number, digits: number) =>
+    fixed(toDisplayTemp(valueF, useCelsius), digits, locale);
+  const delta = (valueF: number, digits: number) =>
+    fixed(toDisplayDelta(valueF, useCelsius), digits, locale);
   const insights: HeatingInsight[] = [];
   const latest = options.indoorPoints.filter((p) => Number.isFinite(p.tempf)).at(-1);
   if (!latest) return insights;
@@ -97,7 +101,9 @@ export function buildHeatingInsights(
   ) {
     insights.push({
       label: t.doorOpen.label,
-      detail: fmt(t.doorOpen.detail, { minutes: fixed(Math.round(options.doorOpenMinutes), 0, locale) }),
+      detail: fmt(t.doorOpen.detail, {
+        minutes: fixed(Math.round(options.doorOpenMinutes), 0, locale),
+      }),
       severity: "warning",
     });
   }
@@ -110,7 +116,11 @@ export function buildHeatingInsights(
     });
   }
 
-  if (options.outdoorTempF != null && options.outdoorTempF <= 20 && latest.tempf > options.freezeThresholdF) {
+  if (
+    options.outdoorTempF != null &&
+    options.outdoorTempF <= 20 &&
+    latest.tempf > options.freezeThresholdF
+  ) {
     const margin = latest.tempf - options.freezeThresholdF;
     insights.push({
       label: t.coldSnap.label,
@@ -139,10 +149,7 @@ export function buildHeatingInsights(
     }
   }
 
-  const houseTempF =
-    options.houseTempF ??
-    options.thermostatSnapshot?.ambientTempF ??
-    null;
+  const houseTempF = options.houseTempF ?? options.thermostatSnapshot?.ambientTempF ?? null;
   const thermostat = options.thermostatSnapshot;
 
   if (houseTempF != null && Number.isFinite(latest.tempf)) {

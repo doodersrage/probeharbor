@@ -32,7 +32,11 @@ export const POST: APIRoute = async (context) => {
   }
 
   // Same per-IP limit as status subscriptions, in its own bucket.
-  const rate = checkStatusSubscribeRateLimit(`freeze-alerts:${clientAddress || "unknown"}`, Date.now(), locale);
+  const rate = checkStatusSubscribeRateLimit(
+    `freeze-alerts:${clientAddress || "unknown"}`,
+    Date.now(),
+    locale,
+  );
   if (!rate.ok) {
     return json({ ok: false, message: rate.error ?? t.tooMany }, 429);
   }
@@ -42,12 +46,15 @@ export const POST: APIRoute = async (context) => {
     return json({ ok: false, message: t.verificationFailed }, 400);
   }
 
-  const result = await subscribeToFreezeAlerts({
-    email: formData.get("email")?.toString() ?? "",
-    lat: Number(formData.get("lat")),
-    lon: Number(formData.get("lon")),
-    label: formData.get("label")?.toString() ?? "",
-  }, locale);
+  const result = await subscribeToFreezeAlerts(
+    {
+      email: formData.get("email")?.toString() ?? "",
+      lat: Number(formData.get("lat")),
+      lon: Number(formData.get("lon")),
+      label: formData.get("label")?.toString() ?? "",
+    },
+    locale,
+  );
   if (!result.ok) {
     return json({ ok: false, message: result.error ?? t.genericError }, 400);
   }

@@ -1,4 +1,3 @@
-
 /**
  * /about/adding-devices body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Dashboard UI labels
@@ -24,8 +23,16 @@ const en = {
     colPull: "Pull feed",
     rowsHtml: [
       ["Who initiates", "Your device", "ProbeHarbor"],
-      ["Network", "Device needs outbound HTTPS (Uno Ethernet: HTTP to a LAN TLS relay)", "Feed URL must be publicly reachable"],
-      ["Auth", "Per-device key in URL; flash callout + Reveal ingest key", "Public HTTPS URL (TLS)"],
+      [
+        "Network",
+        "Device needs outbound HTTPS (Uno Ethernet: HTTP to a LAN TLS relay)",
+        "Feed URL must be publicly reachable",
+      ],
+      [
+        "Auth",
+        "Per-device key in URL; flash callout + Reveal ingest key",
+        "Public HTTPS URL (TLS)",
+      ],
       [
         "JSON shape",
         "Flat keys, <code>temp</code> object, <code>sensors[]</code>, SenML, or HA REST",
@@ -57,7 +64,8 @@ const en = {
   },
   pull: {
     title: "Pull feed",
-    step1Html: "Confirm your feed returns HTTPS JSON. Classic shape (default root key <code>temp</code>):",
+    step1Html:
+      "Confirm your feed returns HTTPS JSON. Classic shape (default root key <code>temp</code>):",
     stepsHtml: [
       'Open <a class="text-link" href="/dashboard/devices?tab=pull">Devices → Pull feeds</a>.',
       "Add a feed: name, HTTPS URL, and <strong>JSON root key</strong> (default <code>temp</code>). Use <strong>Test feed URL</strong> before saving.",

@@ -1,6 +1,10 @@
 import type { AstroCookies } from "astro";
 import { getAuthFromCookies } from "./auth";
-import { getOrCreateHouseholdForUser, getUserHouseholdRole, canManageHousehold } from "./households";
+import {
+  getOrCreateHouseholdForUser,
+  getUserHouseholdRole,
+  canManageHousehold,
+} from "./households";
 import { getUserEntitlements } from "./entitlements";
 import { listShareLinks } from "./shareLinksStore";
 import { getSiteUrl } from "./stripe";
@@ -64,18 +68,15 @@ export async function loadShareDashboardContext(
     };
   });
 
-  const apiKeys = household.householdId
-    ? await listHouseholdApiKeys(household.householdId)
-    : [];
+  const apiKeys = household.householdId ? await listHouseholdApiKeys(household.householdId) : [];
 
   const inboundWebhooks = household.householdId
     ? (await listInboundWebhooks(household.householdId)).webhooks
     : [];
 
   // Managers only: legacy rows still carry a usable raw token.
-  const statusPages = household.householdId && canManage
-    ? await listStatusPageTokens(household.householdId)
-    : [];
+  const statusPages =
+    household.householdId && canManage ? await listStatusPageTokens(household.householdId) : [];
 
   const ingestStats = household.householdId
     ? await listIngestStatsForHousehold(household.householdId, 7)

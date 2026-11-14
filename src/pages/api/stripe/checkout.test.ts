@@ -11,7 +11,8 @@ const mockBuildSiteUrl = vi.fn();
 vi.mock("../../../lib/stripe", () => ({
   createStripeClient: () => mockCreateStripeClient(),
   buildSiteUrl: (...a: unknown[]) => mockBuildSiteUrl(...a),
-  isActiveSubscriptionStatus: (status: string) => status === "active" || status === "trialing" || status === "past_due",
+  isActiveSubscriptionStatus: (status: string) =>
+    status === "active" || status === "trialing" || status === "past_due",
 }));
 
 const mockGetUserSubscription = vi.fn();
@@ -229,9 +230,7 @@ describe("POST /api/stripe/checkout", () => {
       detail: "pro/monthly via pricing",
     });
     expect(response.status).toBe(302);
-    expect(response.headers.get("Location")).toBe(
-      "https://checkout.stripe.com/session/abc",
-    );
+    expect(response.headers.get("Location")).toBe("https://checkout.stripe.com/session/abc");
   });
 
   it("returns 500 when Stripe does not return a checkout URL", async () => {

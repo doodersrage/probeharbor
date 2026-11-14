@@ -32,7 +32,8 @@ const fr: AccessoriesMessages = {
   },
   hub: {
     title: "Accessoires matériels",
-    description: "Appareils compagnons et éléments de kit pour ProbeHarbor : voyants d’ambiance, contacts de porte et de fuite, étiquettes et fixations.",
+    description:
+      "Appareils compagnons et éléments de kit pour ProbeHarbor : voyants d’ambiance, contacts de porte et de fuite, étiquettes et fixations.",
     kicker: "Matériel",
     lede: "Appareils compagnons et éléments de kit pour ProbeHarbor. Les sondes de température relèvent du kit antigel ; ces accessoires prouvent une présence, affichent des ambiances, envoient des contacts en POST ou complètent une installation au garage.",
     freezeKitBom: "Nomenclature du kit antigel",
@@ -72,7 +73,8 @@ const fr: AccessoriesMessages = {
   },
   claimPuckCase: {
     title: "Boîtier du Claim puck",
-    description: "Boîtier, bouton de revendication et diffuseur LED facultatif pour le claim puck ProbeHarbor sur RP2040-Zero : finalisez le montage sur carte nue.",
+    description:
+      "Boîtier, bouton de revendication et diffuseur LED facultatif pour le claim puck ProbeHarbor sur RP2040-Zero : finalisez le montage sur carte nue.",
     firmware: "Firmware ↗",
     doesHtml:
       "Transforme le Waveshare RP2040-Zero et son bouton GP4 en clé de présence adaptée au bureau, avec une lueur d’ambiance plus douce.",
@@ -81,7 +83,8 @@ const fr: AccessoriesMessages = {
     caption: "Composants du boîtier du Claim puck",
     zeroWhy: "Microcontrôleur du Claim puck.",
     casePart: "Boîtier imprimé en 3D ou découpé au laser",
-    caseWhy: "Découpe USB, trou pour le bouton, fenêtre pour la LED. Publiez votre STL à côté du dépôt du firmware si vous le partagez.",
+    caseWhy:
+      "Découpe USB, trou pour le bouton, fenêtre pour la LED. Publiez votre STL à côté du dépôt du firmware si vous le partagez.",
     caseBuy: "À faire soi-même / imprimeur local.",
     diffuserPart: "Diffuseur LED (facultatif)",
     diffuserWhy: "Couleur d’ambiance plus douce pour la LED RGB intégrée.",
@@ -95,9 +98,11 @@ const fr: AccessoriesMessages = {
   },
   alertBeacon: {
     title: "Alert beacon",
-    description: "Voyant d’ambiance de bureau ou de couloir qui reflète les ambiances gel et inondation de ProbeHarbor. Même API d’ambiance Bay Buddy que le claim puck.",
+    description:
+      "Voyant d’ambiance de bureau ou de couloir qui reflète les ambiances gel et inondation de ProbeHarbor. Même API d’ambiance Bay Buddy que le claim puck.",
     moodApi: "API d’ambiance",
-    doesHtml: "Affiche en direct l’ambiance de l’espace (cozy, drafty, shiver, panic, offline, hero) sur une barrette ou un anneau NeoPixel plus lumineux, piloté par <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
+    doesHtml:
+      "Affiche en direct l’ambiance de l’espace (cozy, drafty, shiver, panic, offline, hero) sur une barrette ou un anneau NeoPixel plus lumineux, piloté par <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
     doesNotHtml:
       'Il ne mesure pas la température, ne remplace pas les SMS/e-mails d’Alerts et ne revendique pas un espace à lui seul. Associez-le à une sonde antigel et, si vous le souhaitez, à un <a class="text-link" href="/claim-puck">claim puck</a> pour la présence.',
     caption: "Composants de l’Alert beacon",
@@ -119,7 +124,8 @@ const fr: AccessoriesMessages = {
   },
   doorPuck: {
     title: "Door puck (contact de porte)",
-    description: "Contact à lame souple ou bouton qui envoie en POST l’ouverture/fermeture de porte à ProbeHarbor. Alimente l’ambiance « drafty » et des alertes.",
+    description:
+      "Contact à lame souple ou bouton qui envoie en POST l’ouverture/fermeture de porte à ProbeHarbor. Alimente l’ambiance « drafty » et des alertes.",
     addingDevices: "Ajouter des appareils",
     doesHtml:
       'Envoie en POST <code>{ "door1": true }</code> (ouverte) / <code>false</code> (fermée) à votre URL d’ingestion push environ une fois par minute ou à chaque changement.',
@@ -139,7 +145,8 @@ const fr: AccessoriesMessages = {
   },
   leakPuck: {
     title: "Leak puck (contact de fuite)",
-    description: "Plaques de contact qui envoient en POST l’état mouillé/sec de capteurs d’inondation à ProbeHarbor. Alerte automatique en présence d’eau.",
+    description:
+      "Plaques de contact qui envoient en POST l’état mouillé/sec de capteurs d’inondation à ProbeHarbor. Alerte automatique en présence d’eau.",
     doesHtml:
       'Envoie en POST <code>{ "leak1": true }</code> en présence d’eau (ou <code>flood1</code>). Les clés contenant leak/flood sont importées comme capteurs d’inondation.',
     doesNotHtml:
@@ -149,7 +156,7 @@ const fr: AccessoriesMessages = {
     probesPart: "Sondes de fuite / d’humidité",
     probesWhy: "Deux conducteurs au sol ; GPIO4 avec pull-up, l’eau tire la ligne à l’état bas.",
     probesBuyHtml:
-      'Un module LM393 « capteur de pluie / d’eau » alimenté en 3,3 V, sortie DO vers la broche (composant d’initiation facile ; ses plaques se corrodent si elles restent mouillées), ou deux vis inox espacées d’environ 5&nbsp;mm, l’une vers la broche et l’autre vers GND (plus durable). Testez avec votre propre eau : un mince film d’eau propre peut ne déclencher ni l’un ni l’autre.',
+      "Un module LM393 « capteur de pluie / d’eau » alimenté en 3,3 V, sortie DO vers la broche (composant d’initiation facile ; ses plaques se corrodent si elles restent mouillées), ou deux vis inox espacées d’environ 5&nbsp;mm, l’une vers la broche et l’autre vers GND (plus durable). Testez avec votre propre eau : un mince film d’eau propre peut ne déclencher ni l’un ni l’autre.",
     stepsHtml: [
       "Créez ou réutilisez un appareil push. Flashez <code>sketches/arduino/leak_contact_ingest/</code>.",
       "Reliez les plaques avec un chiffon humide pour tester ; vous devez obtenir <code>POST 200</code> et un relevé « mouillé ».",
@@ -158,7 +165,8 @@ const fr: AccessoriesMessages = {
   },
   powerNudge: {
     title: "Power nudge (coupure de courant)",
-    description: "Contact de détection secteur USB ou onduleur qui envoie en POST la perte/le retour du courant à ProbeHarbor. Sachez quand l’espace a été privé de courant.",
+    description:
+      "Contact de détection secteur USB ou onduleur qui envoie en POST la perte/le retour du courant à ProbeHarbor. Sachez quand l’espace a été privé de courant.",
     staleReadings: "Relevés figés",
     doesHtml:
       'Envoie en POST <code>{ "power1": true }</code> tant que la détection secteur/USB est présente, <code>false</code> en cas de perte (les clés contenant power/relay sont importées comme capteurs d’alimentation).',
@@ -168,7 +176,8 @@ const fr: AccessoriesMessages = {
     esp32Part: "ESP32 sur onduleur / toujours alimenté",
     esp32Why: "Doit rester allumé pour signaler la perte du secteur sur un autre circuit.",
     sensePart: "Entrée de détection USB / secteur",
-    senseWhy: "Optocoupleur ou module relais : GPIO4 à l’état bas = courant présent (actif bas dans l’exemple).",
+    senseWhy:
+      "Optocoupleur ou module relais : GPIO4 à l’état bas = courant présent (actif bas dans l’exemple).",
     senseBuy: "Fournisseur d’électronique ; module isolé de détection USB ou secteur.",
     stepsHtml: [
       "Flashez <code>sketches/arduino/power_sense_ingest/</code> avec le Wi‑Fi et l’URL d’ingestion.",
@@ -178,7 +187,8 @@ const fr: AccessoriesMessages = {
   },
   kitLabels: {
     title: "Étiquettes QR et NFC du kit",
-    description: "Autocollants QR imprimables et tags NFC facultatifs contenant votre URL d’ingestion push ProbeHarbor : configurez le firmware sans saisir la clé.",
+    description:
+      "Autocollants QR imprimables et tags NFC facultatifs contenant votre URL d’ingestion push ProbeHarbor : configurez le firmware sans saisir la clé.",
     kitQrGuide: "Guide QR du kit",
     claimsPack: "Dossier de sinistre",
     doesHtml:
@@ -201,7 +211,8 @@ const fr: AccessoriesMessages = {
   },
   probeMountKit: {
     title: "Kit de fixation de sonde",
-    description: "Colliers, clips de tuyau, pastilles adhésives, pull-up 4,7k et conseils de fixation du DS18B20 étanche pour une sonde antigel ProbeHarbor fiable.",
+    description:
+      "Colliers, clips de tuyau, pastilles adhésives, pull-up 4,7k et conseils de fixation du DS18B20 étanche pour une sonde antigel ProbeHarbor fiable.",
     mountingGuide: "Guide de fixation",
     picoIngest: "Ingestion Pico W",
     doesHtml:

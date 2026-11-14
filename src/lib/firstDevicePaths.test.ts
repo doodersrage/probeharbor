@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildHomeAssistantPushYaml,
-  buildMqttBridgeCurl,
-  parseSetupVia,
-} from "./firstDevicePaths";
+import { buildHomeAssistantPushYaml, buildMqttBridgeCurl, parseSetupVia } from "./firstDevicePaths";
 
 describe("parseSetupVia", () => {
   it("accepts known paths and rejects anything else", () => {

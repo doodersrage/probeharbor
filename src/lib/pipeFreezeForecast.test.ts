@@ -10,7 +10,10 @@ import {
 } from "./pipeFreezeForecast";
 
 /** Hourly periods starting at `startHour` local on 2026-01-10, one per entry. */
-function hours(temps: number[], opts: { startHour?: number; wind?: string } = {}): NwsHourlyPeriod[] {
+function hours(
+  temps: number[],
+  opts: { startHour?: number; wind?: string } = {},
+): NwsHourlyPeriod[] {
   const start = Date.UTC(2026, 0, 10, opts.startHour ?? 12);
   return temps.map((temperature, i) => {
     const at = new Date(start + i * 3_600_000);
@@ -66,11 +69,18 @@ describe("summarizeFreezeNights", () => {
 
   it("treats a forecast that starts after dark as tonight", () => {
     const nights = summarizeFreezeNights(hours([34, 33, 35], { startHour: 22 }));
-    expect(nights[0]).toMatchObject({ date: "2026-01-10", lowF: 33, risk: "low", hoursAtOrBelow32: 0 });
+    expect(nights[0]).toMatchObject({
+      date: "2026-01-10",
+      lowF: 33,
+      risk: "low",
+      hoursAtOrBelow32: 0,
+    });
   });
 
   it("reports wind only during freezing hours", () => {
-    const nights = summarizeFreezeNights(hours([30, 28, 27], { startHour: 20, wind: "10 to 20 mph" }));
+    const nights = summarizeFreezeNights(
+      hours([30, 28, 27], { startHour: 20, wind: "10 to 20 mph" }),
+    );
     expect(nights[0]!.maxFreezingWindMph).toBe(20);
     expect(describeFreezeNight(nights[0]!)).toMatch(/Wind up to 20 mph/);
   });
@@ -94,10 +104,18 @@ describe("worstRisk and describeFreezeNight", () => {
 
 describe("embedSnippet", () => {
   it("builds an iframe plus a plain attribution link, escaping the place name", () => {
-    const snippet = embedSnippet("https://probeharbor.dev", { label: 'Joe\'s "Shop" <AK>', lat: 64.8378, lon: -147.7164 });
+    const snippet = embedSnippet("https://probeharbor.dev", {
+      label: 'Joe\'s "Shop" <AK>',
+      lat: 64.8378,
+      lon: -147.7164,
+    });
     const [iframe, credit] = snippet.split("\n");
-    expect(iframe).toContain('src="https://probeharbor.dev/embed/pipe-freeze?lat=64.838&amp;lon=-147.716&amp;place=');
+    expect(iframe).toContain(
+      'src="https://probeharbor.dev/embed/pipe-freeze?lat=64.838&amp;lon=-147.716&amp;place=',
+    );
     expect(iframe).toContain('title="Pipe freeze forecast for Joe\'s &quot;Shop&quot; &lt;AK&gt;"');
-    expect(credit).toBe('<p><a href="https://probeharbor.dev/pipe-freeze-forecast">Pipe freeze forecast</a> by ProbeHarbor</p>');
+    expect(credit).toBe(
+      '<p><a href="https://probeharbor.dev/pipe-freeze-forecast">Pipe freeze forecast</a> by ProbeHarbor</p>',
+    );
   });
 });

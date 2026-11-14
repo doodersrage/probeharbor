@@ -1,4 +1,3 @@
-
 /**
  * /about/stm32-zephyr-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Commands, pin names and
@@ -25,7 +24,8 @@ const en = {
     probeWhyHtml: "Pipe / crawlspace probe. Data on Arduino <strong>D4</strong> (PF14).",
     amazon: "Amazon",
     resistorPart: "4.7kΩ resistor",
-    resistorWhy: "Pull-up from DS18B20 data to 3.3V. Do not power the probe from the 5V Arduino pin.",
+    resistorWhy:
+      "Pull-up from DS18B20 data to 3.3V. Do not power the probe from the 5V Arduino pin.",
     amazonResistor: "Amazon 4.7k",
     ethernetPart: "Ethernet drop",
     ethernetWhy: "DHCP on your LAN. A Pi, NAS, or laptop runs the TLS relay.",

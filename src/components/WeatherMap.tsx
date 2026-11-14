@@ -87,13 +87,7 @@ function loadLeaflet(): Promise<LeafletNS> {
   });
 }
 
-export default function WeatherMap({
-  lat,
-  lon,
-  label,
-  zoom = 10,
-  text,
-}: Props) {
+export default function WeatherMap({ lat, lon, label, zoom = 10, text }: Props) {
   const t: WeatherMapText = {
     mapLabel: text?.mapLabel ?? WEATHER_MAP_TEXT_EN.mapLabel,
     openLarger: text?.openLarger ?? WEATHER_MAP_TEXT_EN.openLarger,
@@ -127,28 +121,32 @@ export default function WeatherMap({
         mapRef.current = map;
 
         const base = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           maxZoom: 18,
           subdomains: "abc",
         }).addTo(map);
 
         // Same-origin tile proxy keeps the OpenWeather key server-side.
         {
-          const owmAttr =
-            'Weather &copy; <a href="https://openweathermap.org/">OpenWeather</a>';
-          const tempLayer = L.tileLayer(
-            "/api/weather/tiles/temp_new/{z}/{x}/{y}",
-            { opacity: 0.55, maxZoom: 18, attribution: owmAttr },
-          ).addTo(map);
-          const precipLayer = L.tileLayer(
-            "/api/weather/tiles/precipitation_new/{z}/{x}/{y}",
-            { opacity: 0.55, maxZoom: 18, attribution: owmAttr },
-          );
+          const owmAttr = 'Weather &copy; <a href="https://openweathermap.org/">OpenWeather</a>';
+          const tempLayer = L.tileLayer("/api/weather/tiles/temp_new/{z}/{x}/{y}", {
+            opacity: 0.55,
+            maxZoom: 18,
+            attribution: owmAttr,
+          }).addTo(map);
+          const precipLayer = L.tileLayer("/api/weather/tiles/precipitation_new/{z}/{x}/{y}", {
+            opacity: 0.55,
+            maxZoom: 18,
+            attribution: owmAttr,
+          });
           L.control
-            .layers({ Map: base }, { Temperature: tempLayer, Precipitation: precipLayer }, {
-              collapsed: true,
-            })
+            .layers(
+              { Map: base },
+              { Temperature: tempLayer, Precipitation: precipLayer },
+              {
+                collapsed: true,
+              },
+            )
             .addTo(map);
         }
 
@@ -192,10 +190,7 @@ export default function WeatherMap({
         >
           {t.openLarger}
         </a>
-        <span class="text-[var(--color-text-muted)]">
-          {" "}
-          {t.attribution}
-        </span>
+        <span class="text-[var(--color-text-muted)]"> {t.attribution}</span>
       </figcaption>
     </figure>
   );

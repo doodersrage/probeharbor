@@ -8,10 +8,12 @@ const es: ApiMoreActionsMessages = {
   displayPrefsSaveFailed: "No se pudieron guardar las preferencias de visualización.",
   displayPrefsSaved: "Preferencias de visualización guardadas.",
   expectedFormData: "Se esperaban datos de formulario.",
-  invalidWebhookUrl: "Una de tus URL de webhook no es una dirección https:// válida o apunta a una red privada.",
+  invalidWebhookUrl:
+    "Una de tus URL de webhook no es una dirección https:// válida o apunta a una red privada.",
   weakTelegramSecret: "El secreto del webhook de Telegram debe tener al menos 16 caracteres.",
   alertSettingsSaveFailed: "No se pudieron guardar los ajustes de alertas.",
-  alertSettingsSavedIncomplete: "Ajustes de alertas guardados: a algunos canales les falta el destino.",
+  alertSettingsSavedIncomplete:
+    "Ajustes de alertas guardados: a algunos canales les falta el destino.",
   alertSettingsSaved: "Ajustes de alertas guardados.",
   snoozed24h: "Alertas pospuestas durante 24 horas.",
   vacation7d: "Modo vacaciones activado durante 7 días.",
@@ -20,12 +22,14 @@ const es: ApiMoreActionsMessages = {
   snoozeCleared: "Pausa eliminada.",
   vacationEnded: "Vacaciones terminadas.",
   managersOnlyInvite: "Solo el propietario y los editores del hogar pueden enviar invitaciones.",
-  portfolioRequired: "Las invitaciones de administrador de propiedades requieren el plan Portfolio.",
+  portfolioRequired:
+    "Las invitaciones de administrador de propiedades requieren el plan Portfolio.",
   inviteFailed: "No se pudo crear la invitación.",
   inviteSent: "Invitación enviada a {email}.",
   ownerOnlyRename: "Solo el propietario del hogar puede cambiarle el nombre.",
   householdNameSaved: "Nombre del hogar guardado.",
-  ownerOnlyFreezeMap: "Solo el propietario del hogar puede cambiar los ajustes del mapa de congelación.",
+  ownerOnlyFreezeMap:
+    "Solo el propietario del hogar puede cambiar los ajustes del mapa de congelación.",
   freezeMapSaved: "Ajustes del mapa de congelación guardados.",
   deviceRenamed: "Dispositivo renombrado.",
   deviceSpaceSaved: "Espacio del dispositivo guardado.",

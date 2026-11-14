@@ -27,13 +27,19 @@ export async function betterAuthErrorCode(res: Response): Promise<string | null>
 /** Better Auth codes → the sign-in page's existing error codes (see mapSignInError). */
 export function signInErrorFromBetterAuth(code: string | null): SignInErrorCode {
   if (code === "EMAIL_NOT_VERIFIED") return "email_not_confirmed";
-  if (code === "INVALID_EMAIL_OR_PASSWORD" || code === "INVALID_PASSWORD" || code === "USER_NOT_FOUND") return "invalid_credentials";
+  if (
+    code === "INVALID_EMAIL_OR_PASSWORD" ||
+    code === "INVALID_PASSWORD" ||
+    code === "USER_NOT_FOUND"
+  )
+    return "invalid_credentials";
   return "generic";
 }
 
 /** Set-Cookie values that expire Better Auth's session cookies (both names). */
 export function expiredBetterAuthCookies(): string[] {
   return ["__Secure-better-auth.session_token", "better-auth.session_token"].map(
-    (name) => `${name}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${name.startsWith("__Secure-") ? "; Secure" : ""}`,
+    (name) =>
+      `${name}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${name.startsWith("__Secure-") ? "; Secure" : ""}`,
   );
 }

@@ -42,11 +42,9 @@ function fakeRedirect(path: string): Response {
   return new Response(null, { status: 302, headers: { Location: path } });
 }
 
-function makeContext(options: {
-  acceptJson?: boolean;
-  form?: boolean;
-  body?: Record<string, string>;
-} = {}): APIContext {
+function makeContext(
+  options: { acceptJson?: boolean; form?: boolean; body?: Record<string, string> } = {},
+): APIContext {
   const { acceptJson = false, form = true, body = {} } = options;
   const headers = new Headers();
   if (acceptJson) headers.set("accept", "application/json");

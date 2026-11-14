@@ -34,18 +34,27 @@ describe("implausibleReason", () => {
 describe("ingest rejects implausible values instead of storing them", () => {
   it("drops a disconnected DS18B20 and keeps the rest", () => {
     const result = interpretIngestPayload({ temp1: -196.6, temp2: 41, humidity1: 55 });
-    expect(result.readings.map((r) => `${r.key}=${r.value_num}`)).toEqual(["temp2=41", "humidity1=55"]);
-    expect(result.rejected).toEqual([{ key: "temp1", kind: "temperature", value: -196.6, reason: "sensor_fault" }]);
+    expect(result.readings.map((r) => `${r.key}=${r.value_num}`)).toEqual([
+      "temp2=41",
+      "humidity1=55",
+    ]);
+    expect(result.rejected).toEqual([
+      { key: "temp1", kind: "temperature", value: -196.6, reason: "sensor_fault" },
+    ]);
   });
 
   it("checks °C after conversion (85°C power-on reset = 185°F)", () => {
-    const result = interpretIngestPayload({ sensors: [{ key: "t", kind: "temperature", value: 85, unit: "C" }] });
+    const result = interpretIngestPayload({
+      sensors: [{ key: "t", kind: "temperature", value: 85, unit: "C" }],
+    });
     expect(result.readings).toEqual([]);
     expect(result.rejected[0]).toMatchObject({ value: 185, reason: "sensor_fault" });
   });
 
   it("rejects humidity outside 0-100", () => {
-    expect(interpretIngestPayload({ humidity1: 140 }).rejected[0]).toMatchObject({ reason: "out_of_range" });
+    expect(interpretIngestPayload({ humidity1: 140 }).rejected[0]).toMatchObject({
+      reason: "out_of_range",
+    });
   });
 });
 
@@ -66,7 +75,9 @@ describe("pull feeds skip implausible values", () => {
   } as never;
 
   it("stores neither a fault temperature nor impossible humidity", () => {
-    expect(buildReadingRowsFromTempResults("house", [device], [result(-196.6, 140)], [probe])).toEqual([]);
+    expect(
+      buildReadingRowsFromTempResults("house", [device], [result(-196.6, 140)], [probe]),
+    ).toEqual([]);
   });
 
   it("never alerts on a fault temperature", () => {

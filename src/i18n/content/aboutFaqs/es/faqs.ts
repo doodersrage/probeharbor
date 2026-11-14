@@ -338,8 +338,7 @@ export default {
     },
     {
       question: "¿Es Arduino o XC8?",
-      answer:
-        "XC8 / MPLAB X sobre la demo Ethernet de MLA. No es un .ino de Arduino.",
+      answer: "XC8 / MPLAB X sobre la demo Ethernet de MLA. No es un .ino de Arduino.",
     },
   ],
   "teensy41-ingest": [

@@ -12,8 +12,16 @@ export type OutdoorCompareCoords = {
 async function freezeMapCoordsForHousehold(
   householdId: string,
 ): Promise<OutdoorCompareCoords | null> {
-  const { data, error } = (await getHouseholdFields(householdId, ["freeze_map_lat", "freeze_map_lon", "freeze_map_label"])) as {
-    data: { freeze_map_lat: number | null; freeze_map_lon: number | null; freeze_map_label: string | null } | null;
+  const { data, error } = (await getHouseholdFields(householdId, [
+    "freeze_map_lat",
+    "freeze_map_lon",
+    "freeze_map_label",
+  ])) as {
+    data: {
+      freeze_map_lat: number | null;
+      freeze_map_lon: number | null;
+      freeze_map_label: string | null;
+    } | null;
     error: string | null;
   };
 

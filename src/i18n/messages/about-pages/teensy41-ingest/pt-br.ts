@@ -1,4 +1,3 @@
-
 /** Body copy for /about/teensy41-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -10,7 +9,8 @@ const ptBr: Messages = {
   colPart: "Peça",
   colWhy: "Para quê",
   colBuy: "Comprar",
-  teensyWhy: "M7 de 600 MHz, gravação via USB, MAC Ethernet integrada (precisa do kit de magnéticos).",
+  teensyWhy:
+    "M7 de 600 MHz, gravação via USB, MAC Ethernet integrada (precisa do kit de magnéticos).",
   kitPart: "Kit Ethernet / MagJack",
   kitWhy: "Magnéticos + RJ45 ligados conforme a documentação Ethernet da PJRC para a Teensy 4.1.",
   probePart: "DS18B20 à prova d’água",

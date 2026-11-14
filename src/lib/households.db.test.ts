@@ -27,7 +27,12 @@ import {
   setActiveHouseholdForUser,
   updateHouseholdName,
 } from "./households";
-import { acceptHouseholdInvite, createHouseholdInvite, getInviteByToken, getInviteTokenState } from "./householdInvites";
+import {
+  acceptHouseholdInvite,
+  createHouseholdInvite,
+  getInviteByToken,
+  getInviteTokenState,
+} from "./householdInvites";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -44,7 +49,10 @@ async function userWithHome(email: string) {
 }
 
 async function addDevice(householdId: string) {
-  await sql("insert into public.devices (household_id, name, source) values ($1, 'Probe', 'push')", [householdId]);
+  await sql(
+    "insert into public.devices (household_id, name, source) values ($1, 'Probe', 'push')",
+    [householdId],
+  );
 }
 
 async function metadataOf(userId: string) {
@@ -72,7 +80,9 @@ describe("creating households (Neon)", () => {
     const result = await getOrCreateHouseholdForUser(a.id, "pat@example.com");
     expect(result.error).toBeNull();
     await expect(getUserHouseholdRole(a.id, result.householdId)).resolves.toBe("owner");
-    const [h] = await sql<{ name: string }>("select name from public.households where id = $1", [result.householdId]);
+    const [h] = await sql<{ name: string }>("select name from public.households where id = $1", [
+      result.householdId,
+    ]);
     expect(h?.name).toBe("pat's household");
   });
 
@@ -87,13 +97,21 @@ describe("creating households (Neon)", () => {
 
   it("an additional property becomes the active one and keeps other settings", async () => {
     const a = await userWithHome("a@example.com");
-    await sql("insert into public.user_profiles (user_id, metadata) values ($1, '{\"locale\":\"de\"}')", [a.id]);
+    await sql(
+      'insert into public.user_profiles (user_id, metadata) values ($1, \'{"locale":"de"}\')',
+      [a.id],
+    );
 
     const second = await createAdditionalHouseholdForUser(a.id, "  Cabin  ");
     expect(second.error).toBeNull();
-    const [h] = await sql<{ name: string }>("select name from public.households where id = $1", [second.householdId]);
+    const [h] = await sql<{ name: string }>("select name from public.households where id = $1", [
+      second.householdId,
+    ]);
     expect(h?.name).toBe("Cabin");
-    expect(await metadataOf(a.id)).toEqual({ locale: "de", active_household_id: second.householdId });
+    expect(await metadataOf(a.id)).toEqual({
+      locale: "de",
+      active_household_id: second.householdId,
+    });
     await expect(getOwnedHouseholdId(a.id)).resolves.toBe(second.householdId);
     await expect(countOwnedHouseholds(a.id)).resolves.toBe(2);
   });
@@ -119,10 +137,10 @@ describe("which household a user sees (Neon)", () => {
     await expect(getUserHouseholdId(guest.id)).resolves.toBe(guest.home);
 
     // Stale setting pointing at a household they were removed from is ignored.
-    await sql("update public.user_profiles set metadata = jsonb_build_object('active_household_id', $2::text) where user_id = $1", [
-      guest.id,
-      owner.home,
-    ]);
+    await sql(
+      "update public.user_profiles set metadata = jsonb_build_object('active_household_id', $2::text) where user_id = $1",
+      [guest.id, owner.home],
+    );
     await removeHouseholdMember(owner.home, guest.id);
     await expect(getUserHouseholdId(guest.id)).resolves.toBe(guest.home);
   });
@@ -130,7 +148,9 @@ describe("which household a user sees (Neon)", () => {
   it("refuses to make another user's household active", async () => {
     const a = await userWithHome("a@example.com");
     const b = await userWithHome("b@example.com");
-    await expect(setActiveHouseholdForUser(a.id, b.home)).resolves.toEqual({ error: "Not a member of that household" });
+    await expect(setActiveHouseholdForUser(a.id, b.home)).resolves.toEqual({
+      error: "Not a member of that household",
+    });
     expect(await metadataOf(a.id)).toBeNull();
   });
 
@@ -146,7 +166,9 @@ describe("which household a user sees (Neon)", () => {
       { household_id: a.home, role: "owner", name: "Home" },
       { household_id: b.home, role: "viewer", name: "b's household" },
     ]);
-    expect((await listUserHouseholds(b.id)).households.map((h) => h.household_id)).toEqual([b.home]);
+    expect((await listUserHouseholds(b.id)).households.map((h) => h.household_id)).toEqual([
+      b.home,
+    ]);
   });
 });
 
@@ -195,17 +217,21 @@ describe("changing membership (Neon)", () => {
     const a = await userWithHome("a@example.com");
     const c = await userWithHome("c@example.com");
     await addHouseholdMemberByUserId(a.home, c.id, "viewer");
-    await expect(addHouseholdMemberByUserId(a.home, c.id, "member")).resolves.toEqual({ error: null });
-    const rows = await sql("select role from public.household_members where household_id = $1 and user_id = $2", [
-      a.home,
-      c.id,
-    ]);
+    await expect(addHouseholdMemberByUserId(a.home, c.id, "member")).resolves.toEqual({
+      error: null,
+    });
+    const rows = await sql(
+      "select role from public.household_members where household_id = $1 and user_id = $2",
+      [a.home, c.id],
+    );
     expect(rows).toEqual([{ role: "member" }]);
   });
 
   it("can't remove the owner", async () => {
     const a = await userWithHome("a@example.com");
-    await expect(removeHouseholdMember(a.home, a.id)).resolves.toEqual({ error: "Cannot remove the household owner" });
+    await expect(removeHouseholdMember(a.home, a.id)).resolves.toEqual({
+      error: "Cannot remove the household owner",
+    });
     await expect(isUserInHousehold(a.id, a.home)).resolves.toBe(true);
   });
 
@@ -241,7 +267,9 @@ describe("cron and admin lists (Neon)", () => {
 
     const cron = await listHouseholdIdsForCron();
     expect(cron).toHaveLength(3);
-    expect(new Set(cron.map((r) => r.householdId))).toEqual(new Set([a.home, b.home, second.householdId]));
+    expect(new Set(cron.map((r) => r.householdId))).toEqual(
+      new Set([a.home, b.home, second.householdId]),
+    );
     expect(cron.find((r) => r.householdId === second.householdId)?.ownerUserId).toBe(a.id);
 
     expect((await listAllHouseholdOwnerUserIds()).sort()).toEqual([a.id, b.id].sort());
@@ -249,7 +277,8 @@ describe("cron and admin lists (Neon)", () => {
 });
 
 describe("invites never change an existing member's role (Neon)", () => {
-  const roleOf = async (userId: string, householdId: string) => getUserHouseholdRole(userId, householdId);
+  const roleOf = async (userId: string, householdId: string) =>
+    getUserHouseholdRole(userId, householdId);
 
   it.each([
     ["member", "viewer"],
@@ -260,7 +289,13 @@ describe("invites never change an existing member's role (Neon)", () => {
     const owner = await userWithHome("owner@example.com");
     const guest = await userWithHome("guest@example.com");
     await addHouseholdMemberByUserId(owner.home, guest.id, current);
-    const { token } = await createHouseholdInvite(owner.home, "guest@example.com", owner.id, 7, invited);
+    const { token } = await createHouseholdInvite(
+      owner.home,
+      "guest@example.com",
+      owner.id,
+      7,
+      invited,
+    );
 
     await expect(acceptHouseholdInvite(token!, guest.id, "guest@example.com")).resolves.toEqual({
       householdId: owner.home,
@@ -271,17 +306,23 @@ describe("invites never change an existing member's role (Neon)", () => {
     await expect(getInviteByToken(token!)).resolves.toBeNull(); // used up
     await expect(getInviteTokenState(token!)).resolves.toMatchObject({ accepted: true });
     await expect(getUserHouseholdId(guest.id)).resolves.toBe(owner.home);
-    const rows = await sql("select 1 from public.household_members where household_id = $1 and user_id = $2", [
-      owner.home,
-      guest.id,
-    ]);
+    const rows = await sql(
+      "select 1 from public.household_members where household_id = $1 and user_id = $2",
+      [owner.home, guest.id],
+    );
     expect(rows).toHaveLength(1);
   });
 
   it("a brand-new invitee joins with the invite's role", async () => {
     const owner = await userWithHome("owner@example.com");
     const guest = await userWithHome("guest@example.com");
-    const { token } = await createHouseholdInvite(owner.home, "guest@example.com", owner.id, 7, "alert_only");
+    const { token } = await createHouseholdInvite(
+      owner.home,
+      "guest@example.com",
+      owner.id,
+      7,
+      "alert_only",
+    );
 
     await expect(acceptHouseholdInvite(token!, guest.id, "guest@example.com")).resolves.toEqual({
       householdId: owner.home,
@@ -295,9 +336,18 @@ describe("invites never change an existing member's role (Neon)", () => {
   it("joinHouseholdFromInvite reports whether it added anyone and never touches an existing row", async () => {
     const owner = await userWithHome("owner@example.com");
     const guest = await userWithHome("guest@example.com");
-    await expect(joinHouseholdFromInvite(owner.home, guest.id, "viewer")).resolves.toEqual({ added: true, error: null });
-    await expect(joinHouseholdFromInvite(owner.home, guest.id, "member")).resolves.toEqual({ added: false, error: null });
-    await expect(joinHouseholdFromInvite(owner.home, owner.id, "viewer")).resolves.toEqual({ added: false, error: null });
+    await expect(joinHouseholdFromInvite(owner.home, guest.id, "viewer")).resolves.toEqual({
+      added: true,
+      error: null,
+    });
+    await expect(joinHouseholdFromInvite(owner.home, guest.id, "member")).resolves.toEqual({
+      added: false,
+      error: null,
+    });
+    await expect(joinHouseholdFromInvite(owner.home, owner.id, "viewer")).resolves.toEqual({
+      added: false,
+      error: null,
+    });
     await expect(roleOf(guest.id, owner.home)).resolves.toBe("viewer");
     await expect(roleOf(owner.id, owner.home)).resolves.toBe("owner");
   });
@@ -311,7 +361,9 @@ describe("changeHouseholdMemberRole (Neon)", () => {
     await addHouseholdMemberByUserId(a.home, c.id, "member");
     await addHouseholdMemberByUserId(b.home, c.id, "member");
 
-    await expect(changeHouseholdMemberRole(a.home, c.id, "viewer")).resolves.toEqual({ error: null });
+    await expect(changeHouseholdMemberRole(a.home, c.id, "viewer")).resolves.toEqual({
+      error: null,
+    });
 
     await expect(getUserHouseholdRole(c.id, a.home)).resolves.toBe("viewer");
     await expect(getUserHouseholdRole(c.id, b.home)).resolves.toBe("member");
@@ -321,10 +373,14 @@ describe("changeHouseholdMemberRole (Neon)", () => {
     const a = await userWithHome("a@example.com");
     const stranger = await userWithHome("stranger@example.com");
 
-    await expect(changeHouseholdMemberRole(a.home, a.id, "viewer")).resolves.toEqual({ error: "cannot_change_owner" });
+    await expect(changeHouseholdMemberRole(a.home, a.id, "viewer")).resolves.toEqual({
+      error: "cannot_change_owner",
+    });
     await expect(getUserHouseholdRole(a.id, a.home)).resolves.toBe("owner");
 
-    await expect(changeHouseholdMemberRole(a.home, stranger.id, "member")).resolves.toEqual({ error: "not_a_member" });
+    await expect(changeHouseholdMemberRole(a.home, stranger.id, "member")).resolves.toEqual({
+      error: "not_a_member",
+    });
     await expect(isUserInHousehold(stranger.id, a.home)).resolves.toBe(false);
   });
 });

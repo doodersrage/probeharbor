@@ -175,14 +175,9 @@ describe("historyChartInteraction", () => {
     const day = 24 * 60 * 60 * 1000;
     const domain = { minTs: 0, maxTs: 40 * day };
     expect(matchingPresetId(null, domain)).toBe("all");
+    expect(matchingPresetId(windowForTrailingSpan(domain, day), domain)).toBe("24h");
     expect(
-      matchingPresetId(windowForTrailingSpan(domain, day), domain),
-    ).toBe("24h");
-    expect(
-      matchingPresetId(
-        { minTs: domain.minTs + 5 * day, maxTs: domain.minTs + 8 * day },
-        domain,
-      ),
+      matchingPresetId({ minTs: domain.minTs + 5 * day, maxTs: domain.minTs + 8 * day }, domain),
     ).toBe("custom");
   });
 
@@ -209,12 +204,7 @@ describe("historyChartInteraction", () => {
       minTs: domain.minTs,
       maxTs: domain.maxTs,
     };
-    const next = brushPixelsToWindow(
-      40,
-      40 + (400 - 40 - 16) / 2,
-      wideBounds,
-      domain,
-    );
+    const next = brushPixelsToWindow(40, 40 + (400 - 40 - 16) / 2, wideBounds, domain);
     expect(next?.minTs).toBe(0);
     expect(next?.maxTs).toBe(5 * day);
     expect(brushPixelsToWindow(40, 44, wideBounds, domain)).toBeNull();

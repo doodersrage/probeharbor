@@ -19,7 +19,11 @@ export function replacementOptionsByKind(
   const byKind = new Map<SensorKind, ReplacementOption[]>();
   for (const device of devices) {
     for (const sensor of device.sensors) {
-      const option = { sensorId: sensor.id, kind: sensor.kind, label: `${device.name} · ${sensor.label}` };
+      const option = {
+        sensorId: sensor.id,
+        kind: sensor.kind,
+        label: `${device.name} · ${sensor.label}`,
+      };
       byKind.set(sensor.kind, [...(byKind.get(sensor.kind) ?? []), option]);
     }
   }
@@ -46,7 +50,10 @@ export function replacementErrorCode(raw: string | null | undefined): Replacemen
 }
 
 /** Flash text for a code; unknown codes get the generic message, never the raw value. */
-export function replacementErrorMessage(code: string | null | undefined, locale: Locale = "en"): string {
+export function replacementErrorMessage(
+  code: string | null | undefined,
+  locale: Locale = "en",
+): string {
   const messages = apiDevicesMessages(locale).replaceErrors;
   return code && Object.hasOwn(REPLACEMENT_ERRORS, code)
     ? messages[code as ReplacementErrorCode]

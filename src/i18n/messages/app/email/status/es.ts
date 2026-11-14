@@ -5,7 +5,8 @@ const es: StatusEmailMessages = {
     subject: "Confirma tu suscripción al estado de ProbeHarbor",
     eyebrow: "Actualizaciones de estado",
     title: "Confirma tu suscripción",
-    intro: "Haz clic abajo para recibir un correo cada vez que cambie el estado del sistema de ProbeHarbor.",
+    intro:
+      "Haz clic abajo para recibir un correo cada vez que cambie el estado del sistema de ProbeHarbor.",
     body: "Si no lo solicitaste, puedes ignorar este mensaje: no quedarás suscrito a menos que confirmes.",
     cta: "Confirmar suscripción",
     footerNote:
@@ -17,11 +18,14 @@ const es: StatusEmailMessages = {
     subjectDegraded: "ProbeHarbor: servicio degradado",
     titleHealthy: "ProbeHarbor vuelve a funcionar con normalidad",
     titleDegraded: "ProbeHarbor funciona de forma degradada",
-    introHealthy: "Las tareas programadas y la supervisión de la ingesta vuelven a estar en buen estado.",
-    introDegraded: "Estamos viendo fallos en tareas o ejecuciones programadas que no se realizaron. Lo estamos investigando.",
+    introHealthy:
+      "Las tareas programadas y la supervisión de la ingesta vuelven a estar en buen estado.",
+    introDegraded:
+      "Estamos viendo fallos en tareas o ejecuciones programadas que no se realizaron. Lo estamos investigando.",
     cta: "Ver el estado del sistema",
     unsubscribe: "Darse de baja de las actualizaciones de estado",
-    footerNote: "Recibes este correo porque te suscribiste a las actualizaciones de estado de ProbeHarbor.",
+    footerNote:
+      "Recibes este correo porque te suscribiste a las actualizaciones de estado de ProbeHarbor.",
   },
 };
 

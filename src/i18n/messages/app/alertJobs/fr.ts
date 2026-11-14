@@ -5,8 +5,10 @@ const fr: AlertJobsMessages = {
     confirm: {
       eyebrow: "Alertes gel",
       title: "Confirmez vos alertes gel",
-      intro: "Cliquez ci-dessous et nous vous enverrons un e-mail l’après-midi précédant chaque nuit de gel à {place}.",
-      ignore: "Si vous n’avez rien demandé, ignorez ce message. Vous ne recevrez rien sans confirmation.",
+      intro:
+        "Cliquez ci-dessous et nous vous enverrons un e-mail l’après-midi précédant chaque nuit de gel à {place}.",
+      ignore:
+        "Si vous n’avez rien demandé, ignorez ce message. Vous ne recevrez rien sans confirmation.",
       cta: "Confirmer les alertes gel",
       footerNote:
         "Vous recevez ce message parce que quelqu’un a saisi cette adresse sur la prévision de gel des canalisations de ProbeHarbor.",
@@ -15,9 +17,11 @@ const fr: AlertJobsMessages = {
     move: {
       eyebrow: "Alertes gel",
       title: "Passer vos alertes gel à {place} ?",
-      intro: "Cette adresse reçoit déjà des alertes gel pour {current}. Quelqu’un vient de demander de les recevoir pour {place} à la place.",
+      intro:
+        "Cette adresse reçoit déjà des alertes gel pour {current}. Quelqu’un vient de demander de les recevoir pour {place} à la place.",
       keep: "Rien ne change tant que vous ne cliquez pas ci-dessous. Vos alertes pour {current} continuent comme d’habitude.",
-      ignore: "Si vous n’avez rien demandé, ignorez ce message. Le lien cesse de fonctionner après 7 jours.",
+      ignore:
+        "Si vous n’avez rien demandé, ignorez ce message. Le lien cesse de fonctionner après 7 jours.",
       cta: "Changer mes alertes gel",
       footerNote:
         "Vous recevez ce message parce que quelqu’un a saisi cette adresse sur la prévision de gel des canalisations de ProbeHarbor.",
@@ -58,13 +62,16 @@ const fr: AlertJobsMessages = {
       },
       above: "Reste au-dessus de zéro (minimale {low}).",
       wind: "Un vent jusqu’à {wind} par températures négatives refroidit plus vite les canalisations exposées.",
-      nextDay: "Le lendemain reste aussi sous zéro : les espaces non chauffés ne se réchaufferont pas.",
+      nextDay:
+        "Le lendemain reste aussi sous zéro : les espaces non chauffés ne se réchaufferont pas.",
     },
   },
   stuck: {
-    faultReset: "la valeur qu’envoie un DS18B20 après une réinitialisation (souvent une alimentation trop faible ou un câble trop long)",
+    faultReset:
+      "la valeur qu’envoie un DS18B20 après une réinitialisation (souvent une alimentation trop faible ou un câble trop long)",
     faultDisconnected: "la valeur qu’envoie la bibliothèque DS18B20 quand la sonde est déconnectée",
-    faultMessage: "{label} indique {value} °F, {why}. Vérifiez le câblage de la sonde : ce n’est pas une vraie température.",
+    faultMessage:
+      "{label} indique {value} °F, {why}. Vérifiez le câblage de la sonde : ce n’est pas une vraie température.",
     faultDetail: "{label} indique {value} {unit} (défaut du capteur), vérifiez le câblage",
     stuckMessage:
       "{label} envoie exactement {value} °F depuis {span}. La sonde est peut-être bloquée ou la carte renvoie une ancienne valeur ; un gel ici pourrait passer inaperçu.",
@@ -83,7 +90,8 @@ const fr: AlertJobsMessages = {
   tenant: {
     greetingName: "Bonjour {name},",
     greeting: "Bonjour,",
-    intro: "Le gestionnaire de {household} nous a demandé de vous transmettre une alerte de risque de gel :",
+    intro:
+      "Le gestionnaire de {household} nous a demandé de vous transmettre une alerte de risque de gel :",
     eyebrow: "Alerte transmise au locataire",
     footerNote:
       "Vous recevez ce message parce que le propriétaire vous a désigné comme contact sur place. Ce n’est pas un accès complet au tableau de bord.",
@@ -113,9 +121,12 @@ const fr: AlertJobsMessages = {
       "Marquée comme fausse alerte : alertes mises en pause 24 h. Solution suggérée : {tip}. Ouvrez {href}",
     results: {
       ack: "Alerte marquée comme traitée.",
-      snooze_1h: "Alerte traitée : autres alertes mises en pause pendant 1 heure. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
-      snooze_4h: "Alerte traitée : autres alertes mises en pause pendant 4 heures. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
-      snooze_24h: "Alerte traitée : autres alertes mises en pause pendant 24 heures. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
+      snooze_1h:
+        "Alerte traitée : autres alertes mises en pause pendant 1 heure. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
+      snooze_4h:
+        "Alerte traitée : autres alertes mises en pause pendant 4 heures. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
+      snooze_24h:
+        "Alerte traitée : autres alertes mises en pause pendant 24 heures. Les alertes gel restent actives ; celle-ci ne se répétera pas tant qu’elle dure.",
       false_alarm:
         "Marquée comme fausse alerte : alertes mises en pause 24 h. Vérifiez l’emplacement de la sonde si cela se reproduit.",
       raise_threshold: "Fausse alerte traitée et seuil de gel relevé.",
@@ -129,7 +140,8 @@ const fr: AlertJobsMessages = {
       "Les commandes Telegram sont désactivées tant que vous n’avez pas enregistré un Chat ID dans Alertes.",
     snoozed: {
       one: "Alertes mises en pause pendant {count} heure. Les alertes gel et fuite restent actives.",
-      other: "Alertes mises en pause pendant {count} heures. Les alertes gel et fuite restent actives.",
+      other:
+        "Alertes mises en pause pendant {count} heures. Les alertes gel et fuite restent actives.",
     },
     vacation: {
       one: "Mode vacances activé pour {count} jour. Les alertes gel et fuite restent actives.",
@@ -164,7 +176,10 @@ const fr: AlertJobsMessages = {
     missingToken: "Jeton manquant",
     resultInvalid: "Lien de mise en pause non valide ou déjà utilisé.",
     resultExpired: "Le lien de mise en pause a expiré.",
-    resultSnoozed: { one: "Alertes mises en pause pendant {count} heure.", other: "Alertes mises en pause pendant {count} heures." },
+    resultSnoozed: {
+      one: "Alertes mises en pause pendant {count} heure.",
+      other: "Alertes mises en pause pendant {count} heures.",
+    },
   },
 };
 

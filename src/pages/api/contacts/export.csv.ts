@@ -1,10 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { isUserAdmin } from "../../../lib/adminAccess";
-import {
-  buildContactsCsv,
-  fetchAllContactSubmissions,
-} from "../../../lib/contactSubmissions";
+import { buildContactsCsv, fetchAllContactSubmissions } from "../../../lib/contactSubmissions";
 import { apiLocale, apiMoreCommonMessages } from "../../../i18n/messages/app/apiMore/common";
 
 export const GET: APIRoute = async (context) => {

@@ -31,7 +31,12 @@ describe("nextAppVersion", () => {
 
   it("ignores other tag families and look-alikes", () => {
     expect(
-      nextAppVersion(day, ["v2026.10.28", "firmware-v1.2.2", "app-v2026.10.280", "app-v2026x10x28"]),
+      nextAppVersion(day, [
+        "v2026.10.28",
+        "firmware-v1.2.2",
+        "app-v2026.10.280",
+        "app-v2026x10x28",
+      ]),
     ).toBe("2026.10.28");
   });
 });

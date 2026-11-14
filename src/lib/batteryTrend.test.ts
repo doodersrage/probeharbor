@@ -9,7 +9,11 @@ describe("battery trend", () => {
   it("appends samples with cap", () => {
     let history: unknown = [];
     for (let i = 0; i < 20; i += 1) {
-      history = appendBatterySample(history, 100 - i, `2026-01-${String(i + 1).padStart(2, "0")}T00:00:00Z`);
+      history = appendBatterySample(
+        history,
+        100 - i,
+        `2026-01-${String(i + 1).padStart(2, "0")}T00:00:00Z`,
+      );
     }
     expect((history as []).length).toBeLessThanOrEqual(14);
   });

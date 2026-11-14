@@ -96,10 +96,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   try {
     if (pathRequiresAuth(pathname)) {
-      const { session, user } = await getAuthFromRequest(
-        context.request,
-        context.cookies,
-      );
+      const { session, user } = await getAuthFromRequest(context.request, context.cookies);
 
       if (!session) {
         if (pathname.startsWith("/api/") && prefersJsonAuthError(context.request)) {
@@ -124,17 +121,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
       context.locals.session = session;
       context.locals.user = user ?? null;
 
-      if (
-        user &&
-        pathname.startsWith("/dashboard") &&
-        !pathname.startsWith("/api/")
-      ) {
+      if (user && pathname.startsWith("/dashboard") && !pathname.startsWith("/api/")) {
         const { loadDashboardShellForUser } = await import("./lib/dashboardShell");
-        context.locals.dashboardShell = await loadDashboardShellForUser(
-          user,
-          session,
-          { includeLiveLag: true },
-        );
+        context.locals.dashboardShell = await loadDashboardShellForUser(user, session, {
+          includeLiveLag: true,
+        });
       }
 
       if (!isMfaExemptPath(pathname)) {
@@ -174,10 +165,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (!headers.has("Permissions-Policy")) {
       // The public pipe freeze forecast offers "Use my location"; nothing else asks.
       const geolocation = pathname === "/pipe-freeze-forecast" ? "(self)" : "()";
-      headers.set(
-        "Permissions-Policy",
-        `camera=(), microphone=(), geolocation=${geolocation}`,
-      );
+      headers.set("Permissions-Policy", `camera=(), microphone=(), geolocation=${geolocation}`);
     }
     if (!headers.has("Content-Security-Policy-Report-Only")) {
       // Report-Only first: gather violations without breaking dashboard/analytics.
@@ -206,7 +194,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const cut = location.search(/[?#]/);
       const target = cut === -1 ? location : location.slice(0, cut);
       if (isLocalizablePath(target)) {
-        headers.set("Location", `${localizePath(target, locale)}${cut === -1 ? "" : location.slice(cut)}`);
+        headers.set(
+          "Location",
+          `${localizePath(target, locale)}${cut === -1 ? "" : location.slice(cut)}`,
+        );
       }
     }
     const isHtml = headers.get("Content-Type")?.includes("text/html") ?? false;
@@ -216,7 +207,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
       if (!isLocalizablePath(pathname)) {
         for (const name of ["Cookie", "Accept-Language"]) {
           const vary = headers.get("Vary") ?? "";
-          if (!vary.toLowerCase().split(/\s*,\s*/).includes(name.toLowerCase())) {
+          if (
+            !vary
+              .toLowerCase()
+              .split(/\s*,\s*/)
+              .includes(name.toLowerCase())
+          ) {
             headers.set("Vary", vary ? `${vary}, ${name}` : name);
           }
         }

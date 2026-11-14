@@ -10,7 +10,8 @@ const es: ApiMoreBillingMessages = {
   },
   claims: {
     requiresPro: "El paquete para reclamaciones requiere Pro",
-    pdfUnavailable: "La generación de PDF no está disponible temporalmente. Prueba ?format=html o vuelve a intentarlo en un momento.",
+    pdfUnavailable:
+      "La generación de PDF no está disponible temporalmente. Prueba ?format=html o vuelve a intentarlo en un momento.",
   },
   certificate: {
     failed: "No se pudo generar el certificado",
@@ -19,9 +20,11 @@ const es: ApiMoreBillingMessages = {
   claimsEmail: {
     eyebrow: "Paquete para reclamaciones",
     range: "{from} al {to}",
-    preheader: "Un informe de exposición a heladas de ProbeHarbor para {household} está listo para consultar.",
+    preheader:
+      "Un informe de exposición a heladas de ProbeHarbor para {household} está listo para consultar.",
     title: "Paquete para reclamaciones: {household}",
-    intro: "Un miembro de un hogar de ProbeHarbor ha compartido un informe de exposición a heladas e historial de alertas que abarca del {range}.",
+    intro:
+      "Un miembro de un hogar de ProbeHarbor ha compartido un informe de exposición a heladas e historial de alertas que abarca del {range}.",
     body: "El informe incluye estadísticas de exposición a heladas, tablas de dispositivos y sondas, y una cronología de las alertas críticas del periodo seleccionado, con un código de verificación para poder volver a confirmar esta exportación concreta más adelante.",
     verificationCode: "Código de verificación: {code}",
     cta: "Ver paquete para reclamaciones",

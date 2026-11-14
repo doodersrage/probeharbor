@@ -1,4 +1,3 @@
-
 /** Body copy for /about/temperature-probe-case-study. Hrefs stay English; middleware localizes them. */
 const FIRMWARE_LINK =
   '<a class="text-link" target="_blank" rel="noreferrer" href="https://github.com/doodersrage/arduino-network-json-temperature-sever">arduino-network-json-temperature-sever</a>';
@@ -7,7 +6,8 @@ import type { Messages } from "./en";
 const fr: Messages = {
   heroAlt:
     "Contrôleur de sondes de température pour garage, deuxième révision, avec connexion Ethernet et plusieurs entrées capteurs",
-  heroCaption: "Révision deux de la carte de sondes ProbeHarbor. Ethernet, écran LCD et deux entrées DHT22.",
+  heroCaption:
+    "Révision deux de la carte de sondes ProbeHarbor. Ethernet, écran LCD et deux entrées DHT22.",
   intro:
     "Cette étude de cas retrace la construction de la sonde de température qui alimente ProbeHarbor : pourquoi un simple thermomètre extérieur ne suffisait pas, comment deux zones DHT22 et une moyenne de synthèse ont été retenues, et ce qui a changé entre la première installation sur platine d’essai et la révision connectée au réseau qui sert aujourd’hui du JSON en direct à ce site.",
   challengeTitle: "Le défi",
@@ -31,7 +31,8 @@ const fr: Messages = {
     'L’emplacement suit les règles du <a class="text-link" href="/about/temperature-probes">guide des sondes de température</a> : à l’écart des taches de soleil direct et des extracteurs, à peu près à hauteur d’épaule, avec un montage ventilé pour que l’air circule autour de la tête du capteur. Dans le dashboard, des libellés associent les clés JSON <code>0</code> et <code>1</code> à des noms de zone lisibles.',
   ],
   rev1Alt: "Carte de sonde première révision sur platine d’essai avec capteurs DHT22 et écran LCD",
-  rev1Caption: "La révision un a validé sur l’établi le câblage, les intervalles de lecture et la structure du JSON avant la pose dans le garage.",
+  rev1Caption:
+    "La révision un a validé sur l’établi le câblage, les intervalles de lecture et la structure du JSON avant la pose dans le garage.",
   timelineTitle: "Étapes de la construction",
   timelineHtml: [
     "<strong>Mise en route sur l’établi :</strong> les journaux série ont confirmé les lectures du DHT22, l’affichage LCD et des clés JSON <code>temp</code> stables avant que la carte ne quitte le bureau.",
@@ -41,7 +42,8 @@ const fr: Messages = {
     "<strong>Intégration au site :</strong> les pages Astro associent les flux à des cartes ; l’historique des utilisateurs connectés enregistre des instantanés pour analyser les tendances et exporter en CSV.",
   ],
   dataTitle: "Ce que les données ont montré",
-  dataLede: "Après un cycle complet hiver-été, les sondes se sont révélées utiles là où un relevé unique serait passé à côté :",
+  dataLede:
+    "Après un cycle complet hiver-été, les sondes se sont révélées utiles là où un relevé unique serait passé à côté :",
   data: [
     "Près de la porte, la température pouvait varier de 4 à 7 °C (8–12 °F) quelques minutes après l’ouverture de la porte de garage, alors que le mur du fond bougeait à peine.",
     "Les minimales nocturnes près du mur nord suivaient le risque de gel de façon plus fiable que les seules prévisions extérieures.",

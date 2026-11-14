@@ -43,8 +43,10 @@ const fr: PricingMessages = {
     saveApprox: "Économisez ~20 %",
     saveVsMonthly: "{pct} d’économie par rapport au mensuel",
     switchToAnnual: "Passez à l’annuel pour économiser {pct}",
-    monthlyHint: "Vous voyez les prix mensuels. L’annuel vous garantit {pct} de réduction ({memberAnnual} / {proAnnual} par an).",
-    annualHint: "Vous voyez les totaux annuels. Passez sur Mensuel pour voir {memberMonthly} / {proMonthly} par mois.",
+    monthlyHint:
+      "Vous voyez les prix mensuels. L’annuel vous garantit {pct} de réduction ({memberAnnual} / {proAnnual} par an).",
+    annualHint:
+      "Vous voyez les totaux annuels. Passez sur Mensuel pour voir {memberMonthly} / {proMonthly} par mois.",
     withTrial: "{sub} · essai gratuit de 14 jours",
   },
   cards: {
@@ -84,7 +86,8 @@ const fr: PricingMessages = {
     },
     portfolio: {
       badge: "Pour les parcs immobiliers",
-      tagline: "Au-delà du plafond de {proMax} propriétés de Pro : des gestionnaires sans accès à la facturation",
+      tagline:
+        "Au-delà du plafond de {proMax} propriétés de Pro : des gestionnaires sans accès à la facturation",
       everythingInPro: "Tout Pro, plus : ",
       properties: "Jusqu’à {max} propriétés détenues (Pro couvre déjà jusqu’à {proMax})",
       crossProperty: "Tableau de bord du risque de gel multi-propriétés",
@@ -113,7 +116,8 @@ const fr: PricingMessages = {
     title: "Comparatif complet des fonctionnalités",
     subtitleHtml:
       'La matrice de référence Free / Member / Pro / Portfolio : nombre d’appareils, conservation, alertes gel et fuite, thermostat et accès gestionnaires. Vous comparez ProbeHarbor à MQTT, Govee ou une station météo ? <a class="text-link" href="/compare">Voir les alternatives</a> (guides comparatifs, pas une seconde copie de ce tableau).',
-    noteHtml: 'Portfolio inclut tout ce que propose Pro, relève ensuite le plafond de propriétés détenues (Pro en autorise déjà jusqu’à {proMax} ; Portfolio jusqu’à {portfolioMax}) et ajoute les accès gestionnaires immobiliers : voir la carte Portfolio ci-dessus et <a class="text-link" href="/property-management">gestion immobilière</a>.',
+    noteHtml:
+      'Portfolio inclut tout ce que propose Pro, relève ensuite le plafond de propriétés détenues (Pro en autorise déjà jusqu’à {proMax} ; Portfolio jusqu’à {portfolioMax}) et ajoute les accès gestionnaires immobiliers : voir la carte Portfolio ci-dessus et <a class="text-link" href="/property-management">gestion immobilière</a>.',
   },
   hosted: {
     title: "Hébergé sur le réseau edge de Cloudflare",

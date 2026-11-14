@@ -24,7 +24,9 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
 }
 
 /** The stored subscription id and status (for the "don't overwrite an active one" rule). Throws on failure. */
-export async function storedSubscription(userId: string): Promise<{ stripe_subscription_id: string; status: string } | null> {
+export async function storedSubscription(
+  userId: string,
+): Promise<{ stripe_subscription_id: string; status: string } | null> {
   const [row] = await query<{ stripe_subscription_id: string; status: string }>(
     "select stripe_subscription_id, status from public.stripe_subscriptions where user_id = $1",
     [userId],
@@ -67,9 +69,17 @@ export async function upsertSubscriptionRow(row: {
 }
 
 /** sync_plan_group_membership, falling back to the older member-only function when that call fails. */
-export async function syncPlanGroup(userId: string, planTier: string, isActive: boolean): Promise<{ error: string | null }> {
+export async function syncPlanGroup(
+  userId: string,
+  planTier: string,
+  isActive: boolean,
+): Promise<{ error: string | null }> {
   try {
-    await query("select public.sync_plan_group_membership($1, $2, $3)", [userId, planTier, isActive]);
+    await query("select public.sync_plan_group_membership($1, $2, $3)", [
+      userId,
+      planTier,
+      isActive,
+    ]);
     return { error: null };
   } catch {
     try {
@@ -97,7 +107,10 @@ export async function findUserIdBySubscriptionId(subscriptionId: string): Promis
  * Record a webhook event id; alreadyProcessed when it was recorded before.
  * Any database error fails open (process the event).
  */
-export async function claimWebhookEvent(eventId: string, eventType: string): Promise<{ alreadyProcessed: boolean }> {
+export async function claimWebhookEvent(
+  eventId: string,
+  eventType: string,
+): Promise<{ alreadyProcessed: boolean }> {
   try {
     const rows = await query(
       `insert into public.stripe_webhook_events (id, type) values ($1, $2)

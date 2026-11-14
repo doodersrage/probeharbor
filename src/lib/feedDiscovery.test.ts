@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  discoverFeedProbes,
-  discoverIngestPayload,
-  mergeDiscoveredProbes,
-} from "./feedDiscovery";
+import { discoverFeedProbes, discoverIngestPayload, mergeDiscoveredProbes } from "./feedDiscovery";
 
 describe("discoverFeedProbes", () => {
   it("discovers native temp object probes with default labels", () => {

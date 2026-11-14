@@ -1,4 +1,3 @@
-
 /** Body copy for /about/ch32v-riscv-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 

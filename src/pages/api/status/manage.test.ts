@@ -20,7 +20,9 @@ vi.mock("../../../lib/householdAuth", () => ({
     redirect: (url: string) => Response,
   ) => {
     if (manager.ok) return null;
-    return redirect(`${redirectTo}?error=${manager.error === "manager_required" ? "manager_required" : "1"}`);
+    return redirect(
+      `${redirectTo}?error=${manager.error === "manager_required" ? "manager_required" : "1"}`,
+    );
   },
   householdManagerCtx: (manager: { ok: boolean; ctx?: { householdId: string } }) => {
     if (!manager.ok) throw new Error("not a manager");
@@ -201,7 +203,10 @@ describe("POST /api/status/manage", () => {
   });
 
   it("redirects with an error when the status page isn't found", async () => {
-    mockRegenerateStatusPageToken.mockResolvedValue({ token: null, error: "Status page not found" });
+    mockRegenerateStatusPageToken.mockResolvedValue({
+      token: null,
+      error: "Status page not found",
+    });
     const { POST } = await import("./manage");
 
     const response = await POST(makeContext({ action: "regenerate", id: "nope" }));

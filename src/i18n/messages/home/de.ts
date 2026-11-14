@@ -66,7 +66,8 @@ const de: HomeMessages = {
     title: "1 °C (34 °F). Dann zählt der Alarm.",
     copyHtml:
       'Stell dir eine angebaute Garage vor, in der eine Ecke in jeder klaren Nacht unter 1 °C (34 °F) fällt. Der Alarm sagt, dass etwas nicht stimmt; der Verlauf zeigt, wo – nämlich an einer undichten Tordichtung, bevor die Leitungen vereisen. Genau so eine Zeitleiste würde ein <a class="text-link" href="/claims-pack">Nachweispaket</a> dokumentieren, falls ein Frostschaden je mit der Versicherung geklärt werden muss.',
-    shotCaption: "Dieselbe Frostlinie, die Haushalte unter Alarme festlegen, sichtbar in den Verlaufskurven.",
+    shotCaption:
+      "Dieselbe Frostlinie, die Haushalte unter Alarme festlegen, sichtbar in den Verlaufskurven.",
     read: "Szenario lesen",
     more: "Weitere Szenarien",
   },

@@ -1,9 +1,6 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../../lib/auth";
-import {
-  hasMobileOAuthCookie,
-  maybeRedirectMobileOAuth,
-} from "../../../../lib/mobileAuthRedirect";
+import { hasMobileOAuthCookie, maybeRedirectMobileOAuth } from "../../../../lib/mobileAuthRedirect";
 import { buildMfaChallengeUrl } from "../../../../lib/mfa";
 import { hasValidMfaStepUpProof } from "../../../../lib/mfaStepUpProof";
 import { createAppSessionToken } from "../../../../lib/betterAuthAppHandoff";

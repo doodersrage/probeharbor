@@ -10,10 +10,7 @@ import {
   listShareLinks,
   replaceShareLinkToken,
 } from "../../../lib/shareLinksStore";
-import {
-  redirectUnlessManager,
-  requireHouseholdManager,
-} from "../../../lib/householdAuth";
+import { redirectUnlessManager, requireHouseholdManager } from "../../../lib/householdAuth";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { FLASH_SHARE_TOKEN, setSecretFlash } from "../../../lib/secretFlash";
@@ -22,7 +19,6 @@ import { randomShareToken, storedShareTokenFields } from "../../../lib/shareLink
 
 const FAMILY_MAX_LIVE_LINKS = 1;
 const FAMILY_DEFAULT_EXPIRES_DAYS = 7;
-
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   const { user } = await getAuthFromRequest(request, cookies);
@@ -107,7 +103,11 @@ export const POST: APIRoute = async (context) => {
     if (!allowed) return redirect(withQuery(redirectTo, { error: "pro_required" }));
 
     const token = randomShareToken();
-    const { error } = await replaceShareLinkToken(household.householdId, link.id, await storedShareTokenFields(token));
+    const { error } = await replaceShareLinkToken(
+      household.householdId,
+      link.id,
+      await storedShareTokenFields(token),
+    );
     if (error) return redirect(withQuery(redirectTo, { error: "1" }));
 
     await recordHouseholdActivity({
@@ -120,19 +120,13 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { regenerated: "1" }));
   }
 
-  const familyOnly =
-    !entitlements.canCreateShareLinks && entitlements.canCreateFamilyShareLink;
+  const familyOnly = !entitlements.canCreateShareLinks && entitlements.canCreateFamilyShareLink;
   if (!entitlements.canCreateShareLinks && !entitlements.canCreateFamilyShareLink) {
     return redirect(withQuery(redirectTo, { error: "pro_required" }));
   }
 
   const scopeRaw = formData.get("scope")?.toString() ?? "live";
-  let scope =
-    scopeRaw === "history"
-      ? "history"
-      : scopeRaw === "metrics"
-        ? "metrics"
-        : "live";
+  let scope = scopeRaw === "history" ? "history" : scopeRaw === "metrics" ? "metrics" : "live";
   let label = formData.get("label")?.toString().trim() || null;
   let expiresDays = Number(formData.get("expires_days") ?? 0);
 
@@ -156,9 +150,7 @@ export const POST: APIRoute = async (context) => {
   }
 
   const expires_at =
-    expiresDays > 0
-      ? new Date(Date.now() + expiresDays * 24 * 60 * 60 * 1000).toISOString()
-      : null;
+    expiresDays > 0 ? new Date(Date.now() + expiresDays * 24 * 60 * 60 * 1000).toISOString() : null;
 
   const token = randomShareToken();
   const { error } = await insertShareLink({

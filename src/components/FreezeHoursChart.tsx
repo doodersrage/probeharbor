@@ -19,7 +19,8 @@ export const FREEZE_HOURS_CHART_TEXT_EN = {
   hoursValue: "{hours} h",
   /** Screen-reader summary on the chart (canvas aria-label). */
   summaryNone: "Days shown: {days}. No time at or below {temp}{unit}.",
-  summarySome: "Days shown: {days}. Days with time at or below {temp}{unit}: {belowDays}. Most: {hours} h on {day}.",
+  summarySome:
+    "Days shown: {days}. Days with time at or below {temp}{unit}: {belowDays}. Most: {hours} h on {day}.",
 };
 
 export type FreezeHoursChartText = typeof FREEZE_HOURS_CHART_TEXT_EN;
@@ -36,7 +37,9 @@ interface Props {
 }
 
 function fill(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
 }
 
 function isEnglishLocale(locale?: string): boolean {
@@ -65,7 +68,12 @@ function dayLabel(day: DailyFreezeHours, locale?: string): string {
 export function freezeHoursSummary(
   days: DailyFreezeHours[],
   text: Pick<FreezeHoursChartText, "summaryNone" | "summarySome">,
-  format: { temp: string; unit: string; hours: (h: number) => string; day: (d: DailyFreezeHours) => string },
+  format: {
+    temp: string;
+    unit: string;
+    hours: (h: number) => string;
+    day: (d: DailyFreezeHours) => string;
+  },
 ): string {
   if (days.length === 0) return "";
   const below = days.filter((d) => d.hoursBelow > 0);
@@ -102,7 +110,9 @@ export default function FreezeHoursChart({
     ? fixed(shown(thresholdF), 1, locale)
     : isEnglishLocale(locale)
       ? String(thresholdF)
-      : new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false }).format(thresholdF);
+      : new Intl.NumberFormat(locale, { maximumFractionDigits: 2, useGrouping: false }).format(
+          thresholdF,
+        );
   const summaryText = freezeHoursSummary(days, text, {
     temp: thresholdLabel,
     unit,
@@ -122,10 +132,7 @@ export default function FreezeHoursChart({
     width: number;
   } | null>(null);
 
-  const maxHours = useMemo(
-    () => Math.max(1, ...days.map((d) => d.hoursBelow)),
-    [days],
-  );
+  const maxHours = useMemo(() => Math.max(1, ...days.map((d) => d.hoursBelow)), [days]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -309,10 +316,7 @@ export default function FreezeHoursChart({
               <p class="history-chart-tooltip-time">{dayLabel(hover, locale)}</p>
               <ul class="history-chart-tooltip-list">
                 <li>
-                  <span
-                    class="history-chart-tooltip-swatch"
-                    style={{ background: "#38bdf8" }}
-                  />
+                  <span class="history-chart-tooltip-swatch" style={{ background: "#38bdf8" }} />
                   <span class="history-chart-tooltip-label">{text.belowFreeze}</span>
                   <span class="history-chart-tooltip-value">
                     {fill(text.hoursValue, { hours: fixed(hover.hoursBelow, 1, locale) })}
@@ -320,13 +324,11 @@ export default function FreezeHoursChart({
                 </li>
                 {hover.coldestF != null && (
                   <li>
-                    <span
-                      class="history-chart-tooltip-swatch"
-                      style={{ background: "#94a3b8" }}
-                    />
+                    <span class="history-chart-tooltip-swatch" style={{ background: "#94a3b8" }} />
                     <span class="history-chart-tooltip-label">{text.coldest}</span>
                     <span class="history-chart-tooltip-value">
-                      {fixed(shown(hover.coldestF), 1, locale)}{unit}
+                      {fixed(shown(hover.coldestF), 1, locale)}
+                      {unit}
                     </span>
                   </li>
                 )}

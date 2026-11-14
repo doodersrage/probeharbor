@@ -33,7 +33,8 @@ const es: ShareKitMessages = {
     "Sé breve y abre con el gancho del riesgo de congelación. Si quieres, añade una respuesta con el simulador o el mapa.",
   hnTitle: "Hacker News / Show HN",
   hnTitleHint: "Título sugerido (pégalo en el campo de título de Show HN):",
-  hnBodyHint: "Cuerpo del comentario: primero la historia, luego los enlaces. En HN los detalles concretos funcionan mejor que un eslogan genérico.",
+  hnBodyHint:
+    "Cuerpo del comentario: primero la historia, luego los enlaces. En HN los detalles concretos funcionan mejor que un eslogan genérico.",
   discordTitle: "Discord / chat",
   discordCopy:
     "Para los canales de proyectos de Discord de ESPHome, DIY o makers y los de «¿en qué estás trabajando?», no para mensajes directos en frío. Mejor un hilo donde ya se hable de heladas, climatización o hardware de sondas.",
@@ -75,7 +76,8 @@ const es: ShareKitMessages = {
   operator:
     "tareas del fundador/operador (Play Store, Nest/Ecobee, inclusión por defecto en HACS). Útil si tienes una instalación propia o colaboras en la infraestructura del lanzamiento; no es un texto para compartir.",
   haDraftLabel: "Borrador largo para el foro de HA ↗",
-  haDraft: "más largo que el cuadro de texto de arriba, para cuando necesites una publicación completa en el foro",
+  haDraft:
+    "más largo que el cuadro de texto de arriba, para cuando necesites una publicación completa en el foro",
   discordDraftLabel: "Borrador de anuncio para Discord / redes ↗",
   discordDraft: "texto alternativo más largo para chats",
 };

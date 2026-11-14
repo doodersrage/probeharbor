@@ -1,4 +1,3 @@
-
 /** Body copy for /about/pic18-ethernet-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -15,9 +14,11 @@ const de: Messages = {
   boardPart: "PIC18F67J60-Board",
   boardWhy: "Integrierter MAC + PHY + RJ45. PICkit / ICD zum Flashen.",
   probePart: "Wasserdichter DS18B20",
-  probeWhyHtml: "Standard-Pin im Beispiel: <strong>RD0</strong> (ändern, falls deine Demo ihn belegt).",
+  probeWhyHtml:
+    "Standard-Pin im Beispiel: <strong>RD0</strong> (ändern, falls deine Demo ihn belegt).",
   resistorPart: "4.7kΩ-Widerstand",
-  resistorWhy: "Pull-up auf die 1-Wire-VDD des Boards (Pegelwandler nutzen, wenn die IOs nur 5V können).",
+  resistorWhy:
+    "Pull-up auf die 1-Wire-VDD des Boards (Pegelwandler nutzen, wenn die IOs nur 5V können).",
   ethernetPart: "Ethernet-Anschluss",
   ethernetWhy: "DHCP oder statische IP in der MLA-Demo. Relay-Rechner im selben LAN.",
   ethernetBuy: "Cat5e-Kabel zu deinem Switch.",

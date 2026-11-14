@@ -51,12 +51,16 @@ if (!/^postgres(ql)?:$/.test(url.protocol)) {
 
 const version = spawnSync("pg_dump", ["--version"], { encoding: "utf8" });
 if (version.status !== 0) {
-  console.error("pg_dump was not found on PATH. Install the PostgreSQL client tools (18 or newer).");
+  console.error(
+    "pg_dump was not found on PATH. Install the PostgreSQL client tools (18 or newer).",
+  );
   process.exit(1);
 }
 const major = Number(/(\d+)\./.exec(version.stdout)?.[1] ?? 0);
 if (major < 18) {
-  console.error(`${version.stdout.trim()} is older than the server (18). Install pg_dump 18 or newer.`);
+  console.error(
+    `${version.stdout.trim()} is older than the server (18). Install pg_dump 18 or newer.`,
+  );
   process.exit(1);
 }
 
@@ -85,12 +89,16 @@ if (dump.status !== 0) {
   rmSync(file, { force: true });
   console.error(`pg_dump failed (exit ${dump.status}). No backup was written.`);
   if (/-pooler\./i.test(url.hostname)) {
-    console.error('Hint: that is a pooled host (…-pooler…). Use the direct connection string (Neon → Connect, "Connection pooling" off).');
+    console.error(
+      'Hint: that is a pooled host (…-pooler…). Use the direct connection string (Neon → Connect, "Connection pooling" off).',
+    );
   }
   process.exit(dump.status ?? 1);
 }
 
 chmodSync(file, 0o600);
 const mb = (statSync(file).size / 1024 / 1024).toFixed(1);
-console.log(`Done: ${mb} MB. It holds user data and hashed credentials: keep it encrypted and off shared drives.`);
+console.log(
+  `Done: ${mb} MB. It holds user data and hashed credentials: keep it encrypted and off shared drives.`,
+);
 console.log(`Check it with: pg_restore --list "${file}" | head`);

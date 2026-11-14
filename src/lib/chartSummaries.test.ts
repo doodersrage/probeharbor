@@ -55,7 +55,11 @@ describe("summary translations", () => {
     ["fr", fr],
     ["pt-br", ptBr],
   ] as const)("%s uses the same placeholders as English", (_l, messages) => {
-    expect(placeholders(messages.indoorOutdoor.summary!)).toEqual(placeholders(en.indoorOutdoor.summary));
-    expect(placeholders(messages.probeSpread.summary!)).toEqual(placeholders(en.probeSpread.summary));
+    expect(placeholders(messages.indoorOutdoor.summary!)).toEqual(
+      placeholders(en.indoorOutdoor.summary),
+    );
+    expect(placeholders(messages.probeSpread.summary!)).toEqual(
+      placeholders(en.probeSpread.summary),
+    );
   });
 });

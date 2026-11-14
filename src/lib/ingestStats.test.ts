@@ -43,7 +43,15 @@ describe("listIngestStatsForHousehold", () => {
   });
 
   it("defaults to 7 days and returns the rows", async () => {
-    const rows = [{ device_id: "d1", day: "2024-06-15", success_count: 3, error_count: 0, device_name: "Garage" }];
+    const rows = [
+      {
+        device_id: "d1",
+        day: "2024-06-15",
+        success_count: 3,
+        error_count: 0,
+        device_name: "Garage",
+      },
+    ];
     mockListHousehold.mockResolvedValue(rows);
     const { listIngestStatsForHousehold } = await import("./ingestStats");
 

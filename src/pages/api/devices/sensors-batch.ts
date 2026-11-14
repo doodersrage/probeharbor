@@ -39,10 +39,13 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     });
   }
   if (!Array.isArray(body.sensors) || body.sensors.length === 0) {
-    return new Response(JSON.stringify({ ok: false, error: apiDevicesMessages(locale).noSensorsProvided }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ ok: false, error: apiDevicesMessages(locale).noSensorsProvided }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 
   const { householdId } = householdEditorCtx(editor);

@@ -25,10 +25,7 @@ import { betterAuthNeedsStepUp } from "../../../lib/betterAuthMfaGate";
 import { hasTwoFactorChallenge, jsonWithAuthCookies } from "../../../lib/betterAuthMfa";
 
 /** Mint step-up proof after successful MFA (needed for YubiKey aal1 path). */
-async function issueMfaStepUpProof(
-  cookies: AstroCookies,
-  userId: string,
-): Promise<string | null> {
+async function issueMfaStepUpProof(cookies: AstroCookies, userId: string): Promise<string | null> {
   const token = await createMfaStepUpProof(userId);
   if (token) setMfaStepUpCookie(cookies, token);
   return token;
@@ -70,7 +67,9 @@ async function verify(
 ): Promise<Response> {
   const { asJson, code, yubikeyOtp, action } = input;
   // Signing in for an app: finish by handing it a session (companion/complete).
-  const safeNext = hasMobileOAuthCookie(cookies) ? "/api/auth/companion/complete" : (sanitizeNextPath(input.next) ?? "/dashboard");
+  const safeNext = hasMobileOAuthCookie(cookies)
+    ? "/api/auth/companion/complete"
+    : (sanitizeNextPath(input.next) ?? "/dashboard");
   const fail = (error: string, status = 400) =>
     asJson ? jsonResponse({ error }, status) : redirect(buildMfaErrorRedirect(error, safeNext));
 
@@ -82,19 +81,35 @@ async function verify(
     const challengeKey = `2fa:${cookies.get("__Secure-better-auth.two_factor")?.value ?? cookies.get("better-auth.two_factor")?.value ?? ""}`;
     if (!checkMfaVerifyRateLimit(challengeKey).ok) return fail("rate_limited", 429);
     // The endpoint checks its one field by hand (no schema), so give the call its shape here.
-    type VerifyYubiKey = (args: { body: { otp: string }; headers: Headers; asResponse: true }) => Promise<Response>;
+    type VerifyYubiKey = (args: {
+      body: { otp: string };
+      headers: Headers;
+      asResponse: true;
+    }) => Promise<Response>;
     const res = await withBetterAuth(request, (auth) =>
-      (auth.api.verifyYubiKeyTwoFactor as unknown as VerifyYubiKey)({ body: { otp: yubikeyOtp }, headers: request.headers, asResponse: true }),
+      (auth.api.verifyYubiKeyTwoFactor as unknown as VerifyYubiKey)({
+        body: { otp: yubikeyOtp },
+        headers: request.headers,
+        asResponse: true,
+      }),
     );
     if (!res.ok) {
       recordMfaVerifyFailure(challengeKey);
       const reason = (await betterAuthErrorCode(res)) ?? "";
       if (reason === "YUBIKEY_NOT_CONFIGURED") return fail("generic", 503);
-      return fail(reason === "REPLAYED" ? "replayed_otp" : reason === "NOT_ENROLLED" ? "yubikey_not_enrolled" : "invalid_yubikey");
+      return fail(
+        reason === "REPLAYED"
+          ? "replayed_otp"
+          : reason === "NOT_ENROLLED"
+            ? "yubikey_not_enrolled"
+            : "invalid_yubikey",
+      );
     }
     clearMfaVerifyFailures(challengeKey);
     setMfaRequiredCookie(cookies, false);
-    return asJson ? jsonWithAuthCookies({ ok: true, aal: "aal2" }, 200, res) : redirectWithAuthCookies(safeNext, res);
+    return asJson
+      ? jsonWithAuthCookies({ ok: true, aal: "aal2" }, 200, res)
+      : redirectWithAuthCookies(safeNext, res);
   }
 
   if (!yubikeyOtp && hasTwoFactorChallenge(cookies)) {
@@ -104,17 +119,27 @@ async function verify(
     );
     if (!res.ok) {
       const reason = (await betterAuthErrorCode(res)) ?? "";
-      return fail(/ATTEMPT/i.test(reason) ? "rate_limited" : "invalid_code", /ATTEMPT/i.test(reason) ? 429 : 400);
+      return fail(
+        /ATTEMPT/i.test(reason) ? "rate_limited" : "invalid_code",
+        /ATTEMPT/i.test(reason) ? 429 : 400,
+      );
     }
     setMfaRequiredCookie(cookies, false);
-    return asJson ? jsonWithAuthCookies({ ok: true, aal: "aal2" }, 200, res) : redirectWithAuthCookies(safeNext, res);
+    return asJson
+      ? jsonWithAuthCookies({ ok: true, aal: "aal2" }, 200, res)
+      : redirectWithAuthCookies(safeNext, res);
   }
 
   const { user } = await getAuthFromCookies(cookies);
-  if (!user) return asJson ? jsonResponse({ error: "Unauthorized" }, 401) : redirect("/signin?error=generic");
+  if (!user)
+    return asJson
+      ? jsonResponse({ error: "Unauthorized" }, 401)
+      : redirect("/signin?error=generic");
   const metadata = await getUserMetadata(user.id).catch(() => user.user_metadata ?? {});
   const fresh = { id: user.id, user_metadata: metadata };
-  const needsStepUp = await betterAuthNeedsStepUp(fresh, (id) => hasValidMfaStepUpProof(request, cookies, id));
+  const needsStepUp = await betterAuthNeedsStepUp(fresh, (id) =>
+    hasValidMfaStepUpProof(request, cookies, id),
+  );
   if (!needsStepUp) {
     setMfaRequiredCookie(cookies, false);
     return asJson ? jsonResponse({ ok: true, aal: "aal2" }) : redirect(safeNext);
@@ -141,7 +166,9 @@ async function verify(
     return fail("generic", 503);
   }
   setMfaRequiredCookie(cookies, false);
-  return asJson ? jsonResponse({ ok: true, aal: "aal2", mfa_stepup: mfaStepup }) : redirect(safeNext);
+  return asJson
+    ? jsonResponse({ ok: true, aal: "aal2", mfa_stepup: mfaStepup })
+    : redirect(safeNext);
 }
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {

@@ -27,9 +27,7 @@ beforeEach(() => {
     session: { access_token: "tok" },
     user: { id: "user-1" },
   });
-  mockListRecentAlertEvents.mockReset().mockResolvedValue([
-    { id: 1, kind: "freeze" },
-  ]);
+  mockListRecentAlertEvents.mockReset().mockResolvedValue([{ id: 1, kind: "freeze" }]);
   mockCountUnacknowledgedAlerts.mockReset().mockResolvedValue(3);
 });
 

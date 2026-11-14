@@ -31,7 +31,9 @@ vi.mock("../../../lib/registerUrl", () => ({
 function makeContext(search: Record<string, string>): APIContext {
   const url = new URL("https://example.com/api/auth/confirm");
   for (const [k, v] of Object.entries(search)) url.searchParams.set(k, v);
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return { url, cookies: {}, redirect, request: new Request(url) } as unknown as APIContext;
 }
 
@@ -83,13 +85,17 @@ describe("GET /api/auth/confirm", () => {
   });
 
   it("honors a safe next path", async () => {
-    expect(await location({ token_hash: "t", type: "email", next: "/dashboard/alerts" })).toBe("/dashboard/alerts");
+    expect(await location({ token_hash: "t", type: "email", next: "/dashboard/alerts" })).toBe(
+      "/dashboard/alerts",
+    );
   });
 
   it("rejects a missing token or unsupported type without calling Better Auth", async () => {
     expect(await location({ type: "signup" })).toBe("/signin?error=confirm_link");
     expect(await location({ token_hash: "t", type: "sms" })).toBe("/signin?error=confirm_link");
-    expect(await location({ token_hash: "t", type: "magiclink" })).toBe("/signin?error=confirm_link");
+    expect(await location({ token_hash: "t", type: "magiclink" })).toBe(
+      "/signin?error=confirm_link",
+    );
     expect(mockWithBetterAuth).not.toHaveBeenCalled();
   });
 
@@ -97,7 +103,9 @@ describe("GET /api/auth/confirm", () => {
     mockVerifyEmail.mockResolvedValue(new Response(null, { status: 401 }));
     mockResetTokenUserId.mockResolvedValue(null);
     expect(await location({ token_hash: "t", type: "signup" })).toBe("/signin?error=confirm_link");
-    expect(await location({ token_hash: "t", type: "recovery" })).toBe("/reset-password?error=session");
+    expect(await location({ token_hash: "t", type: "recovery" })).toBe(
+      "/reset-password?error=session",
+    );
     expect(mockSetResetTokenCookie).not.toHaveBeenCalled();
   });
 

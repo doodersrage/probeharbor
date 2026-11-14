@@ -30,8 +30,7 @@ const fr: DeviceSetupFirmwareMessages = {
     pic18: "PIC18F67J60 MLA Ethernet (relais HTTP)",
     particle: "Particle Boron cellulaire (webhook Console)",
   },
-  otherBoards:
-    "Autres cartes : Pico W, STM32, CH32V, AVR, Teensy, PIC18, cellulaire",
+  otherBoards: "Autres cartes : Pico W, STM32, CH32V, AVR, Teensy, PIC18, cellulaire",
   pico: {
     heading: "Flasher un Pico W",
     ledeHtml:

@@ -26,7 +26,8 @@ export const PG_OID = {
   numeric: 1700,
 } as const;
 
-const TIMESTAMP_TEXT = /^(\d{4,})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\.\d{1,6})?(?:([+-])(\d{2})(?::?(\d{2}))?(?::?(\d{2}))?)?( BC)?$/;
+const TIMESTAMP_TEXT =
+  /^(\d{4,})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\.\d{1,6})?(?:([+-])(\d{2})(?::?(\d{2}))?(?::?(\d{2}))?)?( BC)?$/;
 
 /**
  * Postgres timestamptz text ("2026-11-07 08:22:38.1+00", any session time
@@ -37,9 +38,11 @@ export function parseTimestamptz(text: string): string {
   const m = TIMESTAMP_TEXT.exec(text);
   if (!m || m[12] || m[8] == null) return text;
   const [, y, mo, d, h, mi, s, frac = "", sign, oh, om = "00", os = "00"] = m;
-  const offsetSeconds = (sign === "-" ? -1 : 1) * (Number(oh) * 3600 + Number(om) * 60 + Number(os));
+  const offsetSeconds =
+    (sign === "-" ? -1 : 1) * (Number(oh) * 3600 + Number(om) * 60 + Number(os));
   const utcMs =
-    Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s)) - offsetSeconds * 1000;
+    Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s)) -
+    offsetSeconds * 1000;
   const utc = new Date(utcMs);
   if (Number.isNaN(utc.getTime())) return text;
   const iso = utc.toISOString(); // whole seconds, since utcMs has no fraction

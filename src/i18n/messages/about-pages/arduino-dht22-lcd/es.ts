@@ -1,11 +1,11 @@
-
 /** /about/arduino-dht22-lcd body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 const ETH_LINK =
   '<a class="text-link" href="https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest" target="_blank" rel="noreferrer"><code>ethernet_dht22_ingest</code></a>';
 import type { ArduinoDht22LcdMessages } from "./en";
 
 const es: ArduinoDht22LcdMessages = {
-  heroAlt: "Placa de sonda Arduino con conectividad de red y conectores para el cableado de sensores",
+  heroAlt:
+    "Placa de sonda Arduino con conectividad de red y conectores para el cableado de sensores",
   heroCaption: "Placa de sonda de ProbeHarbor con Ethernet, LCD y conectores para los DHT22.",
   intro:
     "El firmware trata el LCD y el feed JSON como dos vistas de los mismos datos. El LCD da una respuesta local inmediata mientras instalas sondas o resuelves problemas; la interfaz Ethernet publica las mismas lecturas en el sitio web y en cualquier otro cliente HTTP.",

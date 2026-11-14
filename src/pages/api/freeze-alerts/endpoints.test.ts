@@ -11,7 +11,8 @@ const mockRateLimit = vi.fn();
 vi.mock("../../../lib/statusSubscribeLimits", () => ({
   STATUS_SUBSCRIBE_HONEYPOT_FIELD: "company",
   checkStatusSubscribeRateLimit: (...a: unknown[]) => mockRateLimit(...a),
-  isStatusSubscribeHoneypotTriggered: (value: unknown) => typeof value === "string" && value.length > 0,
+  isStatusSubscribeHoneypotTriggered: (value: unknown) =>
+    typeof value === "string" && value.length > 0,
 }));
 
 const mockSubscribe = vi.fn();
@@ -44,7 +45,8 @@ function formContext(fields: Record<string, string>): APIContext {
 function urlContext(path: string): APIContext {
   return {
     url: new URL(`https://probeharbor.dev${path}`),
-    redirect: (to: string, status = 302) => new Response(null, { status, headers: { Location: to } }),
+    redirect: (to: string, status = 302) =>
+      new Response(null, { status, headers: { Location: to } }),
   } as unknown as APIContext;
 }
 
@@ -56,7 +58,9 @@ beforeEach(() => {
   mockSubscribe.mockReset().mockResolvedValue({ ok: true });
   mockConfirm.mockReset().mockResolvedValue({ ok: true });
   mockUnsubscribe.mockReset().mockResolvedValue({ ok: true });
-  mockReadMove.mockReset().mockResolvedValue({ id: "s1", label: "Minneapolis <MN>", lat: 44.98, lon: -93.27, exp: 1 });
+  mockReadMove
+    .mockReset()
+    .mockResolvedValue({ id: "s1", label: "Minneapolis <MN>", lat: 44.98, lon: -93.27, exp: 1 });
   mockApplyMove.mockReset().mockResolvedValue({ ok: true });
 });
 
@@ -64,7 +68,10 @@ describe("POST /api/freeze-alerts/subscribe", () => {
   it("subscribes with the submitted place", async () => {
     const res = await subscribe(formContext(valid));
     expect(res.status).toBe(200);
-    expect(mockSubscribe).toHaveBeenCalledWith({ email: "me@example.com", lat: 37.54, lon: -77.44, label: "Richmond, VA" }, "en");
+    expect(mockSubscribe).toHaveBeenCalledWith(
+      { email: "me@example.com", lat: 37.54, lon: -77.44, label: "Richmond, VA" },
+      "en",
+    );
     expect(mockRateLimit).toHaveBeenCalledWith("freeze-alerts:1.2.3.4", expect.any(Number), "en");
   });
 
@@ -115,7 +122,8 @@ describe("confirm and unsubscribe", () => {
 });
 
 describe("move link (switch a confirmed subscription to a new place)", () => {
-  const link = "/api/freeze-alerts/move?sid=s1&lat=44.98&lon=-93.27&label=Minneapolis&exp=1&sig=abc";
+  const link =
+    "/api/freeze-alerts/move?sid=s1&lat=44.98&lon=-93.27&label=Minneapolis&exp=1&sig=abc";
 
   it("GET only shows a button for a valid link, so link scanners can't move anyone's alerts", async () => {
     const res = await moveGet(urlContext(link));

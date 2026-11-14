@@ -1,4 +1,3 @@
-
 /** /about/arduino-pin-wiring body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 const ETH_LINK =
   '<a class="text-link" href="https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest" target="_blank" rel="noreferrer"><code>ethernet_dht22_ingest</code></a>';
@@ -7,7 +6,8 @@ import type { ArduinoPinWiringMessages } from "./en";
 const es: ArduinoPinWiringMessages = {
   introHtml:
     "El diagrama de pines de abajo coincide con el constructor <code>LiquidCrystal</code> del firmware y con las líneas de datos de los DHT22 usadas en este proyecto. Úsalo para comprobar los cables puente frente al sketch, sobre todo si hay pines analógicos funcionando como E/S digitales.",
-  diagramAlt: "Diagrama de conexiones pin a pin de un Arduino Uno con una pantalla LCD y dos sensores DHT22",
+  diagramAlt:
+    "Diagrama de conexiones pin a pin de un Arduino Uno con una pantalla LCD y dos sensores DHT22",
   diagramCaption:
     "RS, RW, EN, líneas de datos, retroiluminación y los dos pines de datos de los DHT22 asignados a pines concretos del Uno.",
   lcdTitle: "Mapa de pines del LCD 16×2",

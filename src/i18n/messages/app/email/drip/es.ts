@@ -4,9 +4,11 @@ const es: DripEmailMessages = {
   day1: {
     subject: "Añade tu primera sonda a ProbeHarbor",
     eyebrow: "Primeros pasos",
-    preheader: "Crea una clave de dispositivo, envía JSON por POST y los sensores se importan solos: unos 10 minutos.",
+    preheader:
+      "Crea una clave de dispositivo, envía JSON por POST y los sensores se importan solos: unos 10 minutos.",
     title: "Conecta tu primera sonda",
-    intro: "Te damos la bienvenida a ProbeHarbor. Tu cuenta gratuita está lista; el siguiente paso es ver una lectura en vivo en Resumen.",
+    intro:
+      "Te damos la bienvenida a ProbeHarbor. Tu cuenta gratuita está lista; el siguiente paso es ver una lectura en vivo en Resumen.",
     paragraphs: [
       "Abre Dispositivos y elige lo que tienes. Cada opción crea un dispositivo y te da un fragmento de código con su clave; los sensores se importan solos con la primera lectura.",
     ],
@@ -40,7 +42,8 @@ const es: DripEmailMessages = {
   day7: {
     subject: "Prueba Pro gratis: SMS, webhooks y más opciones para compartir",
     eyebrow: "Prueba de Pro",
-    preheader: "SMS, WhatsApp, opciones de compartir de Pro y webhooks: prueba gratuita de 14 días.",
+    preheader:
+      "SMS, WhatsApp, opciones de compartir de Pro y webhooks: prueba gratuita de 14 días.",
     title: "Da el salto con una prueba gratuita de Pro",
     intro:
       "Llevas una semana explorando ProbeHarbor. Pro añade los canales y las herramientas para compartir que importan a las 2 de la madrugada. (Free ya incluye un enlace en vivo para la familia).",
@@ -88,7 +91,8 @@ const es: DripEmailMessages = {
   confirm: {
     subject: "Confirma tu correo para terminar de configurar ProbeHarbor",
     eyebrow: "Falta un paso",
-    preheader: "Tu cuenta espera la confirmación del correo; los enlaces caducan, así que pide uno nuevo.",
+    preheader:
+      "Tu cuenta espera la confirmación del correo; los enlaces caducan, así que pide uno nuevo.",
     title: "Confirma tu correo para iniciar sesión",
     intro:
       "Empezaste a crear una cuenta de ProbeHarbor, pero la dirección nunca se confirmó, así que el inicio de sesión sigue bloqueado.",

@@ -32,9 +32,11 @@ const en = {
       title: "Return to Bay Buddy",
       description: "Finish ProbeHarbor sign-in by returning to Bay Buddy.",
       open: "Open Bay Buddy",
-      handoff: "If Bay Buddy is waiting, it should pick up automatically. If not, tap the button below.",
+      handoff:
+        "If Bay Buddy is waiting, it should pick up automatically. If not, tap the button below.",
       close: "You can close this tab once Bay Buddy shows your live garage mood.",
-      missing: "This page returns you to Bay Buddy after sign-in. Open Bay Buddy and choose Connect again.",
+      missing:
+        "This page returns you to Bay Buddy after sign-in. Open Bay Buddy and choose Connect again.",
     },
     desktop: {
       title: "Return to ProbeHarbor Desktop",

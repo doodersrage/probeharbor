@@ -44,7 +44,11 @@ try {
   ok = false;
 }
 
-ok &&= run("Sitemap readable (IndexNow dry run)", "node", ["scripts/ping-sitemaps.mjs", base, "--dry-run"]);
+ok &&= run("Sitemap readable (IndexNow dry run)", "node", [
+  "scripts/ping-sitemaps.mjs",
+  base,
+  "--dry-run",
+]);
 
 console.log(
   ok

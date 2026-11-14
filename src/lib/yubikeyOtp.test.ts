@@ -33,10 +33,7 @@ describe("yubikeyOtp helpers", () => {
         yubikey_otp_public_ids: ["ccccccjtfnij", "INVALID", "bbbbbbukuehe"],
       },
     };
-    expect(getYubiKeyPublicIdsFromUser(user)).toEqual([
-      "ccccccjtfnij",
-      "bbbbbbukuehe",
-    ]);
+    expect(getYubiKeyPublicIdsFromUser(user)).toEqual(["ccccccjtfnij", "bbbbbbukuehe"]);
     expect(userHasYubiKeyOtpEnrolled(user)).toBe(true);
     expect(userHasYubiKeyOtpEnrolled({ user_metadata: {} })).toBe(false);
   });
@@ -103,17 +100,19 @@ describe("yubikeyOtp helpers", () => {
       status: "BAD_OTP",
     };
     const signature = await signYubiCloudRequest(params, vectors.apiKeyBase64());
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        [
-          `h=${signature}`,
-          `t=${params.t}`,
-          `otp=${params.otp}`,
-          `nonce=${params.nonce}`,
-          `status=${params.status}`,
-        ].join("\n"),
-      ),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          [
+            `h=${signature}`,
+            `t=${params.t}`,
+            `otp=${params.otp}`,
+            `nonce=${params.nonce}`,
+            `status=${params.status}`,
+          ].join("\n"),
+        ),
+      );
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await verifyYubiKeyOtpWithYubiCloud(otp, {

@@ -15,7 +15,9 @@ export function parseThresholdSensorScope(raw: unknown): ThresholdSensorScope {
   }
   const body = raw as Record<string, unknown>;
   const includedSensorIds = Array.isArray(body.includedSensorIds)
-    ? body.includedSensorIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+    ? body.includedSensorIds.filter(
+        (id): id is string => typeof id === "string" && id.trim().length > 0,
+      )
     : [];
 
   const overrides: Record<string, SensorThresholdOverride> = {};
@@ -53,7 +55,8 @@ export function humidityThresholdForReading(
   reading: { sensorId?: string },
 ): number {
   const override =
-    reading.sensorId && settings.thresholdSensorScope.overrides[reading.sensorId]?.humidityThreshold;
+    reading.sensorId &&
+    settings.thresholdSensorScope.overrides[reading.sensorId]?.humidityThreshold;
   return typeof override === "number" ? override : settings.humidityThreshold;
 }
 

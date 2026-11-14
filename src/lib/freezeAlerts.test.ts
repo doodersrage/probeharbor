@@ -21,7 +21,13 @@ const db = vi.hoisted(() => ({
 }));
 vi.mock("./db/freezeSubscriptions", () => ({
   findByEmail: async () => db.existing,
-  writeUnconfirmed: async (email: string, label: string, lat: number, lon: number, token: string) => {
+  writeUnconfirmed: async (
+    email: string,
+    label: string,
+    lat: number,
+    lon: number,
+    token: string,
+  ) => {
     db.writes.push({ email, label, lat, lon, token });
     return true;
   },
@@ -80,25 +86,40 @@ describe("decideFreezeAlert", () => {
   const nights = [night("2026-12-01", 28, "watch"), night("2026-12-02", 18, "high")];
 
   it("sends for the first freezing night of a cold spell", () => {
-    expect(decideFreezeAlert(nights, null, AFTERNOON)).toMatchObject({ send: true, reason: "cold_spell_start" });
+    expect(decideFreezeAlert(nights, null, AFTERNOON)).toMatchObject({
+      send: true,
+      reason: "cold_spell_start",
+    });
   });
 
   it("skips a watch night when last night was already alerted", () => {
-    expect(decideFreezeAlert(nights, "2026-11-30", AFTERNOON)).toEqual({ send: false, reason: "cold_spell_continues" });
+    expect(decideFreezeAlert(nights, "2026-11-30", AFTERNOON)).toEqual({
+      send: false,
+      reason: "cold_spell_continues",
+    });
   });
 
   it("always sends for a high-risk night, even mid-spell", () => {
     const highTonight = [night("2026-12-01", 15, "high")];
-    expect(decideFreezeAlert(highTonight, "2026-11-30", AFTERNOON)).toMatchObject({ send: true, reason: "high" });
+    expect(decideFreezeAlert(highTonight, "2026-11-30", AFTERNOON)).toMatchObject({
+      send: true,
+      reason: "high",
+    });
   });
 
   it("sends once per night", () => {
-    expect(decideFreezeAlert(nights, "2026-12-01", AFTERNOON)).toEqual({ send: false, reason: "already_sent" });
+    expect(decideFreezeAlert(nights, "2026-12-01", AFTERNOON)).toEqual({
+      send: false,
+      reason: "already_sent",
+    });
   });
 
   it("waits for the local afternoon window", () => {
     const morning = new Date("2026-12-01T14:00:00Z"); // 9 AM local
-    expect(decideFreezeAlert(nights, null, morning)).toEqual({ send: false, reason: "outside_window" });
+    expect(decideFreezeAlert(nights, null, morning)).toEqual({
+      send: false,
+      reason: "outside_window",
+    });
   });
 
   it("does nothing on a night above freezing", () => {
@@ -128,7 +149,9 @@ describe("helpers", () => {
       [night("2026-12-02", 26, "watch")],
     );
     expect(mail.subject).toBe("High pipe-freeze risk tonight in Richmond, VA: low 18°F");
-    expect(mail.unsubscribeUrl).toBe("https://probeharbor.dev/api/freeze-alerts/unsubscribe?token=tok");
+    expect(mail.unsubscribeUrl).toBe(
+      "https://probeharbor.dev/api/freeze-alerts/unsubscribe?token=tok",
+    );
     expect(mail.text).toContain("pipe-freeze-forecast?lat=37.54&lon=-77.44");
     expect(mail.text).toContain("2026-12-02 (low 26°F)");
   });
@@ -138,8 +161,15 @@ describe("helpers", () => {
     await ensureLocale("de", ["app"]);
     await ensureLocale("es", ["app"]);
     const sub = { token: "tok", place_label: "Richmond, VA", lat: 37.54, lon: -77.44 };
-    const de = buildFreezeAlertEmail(sub, night("2026-12-01", 18, "high"), [night("2026-12-02", 26, "watch")], "de");
-    expect(de.subject).toBe("Hohes Rohrfrost-Risiko heute Nacht in Richmond, VA: Tiefstwert -8°C (18°F)");
+    const de = buildFreezeAlertEmail(
+      sub,
+      night("2026-12-01", 18, "high"),
+      [night("2026-12-02", 26, "watch")],
+      "de",
+    );
+    expect(de.subject).toBe(
+      "Hohes Rohrfrost-Risiko heute Nacht in Richmond, VA: Tiefstwert -8°C (18°F)",
+    );
     expect(de.text).toContain("Tiefstwert -8°C (18°F), auf oder unter der Marke von -7°C (20°F)");
     expect(de.text).toContain("(Tiefstwert -3°C (26°F))");
     expect(de.text).toContain("Halte das Garagentor geschlossen.");
@@ -148,34 +178,76 @@ describe("helpers", () => {
     const es = buildFreezeAlertEmail(sub, night("2026-12-01", 28, "watch"), [], "es");
     expect(es.subject).toBe("Helada esta noche en Richmond, VA: mínima -2°C (28°F)");
     expect(es.text).toContain("Bajo cero durante aproximadamente 6 horas, mínima -2°C (28°F).");
-    expect(es.unsubscribeUrl).toBe("https://probeharbor.dev/api/freeze-alerts/unsubscribe?token=tok");
+    expect(es.unsubscribeUrl).toBe(
+      "https://probeharbor.dev/api/freeze-alerts/unsubscribe?token=tok",
+    );
   });
 });
 
 describe("subscribeToFreezeAlerts", () => {
   it("rejects bad email and missing location", async () => {
-    expect((await subscribeToFreezeAlerts({ email: "nope", lat: 37, lon: -77, label: "x" })).ok).toBe(false);
-    expect((await subscribeToFreezeAlerts({ email: "a@b.co", lat: Number.NaN, lon: -77, label: "x" })).ok).toBe(false);
+    expect(
+      (await subscribeToFreezeAlerts({ email: "nope", lat: 37, lon: -77, label: "x" })).ok,
+    ).toBe(false);
+    expect(
+      (await subscribeToFreezeAlerts({ email: "a@b.co", lat: Number.NaN, lon: -77, label: "x" }))
+        .ok,
+    ).toBe(false);
   });
 
   it("stores a rounded location and sends a confirmation", async () => {
-    const result = await subscribeToFreezeAlerts({ email: " Me@Example.com ", lat: 37.54129, lon: -77.43611, label: "Richmond, VA" });
+    const result = await subscribeToFreezeAlerts({
+      email: " Me@Example.com ",
+      lat: 37.54129,
+      lon: -77.43611,
+      label: "Richmond, VA",
+    });
     expect(result.ok).toBe(true);
-    expect(db.writes[0]).toMatchObject({ email: "me@example.com", lat: 37.54, lon: -77.44, label: "Richmond, VA" });
+    expect(db.writes[0]).toMatchObject({
+      email: "me@example.com",
+      lat: 37.54,
+      lon: -77.44,
+      label: "Richmond, VA",
+    });
     expect(db.writes[0]?.token).toMatch(/^[0-9a-f]{48}$/);
-    expect(mockSendEmail).toHaveBeenCalledWith("me@example.com", "Confirm freeze alerts for Richmond, VA", expect.any(String), expect.anything());
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "me@example.com",
+      "Confirm freeze alerts for Richmond, VA",
+      expect.any(String),
+      expect.anything(),
+    );
   });
 
   it("leaves a confirmed subscriber at the same place alone", async () => {
     db.existing = { id: "s1", confirmed_at: "2026-11-01T00:00:00Z", lat: 37.54, lon: -77.44 };
-    expect((await subscribeToFreezeAlerts({ email: "me@example.com", lat: 37.541, lon: -77.439, label: "Richmond" })).ok).toBe(true);
+    expect(
+      (
+        await subscribeToFreezeAlerts({
+          email: "me@example.com",
+          lat: 37.541,
+          lon: -77.439,
+          label: "Richmond",
+        })
+      ).ok,
+    ).toBe(true);
     expect(db.writes).toHaveLength(0);
     expect(mockSendEmail).not.toHaveBeenCalled();
   });
 
   it("never changes or pauses a confirmed subscriber; emails a signed link for the new place instead", async () => {
-    db.existing = { id: "s1", confirmed_at: "2026-11-01T00:00:00Z", place_label: "Richmond, VA", lat: 37.54, lon: -77.44 };
-    const result = await subscribeToFreezeAlerts({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
+    db.existing = {
+      id: "s1",
+      confirmed_at: "2026-11-01T00:00:00Z",
+      place_label: "Richmond, VA",
+      lat: 37.54,
+      lon: -77.44,
+    };
+    const result = await subscribeToFreezeAlerts({
+      email: "me@example.com",
+      lat: 44.98,
+      lon: -93.27,
+      label: "Minneapolis, MN",
+    });
     // Same answer a brand-new address gets.
     expect(result).toEqual({ ok: true });
     expect(db.writes).toHaveLength(0);
@@ -191,30 +263,66 @@ describe("subscribeToFreezeAlerts", () => {
   it("sends no move link (and no unsigned fallback) when no signing secret is set", async () => {
     vi.stubEnv("ALERT_ACK_SECRET", "");
     vi.stubEnv("CRON_SECRET", "");
-    db.existing = { id: "s1", confirmed_at: "2026-11-01T00:00:00Z", place_label: "Richmond, VA", lat: 37.54, lon: -77.44 };
-    const result = await subscribeToFreezeAlerts({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
+    db.existing = {
+      id: "s1",
+      confirmed_at: "2026-11-01T00:00:00Z",
+      place_label: "Richmond, VA",
+      lat: 37.54,
+      lon: -77.44,
+    };
+    const result = await subscribeToFreezeAlerts({
+      email: "me@example.com",
+      lat: 44.98,
+      lon: -93.27,
+      label: "Minneapolis, MN",
+    });
     expect(result).toEqual({ ok: true });
     expect(db.writes).toHaveLength(0);
     expect(mockSendEmail).not.toHaveBeenCalled();
   });
 
   it("an unconfirmed address is replaced and re-sent a confirmation, as before", async () => {
-    db.existing = { id: "s1", confirmed_at: null, place_label: "Richmond, VA", lat: 37.54, lon: -77.44 };
-    await subscribeToFreezeAlerts({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
-    expect(db.writes[0]).toMatchObject({ email: "me@example.com", lat: 44.98, lon: -93.27, label: "Minneapolis, MN" });
-    expect(mockSendEmail).toHaveBeenCalledWith("me@example.com", "Confirm freeze alerts for Minneapolis, MN", expect.any(String), expect.anything());
+    db.existing = {
+      id: "s1",
+      confirmed_at: null,
+      place_label: "Richmond, VA",
+      lat: 37.54,
+      lon: -77.44,
+    };
+    await subscribeToFreezeAlerts({
+      email: "me@example.com",
+      lat: 44.98,
+      lon: -93.27,
+      label: "Minneapolis, MN",
+    });
+    expect(db.writes[0]).toMatchObject({
+      email: "me@example.com",
+      lat: 44.98,
+      lon: -93.27,
+      label: "Minneapolis, MN",
+    });
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "me@example.com",
+      "Confirm freeze alerts for Minneapolis, MN",
+      expect.any(String),
+      expect.anything(),
+    );
   });
 });
 
 describe("freeze alert move links", () => {
   const NOW = Date.parse("2026-11-07T12:00:00Z");
   const place = { label: "Minneapolis, MN", lat: 44.98, lon: -93.27 };
-  const linkParams = async () => new URL((await freezeAlertMoveUrl("s1", place, NOW))!).searchParams;
+  const linkParams = async () =>
+    new URL((await freezeAlertMoveUrl("s1", place, NOW))!).searchParams;
 
   it("round-trips and applies the signed place", async () => {
     const params = await linkParams();
     expect(Number(params.get("exp"))).toBe(NOW + MOVE_LINK_TTL_MS);
-    await expect(readFreezeAlertMove(params, NOW + 1000)).resolves.toMatchObject({ id: "s1", ...place });
+    await expect(readFreezeAlertMove(params, NOW + 1000)).resolves.toMatchObject({
+      id: "s1",
+      ...place,
+    });
     await expect(applyFreezeAlertMove(params, NOW + 1000)).resolves.toEqual({ ok: true });
     expect(db.moves).toEqual([{ id: "s1", ...place }]);
   });
@@ -236,7 +344,9 @@ describe("freeze alert move links", () => {
     const missing = new URLSearchParams(params);
     missing.delete("sig");
     await expect(applyFreezeAlertMove(missing, NOW)).resolves.toEqual({ ok: false });
-    await expect(applyFreezeAlertMove(params, NOW + MOVE_LINK_TTL_MS + 1)).resolves.toEqual({ ok: false });
+    await expect(applyFreezeAlertMove(params, NOW + MOVE_LINK_TTL_MS + 1)).resolves.toEqual({
+      ok: false,
+    });
     vi.stubEnv("ALERT_ACK_SECRET", "a-different-secret");
     await expect(applyFreezeAlertMove(params, NOW)).resolves.toEqual({ ok: false });
     expect(db.moves).toHaveLength(0);
@@ -246,12 +356,33 @@ describe("freeze alert move links", () => {
 describe("sendFreezeAlerts", () => {
   it("fetches each location once and records the alerted night", async () => {
     db.rows = [
-      { id: "a", email: "a@x.io", token: "ta", place_label: "Richmond", lat: 37.54, lon: -77.44, last_alert_night: null },
-      { id: "b", email: "b@x.io", token: "tb", place_label: "Richmond", lat: 37.54, lon: -77.44, last_alert_night: "2026-12-01" },
+      {
+        id: "a",
+        email: "a@x.io",
+        token: "ta",
+        place_label: "Richmond",
+        lat: 37.54,
+        lon: -77.44,
+        last_alert_night: null,
+      },
+      {
+        id: "b",
+        email: "b@x.io",
+        token: "tb",
+        place_label: "Richmond",
+        lat: 37.54,
+        lon: -77.44,
+        last_alert_night: "2026-12-01",
+      },
     ];
     mockFetchForecast.mockResolvedValue({
       ok: true,
-      body: { nights: [night("2026-12-01", 18, "high")], location: { city: null, state: null }, worst: "high", updatedAt: null },
+      body: {
+        nights: [night("2026-12-01", 18, "high")],
+        location: { city: null, state: null },
+        worst: "high",
+        updatedAt: null,
+      },
       cached: false,
     });
 
@@ -263,16 +394,33 @@ describe("sendFreezeAlerts", () => {
       "a@x.io",
       expect.stringContaining("High pipe-freeze risk"),
       expect.any(String),
-      expect.objectContaining({ headers: expect.objectContaining({ "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" }) }),
+      expect.objectContaining({
+        headers: expect.objectContaining({ "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" }),
+      }),
     );
     expect(db.alerted).toEqual([{ id: "a", night: "2026-12-01" }]);
   });
 
   it("treats a suppressed address as skipped, not an error", async () => {
-    db.rows = [{ id: "a", email: "bounced@x.io", token: "ta", place_label: "Richmond", lat: 37.54, lon: -77.44, last_alert_night: null }];
+    db.rows = [
+      {
+        id: "a",
+        email: "bounced@x.io",
+        token: "ta",
+        place_label: "Richmond",
+        lat: 37.54,
+        lon: -77.44,
+        last_alert_night: null,
+      },
+    ];
     mockFetchForecast.mockResolvedValue({
       ok: true,
-      body: { nights: [night("2026-12-01", 18, "high")], location: { city: null, state: null }, worst: "high", updatedAt: null },
+      body: {
+        nights: [night("2026-12-01", 18, "high")],
+        location: { city: null, state: null },
+        worst: "high",
+        updatedAt: null,
+      },
       cached: false,
     });
     mockSendEmail.mockRejectedValue(new Error("Email address is suppressed: bounced@x.io"));

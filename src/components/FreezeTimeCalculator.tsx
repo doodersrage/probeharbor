@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { estimateTimeToFreeze } from "../lib/timeToFreeze";
-import { cToF, formatTemp, fToC, loadTempUnit, saveTempUnit, type TempUnit } from "../lib/tempUnits";
+import {
+  cToF,
+  formatTemp,
+  fToC,
+  loadTempUnit,
+  saveTempUnit,
+  type TempUnit,
+} from "../lib/tempUnits";
 
 /**
  * Visible strings. Pages pass a translated copy (`text`); `{name}` marks a
@@ -38,13 +45,18 @@ export const FREEZE_TIME_CALCULATOR_TEXT = {
 export type FreezeTimeCalculatorText = typeof FREEZE_TIME_CALCULATOR_TEXT;
 
 function fill(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
 }
 
 /** `toFixed`, or the locale's decimal separator when a locale is given. */
 function formatNumber(value: number, digits: number, locale?: string): string {
   if (!locale) return value.toFixed(digits);
-  return new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
 }
 
 /** Same thresholds as `formatDurationHours` in the lib. */
@@ -55,7 +67,12 @@ function formatDuration(hours: number, text: FreezeTimeCalculatorText, locale?: 
 }
 
 /** Same as `formatRatePerHour` in the lib (a temperature difference, so no 32° offset). */
-function formatRate(fPerHour: number, unit: TempUnit, text: FreezeTimeCalculatorText, locale?: string): string {
+function formatRate(
+  fPerHour: number,
+  unit: TempUnit,
+  text: FreezeTimeCalculatorText,
+  locale?: string,
+): string {
   const value = unit === "C" ? (fPerHour * 5) / 9 : fPerHour;
   return fill(text.ratePerHour, { value: formatNumber(Math.abs(value), 1, locale), unit });
 }
@@ -71,7 +88,12 @@ function fields(
 ): Array<{ key: keyof Inputs; label: string; hint: string; step: string }> {
   return [
     { key: "now", label: fill(text.nowLabel, { unit }), hint: text.nowHint, step: "0.1" },
-    { key: "earlier", label: fill(text.earlierLabel, { unit }), hint: text.earlierHint, step: "0.1" },
+    {
+      key: "earlier",
+      label: fill(text.earlierLabel, { unit }),
+      hint: text.earlierHint,
+      step: "0.1",
+    },
     { key: "minutesAgo", label: text.minutesLabel, hint: text.minutesHint, step: "1" },
     {
       key: "threshold",
@@ -162,7 +184,8 @@ export default function FreezeTimeCalculator({
   // "need more readings" only shows if one of them was dropped).
   const libMessage = (estimate: NonNullable<typeof result>): string => {
     if (estimate.hours === 0) return text.msgAtThreshold;
-    if (estimate.rateFPerHour != null) return estimate.rateFPerHour > 0.1 ? text.msgRising : text.msgStable;
+    if (estimate.rateFPerHour != null)
+      return estimate.rateFPerHour > 0.1 ? text.msgRising : text.msgStable;
     return estimate.minutesAgo < 15 ? text.msgTooClose : text.msgNeedReadings;
   };
 
@@ -180,7 +203,9 @@ export default function FreezeTimeCalculator({
   return (
     <section class="card" aria-labelledby="freeze-calc-heading">
       <div class="flex items-center justify-between gap-3">
-        <h2 id="freeze-calc-heading" class="card-title">{text.heading}</h2>
+        <h2 id="freeze-calc-heading" class="card-title">
+          {text.heading}
+        </h2>
         <fieldset class="temp-unit-toggle">
           <legend class="sr-only">{text.unitLegend}</legend>
           {(["F", "C"] as const).map((option) => (
@@ -207,7 +232,10 @@ export default function FreezeTimeCalculator({
               step={field.step}
               value={inputs[field.key]}
               onInput={(event) =>
-                setInputs({ ...inputs, [field.key]: (event.currentTarget as HTMLInputElement).value })
+                setInputs({
+                  ...inputs,
+                  [field.key]: (event.currentTarget as HTMLInputElement).value,
+                })
               }
             />
             <span class="text-sm text-[var(--color-text-muted)]">{field.hint}</span>
@@ -220,7 +248,11 @@ export default function FreezeTimeCalculator({
         <p class="stat-detail m-0">{detail}</p>
       </div>
       <p class="mt-4 mb-0">
-        <button class="btn-ghost" type="button" onClick={() => setInputs(convertInputs(DEFAULTS_F, "F", unit))}>
+        <button
+          class="btn-ghost"
+          type="button"
+          onClick={() => setInputs(convertInputs(DEFAULTS_F, "F", unit))}
+        >
           {text.reset}
         </button>
       </p>

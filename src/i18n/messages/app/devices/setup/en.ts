@@ -6,7 +6,8 @@
 const en = {
   firstRun: {
     title: "Connect your first sensor",
-    subtitle: "Pick what you have today. Each path ends with a live reading; freeze and leak alerts come right after.",
+    subtitle:
+      "Pick what you have today. Each path ends with a live reading; freeze and leak alerts come right after.",
     viewOnly: "View-only, ask an owner to add a device.",
     limitReached: "Device limit reached.",
     limitUpgrade: "Upgrade for more devices",

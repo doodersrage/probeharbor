@@ -49,8 +49,7 @@ vi.mock("../../../lib/telegramCommands", () => ({
 
 const mockCheckTelegramWebhookRateLimit = vi.fn();
 vi.mock("../../../lib/telegramWebhookLimits", () => ({
-  checkTelegramWebhookRateLimit: (...a: unknown[]) =>
-    mockCheckTelegramWebhookRateLimit(...a),
+  checkTelegramWebhookRateLimit: (...a: unknown[]) => mockCheckTelegramWebhookRateLimit(...a),
 }));
 
 const mockTimingSafeEqual = vi.fn();
@@ -61,17 +60,12 @@ vi.mock("../../../lib/timingSafeEqual", () => ({
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
-function makeContext(options: {
-  secret?: string | null;
-  body?: unknown;
-  clientAddress?: string;
-} = {}): APIContext {
+function makeContext(
+  options: { secret?: string | null; body?: unknown; clientAddress?: string } = {},
+): APIContext {
   const headers = new Headers({ "Content-Type": "application/json" });
   if (options.secret !== null) {
-    headers.set(
-      "X-Telegram-Bot-Api-Secret-Token",
-      options.secret ?? "telegram-secret",
-    );
+    headers.set("X-Telegram-Bot-Api-Secret-Token", options.secret ?? "telegram-secret");
   }
   return {
     request: new Request("https://example.com/api/telegram/webhook", {

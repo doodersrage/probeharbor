@@ -1,4 +1,3 @@
-
 /**
  * /about/stm32-zephyr-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Commands, pin names and
@@ -23,10 +22,12 @@ const de: Stm32ZephyrIngestMessages = {
     colBuy: "Kaufen",
     boardWhy: "Cortex-M7, Ethernet-MAC + PHY an Bord, ST-LINK-Debugger. Kein WLAN-Modul.",
     probePart: "Wasserdichter DS18B20",
-    probeWhyHtml: "Fühler für Rohr oder Kriechkeller. Daten an Arduino-Pin <strong>D4</strong> (PF14).",
+    probeWhyHtml:
+      "Fühler für Rohr oder Kriechkeller. Daten an Arduino-Pin <strong>D4</strong> (PF14).",
     amazon: "Amazon",
     resistorPart: "4,7-kΩ-Widerstand",
-    resistorWhy: "Pull-up von der DS18B20-Datenleitung auf 3,3 V. Versorge den Fühler nicht über den 5-V-Arduino-Pin.",
+    resistorWhy:
+      "Pull-up von der DS18B20-Datenleitung auf 3,3 V. Versorge den Fühler nicht über den 5-V-Arduino-Pin.",
     amazonResistor: "4,7k bei Amazon",
     ethernetPart: "Ethernet-Anschluss",
     ethernetWhy: "DHCP in deinem LAN. Ein Pi, NAS oder Laptop betreibt das TLS-Relay.",

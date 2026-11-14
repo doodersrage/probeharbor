@@ -18,10 +18,7 @@ export const PINNABLE_OVERVIEW_METRICS = [
 
 export type PinnableOverviewMetric = (typeof PINNABLE_OVERVIEW_METRICS)[number];
 
-export const PINNABLE_OVERVIEW_METRIC_LABELS: Record<
-  PinnableOverviewMetric,
-  string
-> = {
+export const PINNABLE_OVERVIEW_METRIC_LABELS: Record<PinnableOverviewMetric, string> = {
   last_reading: "Last reading",
   sensors: "Sensors",
   feeds: "Feeds",
@@ -65,27 +62,20 @@ export function isOpsAttentionBanner(id: string): boolean {
   return OPS_ATTENTION_BANNER_IDS.has(id);
 }
 
-export function getDashboardQuietUntil(
-  user: User | null | undefined,
-): string | null {
+export function getDashboardQuietUntil(user: User | null | undefined): string | null {
   const raw = user?.user_metadata?.dashboard_quiet_until;
   if (typeof raw !== "string" || !raw.trim()) return null;
   const ts = Date.parse(raw);
   return Number.isFinite(ts) ? new Date(ts).toISOString() : null;
 }
 
-export function isDashboardQuietActive(
-  user: User | null | undefined,
-  nowMs = Date.now(),
-): boolean {
+export function isDashboardQuietActive(user: User | null | undefined, nowMs = Date.now()): boolean {
   const until = getDashboardQuietUntil(user);
   if (!until) return false;
   return Date.parse(until) > nowMs;
 }
 
-export function getPinnedOverviewMetrics(
-  user: User | null | undefined,
-): PinnableOverviewMetric[] {
+export function getPinnedOverviewMetrics(user: User | null | undefined): PinnableOverviewMetric[] {
   const raw = user?.user_metadata?.pinned_overview_metrics;
   if (!Array.isArray(raw)) return [...DEFAULT_PINNED_OVERVIEW_METRICS];
   const allowed = new Set<string>(PINNABLE_OVERVIEW_METRICS);
@@ -101,9 +91,7 @@ export function countPinnedOverviewMetricsInput(values: string[]): number {
   return new Set(values.map((value) => value.trim()).filter((id) => allowed.has(id))).size;
 }
 
-export function parsePinnedOverviewMetricsInput(
-  values: string[],
-): PinnableOverviewMetric[] {
+export function parsePinnedOverviewMetricsInput(values: string[]): PinnableOverviewMetric[] {
   const allowed = new Set<string>(PINNABLE_OVERVIEW_METRICS);
   const seen = new Set<string>();
   const out: PinnableOverviewMetric[] = [];
@@ -122,7 +110,9 @@ export async function updateDashboardQuietUntil(
   refreshToken: string,
   quietUntilIso: string | null,
 ): Promise<{ user: User | null; error: Error | null }> {
-  return updateSessionUserMetadata(accessToken, refreshToken, { dashboard_quiet_until: quietUntilIso });
+  return updateSessionUserMetadata(accessToken, refreshToken, {
+    dashboard_quiet_until: quietUntilIso,
+  });
 }
 
 export async function updatePinnedOverviewMetrics(
@@ -131,8 +121,8 @@ export async function updatePinnedOverviewMetrics(
   metrics: PinnableOverviewMetric[],
 ): Promise<{ user: User | null; error: Error | null }> {
   return updateSessionUserMetadata(accessToken, refreshToken, {
-      pinned_overview_metrics: metrics.slice(0, PINNED_METRICS_MAX),
-    });
+    pinned_overview_metrics: metrics.slice(0, PINNED_METRICS_MAX),
+  });
 }
 
 export function quietUntilSevenDaysFromNow(nowMs = Date.now()): string {
@@ -141,9 +131,7 @@ export function quietUntilSevenDaysFromNow(nowMs = Date.now()): string {
 
 export const GROWTH_TIPS_AUTO_HIDE_MS = 14 * 24 * 60 * 60 * 1000;
 
-export function getDashboardGrowthTipsDismissed(
-  user: User | null | undefined,
-): boolean {
+export function getDashboardGrowthTipsDismissed(user: User | null | undefined): boolean {
   return user?.user_metadata?.dashboard_growth_tips_dismissed === true;
 }
 
@@ -172,12 +160,12 @@ export async function updateDashboardGrowthTipsDismissed(
   refreshToken: string,
   dismissed: boolean,
 ): Promise<{ user: User | null; error: Error | null }> {
-  return updateSessionUserMetadata(accessToken, refreshToken, { dashboard_growth_tips_dismissed: dismissed });
+  return updateSessionUserMetadata(accessToken, refreshToken, {
+    dashboard_growth_tips_dismissed: dismissed,
+  });
 }
 
 /** Viewer / alert_only roles stay on Simple overview. */
-export function shouldForceSimpleOverview(
-  role: string | null | undefined,
-): boolean {
+export function shouldForceSimpleOverview(role: string | null | undefined): boolean {
   return role === "viewer" || role === "alert_only";
 }

@@ -8,9 +8,7 @@ import { isChartShareKey } from "./chartShareKeys";
 // can no longer sign in to cancel it themselves. Cancel first; if Stripe is
 // unreachable, alert ops so a human can cancel it manually rather than
 // silently deleting the account with billing still running.
-export async function cancelStripeSubscriptionForDeletedAccount(
-  userId: string,
-): Promise<void> {
+export async function cancelStripeSubscriptionForDeletedAccount(userId: string): Promise<void> {
   const subscription = await getUserSubscription(userId);
   if (!subscription || !isActiveSubscriptionStatus(subscription.status)) {
     return;
@@ -80,9 +78,7 @@ async function deleteStoredFilesForAccount(
   }
 }
 
-export async function deleteUserAccount(
-  userId: string,
-): Promise<{ error: string | null }> {
+export async function deleteUserAccount(userId: string): Promise<{ error: string | null }> {
   await cancelStripeSubscriptionForDeletedAccount(userId);
 
   let deletedHouseholdIds: string[];

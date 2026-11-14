@@ -13,16 +13,19 @@ const db = useTestDatabase();
 async function subscribe(userId: string, endpoint: string) {
   await db
     .client()
-    .query("insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values ($1, $2, 'k', 'a')", [
-      userId,
-      endpoint,
-    ]);
+    .query(
+      "insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values ($1, $2, 'k', 'a')",
+      [userId, endpoint],
+    );
 }
 
 async function endpointsOf(userId: string): Promise<string[]> {
   const { rows } = await db
     .client()
-    .query<{ endpoint: string }>("select endpoint from public.push_subscriptions where user_id = $1 order by 1", [userId]);
+    .query<{ endpoint: string }>(
+      "select endpoint from public.push_subscriptions where user_id = $1 order by 1",
+      [userId],
+    );
   return rows.map((r) => r.endpoint);
 }
 

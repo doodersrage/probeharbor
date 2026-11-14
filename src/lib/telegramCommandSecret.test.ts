@@ -9,7 +9,16 @@ import {
 
 describe("sha256Hex", () => {
   it("matches node:crypto across block boundaries and non-ASCII text", () => {
-    for (const s of ["", "abc", "a".repeat(55), "a".repeat(56), "a".repeat(63), "a".repeat(64), "x".repeat(1000), "héllo ✓ 日本"]) {
+    for (const s of [
+      "",
+      "abc",
+      "a".repeat(55),
+      "a".repeat(56),
+      "a".repeat(63),
+      "a".repeat(64),
+      "x".repeat(1000),
+      "héllo ✓ 日本",
+    ]) {
       expect(sha256Hex(s)).toBe(createHash("sha256").update(s, "utf8").digest("hex"));
     }
   });
@@ -33,7 +42,9 @@ describe("Telegram command secret storage form", () => {
 
   it("hashes plaintext, keeps an already-hashed value, leaves empty alone", () => {
     const hashed = hashTelegramCommandSecret("abcdefghijklmnop1234");
-    expect(hashed).toBe(`sha256:${createHash("sha256").update("abcdefghijklmnop1234").digest("hex")}`);
+    expect(hashed).toBe(
+      `sha256:${createHash("sha256").update("abcdefghijklmnop1234").digest("hex")}`,
+    );
     expect(isHashedTelegramSecret(hashed)).toBe(true);
     expect(isHashedTelegramSecret("abcdefghijklmnop1234")).toBe(false);
     expect(storedTelegramCommandSecret("abcdefghijklmnop1234")).toBe(hashed);

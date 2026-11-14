@@ -68,7 +68,9 @@ export function linkClickLeavesPage(
   }
   if (next.protocol !== "http:" && next.protocol !== "https:") return false;
   const samePage =
-    next.origin === current.origin && next.pathname === current.pathname && next.search === current.search;
+    next.origin === current.origin &&
+    next.pathname === current.pathname &&
+    next.search === current.search;
   if (samePage && next.hash !== current.hash) return false;
   if (samePage && next.hash && next.hash === current.hash) return false;
   return true;
@@ -85,7 +87,8 @@ export function installUnsavedChangesGuards(): void {
     if (!(field instanceof Element)) return;
     if (field.closest("[data-unsaved-ignore]")) return;
     const form =
-      (field as HTMLInputElement).form ?? field.closest<HTMLFormElement>("form[data-unsaved-guard]");
+      (field as HTMLInputElement).form ??
+      field.closest<HTMLFormElement>("form[data-unsaved-guard]");
     if (form?.hasAttribute("data-unsaved-guard")) markUnsaved(form);
   };
   document.addEventListener("input", onEdit, true);
@@ -106,7 +109,8 @@ export function installUnsavedChangesGuards(): void {
     "submit",
     (event) => {
       const form = event.target;
-      if (form instanceof HTMLFormElement && form.hasAttribute("data-unsaved-guard")) markSaved(form);
+      if (form instanceof HTMLFormElement && form.hasAttribute("data-unsaved-guard"))
+        markSaved(form);
     },
     true,
   );

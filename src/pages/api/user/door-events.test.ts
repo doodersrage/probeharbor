@@ -44,7 +44,9 @@ vi.mock("../../../lib/sensorReadings", () => ({
 
 function makeContext(search = "", timeZone?: string): APIContext {
   return {
-    cookies: { get: (name: string) => (name === "ph_tz" && timeZone ? { value: timeZone } : undefined) },
+    cookies: {
+      get: (name: string) => (name === "ph_tz" && timeZone ? { value: timeZone } : undefined),
+    },
     url: new URL(`https://example.com/api/user/door-events${search}`),
   } as unknown as APIContext;
 }
@@ -59,7 +61,9 @@ beforeEach(() => {
   mockListDoorEvents.mockReset().mockResolvedValue([]);
   mockFetchRecentBoolReadings.mockReset().mockResolvedValue([]);
   mockComputeDoorOpenSessions.mockReset().mockReturnValue([]);
-  mockListDoorEventsForReport.mockReset().mockResolvedValue({ events: [], truncated: false, error: null });
+  mockListDoorEventsForReport
+    .mockReset()
+    .mockResolvedValue({ events: [], truncated: false, error: null });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ historyDays: 3650 });
 });
 
@@ -201,10 +205,9 @@ describe("GET /api/user/door-events", () => {
       });
       const { GET } = await import("./door-events");
 
-      const json = (await (await GET(makeContext("?from=2026-10-01&to=2026-10-05", "America/New_York"))).json()) as Record<
-        string,
-        unknown
-      >;
+      const json = (await (
+        await GET(makeContext("?from=2026-10-01&to=2026-10-05", "America/New_York"))
+      ).json()) as Record<string, unknown>;
 
       expect(mockListDoorEvents).not.toHaveBeenCalled();
       expect(mockListDoorEventsForReport).toHaveBeenCalledWith(
@@ -213,7 +216,10 @@ describe("GET /api/user/door-events", () => {
         "2026-10-06T03:59:59.999Z",
         100,
       );
-      expect(json.range).toEqual({ from: "2026-10-01T04:00:00.000Z", to: "2026-10-06T03:59:59.999Z" });
+      expect(json.range).toEqual({
+        from: "2026-10-01T04:00:00.000Z",
+        to: "2026-10-06T03:59:59.999Z",
+      });
       expect(json.truncated).toBe(false);
       expect(json.history).toEqual([
         {
@@ -250,7 +256,10 @@ describe("GET /api/user/door-events", () => {
     it("says so when there are more openings than the limit", async () => {
       mockListDoorEventsForReport.mockResolvedValue({ events: [], truncated: true, error: null });
       const { GET } = await import("./door-events");
-      const json = (await (await GET(makeContext("?from=2026-10-01"))).json()) as Record<string, unknown>;
+      const json = (await (await GET(makeContext("?from=2026-10-01"))).json()) as Record<
+        string,
+        unknown
+      >;
       expect(json.truncated).toBe(true);
     });
 
@@ -267,7 +276,11 @@ describe("GET /api/user/door-events", () => {
     });
 
     it("answers 500 instead of an empty list when the query fails", async () => {
-      mockListDoorEventsForReport.mockResolvedValue({ events: [], truncated: false, error: "timeout" });
+      mockListDoorEventsForReport.mockResolvedValue({
+        events: [],
+        truncated: false,
+        error: "timeout",
+      });
       const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const { GET } = await import("./door-events");
 

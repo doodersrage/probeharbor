@@ -308,7 +308,7 @@ export default {
     {
       question: "Qu’envoie le puck de contact de porte ?",
       answer:
-        "Du JSON comme {\"door1\":true} quand la porte est ouverte. Sketch : sketches/arduino/door_contact_ingest. Guide : probeharbor.dev/door-puck.",
+        'Du JSON comme {"door1":true} quand la porte est ouverte. Sketch : sketches/arduino/door_contact_ingest. Guide : probeharbor.dev/door-puck.',
     },
     {
       question: "Une porte ouverte déclenche-t-elle à elle seule un SMS de gel ?",
@@ -325,7 +325,7 @@ export default {
     {
       question: "Qu’envoie le puck de contact de fuite ?",
       answer:
-        "Du JSON comme {\"leak1\":true} en présence d’eau. Les clés d’inondation/fuite déclenchent automatiquement une alerte en cas d’eau une fois les alertes activées. Guide : probeharbor.dev/leak-puck.",
+        'Du JSON comme {"leak1":true} en présence d’eau. Les clés d’inondation/fuite déclenchent automatiquement une alerte en cas d’eau une fois les alertes activées. Guide : probeharbor.dev/leak-puck.',
     },
     {
       question: "Fuite et température peuvent-elles partager une clé d’appareil ?",
@@ -342,7 +342,7 @@ export default {
     {
       question: "Qu’envoie l’alerte de coupure de courant ?",
       answer:
-        "Du JSON comme {\"power1\":false} quand l’alimentation secteur/USB surveillée est perdue. L’ESP32 émetteur doit rester sur un onduleur. Guide : probeharbor.dev/power-nudge.",
+        'Du JSON comme {"power1":false} quand l’alimentation secteur/USB surveillée est perdue. L’ESP32 émetteur doit rester sur un onduleur. Guide : probeharbor.dev/power-nudge.',
     },
     {
       question: "Et si la sonde de gel perd aussi l’alimentation ?",

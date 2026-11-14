@@ -1,4 +1,3 @@
-
 /** Body copy for /about/arduino-sketches. Hrefs stay English; middleware localizes them. */
 const REPO = "https://github.com/doodersrage/probeharbor";
 const A = '<a class="text-link" target="_blank" rel="noreferrer" href=';
@@ -31,8 +30,10 @@ const fr: Messages = {
     "Le montage utilise un Arduino Uno, un shield Ethernet W5100, une platine d’essai, un potentiomètre de contraste, un écran LCD 16×2 et deux capteurs DHT22. Trois pages associées détaillent les schémas et le brochage :",
   networkTitle: "Choix de la pile réseau",
   networkHtml: `Cette révision utilise un shield Ethernet en SPI. Le sketch gère le DHCP, les boucles de reconnexion et la diffusion du JSON pendant que l’écran LCD continue d’afficher les valeurs des sondes en direct. Quand TLS est trop lourd pour le MCU, un relais Python peut terminer le HTTPS : voir <a class="text-link" href="/about/python-feeds">Scripts et flux Python</a>. Pour l’ingestion push depuis le même shield, voir ${ETH_INGEST}.`,
-  rev2Alt: "Carte de sonde ProbeHarbor révision deux avec shield Ethernet, écran LCD et capteurs DHT22",
-  rev2Caption: "ProbeHarbor révision deux : Ethernet, affichage LCD et deux entrées DHT22 dans un seul empilement.",
+  rev2Alt:
+    "Carte de sonde ProbeHarbor révision deux avec shield Ethernet, écran LCD et capteurs DHT22",
+  rev2Caption:
+    "ProbeHarbor révision deux : Ethernet, affichage LCD et deux entrées DHT22 dans un seul empilement.",
   workflowTitle: "Méthode de développement",
   workflow:
     "Les sketches sont modifiés dans l’Arduino IDE ou PlatformIO, flashés en USB, puis vérifiés grâce aux journaux série avant de fixer la carte dans l’espace surveillé. Vérifiez la structure du JSON avec curl avant d’ajouter l’URL du flux au dashboard du site.",

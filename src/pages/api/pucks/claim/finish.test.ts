@@ -20,13 +20,15 @@ vi.mock("../../../../lib/pucks", () => ({
   finishPuckClaim: (...a: unknown[]) => mockFinishPuckClaim(...a),
 }));
 
-function makeContext(body: unknown | string = {
-  device_id: "puck-1",
-  bay_id: "bay-a",
-  nonce_hex: "aa",
-  response_hex: "bb",
-  space_name: "Garage",
-}): APIContext {
+function makeContext(
+  body: unknown | string = {
+    device_id: "puck-1",
+    bay_id: "bay-a",
+    nonce_hex: "aa",
+    response_hex: "bb",
+    space_name: "Garage",
+  },
+): APIContext {
   const payload = typeof body === "string" ? body : JSON.stringify(body);
   return {
     request: new Request("https://example.com/api/pucks/claim/finish", {

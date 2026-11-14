@@ -26,7 +26,17 @@ describe("unhandled alerts", () => {
 
 describe("undelivered safety alerts count as unhandled", () => {
   it("counts held/failed freeze, leak, power, sensor-silent, early-warning and stuck-probe alerts", () => {
-    for (const kind of ["threshold", "flood", "power", "outage", "freeze", "forecast", "runway", "nws", "stuck"]) {
+    for (const kind of [
+      "threshold",
+      "flood",
+      "power",
+      "outage",
+      "freeze",
+      "forecast",
+      "runway",
+      "nws",
+      "stuck",
+    ]) {
       expect(isUnhandledAlertEvent(ev(kind, [])), kind).toBe(true);
     }
   });

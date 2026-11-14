@@ -1,14 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
-import {
-  redirectUnlessEditor,
-  requireHouseholdEditor,
-} from "../../../lib/householdAuth";
-import {
-  getAlertSettingsForUser,
-  notifyUser,
-  saveAlertSettingsForUser,
-} from "../../../lib/notify";
+import { redirectUnlessEditor, requireHouseholdEditor } from "../../../lib/householdAuth";
+import { getAlertSettingsForUser, notifyUser, saveAlertSettingsForUser } from "../../../lib/notify";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { recordHouseholdActivity } from "../../../lib/householdActivity";
 import { getUserHouseholdId } from "../../../lib/households";

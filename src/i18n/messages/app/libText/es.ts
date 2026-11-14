@@ -8,10 +8,14 @@ const es: LibTextMessages = {
     averageTitle: "Promedio de {days} días",
     tempOn: "{temp} {unit} el {time} ({probe})",
     humidityOn: "{humidity} % el {time} ({probe})",
-    averageDetail: { one: "{temp} {unit} en {count} lectura", other: "{temp} {unit} en {count} lecturas" },
+    averageDetail: {
+      one: "{temp} {unit} en {count} lectura",
+      other: "{temp} {unit} en {count} lecturas",
+    },
     warmerThan: "{warmer} está de media {delta} {unit} más cálido que {cooler} en este periodo.",
     yoyTitle: "Interanual",
-    yoyDetail: "Este periodo promedia {current} {unit} frente a {prior} {unit} el año pasado ({delta} {unit}).",
+    yoyDetail:
+      "Este periodo promedia {current} {unit} frente a {prior} {unit} el año pasado ({delta} {unit}).",
     outdoorEstimate: "{detail} (estimación exterior).",
     outdoorEstimateAt: "{detail} (estimación exterior en {location}).",
   },
@@ -117,14 +121,16 @@ const es: LibTextMessages = {
     partUnknown: "{count} desconocidas",
   },
   lowBattery: {
-    single: "La batería de {name} está al {pct} %: cárgala o cámbiala antes de que deje de enviar datos.",
+    single:
+      "La batería de {name} está al {pct} %: cárgala o cámbiala antes de que deje de enviar datos.",
     item: "{name} ({pct} %)",
     list: "Batería baja en {count} dispositivos: {names}.",
     listMore: "Batería baja en {count} dispositivos: {names} y {more} más.",
   },
   runway: {
     prefix: "Margen térmico: {message}",
-    doorOpen: "Hay un sensor de puerta abierto: el calor se perderá más rápido hasta que se cierre.",
+    doorOpen:
+      "Hay un sensor de puerta abierto: el calor se perderá más rápido hasta que se cierre.",
     forecastLow:
       "Mínima prevista de ~{temp} °F en las próximas {hours} h: el frío exterior puede acelerar el enfriamiento interior.",
   },
@@ -132,7 +138,8 @@ const es: LibTextMessages = {
     yourRegion: "tu región",
     typical: "Similar a otros hogares de ProbeHarbor en {city} esta noche.",
     colder: "{delta} °F más frío que los hogares habituales de ProbeHarbor en {city} ahora mismo.",
-    warmer: "{delta} °F más cálido que los hogares habituales de ProbeHarbor en {city} ahora mismo.",
+    warmer:
+      "{delta} °F más cálido que los hogares habituales de ProbeHarbor en {city} ahora mismo.",
   },
 };
 

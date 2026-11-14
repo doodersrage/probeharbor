@@ -4,7 +4,12 @@ import type { AboutPhotoId } from "../../../lib/aboutPhotos";
  * /compare hub copy. Keys ending in `Html` hold trusted inline HTML (links,
  * <strong>); keep hrefs English, middleware localizes them.
  */
-type Row = { capabilityHtml: string; probeharborHtml: string; diyHtml: string; consumerHtml: string };
+type Row = {
+  capabilityHtml: string;
+  probeharborHtml: string;
+  diyHtml: string;
+  consumerHtml: string;
+};
 
 const en = {
   title: "Compare monitoring options",
@@ -28,7 +33,8 @@ const en = {
   } as Partial<Record<AboutPhotoId, string>>,
   guides: {
     title: "Detailed comparisons",
-    subtitle: "Side-by-side guides for common alternatives: ops burden, alerts, and when each option fits.",
+    subtitle:
+      "Side-by-side guides for common alternatives: ops burden, alerts, and when each option fits.",
     smartThingsHtml:
       '<strong class="text-[var(--color-text)]">SmartThings</strong> can add ProbeHarbor sensors via the\n        <a class="text-link" href="/integrations/smartthings">Matter bridge path</a>\n        (no Cloud-to-Cloud app). Consumer pods still sit with Govee below:\n        <a class="text-link" href="/compare/govee">Govee guide</a>.',
     haTitle: "Home Assistant (HACS)",
@@ -43,17 +49,60 @@ const en = {
     diy: "DIY script + cron",
     consumer: "Govee / SmartThings",
     rows: [
-      { capabilityHtml: "Time to freeze (this space)", probeharborHtml: "Forecast-backed clock + remaining-hours alert", diyHtml: "You write the model", consumerHtml: "Threshold only" },
-      { capabilityHtml: "Freeze alerts (email/SMS/push)", probeharborHtml: "Built-in, per-household", diyHtml: "You wire Twilio + cron", consumerHtml: "App push; SMS extra or absent" },
-      { capabilityHtml: "ESP/Arduino push ingest", probeharborHtml: "One-time device key", diyHtml: "Custom endpoint", consumerHtml: "Govee pods / SmartThings devices" },
-      { capabilityHtml: "History &amp; CSV export", probeharborHtml: "On paid plans", diyHtml: "Self-hosted DB", consumerHtml: "Subscription tiers" },
-      { capabilityHtml: "Share links &amp; Grafana", probeharborHtml: "1 family live link; Pro adds history/metrics", diyHtml: "Manual setup", consumerHtml: "Rare on consumer apps" },
-      { capabilityHtml: "Home Assistant (HACS)", probeharborHtml: '<a class="text-link" href="/integrations/home-assistant">Official integration</a> (share link)', diyHtml: "REST sensors + webhooks", consumerHtml: "Varies by vendor" },
-      { capabilityHtml: "Household multi-user", probeharborHtml: "Free", diyHtml: "N/A", consumerHtml: "Family sharing is awkward" },
-      { capabilityHtml: "Hosting &amp; uptime ops", probeharborHtml: 'Cloudflare edge; <a class="text-link" href="/system-status">public status</a>', diyHtml: "You own the VPS / cron", consumerHtml: "Vendor cloud (opaque)" },
+      {
+        capabilityHtml: "Time to freeze (this space)",
+        probeharborHtml: "Forecast-backed clock + remaining-hours alert",
+        diyHtml: "You write the model",
+        consumerHtml: "Threshold only",
+      },
+      {
+        capabilityHtml: "Freeze alerts (email/SMS/push)",
+        probeharborHtml: "Built-in, per-household",
+        diyHtml: "You wire Twilio + cron",
+        consumerHtml: "App push; SMS extra or absent",
+      },
+      {
+        capabilityHtml: "ESP/Arduino push ingest",
+        probeharborHtml: "One-time device key",
+        diyHtml: "Custom endpoint",
+        consumerHtml: "Govee pods / SmartThings devices",
+      },
+      {
+        capabilityHtml: "History &amp; CSV export",
+        probeharborHtml: "On paid plans",
+        diyHtml: "Self-hosted DB",
+        consumerHtml: "Subscription tiers",
+      },
+      {
+        capabilityHtml: "Share links &amp; Grafana",
+        probeharborHtml: "1 family live link; Pro adds history/metrics",
+        diyHtml: "Manual setup",
+        consumerHtml: "Rare on consumer apps",
+      },
+      {
+        capabilityHtml: "Home Assistant (HACS)",
+        probeharborHtml:
+          '<a class="text-link" href="/integrations/home-assistant">Official integration</a> (share link)',
+        diyHtml: "REST sensors + webhooks",
+        consumerHtml: "Varies by vendor",
+      },
+      {
+        capabilityHtml: "Household multi-user",
+        probeharborHtml: "Free",
+        diyHtml: "N/A",
+        consumerHtml: "Family sharing is awkward",
+      },
+      {
+        capabilityHtml: "Hosting &amp; uptime ops",
+        probeharborHtml:
+          'Cloudflare edge; <a class="text-link" href="/system-status">public status</a>',
+        diyHtml: "You own the VPS / cron",
+        consumerHtml: "Vendor cloud (opaque)",
+      },
     ] as Row[],
   },
-  screenshotCaption: "What you get without running your own stack: probe curves against your freeze threshold.",
+  screenshotCaption:
+    "What you get without running your own stack: probe curves against your freeze threshold.",
   audience: {
     title: "Who it's for",
     itemsHtml: [

@@ -1,4 +1,3 @@
-
 /** Body copy for /about/arduino-sketches. Hrefs stay English; middleware localizes them. */
 const REPO = "https://github.com/doodersrage/probeharbor";
 const A = '<a class="text-link" target="_blank" rel="noreferrer" href=';
@@ -31,8 +30,10 @@ const ptBr: Messages = {
     "A montagem usa um Arduino Uno, um shield Ethernet W5100, uma protoboard, um potenciômetro de contraste, um LCD de 16×2 e dois sensores DHT22. Três páginas complementares documentam em detalhes os esquemas e o mapa de pinos:",
   networkTitle: "Escolhas da pilha de rede",
   networkHtml: `Esta revisão usa um shield Ethernet via SPI. O sketch cuida do DHCP, dos loops de reconexão e do envio do JSON enquanto o LCD continua mostrando os valores das sondas ao vivo. Quando o TLS é pesado demais para o MCU, um relay em Python pode terminar o HTTPS: veja <a class="text-link" href="/about/python-feeds">Scripts e feeds em Python</a>. Para ingestão push a partir do mesmo shield, veja ${ETH_INGEST}.`,
-  rev2Alt: "Placa de sonda ProbeHarbor da segunda revisão com shield Ethernet, LCD e sensores DHT22",
-  rev2Caption: "ProbeHarbor, revisão dois: Ethernet, leitura no LCD e duas entradas DHT22 em uma única montagem.",
+  rev2Alt:
+    "Placa de sonda ProbeHarbor da segunda revisão com shield Ethernet, LCD e sensores DHT22",
+  rev2Caption:
+    "ProbeHarbor, revisão dois: Ethernet, leitura no LCD e duas entradas DHT22 em uma única montagem.",
   workflowTitle: "Fluxo de desenvolvimento",
   workflow:
     "Os sketches são editados no Arduino IDE ou no PlatformIO, gravados via USB e verificados com logs na serial antes de a placa ser instalada no espaço monitorado. Confira o formato do JSON com curl antes de adicionar a URL do feed ao dashboard do site.",

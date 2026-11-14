@@ -9,9 +9,15 @@ const fr: ApiUserMessages = {
     failed: "Échec de l’alerte de test",
   },
   snooze: {
-    snoozed: { one: "Alertes en pause pendant {count} heure.", other: "Alertes en pause pendant {count} heures." },
+    snoozed: {
+      one: "Alertes en pause pendant {count} heure.",
+      other: "Alertes en pause pendant {count} heures.",
+    },
     vacationUntil: "Vacances jusqu’au {date}.",
-    vacationDays: { one: "Mode vacances pendant {count} jour.", other: "Mode vacances pendant {count} jours." },
+    vacationDays: {
+      one: "Mode vacances pendant {count} jour.",
+      other: "Mode vacances pendant {count} jours.",
+    },
     snoozeCleared: "Pause annulée.",
     vacationCleared: "Mode vacances désactivé.",
   },
@@ -34,7 +40,8 @@ const fr: ApiUserMessages = {
   feedIdRequired: "L’identifiant du flux est obligatoire",
   csvRequiresPlan: "L’export CSV nécessite un abonnement actif ou un accès administrateur",
   doorCsvFailed: "L’export de l’historique des portes a échoué. Réessayez dans un instant.",
-  doorCsvTooMany: "Trop d’ouvertures de portes pour un seul CSV (plus de 5 000). Choisissez moins de jours et réessayez.",
+  doorCsvTooMany:
+    "Trop d’ouvertures de portes pour un seul CSV (plus de 5 000). Choisissez moins de jours et réessayez.",
   doorEventsInvalidDate: "Utilisez AAAA-MM-JJ ou un horodatage complet pour from et to.",
   doorEventsRangeOrder: "« from » doit précéder « to ».",
   doorEventsFailed: "Impossible de charger l’historique des portes. Réessayez dans un instant.",

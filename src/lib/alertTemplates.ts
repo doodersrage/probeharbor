@@ -1,8 +1,6 @@
 import type { NotifyPayload } from "./notify";
 
-export type AlertTemplateMap = Partial<
-  Record<string, { title?: string; body?: string }>
->;
+export type AlertTemplateMap = Partial<Record<string, { title?: string; body?: string }>>;
 
 export function interpolateTemplate(
   template: string,

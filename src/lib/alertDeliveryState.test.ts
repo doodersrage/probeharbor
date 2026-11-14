@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { alertDeliveryState } from "./alertDeliveryState";
 
-const row = (channels_sent: string[] | null, channels_skipped: string[] | null) => ({ channels_sent, channels_skipped });
+const row = (channels_sent: string[] | null, channels_skipped: string[] | null) => ({
+  channels_sent,
+  channels_skipped,
+});
 
 describe("alertDeliveryState", () => {
   it("is sent (accepted) when every channel tried was accepted", () => {
-    expect(alertDeliveryState(row(["email", "push"], []))).toEqual({ state: "sent", sent: ["email", "push"] });
+    expect(alertDeliveryState(row(["email", "push"], []))).toEqual({
+      state: "sent",
+      sent: ["email", "push"],
+    });
   });
 
   it("is partial when some channels were accepted and others failed", () => {
@@ -17,7 +23,11 @@ describe("alertDeliveryState", () => {
   });
 
   it("is held for quiet hours", () => {
-    expect(alertDeliveryState(row([], ["quiet_hours"]))).toEqual({ state: "held", reason: "quiet_hours", failed: [] });
+    expect(alertDeliveryState(row([], ["quiet_hours"]))).toEqual({
+      state: "held",
+      reason: "quiet_hours",
+      failed: [],
+    });
   });
 
   it("is held for snooze or vacation (the stored reason doesn't say which)", () => {

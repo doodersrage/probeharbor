@@ -48,7 +48,9 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request, site }) =
   // Already signed in here: hand the app a session of its own (after any YubiKey step).
   const { user: signedIn } = await getAuthFromCookies(cookies);
   if (signedIn) {
-    if (await betterAuthNeedsStepUp(signedIn, (id) => hasValidMfaStepUpProof(request, cookies, id))) {
+    if (
+      await betterAuthNeedsStepUp(signedIn, (id) => hasValidMfaStepUpProof(request, cookies, id))
+    ) {
       return redirect(buildMfaChallengeUrl(`${url.pathname}${url.search}`));
     }
     const token = await createAppSessionToken(request, signedIn.id);
@@ -56,7 +58,10 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request, site }) =
     if (handoff) return handoff;
   }
   if (provider && VALID_PROVIDERS.includes(provider as (typeof VALID_PROVIDERS)[number])) {
-    return (await startBetterAuthOAuth(request, provider as OAuthProviderId)) ?? redirect(buildSignInRedirectUrl("oauth_failed"));
+    return (
+      (await startBetterAuthOAuth(request, provider as OAuthProviderId)) ??
+      redirect(buildSignInRedirectUrl("oauth_failed"))
+    );
   }
   // Email / password (or pick a provider on the sign-in page).
   return redirect(`/signin?next=${encodeURIComponent("/api/auth/companion/complete")}`);

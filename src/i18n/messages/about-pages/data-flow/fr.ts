@@ -1,4 +1,3 @@
-
 /** /about/data-flow body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
@@ -11,7 +10,8 @@ const fr: Messages = {
   step2Title: "Étape 2. Publication du JSON",
   step2Html:
     'La carte ou un relais à proximité expose du JSON en HTTPS. Un service Python FastAPI peut mettre les réponses en cache dans Redis pour que l’internet public n’atteigne jamais directement la connexion du domicile : voir <a class="text-link" href="/about/python-feeds">scripts et flux Python</a>.',
-  jsonAlt: "Visionneuse JSON du navigateur affichant les clés de sonde 0, 1 et avg avec Fahrenheit, Celsius et humidité",
+  jsonAlt:
+    "Visionneuse JSON du navigateur affichant les clés de sonde 0, 1 et avg avec Fahrenheit, Celsius et humidité",
   jsonCaption: "Structure du flux en direct consommée par le site une fois sortie du réseau local.",
   step3Title: "Étape 3. Récupération et affichage sur le site",
   step3Html:

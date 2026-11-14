@@ -59,7 +59,8 @@ export function detectBatteryTrendDrop(
   });
   const daysLeft = estimateBatteryDaysRemaining(sorted, windowDays);
   if (daysLeft != null && daysLeft <= 60) {
-    const rounded = daysLeft < 2 ? t.aboutOneDay : plural(t.aboutDays, Math.round(daysLeft), locale);
+    const rounded =
+      daysLeft < 2 ? t.aboutOneDay : plural(t.aboutDays, Math.round(daysLeft), locale);
     return fmt(t.mayLast, { base, duration: rounded });
   }
   return base;

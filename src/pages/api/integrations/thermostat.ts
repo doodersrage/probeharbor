@@ -1,14 +1,15 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
 import { getUserEntitlements } from "../../../lib/entitlements";
-import { getOrCreateHouseholdForUser, getUserHouseholdRole, canEditHousehold } from "../../../lib/households";
+import {
+  getOrCreateHouseholdForUser,
+  getUserHouseholdRole,
+  canEditHousehold,
+} from "../../../lib/households";
 import { buildSiteUrl } from "../../../lib/siteUrl";
 import { listConnectionsForHousehold } from "../../../lib/thermostatConnections";
 import { fetchThermostatContext } from "../../../lib/thermostatCorrelation";
-import {
-  isEcobeeOAuthConfigured,
-  isNestOAuthConfigured,
-} from "../../../lib/thermostatOAuth";
+import { isEcobeeOAuthConfigured, isNestOAuthConfigured } from "../../../lib/thermostatOAuth";
 
 export const GET: APIRoute = async ({ cookies, request, site }) => {
   const { session, user } = await getAuthFromCookies(cookies);
@@ -35,12 +36,8 @@ export const GET: APIRoute = async ({ cookies, request, site }) => {
         configured,
         connections: [],
         connect_urls: {
-          ...(configured.nest
-            ? { nest: `${siteUrl}/api/integrations/nest/connect` }
-            : {}),
-          ...(configured.ecobee
-            ? { ecobee: `${siteUrl}/api/integrations/ecobee/connect` }
-            : {}),
+          ...(configured.nest ? { nest: `${siteUrl}/api/integrations/nest/connect` } : {}),
+          ...(configured.ecobee ? { ecobee: `${siteUrl}/api/integrations/ecobee/connect` } : {}),
         },
       }),
       { status: 200, headers: { "Content-Type": "application/json" } },
@@ -83,9 +80,7 @@ export const GET: APIRoute = async ({ cookies, request, site }) => {
         : null,
       disconnect_urls: canConnect
         ? {
-            ...(configured.nest
-              ? { nest: `${siteUrl}/api/integrations/nest/disconnect` }
-              : {}),
+            ...(configured.nest ? { nest: `${siteUrl}/api/integrations/nest/disconnect` } : {}),
             ...(configured.ecobee
               ? { ecobee: `${siteUrl}/api/integrations/ecobee/disconnect` }
               : {}),

@@ -20,7 +20,8 @@ const de: PropertyManagementMessages = {
   portfolioPrice: "Portfolio: {price}",
   seePortfolioPricing: "Portfolio-Preise ansehen",
   priceAnnual: "{annual}/Jahr für bis zu {max} Objekte",
-  priceAnnualWithMonthly: "{annual}/Jahr für bis zu {max} Objekte ({monthly}/Monat bei monatlicher Abrechnung)",
+  priceAnnualWithMonthly:
+    "{annual}/Jahr für bis zu {max} Objekte ({monthly}/Monat bei monatlicher Abrechnung)",
   priceMonthly: "{monthly}/Monat für bis zu {max} Objekte",
   priceCustom: "Individueller Preis für bis zu {max} Objekte",
   screenshotCaption:
@@ -67,11 +68,13 @@ const de: PropertyManagementMessages = {
   faqs: [
     {
       question: "Wie unterscheidet sich Portfolio von Pro?",
-      answer: "Portfolio enthält alles aus dem Pro-Tarif (SMS-Alarme, offizielle Frost- und Kältewarnungen des NWS (USA), das Nachweispaket für Schadensfälle, Webhooks und Freigabelinks) und dazu eine deutlich höhere Obergrenze für eigene Objekte (Pro erlaubt bereits bis zu {pro}, Portfolio hebt das auf {portfolio} an). Der Preis ist auf diese Größenordnung ausgelegt statt auf ein einzelnes Objekt.",
+      answer:
+        "Portfolio enthält alles aus dem Pro-Tarif (SMS-Alarme, offizielle Frost- und Kältewarnungen des NWS (USA), das Nachweispaket für Schadensfälle, Webhooks und Freigabelinks) und dazu eine deutlich höhere Obergrenze für eigene Objekte (Pro erlaubt bereits bis zu {pro}, Portfolio hebt das auf {portfolio} an). Der Preis ist auf diese Größenordnung ausgelegt statt auf ein einzelnes Objekt.",
     },
     {
       question: "Brauche ich Portfolio, wenn ich nur 2–3 Objekte habe?",
-      answer: "Wahrscheinlich nicht: Pro deckt bereits eine Handvoll Objekte ab (bis zu {pro} eigene Haushalte), mit demselben objektübergreifenden Dashboard und derselben Alarm-Zusammenfassung. Portfolio ist für größere Betriebe gedacht: eine Hausverwaltung oder einen Vermieter mit vielen Einheiten, bei denen ein pauschaler Einzelpreis die Größenordnung nicht abbildet.",
+      answer:
+        "Wahrscheinlich nicht: Pro deckt bereits eine Handvoll Objekte ab (bis zu {pro} eigene Haushalte), mit demselben objektübergreifenden Dashboard und derselben Alarm-Zusammenfassung. Portfolio ist für größere Betriebe gedacht: eine Hausverwaltung oder einen Vermieter mit vielen Einheiten, bei denen ein pauschaler Einzelpreis die Größenordnung nicht abbildet.",
     },
     {
       question: "Können meine Verwalter oder das Personal vor Ort einen eigenen Login bekommen?",

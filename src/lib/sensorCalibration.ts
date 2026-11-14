@@ -13,10 +13,7 @@ export function clampSensorOffset(
   return Math.max(-max, Math.min(max, offset));
 }
 
-export function applySensorOffset(
-  value: number,
-  offset: number | null | undefined,
-): number {
+export function applySensorOffset(value: number, offset: number | null | undefined): number {
   if (!Number.isFinite(value)) return value;
   const o = typeof offset === "number" && Number.isFinite(offset) ? offset : 0;
   return value + o;
@@ -34,9 +31,11 @@ export function parseOffsetFormValue(raw: FormDataEntryValue | null): number {
  * ingest), so a temperature offset is in °F whatever the display preference.
  * Empty when the sensor has no unit.
  */
-export function calibrationOffsetUnit(kind: string | null | undefined, unit: string | null | undefined): string {
+export function calibrationOffsetUnit(
+  kind: string | null | undefined,
+  unit: string | null | undefined,
+): string {
   if (kind === "temperature") return "°F";
   if (kind === "humidity") return "%";
   return unit?.trim() ?? "";
 }
-

@@ -5,8 +5,7 @@ const fr: DeviceSetupPullMessages = {
   subtitle:
     "Du JSON en HTTPS que nous récupérons à intervalles réguliers. Les clés des sondes sont importées à l’enregistrement : renommez-les ci-dessous si besoin.",
   exampleSummary: "Pas encore de flux à vous ? Essayez le flux d’exemple",
-  viewOnly:
-    "Accès en lecture seule : les réglages des flux et des sondes sont masqués.",
+  viewOnly: "Accès en lecture seule : les réglages des flux et des sondes sont masqués.",
   feeds: {
     heading: "URL des flux",
     introHtml:
@@ -20,10 +19,8 @@ const fr: DeviceSetupPullMessages = {
     namePlaceholder: "Atelier",
     url: "URL HTTPS",
     jsonRoot: "Clé racine JSON",
-    jsonRootTitle:
-      "Une lettre ou un tiret bas, puis des lettres, chiffres ou tirets bas",
-    jsonRootHintHtml:
-      "Objet qui contient les clés des sondes (généralement <code>temp</code>).",
+    jsonRootTitle: "Une lettre ou un tiret bas, puis des lettres, chiffres ou tirets bas",
+    jsonRootHintHtml: "Objet qui contient les clés des sondes (généralement <code>temp</code>).",
     enabled: "Activé",
     delete: "Supprimer",
     deleteConfirm: "Supprimer ce flux ?",
@@ -50,18 +47,15 @@ const fr: DeviceSetupPullMessages = {
     noProbes: "Aucune sonde trouvée dans le flux.",
     imported: {
       one: "{count} sonde importée. Renommez-la ci-dessous, puis enregistrez.",
-      other:
-        "{count} sondes importées. Renommez-les ci-dessous, puis enregistrez.",
+      other: "{count} sondes importées. Renommez-les ci-dessous, puis enregistrez.",
     },
     unableRead: "Impossible de lire le flux.",
-    appliedSuggested:
-      "Noms suggérés appliqués : modifiez-les ci-dessous, puis enregistrez.",
+    appliedSuggested: "Noms suggérés appliqués : modifiez-les ci-dessous, puis enregistrez.",
     hiddenAvg:
       "Sondes « avg » masquées sur l’accueil : enregistrez la configuration pour conserver ce choix.",
     saveFailed: "Échec de l’enregistrement de la configuration.",
     unableSave: "Impossible d’enregistrer la configuration.",
-    saveFeedFirst:
-      "Enregistrez d’abord l’URL d’un flux, puis détectez ici les clés des sondes.",
+    saveFeedFirst: "Enregistrez d’abord l’URL d’un flux, puis détectez ici les clés des sondes.",
     heading: "Noms des sondes",
     intro:
       "Détectez les sondes dans le JSON de votre flux, puis renommez-les pour l’accueil. Les clés restent liées au flux ; vous ne modifiez que les noms affichés.",
@@ -94,8 +88,7 @@ const fr: DeviceSetupPullMessages = {
     fetchFailed: "Échec de la récupération.",
     errorPrefix: "Erreur : {message}",
     notFetched: "Non récupéré",
-    complete:
-      "Récupération terminée : actualisez l’accueil pour voir les nouvelles mesures.",
+    complete: "Récupération terminée : actualisez l’accueil pour voir les nouvelles mesures.",
     couldNotFetch: "Impossible de récupérer les flux.",
     rowFailed: "Échec de la récupération",
     fetchNow: "Récupérer maintenant",

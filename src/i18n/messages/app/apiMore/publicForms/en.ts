@@ -15,10 +15,12 @@ const en = {
     genericError: "Something went wrong. Please try again.",
     move: {
       confirmTitle: "Switch freeze alerts?",
-      confirmBody: "Freeze alert emails for this address will be sent for {place} instead of the place they cover now.",
+      confirmBody:
+        "Freeze alert emails for this address will be sent for {place} instead of the place they cover now.",
       button: "Switch alerts",
       invalidTitle: "Link not valid",
-      invalidBodyHtml: "<p>This link has expired, was changed, or the alerts were unsubscribed. Your current freeze alerts are unchanged.</p>",
+      invalidBodyHtml:
+        "<p>This link has expired, was changed, or the alerts were unsubscribed. Your current freeze alerts are unchanged.</p>",
     },
     unsubscribe: {
       forecastLink: "Pipe freeze forecast",

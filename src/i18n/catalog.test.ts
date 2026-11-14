@@ -69,21 +69,44 @@ describe("runtime catalog", () => {
 });
 
 describe("request locale", () => {
-  const base = { prefixLocale: "en" as const, user: null, cookieLocale: undefined, acceptLanguage: null };
+  const base = {
+    prefixLocale: "en" as const,
+    user: null,
+    cookieLocale: undefined,
+    acceptLanguage: null,
+  };
   it("uses the URL prefix on marketing and sign-in pages", () => {
-    expect(resolveRequestLocale({ ...base, path: "/pricing", prefixLocale: "es", cookieLocale: "de" })).toBe("es");
+    expect(
+      resolveRequestLocale({ ...base, path: "/pricing", prefixLocale: "es", cookieLocale: "de" }),
+    ).toBe("es");
     expect(resolveRequestLocale({ ...base, path: "/signin", cookieLocale: "de" })).toBe("en");
   });
   it("uses the account language, then the cookie, on the dashboard", () => {
     const user = { user_metadata: { locale: "fr" } };
-    expect(resolveRequestLocale({ ...base, path: "/dashboard", user, cookieLocale: "de" })).toBe("fr");
-    expect(resolveRequestLocale({ ...base, path: "/dashboard", user: { user_metadata: {} }, cookieLocale: "de" })).toBe("de");
+    expect(resolveRequestLocale({ ...base, path: "/dashboard", user, cookieLocale: "de" })).toBe(
+      "fr",
+    );
     expect(
-      resolveRequestLocale({ ...base, path: "/dashboard", user: { user_metadata: {} }, acceptLanguage: "es" }),
+      resolveRequestLocale({
+        ...base,
+        path: "/dashboard",
+        user: { user_metadata: {} },
+        cookieLocale: "de",
+      }),
+    ).toBe("de");
+    expect(
+      resolveRequestLocale({
+        ...base,
+        path: "/dashboard",
+        user: { user_metadata: {} },
+        acceptLanguage: "es",
+      }),
     ).toBe("en");
   });
   it("lets signed-out visitors of share pages use the browser language", () => {
-    expect(resolveRequestLocale({ ...base, path: "/share/abc", acceptLanguage: "pt-PT,pt;q=0.9" })).toBe("pt-br");
+    expect(
+      resolveRequestLocale({ ...base, path: "/share/abc", acceptLanguage: "pt-PT,pt;q=0.9" }),
+    ).toBe("pt-br");
     expect(resolveRequestLocale({ ...base, path: "/privacy", acceptLanguage: "es" })).toBe("en");
   });
   it("parses Accept-Language", () => {
@@ -125,14 +148,17 @@ describe("translation files", () => {
     const catalog = await loadDevCatalog();
     for (const locale of TRANSLATED_LOCALES) {
       for (const [group, tables] of Object.entries(catalog[locale] ?? {})) {
-        for (const [ns, data] of Object.entries(tables ?? {})) visit(data, `${locale}/${group}/${ns}`);
+        for (const [ns, data] of Object.entries(tables ?? {}))
+          visit(data, `${locale}/${group}/${ns}`);
       }
     }
     expect(offenders.slice(0, 20)).toEqual([]);
   });
 
   it("use the same {placeholders} as English", async () => {
-    const enModules = import.meta.glob<{ default: unknown }>("./messages/**/en.ts", { eager: true });
+    const enModules = import.meta.glob<{ default: unknown }>("./messages/**/en.ts", {
+      eager: true,
+    });
     const mismatches: string[] = [];
     const compare = (en: unknown, tr: unknown, where: string) => {
       if (typeof en === "string" && typeof tr === "string") {
@@ -141,7 +167,11 @@ describe("translation files", () => {
         if (a !== b) mismatches.push(`${where}: en {${a}} vs {${b}}`);
       } else if (en && tr && typeof en === "object" && typeof tr === "object") {
         for (const k of Object.keys(en)) {
-          compare((en as Record<string, unknown>)[k], (tr as Record<string, unknown>)[k], `${where}.${k}`);
+          compare(
+            (en as Record<string, unknown>)[k],
+            (tr as Record<string, unknown>)[k],
+            `${where}.${k}`,
+          );
         }
       }
     };

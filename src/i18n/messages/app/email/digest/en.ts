@@ -10,7 +10,8 @@ const en = {
     "Here’s a quick look at the last 7 days — coldest night, freeze crossings, and anything else to watch.",
   ctaHistory: "Open this week on History",
   ctaSettings: "Manage digest settings",
-  footerNote: "Weekly digests can be turned off under Dashboard → Alerts → Settings → Summary emails.",
+  footerNote:
+    "Weekly digests can be turned off under Dashboard → Alerts → Settings → Summary emails.",
   tip: "Tip: outage and leak alerts fire separately when sensors go quiet or wet.",
 
   readings: { one: "{count} reading", other: "{count} readings" } as PluralForms,

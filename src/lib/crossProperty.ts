@@ -69,7 +69,11 @@ export async function fetchCrossPropertySnapshots(
       (deviceCountByHousehold.get(device.household_id) ?? 0) + 1,
     );
     // Shared freshness rule (2 h, longer for a slow-reporting device).
-    const silent = readingFreshness(device.last_seen_at, reportIntervalMsFromMeta(device.meta), nowMs).stale;
+    const silent = readingFreshness(
+      device.last_seen_at,
+      reportIntervalMsFromMeta(device.meta),
+      nowMs,
+    ).stale;
     if (device.enabled && silent) {
       silentCountByHousehold.set(
         device.household_id,
@@ -83,7 +87,9 @@ export async function fetchCrossPropertySnapshots(
   const floodSensorIds: string[] = [];
 
   if (allDeviceIds.length > 0) {
-    const sensors = await neonPlaces.sensorsOfKinds(allDeviceIds, ["temperature", "flood"]).catch(() => null);
+    const sensors = await neonPlaces
+      .sensorsOfKinds(allDeviceIds, ["temperature", "flood"])
+      .catch(() => null);
 
     for (const sensor of sensors ?? []) {
       if (sensor.kind === "flood") {

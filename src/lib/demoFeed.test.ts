@@ -16,7 +16,9 @@ describe("isDemoFeedUrl", () => {
   it("recognizes the example feed on any host, with or without a trailing slash or query", () => {
     expect(isDemoFeedUrl("https://probeharbor.com/api/feeds/example")).toBe(true);
     expect(isDemoFeedUrl("https://probeharbor.com/api/feeds/example/")).toBe(true);
-    expect(isDemoFeedUrl("https://self-hosted.example.org/api/feeds/example?format=pull")).toBe(true);
+    expect(isDemoFeedUrl("https://self-hosted.example.org/api/feeds/example?format=pull")).toBe(
+      true,
+    );
     expect(isDemoFeedUrl(getExampleFeedUrl("https://probeharbor.com"))).toBe(true);
   });
 
@@ -33,24 +35,42 @@ describe("isDemoFeedUrl", () => {
 describe("isDemoDevice", () => {
   it("flags existing pull devices by URL (no stored flag needed)", () => {
     expect(
-      isDemoDevice({ source: "pull_url", pull_url: "https://probeharbor.com/api/feeds/example", meta: {} }),
+      isDemoDevice({
+        source: "pull_url",
+        pull_url: "https://probeharbor.com/api/feeds/example",
+        meta: {},
+      }),
     ).toBe(true);
   });
 
   it("flags devices marked demo in meta", () => {
-    expect(isDemoDevice({ source: "pull_url", pull_url: "https://x.example/feed", meta: { demo: true } })).toBe(true);
+    expect(
+      isDemoDevice({
+        source: "pull_url",
+        pull_url: "https://x.example/feed",
+        meta: { demo: true },
+      }),
+    ).toBe(true);
   });
 
   it("leaves push devices and real pull feeds alone", () => {
     expect(isDemoDevice({ source: "push", pull_url: null, meta: {} })).toBe(false);
-    expect(isDemoDevice({ source: "pull_url", pull_url: "https://x.example/feed", meta: { demo: "yes" } })).toBe(false);
+    expect(
+      isDemoDevice({
+        source: "pull_url",
+        pull_url: "https://x.example/feed",
+        meta: { demo: "yes" },
+      }),
+    ).toBe(false);
     expect(isDemoDevice(null)).toBe(false);
   });
 });
 
 describe("pullDeviceMeta", () => {
   it("marks the example feed as demo when it is saved", () => {
-    expect(pullDeviceMeta({}, { url: "https://probeharbor.com/api/feeds/example", jsonRoot: "temp" })).toEqual({
+    expect(
+      pullDeviceMeta({}, { url: "https://probeharbor.com/api/feeds/example", jsonRoot: "temp" }),
+    ).toEqual({
       pull_json_root: "temp",
       demo: true,
     });
@@ -58,13 +78,20 @@ describe("pullDeviceMeta", () => {
 
   it("clears the flag when the URL changes to a real feed and keeps other meta", () => {
     expect(
-      pullDeviceMeta({ demo: true, battery_pct: 80 }, { url: "https://x.example/feed", jsonRoot: "temp" }),
+      pullDeviceMeta(
+        { demo: true, battery_pct: 80 },
+        { url: "https://x.example/feed", jsonRoot: "temp" },
+      ),
     ).toEqual({ battery_pct: 80, pull_json_root: "temp" });
   });
 });
 
 describe("excluding demo data", () => {
-  const demo = { id: "d", source: "pull_url", pull_url: "https://probeharbor.com/api/feeds/example" };
+  const demo = {
+    id: "d",
+    source: "pull_url",
+    pull_url: "https://probeharbor.com/api/feeds/example",
+  };
   const real = { id: "r", source: "push", pull_url: null };
 
   it("drops demo devices", () => {
@@ -133,13 +160,20 @@ describe("onboardingDeviceStep", () => {
   it("is done once a real device has reported", () => {
     expect(onboardingDeviceStep([pushSeen], [])).toBe("done");
     expect(
-      onboardingDeviceStep([demoDevice, pushNeverSeen], [demoRow, { sensor: { device_id: "push" }, deviceDemo: false }]),
+      onboardingDeviceStep(
+        [demoDevice, pushNeverSeen],
+        [demoRow, { sensor: { device_id: "push" }, deviceDemo: false }],
+      ),
     ).toBe("done");
   });
 });
 
 describe("statusReadingScope", () => {
-  const demoDevice = { id: "demo", source: "pull_url", pull_url: "https://probeharbor.com/api/feeds/example" };
+  const demoDevice = {
+    id: "demo",
+    source: "pull_url",
+    pull_url: "https://probeharbor.com/api/feeds/example",
+  };
   const pushDevice = { id: "push", source: "push", pull_url: null };
   const demoRow = { sensor: { device_id: "demo" }, deviceDemo: true, value_num: 20 };
   const realRow = { sensor: { device_id: "push" }, deviceDemo: false, value_num: 50 };

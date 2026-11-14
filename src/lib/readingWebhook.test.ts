@@ -113,7 +113,10 @@ describe("sendReadingWebhook", () => {
 
     await sendReadingWebhook(
       "user-1",
-      settings({ readingWebhookUrl: "  https://hooks.example.com/reading  ", readingWebhookSecret: "  " }),
+      settings({
+        readingWebhookUrl: "  https://hooks.example.com/reading  ",
+        readingWebhookSecret: "  ",
+      }),
       { tempF: 30 },
     );
 

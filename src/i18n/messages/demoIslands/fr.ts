@@ -4,7 +4,8 @@ const fr: DemoIslandMessages = {
   temps: {
     loading: "Chargement des températures des sondes…",
     title: "Atelier de démonstration simulé",
-    subtitle: "Températures de sondes modélisées à partir de la météo locale réelle. Créez un compte gratuit (sans carte bancaire) pour connecter vos propres capteurs.",
+    subtitle:
+      "Températures de sondes modélisées à partir de la météo locale réelle. Créez un compte gratuit (sans carte bancaire) pour connecter vos propres capteurs.",
     loadError: "Impossible de charger les températures des sondes",
     rateLimited: "Trop de requêtes. Réessayez dans un instant.",
     retry: "Réessayer",
@@ -43,7 +44,8 @@ const fr: DemoIslandMessages = {
     mapAttribution: "· © OpenStreetMap · météo © OpenWeather",
   },
   history: {
-    unavailable: "Le graphique sur 7 jours est indisponible pour le moment. Les relevés en direct ci-dessus continuent de s’actualiser.",
+    unavailable:
+      "Le graphique sur 7 jours est indisponible pour le moment. Les relevés en direct ci-dessus continuent de s’actualiser.",
     loading: "Chargement des 7 derniers jours…",
     outdoor: "Extérieur",
     outdoorAt: "Extérieur ({location})",
@@ -55,13 +57,16 @@ const fr: DemoIslandMessages = {
     house: "Maison",
     comparisonOverlay: "Gris = superposition de comparaison",
     notEnough: "Pas encore assez de relevés pour afficher un graphique.",
-    emptySteps: "{addDevice} → vérifiez la réception des données → {openLive} pour que les relevés s’accumulent.",
+    emptySteps:
+      "{addDevice} → vérifiez la réception des données → {openLive} pour que les relevés s’accumulent.",
     emptyAddDevice: "Ajoutez un appareil",
     emptyOpenLive: "ouvrez Live",
     summaryLatest: "Dernier relevé : {temp} {unit}.",
     summaryRange: "Plage sur cette période : de {min} {unit} à {max} {unit}.",
-    summaryBelow: "Est descendu jusqu’au seuil de gel de {freeze} {unit} ou en dessous sur {below} relevés sur {total}.",
-    summaryAbove: "Est resté au-dessus du seuil de gel de {freeze} {unit} pendant toute la période.",
+    summaryBelow:
+      "Est descendu jusqu’au seuil de gel de {freeze} {unit} ou en dessous sur {below} relevés sur {total}.",
+    summaryAbove:
+      "Est resté au-dessus du seuil de gel de {freeze} {unit} pendant toute la période.",
     hoverAlert: "Alerte : {title}",
     guideFreeze: "Gel",
     guideTarget: "Cible",
@@ -94,7 +99,8 @@ const fr: DemoIslandMessages = {
     presetLabels: { "24h": "24 h", "7d": "7 j", "30d": "30 j" },
     presetShowLast: "Afficher les dernières {label}",
     presetAlreadyShowing: "Environ {label} de données chargées déjà affichées",
-    presetOnlyLoaded: "Seulement {hours} h chargées ici : ouvrez History pour une plage plus longue",
+    presetOnlyLoaded:
+      "Seulement {hours} h chargées ici : ouvrez History pour une plage plus longue",
     presetAll: "Tout",
     loadedWindow: "La fenêtre chargée couvre environ {hours} h.",
     seriesAria: "Affichage des séries",
@@ -102,20 +108,27 @@ const fr: DemoIslandMessages = {
     dewPointF: "point de rosée {unit}",
     dashed: " (pointillés)",
     humidityFrom: " · de {probe}",
-    humidityNoDew: " (pas de point de rosée : ce capteur d’humidité n’a pas de température associée)",
+    humidityNoDew:
+      " (pas de point de rosée : ce capteur d’humidité n’a pas de température associée)",
     humidityFromLabel: "Humidité de",
     humidityAuto: "Relevé le plus récent",
     humidityAll: "Toutes les sondes",
-    humidityAllLegend: "Humidité (trait fin) et point de rosée (pointillés) dans la couleur de chaque sonde",
+    humidityAllLegend:
+      "Humidité (trait fin) et point de rosée (pointillés) dans la couleur de chaque sonde",
     chartTips: "Astuces",
-    tipsExpanded: "Vue agrandie : faites glisser pour sélectionner une plage, utilisez la molette pour zoomer, puis Échap ou Fermer pour quitter.",
-    tipsDefault: "Faites glisser pour sélectionner une plage (Maj + glisser une fois zoomé), utilisez la molette pour zoomer, Lien pour copier cette fenêtre et PNG pour l’enregistrer.",
+    tipsExpanded:
+      "Vue agrandie : faites glisser pour sélectionner une plage, utilisez la molette pour zoomer, puis Échap ou Fermer pour quitter.",
+    tipsDefault:
+      "Faites glisser pour sélectionner une plage (Maj + glisser une fois zoomé), utilisez la molette pour zoomer, Lien pour copier cette fenêtre et PNG pour l’enregistrer.",
     tipsAlerts: " Les repères colorés signalent les alertes : survolez-en un pour voir le détail.",
-    tipsTrace: "La courbe devient {cool} au seuil de gel ou en dessous, et {warm} au seuil haut ou au-dessus.",
-    tipsDew: " La ligne pointillée du point de rosée est calculée à partir de la température et de l’humidité : les surfaces plus froides qu’elle deviennent humides.",
+    tipsTrace:
+      "La courbe devient {cool} au seuil de gel ou en dessous, et {warm} au seuil haut ou au-dessus.",
+    tipsDew:
+      " La ligne pointillée du point de rosée est calculée à partir de la température et de l’humidité : les surfaces plus froides qu’elle deviennent humides.",
     tipsCool: "froide",
     tipsWarm: "chaude",
-    canvasAria: "Graphique linéaire interactif : {title}. Faites glisser pour sélectionner une plage, utilisez la molette pour zoomer ou agrandissez-le pour une vue plus grande.",
+    canvasAria:
+      "Graphique linéaire interactif : {title}. Faites glisser pour sélectionner une plage, utilisez la molette pour zoomer ou agrandissez-le pour une vue plus grande.",
     tooltipAlert: "Alerte",
     tooltipDew: "rosée",
     optionsSummary: "Options du graphique : lignes de repère",
@@ -133,9 +146,12 @@ const fr: DemoIslandMessages = {
     summaryDoors: "Périodes de porte ouverte grisées sur le graphique : {list}.",
     summaryDoorItem: "{door} : {count}",
     doorLegendTitle: "Afficher ou masquer quand {door} était ouverte",
-    tipsDoors: " Les bandes grisées indiquent quand un capteur de porte de votre foyer a signalé une porte ouverte ; avec plusieurs portes, chacune a sa propre ligne au-dessus du graphique.",
-    doorLanesMore: " Les lignes affichent jusqu’à {max} portes ; les autres restent grisées et s’affichent au survol.",
-    doorsUnavailable: "Impossible de charger l’historique des portes : les portes ouvertes ne sont pas indiquées.",
+    tipsDoors:
+      " Les bandes grisées indiquent quand un capteur de porte de votre foyer a signalé une porte ouverte ; avec plusieurs portes, chacune a sa propre ligne au-dessus du graphique.",
+    doorLanesMore:
+      " Les lignes affichent jusqu’à {max} portes ; les autres restent grisées et s’affichent au survol.",
+    doorsUnavailable:
+      "Impossible de charger l’historique des portes : les portes ouvertes ne sont pas indiquées.",
   },
 };
 

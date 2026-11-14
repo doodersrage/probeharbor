@@ -1,9 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { replacementErrorCode, replacementErrorMessage, replacementOptionsByKind } from "./sensorReplacement";
+import {
+  replacementErrorCode,
+  replacementErrorMessage,
+  replacementOptionsByKind,
+} from "./sensorReplacement";
 import type { DeviceWithSensors } from "./devices";
 import type { SensorKind } from "./sensorKinds";
 
-function device(id: string, name: string, sensors: Array<[string, string, SensorKind]>): DeviceWithSensors {
+function device(
+  id: string,
+  name: string,
+  sensors: Array<[string, string, SensorKind]>,
+): DeviceWithSensors {
   return {
     id,
     household_id: "hh",
@@ -31,11 +39,17 @@ function device(id: string, name: string, sensors: Array<[string, string, Sensor
 describe("replacementOptionsByKind", () => {
   it("offers only kinds with a sensor to retire and one to replace it", () => {
     const groups = replacementOptionsByKind([
-      device("d1", "Old board", [["t1", "Garage pipe", "temperature"], ["h1", "Garage humidity", "humidity"]]),
+      device("d1", "Old board", [
+        ["t1", "Garage pipe", "temperature"],
+        ["h1", "Garage humidity", "humidity"],
+      ]),
       device("d2", "New board", [["t2", "temp1", "temperature"]]),
     ]);
     expect(groups.map((g) => g.kind)).toEqual(["temperature"]);
-    expect(groups[0]?.options.map((o) => o.label)).toEqual(["New board · temp1", "Old board · Garage pipe"]);
+    expect(groups[0]?.options.map((o) => o.label)).toEqual([
+      "New board · temp1",
+      "Old board · Garage pipe",
+    ]);
   });
 });
 
@@ -48,6 +62,8 @@ describe("replacementErrorMessage", () => {
   });
 
   it("never echoes an unknown code", () => {
-    expect(replacementErrorMessage("Call 555-0100 for support")).toBe("Couldn't replace the sensor. Nothing was changed.");
+    expect(replacementErrorMessage("Call 555-0100 for support")).toBe(
+      "Couldn't replace the sensor. Nothing was changed.",
+    );
   });
 });

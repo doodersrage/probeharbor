@@ -1,4 +1,3 @@
-
 /** /about/temperature-changes body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 
 const en = {

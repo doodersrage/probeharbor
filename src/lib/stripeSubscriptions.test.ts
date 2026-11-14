@@ -85,7 +85,8 @@ describe("upsertUserSubscription", () => {
     // Use "in" rather than a default value here: omitting current_period_end
     // (as real Stripe payloads sometimes do) must stay omitted, not fall
     // back to a default timestamp.
-    const currentPeriodEnd = "currentPeriodEnd" in overrides ? overrides.currentPeriodEnd : 1735689600;
+    const currentPeriodEnd =
+      "currentPeriodEnd" in overrides ? overrides.currentPeriodEnd : 1735689600;
     return {
       id: "sub_123",
       status,
@@ -102,7 +103,10 @@ describe("upsertUserSubscription", () => {
   }
 
   it("ignores a canceled stray subscription while a different one is active", async () => {
-    billing.storedSubscription.mockResolvedValue({ stripe_subscription_id: "sub_active", status: "active" });
+    billing.storedSubscription.mockResolvedValue({
+      stripe_subscription_id: "sub_active",
+      status: "active",
+    });
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
     const result = await upsertUserSubscription(
@@ -118,7 +122,10 @@ describe("upsertUserSubscription", () => {
   });
 
   it("still records a cancellation of the stored subscription itself", async () => {
-    billing.storedSubscription.mockResolvedValue({ stripe_subscription_id: "sub_123", status: "active" });
+    billing.storedSubscription.mockResolvedValue({
+      stripe_subscription_id: "sub_123",
+      status: "active",
+    });
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
     await upsertUserSubscription("user-1", makeSubscription({ status: "canceled" }), "cus_1");
@@ -132,7 +139,11 @@ describe("upsertUserSubscription", () => {
     billing.storedSubscription.mockRejectedValue(new Error("db hiccup"));
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
-    const result = await upsertUserSubscription("user-1", makeSubscription({ status: "active" }), "cus_1");
+    const result = await upsertUserSubscription(
+      "user-1",
+      makeSubscription({ status: "active" }),
+      "cus_1",
+    );
 
     expect(result).toEqual({ error: null });
     expect(billing.upsertSubscriptionRow).toHaveBeenCalledTimes(1);
@@ -141,7 +152,11 @@ describe("upsertUserSubscription", () => {
   it("upserts the subscription row and syncs the plan group on success", async () => {
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
-    const result = await upsertUserSubscription("user-1", makeSubscription({ status: "active" }), "cus_1");
+    const result = await upsertUserSubscription(
+      "user-1",
+      makeSubscription({ status: "active" }),
+      "cus_1",
+    );
 
     expect(result).toEqual({ error: null });
     expect(billing.upsertSubscriptionRow).toHaveBeenCalledWith(
@@ -170,7 +185,11 @@ describe("upsertUserSubscription", () => {
   it("stores a null current_period_end when Stripe omits it", async () => {
     const { upsertUserSubscription } = await import("./stripeSubscriptions");
 
-    await upsertUserSubscription("user-1", makeSubscription({ currentPeriodEnd: undefined }), "cus_1");
+    await upsertUserSubscription(
+      "user-1",
+      makeSubscription({ currentPeriodEnd: undefined }),
+      "cus_1",
+    );
 
     expect(billing.upsertSubscriptionRow).toHaveBeenCalledWith(
       expect.objectContaining({ current_period_end: null }),

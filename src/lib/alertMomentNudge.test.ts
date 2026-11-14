@@ -13,7 +13,11 @@ const ev = (id: number, kind: string, daysAgo: number, channels: string[]) => ({
 describe("findAlertMoment", () => {
   it("picks the latest email-only freeze or leak alert", () => {
     const moment = findAlertMoment(
-      [ev(1, "threshold", 5, ["email"]), ev(2, "flood", 1, ["email"]), ev(3, "generic", 0, ["email"])],
+      [
+        ev(1, "threshold", 5, ["email"]),
+        ev(2, "flood", 1, ["email"]),
+        ev(3, "generic", 0, ["email"]),
+      ],
       now,
     );
     expect(moment).toMatchObject({ eventId: 2, kind: "flood", label: "leak alert" });
@@ -21,7 +25,14 @@ describe("findAlertMoment", () => {
 
   it("ignores tests, digests, and non-critical kinds", () => {
     expect(
-      findAlertMoment([ev(1, "generic", 0, ["email"]), ev(2, "digest", 0, ["email"]), ev(3, "outage", 0, ["email"])], now),
+      findAlertMoment(
+        [
+          ev(1, "generic", 0, ["email"]),
+          ev(2, "digest", 0, ["email"]),
+          ev(3, "outage", 0, ["email"]),
+        ],
+        now,
+      ),
     ).toBeNull();
   });
 
@@ -30,7 +41,9 @@ describe("findAlertMoment", () => {
   });
 
   it("ignores undelivered and old alerts", () => {
-    expect(findAlertMoment([ev(1, "threshold", 1, []), ev(2, "threshold", 20, ["email"])], now)).toBeNull();
+    expect(
+      findAlertMoment([ev(1, "threshold", 1, []), ev(2, "threshold", 20, ["email"])], now),
+    ).toBeNull();
   });
 
   it("labels the alert in the account language", async () => {

@@ -30,7 +30,9 @@ vi.mock("../../../lib/garageTempsHistory", () => ({
 
 function makeContext(query: string, timeZone?: string): APIContext {
   const url = new URL(`https://example.com/api/garage-temps/export.csv${query}`);
-  const cookies = { get: (name: string) => (name === "ph_tz" && timeZone ? { value: timeZone } : undefined) };
+  const cookies = {
+    get: (name: string) => (name === "ph_tz" && timeZone ? { value: timeZone } : undefined),
+  };
   return { url, cookies } as unknown as APIContext;
 }
 
@@ -41,7 +43,9 @@ beforeEach(() => {
   });
   mockCanDownloadHistoryCsv.mockReset().mockResolvedValue(true);
   mockGetUserEntitlements.mockReset().mockResolvedValue({ historyDays: 90 });
-  mockClampIsoToHistoryWindow.mockReset().mockImplementation((from: string | undefined) => from ?? "clamped-from");
+  mockClampIsoToHistoryWindow
+    .mockReset()
+    .mockImplementation((from: string | undefined) => from ?? "clamped-from");
   mockFetchAllGarageTempReadings.mockReset().mockResolvedValue({ readings: [], error: null });
   mockBuildGarageTempsCsv.mockReset().mockReturnValue("timestamp,tempF\n");
 });
@@ -125,7 +129,7 @@ describe("GET /api/garage-temps/export.csv", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
     expect(response.headers.get("Content-Disposition")).toContain(
-      "attachment; filename=\"probeharbor-readings-",
+      'attachment; filename="probeharbor-readings-',
     );
     expect(await response.text()).toBe("timestamp,tempF\n2024-01-01,40\n");
   });

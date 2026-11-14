@@ -219,9 +219,7 @@ describe("POST /api/share/manage", () => {
 
     const response = await POST(makePostContext({}));
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/share?error=manager_required",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/share?error=manager_required");
   });
 
   it("redirects with pro_required when the plan cannot create share links", async () => {
@@ -233,9 +231,7 @@ describe("POST /api/share/manage", () => {
 
     const response = await POST(makePostContext({ scope: "live" }));
 
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/share?error=pro_required",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/share?error=pro_required");
   });
 
   it("creates a share link, flashes the token, and redirects", async () => {
@@ -259,11 +255,7 @@ describe("POST /api/share/manage", () => {
       action: "share_link_created",
       detail: "live",
     });
-    expect(mockSetSecretFlash).toHaveBeenCalledWith(
-      {},
-      "tt_flash_share_token",
-      expect.any(String),
-    );
+    expect(mockSetSecretFlash).toHaveBeenCalledWith({}, "tt_flash_share_token", expect.any(String));
     expect(response.headers.get("Location")).toBe("/dashboard/share?created=1");
 
     // Only the hash and last 4 characters are stored, never the token.

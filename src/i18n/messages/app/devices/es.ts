@@ -5,7 +5,8 @@ const es: DevicesMessages = {
   subtitle: {
     ops: "Todos los dispositivos, del peor al mejor. Abre uno para gestionarlo.",
     pull: "Feeds JSON por HTTPS que consultamos según una programación.",
-    thermostat: "El termostato de tu casa y la referencia interior, como contexto junto a tus sondas.",
+    thermostat:
+      "El termostato de tu casa y la referencia interior, como contexto junto a tus sondas.",
     push: "Conecta un dispositivo nuevo o termina de configurar uno.",
   },
   indoorRefError: {
@@ -22,7 +23,10 @@ const es: DevicesMessages = {
     },
     deviceDeleted: "Dispositivo eliminado.",
     bulkDeleted: { one: "Se eliminó {count} elemento.", other: "Se eliminaron {count} elementos." },
-    bulkUpdated: { one: "Se actualizó {count} elemento.", other: "Se actualizaron {count} elementos." },
+    bulkUpdated: {
+      one: "Se actualizó {count} elemento.",
+      other: "Se actualizaron {count} elementos.",
+    },
     bulkError: "No se pudo completar la acción en lote. Inténtalo de nuevo.",
     deviceRenamed: "Dispositivo renombrado.",
     sensorAdded: "Sensor añadido.",
@@ -36,15 +40,18 @@ const es: DevicesMessages = {
     feedDeleted: "Feed eliminado.",
     probeDeleted: "Sonda eliminada.",
     saveFailed: "No se pudieron guardar los cambios. Inténtalo de nuevo.",
-    deviceLimit: "Límite de dispositivos push alcanzado ({max} por propiedad). Mejora tu plan para añadir más.",
+    deviceLimit:
+      "Límite de dispositivos push alcanzado ({max} por propiedad). Mejora tu plan para añadir más.",
     viewer: "Acceso de solo lectura: no puedes cambiar dispositivos ni feeds.",
-    deviceActionFailed: "No se pudo completar esa acción del dispositivo. Revisa el formulario e inténtalo de nuevo.",
+    deviceActionFailed:
+      "No se pudo completar esa acción del dispositivo. Revisa el formulario e inténtalo de nuevo.",
     actionFailed: "No se pudo completar esa acción ({code}). Inténtalo de nuevo.",
     viewPlans: "Ver planes",
     /** At the device limit with push devices that never reported; device links follow. */
     neverReported: {
       one: "{count} de tus dispositivos nunca ha enviado una lectura. Elimínalo si no lo necesitas, o reutilízalo para el hardware que estás configurando (Rotar clave en su página te da una clave nueva):",
-      other: "{count} de tus dispositivos nunca han enviado una lectura. Elimina uno que no necesites, o reutiliza uno para el hardware que estás configurando (Rotar clave en su página te da una clave nueva):",
+      other:
+        "{count} de tus dispositivos nunca han enviado una lectura. Elimina uno que no necesites, o reutiliza uno para el hardware que estás configurando (Rotar clave en su página te da una clave nueva):",
     },
   },
   tabs: {
@@ -111,7 +118,8 @@ const es: DevicesMessages = {
       lede: "La mayoría de las primeras lecturas llegan en menos de un minuto después de que el dispositivo se conecta al Wi-Fi. Si todavía no ha llegado nada, revisa esto:",
       wifi: "Wi-Fi: la mayoría de las placas (ESP32, Pico W) solo se conectan a redes de 2,4 GHz, no de 5 GHz. Revisa el nombre de la red y la contraseña que le diste al dispositivo.",
       key: "Clave: si escribiste o pegaste la clave tú mismo, debe coincidir exactamente con tu clave, sin espacios de más. ¿La perdiste? Usa Rotar clave en la tarjeta del dispositivo y actualiza el dispositivo.",
-      network: "Red: el dispositivo necesita salir a internet por HTTPS (puerto 443). Las redes de invitados y el Wi-Fi que pide iniciar sesión en una página suelen bloquearlo.",
+      network:
+        "Red: el dispositivo necesita salir a internet por HTTPS (puerto 443). Las redes de invitados y el Wi-Fi que pide iniciar sesión en una página suelen bloquearlo.",
       payloadChecker: "Comprobar un payload",
       staleGuide: "Depurar lecturas que faltan",
       troubleshooting: "Guía de solución de problemas",
@@ -122,11 +130,13 @@ const es: DevicesMessages = {
     title: "Configuración del dispositivo",
     step: "Paso {step} de 2: añade un dispositivo y espera su primera lectura (los sensores aparecen solos).",
     createStep: "Añadir un dispositivo",
-    postStep: "Primera lectura: los sensores aparecen solos; cámbiales el nombre después si hace falta",
+    postStep:
+      "Primera lectura: los sensores aparecen solos; cámbiales el nombre después si hace falta",
     showAll: "Mostrar todos los ajustes del dispositivo",
   },
   client: {
-    stillWaiting: "Aún esperando: última comprobación {time}. Comprobando automáticamente cada 5 segundos.",
+    stillWaiting:
+      "Aún esperando: última comprobación {time}. Comprobando automáticamente cada 5 segundos.",
     lastCheck: "Última comprobación {time}.",
     received: ": ¡recibido!",
     listening: ": escuchando…",

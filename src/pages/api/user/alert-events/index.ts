@@ -1,9 +1,6 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../../lib/auth";
-import {
-  countUnacknowledgedAlerts,
-  listRecentAlertEvents,
-} from "../../../../lib/alertEvents";
+import { countUnacknowledgedAlerts, listRecentAlertEvents } from "../../../../lib/alertEvents";
 import { apiCommonMessages, apiLocale } from "../../../../i18n/messages/app/api/common";
 
 export const GET: APIRoute = async ({ request, cookies, url, locals }) => {
@@ -18,9 +15,7 @@ export const GET: APIRoute = async ({ request, cookies, url, locals }) => {
   }
 
   const limitRaw = Number(url.searchParams.get("limit") ?? "30");
-  const limit = Number.isFinite(limitRaw)
-    ? Math.min(Math.max(Math.floor(limitRaw), 1), 100)
-    : 30;
+  const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(Math.floor(limitRaw), 1), 100) : 30;
 
   const [events, unackedCount] = await Promise.all([
     listRecentAlertEvents(user.id, limit),

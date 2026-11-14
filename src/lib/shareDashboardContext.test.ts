@@ -145,15 +145,15 @@ describe("loadShareDashboardContext", () => {
     mockCanManageHousehold.mockReturnValue(true);
     mockListShareLinks.mockResolvedValue({
       links: [
-          {
-            id: "link-1",
-            token: "supersecrettoken",
-            scope: "family",
-            label: "Family",
-            expires_at: null,
-            created_at: "2024-01-01T00:00:00.000Z",
-          },
-        ],
+        {
+          id: "link-1",
+          token: "supersecrettoken",
+          scope: "family",
+          label: "Family",
+          expires_at: null,
+          created_at: "2024-01-01T00:00:00.000Z",
+        },
+      ],
       error: null,
     });
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
@@ -184,9 +184,27 @@ describe("loadShareDashboardContext", () => {
     );
     mockListShareLinks.mockResolvedValue({
       links: [
-          { id: "new", token: null, token_hash: await sha256Hex(fresh), token_preview: "ffff", scope: "live", label: null, expires_at: null, created_at: "2024-01-02T00:00:00.000Z" },
-          { id: "old-hashed", token: null, token_hash: "aa".repeat(32), token_preview: "1234", scope: "live", label: null, expires_at: null, created_at: "2024-01-01T00:00:00.000Z" },
-        ],
+        {
+          id: "new",
+          token: null,
+          token_hash: await sha256Hex(fresh),
+          token_preview: "ffff",
+          scope: "live",
+          label: null,
+          expires_at: null,
+          created_at: "2024-01-02T00:00:00.000Z",
+        },
+        {
+          id: "old-hashed",
+          token: null,
+          token_hash: "aa".repeat(32),
+          token_preview: "1234",
+          scope: "live",
+          label: null,
+          expires_at: null,
+          created_at: "2024-01-01T00:00:00.000Z",
+        },
+      ],
       error: null,
     });
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
@@ -204,15 +222,15 @@ describe("loadShareDashboardContext", () => {
     mockCanManageHousehold.mockReturnValue(false);
     mockListShareLinks.mockResolvedValue({
       links: [
-          {
-            id: "link-1",
-            token: "supersecrettoken",
-            scope: "family",
-            label: "Family",
-            expires_at: null,
-            created_at: "2024-01-01T00:00:00.000Z",
-          },
-        ],
+        {
+          id: "link-1",
+          token: "supersecrettoken",
+          scope: "family",
+          label: "Family",
+          expires_at: null,
+          created_at: "2024-01-01T00:00:00.000Z",
+        },
+      ],
       error: null,
     });
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
@@ -276,7 +294,10 @@ describe("loadShareDashboardContext", () => {
     ["api_key_revoked", "API key revoked."],
     ["status_created", "Status page created, copy the link below."],
     ["status_revoked", "Status page revoked."],
-    ["status_regenerated", "New status link created, copy it below. The old link and badge no longer work."],
+    [
+      "status_regenerated",
+      "New status link created, copy it below. The old link and badge no longer work.",
+    ],
   ])("derives the notice for ?%s", async (param, expected) => {
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
 
@@ -287,13 +308,20 @@ describe("loadShareDashboardContext", () => {
   });
 
   it.each([
-    ["family_limit", "You already have a family live link. Revoke it first, or upgrade to Pro for more."],
+    [
+      "family_limit",
+      "You already have a family live link. Revoke it first, or upgrade to Pro for more.",
+    ],
     ["pro_required", "That option needs Pro. You can still create one family live link on Free."],
     ["something_else", "Could not update share links."],
   ])("derives an error notice for ?error=%s", async (errorValue, expected) => {
     const { loadShareDashboardContext } = await import("./shareDashboardContext");
 
-    const result = await loadShareDashboardContext(cookies, request, urlWith({ error: errorValue }));
+    const result = await loadShareDashboardContext(
+      cookies,
+      request,
+      urlWith({ error: errorValue }),
+    );
 
     expect(result.notice).toBe(expected);
     expect(result.noticeIsError).toBe(true);

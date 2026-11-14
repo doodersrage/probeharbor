@@ -54,10 +54,8 @@ describe("parseAlertPlaybooksFromForm", () => {
   });
 
   it("filters invalid steps inside valid JSON", () => {
-    expect(
-      parseAlertPlaybooksFromForm(
-        JSON.stringify([{ id: "only-id" }, validStep]),
-      ),
-    ).toEqual([validStep]);
+    expect(parseAlertPlaybooksFromForm(JSON.stringify([{ id: "only-id" }, validStep]))).toEqual([
+      validStep,
+    ]);
   });
 });

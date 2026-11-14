@@ -15,7 +15,8 @@ export const HISTORY_CHART_UI_EN = {
   emptyOpenLive: "open Live",
   summaryLatest: "Latest reading {temp}{unit}.",
   summaryRange: "Range over this period: {min}{unit} to {max}{unit}.",
-  summaryBelow: "Dropped to or below the {freeze}{unit} freeze line in {below} of {total} readings.",
+  summaryBelow:
+    "Dropped to or below the {freeze}{unit} freeze line in {below} of {total} readings.",
   summaryAbove: "Stayed above the {freeze}{unit} freeze line the whole period.",
   hoverAlert: "Alert: {title}",
   guideFreeze: "Freeze",
@@ -64,13 +65,16 @@ export const HISTORY_CHART_UI_EN = {
   humidityAllLegend: "Humidity (thin line) and dew point (dashed) in each probe's color",
   chartTips: "Chart tips",
   tipsExpanded: "Expanded view — drag to select a range, scroll to zoom, Esc or Close to exit.",
-  tipsDefault: "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save.",
+  tipsDefault:
+    "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save.",
   tipsAlerts: " Colored ticks mark alerts — hover near a tick for details.",
   tipsTrace: "Trace turns {cool} at/below freeze and {warm} at/above the high line.",
-  tipsDew: " The dashed dew-point line is worked out from temperature and humidity: surfaces colder than it get damp.",
+  tipsDew:
+    " The dashed dew-point line is worked out from temperature and humidity: surfaces colder than it get damp.",
   tipsCool: "cool",
   tipsWarm: "warm",
-  canvasAria: "Interactive line chart of {title}. Drag to select a range, scroll to zoom, expand for a larger view.",
+  canvasAria:
+    "Interactive line chart of {title}. Drag to select a range, scroll to zoom, expand for a larger view.",
   tooltipAlert: "Alert",
   tooltipDew: "dew",
   optionsSummary: "Chart options: guide lines",
@@ -88,8 +92,10 @@ export const HISTORY_CHART_UI_EN = {
   summaryDoors: "Door-open periods shaded on the chart: {list}.",
   summaryDoorItem: "{door}: {count}",
   doorLegendTitle: "Show or hide when {door} was open",
-  tipsDoors: " Shaded bands show when a door sensor in your household reported open; with more than one door, each door has its own row above the chart.",
-  doorLanesMore: " Rows show up to {max} doors; the others are still shaded and listed when you hover.",
+  tipsDoors:
+    " Shaded bands show when a door sensor in your household reported open; with more than one door, each door has its own row above the chart.",
+  doorLanesMore:
+    " Rows show up to {max} doors; the others are still shaded and listed when you hover.",
   doorsUnavailable: "Door history couldn't be loaded, so open doors aren't shaded.",
 };
 

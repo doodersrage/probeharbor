@@ -2,8 +2,7 @@
  * Exports batch1Pages (40 expanded about pages) for merge-about-expanded.mjs.
  * Run merge: node scripts/merge-about-expanded.mjs
  */
-const link = (slug, text) =>
-  `<a class="text-link" href="/about/${slug}">${text}</a>`;
+const link = (slug, text) => `<a class="text-link" href="/about/${slug}">${text}</a>`;
 
 /** @type {{ slug: string; parentSlug: string; blocks: object[] }[]} */
 const pages = [

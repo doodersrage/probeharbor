@@ -17,22 +17,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const redirectTo = formRedirectPath(formData, "/dashboard");
   const action = formData.get("action")?.toString() ?? "quiet_7d";
 
-  const quietUntil =
-    action === "clear" ? null : quietUntilSevenDaysFromNow();
+  const quietUntil = action === "clear" ? null : quietUntilSevenDaysFromNow();
 
   const accessToken = session.access_token;
   const refreshToken = session.refresh_token;
 
-  const { error } = await updateDashboardQuietUntil(
-    accessToken,
-    refreshToken,
-    quietUntil,
-  );
+  const { error } = await updateDashboardQuietUntil(accessToken, refreshToken, quietUntil);
 
   if (error) {
     return redirect(withQuery(redirectTo, { quiet_error: "1" }));
   }
-
 
   return redirect(
     withQuery(redirectTo, quietUntil ? { quiet_saved: "1" } : { quiet_cleared: "1" }),

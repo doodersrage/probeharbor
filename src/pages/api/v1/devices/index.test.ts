@@ -32,8 +32,7 @@ function makeContext(
   }
   const init: RequestInit = { method: opts.method ?? "GET", headers };
   if (opts.method === "POST") {
-    init.body =
-      typeof opts.body === "string" ? opts.body : JSON.stringify(opts.body ?? {});
+    init.body = typeof opts.body === "string" ? opts.body : JSON.stringify(opts.body ?? {});
   }
   return {
     request: new Request("https://example.com/api/v1/devices", init),
@@ -41,8 +40,12 @@ function makeContext(
 }
 
 beforeEach(() => {
-  mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
-  mockResolveApiKey.mockReset().mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "write" });
+  mockCheckApiPlan
+    .mockReset()
+    .mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
+  mockResolveApiKey
+    .mockReset()
+    .mockResolvedValue({ householdId: "house-1", keyId: "key-1", scope: "write" });
   mockListHouseholdDevices.mockReset().mockResolvedValue({
     devices: [
       {
@@ -133,9 +136,7 @@ describe("POST /api/v1/devices", () => {
   it("creates a push device and returns the one-time ingest key", async () => {
     const { POST } = await import("./index");
 
-    const response = await POST(
-      makeContext({ method: "POST", body: { name: "Attic probe" } }),
-    );
+    const response = await POST(makeContext({ method: "POST", body: { name: "Attic probe" } }));
     const json = (await response.json()) as Record<string, unknown>;
 
     expect(mockCreatePushDevice).toHaveBeenCalledWith(
@@ -144,7 +145,11 @@ describe("POST /api/v1/devices", () => {
       expect.any(String),
       expect.any(String),
     );
-    expect(mockPersistEncryptedIngestKey).toHaveBeenCalledWith("house-1", "new-1", expect.any(String));
+    expect(mockPersistEncryptedIngestKey).toHaveBeenCalledWith(
+      "house-1",
+      "new-1",
+      expect.any(String),
+    );
     expect(response.status).toBe(201);
     expect(json.device).toEqual({ id: "new-1", name: "API device" });
     expect(typeof json.ingest_key).toBe("string");
@@ -187,14 +192,21 @@ describe("/api/v1/devices plan checks", () => {
   });
 
   it("passes a 503 through when the plan can't be checked", async () => {
-    mockCheckApiPlan.mockResolvedValue({ ok: false, status: 503, error: "Could not check the plan. Try again." });
+    mockCheckApiPlan.mockResolvedValue({
+      ok: false,
+      status: 503,
+      error: "Could not check the plan. Try again.",
+    });
     const { GET } = await import("./index");
 
     expect((await GET(makeContext())).status).toBe(503);
   });
 
   it("POST enforces the plan's device limit like the dashboard (push devices only)", async () => {
-    mockCheckApiPlan.mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 2 } });
+    mockCheckApiPlan.mockResolvedValue({
+      ok: true,
+      entitlements: { canCreateShareLinks: true, maxDevices: 2 },
+    });
     mockListHouseholdDevices.mockResolvedValue({
       devices: [
         { id: "a", name: "A", source: "push" },
@@ -213,7 +225,10 @@ describe("/api/v1/devices plan checks", () => {
   });
 
   it("POST still creates a device below the limit", async () => {
-    mockCheckApiPlan.mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 2 } });
+    mockCheckApiPlan.mockResolvedValue({
+      ok: true,
+      entitlements: { canCreateShareLinks: true, maxDevices: 2 },
+    });
     const { POST } = await import("./index");
 
     const response = await POST(makeContext({ method: "POST", body: { name: "Second" } }));
@@ -243,19 +258,27 @@ describe("/api/v1/devices key scope", () => {
     expect(mockListHouseholdDevices).toHaveBeenCalledWith("house-1");
   });
 
-  it.each([{ scope: "read" }, {}])("POST (write route) refuses %o with 403 before creating anything", async (extra) => {
-    mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1", ...extra });
-    const { POST } = await import("./index");
+  it.each([{ scope: "read" }, {}])(
+    "POST (write route) refuses %o with 403 before creating anything",
+    async (extra) => {
+      mockResolveApiKey.mockResolvedValue({ householdId: "house-1", keyId: "key-1", ...extra });
+      const { POST } = await import("./index");
 
-    const response = await POST(makeContext({ method: "POST", body: { name: "x" } }));
+      const response = await POST(makeContext({ method: "POST", body: { name: "x" } }));
 
-    expect(response.status).toBe(403);
-    expect(response.headers.get("WWW-Authenticate")).toBe('Bearer error="insufficient_scope", scope="write"');
-    expect(await response.json()).toMatchObject({ code: "insufficient_scope", required_scope: "write" });
-    expect(mockCheckApiPlan).not.toHaveBeenCalled();
-    expect(mockCreatePushDevice).not.toHaveBeenCalled();
-    expect(mockPersistEncryptedIngestKey).not.toHaveBeenCalled();
-  });
+      expect(response.status).toBe(403);
+      expect(response.headers.get("WWW-Authenticate")).toBe(
+        'Bearer error="insufficient_scope", scope="write"',
+      );
+      expect(await response.json()).toMatchObject({
+        code: "insufficient_scope",
+        required_scope: "write",
+      });
+      expect(mockCheckApiPlan).not.toHaveBeenCalled();
+      expect(mockCreatePushDevice).not.toHaveBeenCalled();
+      expect(mockPersistEncryptedIngestKey).not.toHaveBeenCalled();
+    },
+  );
 
   it("POST creates a device for a write key", async () => {
     const { POST } = await import("./index");

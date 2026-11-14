@@ -33,28 +33,21 @@ vi.mock("../../../../lib/garageTempsHistory", () => ({
 
 const mockCheckShareReadingsRateLimit = vi.fn();
 vi.mock("../../../../lib/shareReadingsLimits", () => ({
-  checkShareReadingsRateLimit: (...a: unknown[]) =>
-    mockCheckShareReadingsRateLimit(...a),
+  checkShareReadingsRateLimit: (...a: unknown[]) => mockCheckShareReadingsRateLimit(...a),
 }));
 
 const mockResolveShareReadingsFormat = vi.fn();
 const mockShareScopeAllowsMetrics = vi.fn();
 vi.mock("../../../../lib/shareReadingsAccess", () => ({
-  resolveShareReadingsFormat: (...a: unknown[]) =>
-    mockResolveShareReadingsFormat(...a),
+  resolveShareReadingsFormat: (...a: unknown[]) => mockResolveShareReadingsFormat(...a),
   shareScopeAllowsMetrics: (...a: unknown[]) => mockShareScopeAllowsMetrics(...a),
 }));
 
-function makeContext(options: {
-  token?: string;
-  search?: string;
-  clientAddress?: string;
-} = {}): APIContext {
-  const { token = "share-token-abc", search = "", clientAddress = "1.2.3.4" } =
-    options;
-  const url = new URL(
-    `https://example.com/api/share/${token}/readings${search}`,
-  );
+function makeContext(
+  options: { token?: string; search?: string; clientAddress?: string } = {},
+): APIContext {
+  const { token = "share-token-abc", search = "", clientAddress = "1.2.3.4" } = options;
+  const url = new URL(`https://example.com/api/share/${token}/readings${search}`);
   return {
     params: { token },
     request: new Request(url),
@@ -257,7 +250,10 @@ describe("GET /api/share/[token]/readings", () => {
 
       expect(response.status).toBe(429);
       expect(response.headers.get("Retry-After")).toBe("60");
-      expect(mockCheckEdgeRateLimit).toHaveBeenCalledWith("SHARE_READINGS_RATE_LIMITER", expect.any(String));
+      expect(mockCheckEdgeRateLimit).toHaveBeenCalledWith(
+        "SHARE_READINGS_RATE_LIMITER",
+        expect.any(String),
+      );
       expect(mockCheckShareReadingsRateLimit).not.toHaveBeenCalled();
     });
 

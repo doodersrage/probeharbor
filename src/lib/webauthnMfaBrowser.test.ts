@@ -101,9 +101,7 @@ describe("performWebAuthnGet", () => {
     });
     vi.stubGlobal("navigator", { credentials: { get: vi.fn().mockResolvedValue(null) } });
 
-    await expect(performWebAuthnGet({})).rejects.toThrow(
-      "Security key verification was cancelled",
-    );
+    await expect(performWebAuthnGet({})).rejects.toThrow("Security key verification was cancelled");
   });
 
   it("parses options, gets the credential, and returns its JSON form", async () => {

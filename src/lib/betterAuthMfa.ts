@@ -35,7 +35,11 @@ export async function getTotpState(userId: string): Promise<TotpState> {
     [userId],
   );
   const enabled = row?.enabled === true;
-  return { enabled, pending: !enabled && row?.has_row === true, hasPassword: row?.has_password === true };
+  return {
+    enabled,
+    pending: !enabled && row?.has_row === true,
+    hasPassword: row?.has_password === true,
+  };
 }
 
 export async function isElevated(
@@ -49,7 +53,9 @@ export async function isElevated(
 }
 
 /** The factor list the settings screen shows: one authenticator app at most. */
-export function totpFactors(state: TotpState): Array<{ id: string; friendly_name: null; status: string }> {
+export function totpFactors(
+  state: TotpState,
+): Array<{ id: string; friendly_name: null; status: string }> {
   if (state.enabled) return [{ id: "totp", friendly_name: null, status: "verified" }];
   if (state.pending) return [{ id: "totp", friendly_name: null, status: "unverified" }];
   return [];
@@ -57,7 +63,9 @@ export function totpFactors(state: TotpState): Array<{ id: string; friendly_name
 
 /** Better Auth's pending two-factor challenge cookie (set after the password or OAuth step). */
 export function hasTwoFactorChallenge(cookies: Pick<AstroCookies, "get">): boolean {
-  return ["__Secure-better-auth.two_factor", "better-auth.two_factor"].some((name) => !!cookies.get(name)?.value);
+  return ["__Secure-better-auth.two_factor", "better-auth.two_factor"].some(
+    (name) => !!cookies.get(name)?.value,
+  );
 }
 
 /** A JSON response that also carries Better Auth's Set-Cookie headers (session refreshes). */

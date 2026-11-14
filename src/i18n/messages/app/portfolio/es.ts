@@ -5,7 +5,8 @@ const es: PortfolioMessages = {
   subtitle: "Riesgo de congelación e inundación de todas tus propiedades, de un vistazo.",
   allProperties: "Todas las propiedades",
   upgradeToPro: "Pasa a Pro para desbloquear la vista de portfolio y sus alertas.",
-  portfolioUpsell: "Portfolio amplía el límite de propiedades y añade accesos para administradores de propiedades.",
+  portfolioUpsell:
+    "Portfolio amplía el límite de propiedades y añade accesos para administradores de propiedades.",
   vacationSet: {
     one: "Modo vacaciones activado durante {days} días en {count} propiedad editable.",
     other: "Modo vacaciones activado durante {days} días en {count} propiedades editables.",
@@ -20,7 +21,8 @@ const es: PortfolioMessages = {
   viewHeatmap: "Mapa de calor",
   healthTitle: "Estado del portfolio",
   healthHowSummary: "Cómo se calcula la puntuación",
-  healthHow: "La puntuación de cada propiedad refleja su problema más grave: sin dispositivos (20) o aún sin lecturas (30); un sensor de fuga mojado (10–20); en el límite de helada o por debajo (15–25); lecturas de más de 2 horas (45); algunos dispositivos sin informar (50); a menos de {band} del límite (70); si no, saludable (95). El número más bajo de un rango se aplica cuando además las lecturas están desactualizadas. El promedio es la media de todas las propiedades.",
+  healthHow:
+    "La puntuación de cada propiedad refleja su problema más grave: sin dispositivos (20) o aún sin lecturas (30); un sensor de fuga mojado (10–20); en el límite de helada o por debajo (15–25); lecturas de más de 2 horas (45); algunos dispositivos sin informar (50); a menos de {band} del límite (70); si no, saludable (95). El número más bajo de un rango se aplica cuando además las lecturas están desactualizadas. El promedio es la media de todas las propiedades.",
   healthSummary:
     "Puntuación media {score} % · {atRisk} en riesgo de congelación/inundación{wet} · las más frías, abajo",
   healthSummaryWet: " · {count} con agua",
@@ -42,7 +44,8 @@ const es: PortfolioMessages = {
   addPropertyBody:
     "Portfolio es más útil con dos o más hogares. Crea una segunda propiedad (alquiler, casa de vacaciones, taller) en Hogar y cambia entre ellas aquí.",
   addPropertyButton: "Añadir propiedad en Hogar",
-  emptyPortfolio: "Aún no hay propiedades en este portfolio. Abre Hogar para crear una o unirte a una.",
+  emptyPortfolio:
+    "Aún no hay propiedades en este portfolio. Abre Hogar para crear una o unirte a una.",
   searchLabel: "Buscar",
   searchPlaceholder: "Nombre o id de la propiedad",
   statusLabel: "Estado",
@@ -67,7 +70,8 @@ const es: PortfolioMessages = {
   },
   apply: "Aplicar",
   clear: "Borrar",
-  filterHint: "El resumen de estado de arriba abarca todo el portfolio. Esta tabla filtra y ordena la lista de propiedades.",
+  filterHint:
+    "El resumen de estado de arriba abarca todo el portfolio. Esta tabla filtra y ordena la lista de propiedades.",
   noMatches: "Ninguna propiedad coincide con estos filtros.",
   noProperties: "Aún no hay propiedades en este portfolio.",
   heatmapTitle: "{name}: {score} % · {detail}",
@@ -98,7 +102,8 @@ const es: PortfolioMessages = {
   previous: "Anterior",
   next: "Siguiente",
   pageOf: "Página {page} de {pages}",
-  notAvailable: "La vista de portfolio muestra el riesgo de congelación de todas tus propiedades. Disponible en Pro.",
+  notAvailable:
+    "La vista de portfolio muestra el riesgo de congelación de todas tus propiedades. Disponible en Pro.",
   health: {
     noDevices: "Sin dispositivos: añade una sonda",
     waitingFirstReading: "Esperando la primera lectura",

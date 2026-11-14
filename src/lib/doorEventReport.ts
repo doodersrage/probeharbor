@@ -60,7 +60,10 @@ export type DoorReportRow = DoorEventRecord & {
 
 const normalizeSpace = (space: string | null | undefined) => space?.trim().toLowerCase() || null;
 
-function pickSensor(devices: DeviceWithSensors[], kind: "temperature" | "humidity"): DeviceSensor | null {
+function pickSensor(
+  devices: DeviceWithSensors[],
+  kind: "temperature" | "humidity",
+): DeviceSensor | null {
   for (const device of [...devices].sort((a, b) => a.sort_order - b.sort_order)) {
     const sensor = device.sensors
       .filter((s) => s.kind === kind && s.visible)
@@ -71,7 +74,9 @@ function pickSensor(devices: DeviceWithSensors[], kind: "temperature" | "humidit
 }
 
 function toPaired(sensor: DeviceSensor | null, match: PairedSensor["match"]): PairedSensor | null {
-  return sensor ? { id: sensor.id, label: sensor.label, offset: sensor.offset_num ?? 0, match } : null;
+  return sensor
+    ? { id: sensor.id, label: sensor.label, offset: sensor.offset_num ?? 0, match }
+    : null;
 }
 
 /** Door sensor id → the temperature and humidity sensors it is compared with. */
@@ -86,7 +91,9 @@ export function pairDoorSensors(devices: DeviceWithSensors[]): Map<string, DoorP
       const pairing: DoorPairing = { temperature: null, humidity: null };
       for (const kind of ["temperature", "humidity"] as const) {
         const own = pickSensor([device], kind);
-        pairing[kind] = own ? toPaired(own, "device") : toPaired(pickSensor(sameSpace, kind), "space");
+        pairing[kind] = own
+          ? toPaired(own, "device")
+          : toPaired(pickSensor(sameSpace, kind), "space");
       }
       pairs.set(door.id, pairing);
     }
@@ -115,9 +122,15 @@ export async function listDoorEventsForReport(
   // One row past the limit tells us there are more.
   const wanted = limit + 1;
   try {
-    rows.push(...(await neonDoors.listClosedDoorSessions(householdId, fromIso, toIso, wanted, doorLabel)));
+    rows.push(
+      ...(await neonDoors.listClosedDoorSessions(householdId, fromIso, toIso, wanted, doorLabel)),
+    );
   } catch (error) {
-    return { events: [], truncated: false, error: error instanceof Error ? error.message : String(error) };
+    return {
+      events: [],
+      truncated: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
   const closedRows = rows.filter((row) => typeof row.closed_at === "string");
   const events = closedRows.slice(0, limit).map((row) => ({
@@ -167,7 +180,11 @@ export async function fetchValuesBefore(
   return { values, error: null };
 }
 
-function measure(sensor: PairedSensor | null, event: DoorEventRecord, values: ValuesBefore): MeasuredPair {
+function measure(
+  sensor: PairedSensor | null,
+  event: DoorEventRecord,
+  values: ValuesBefore,
+): MeasuredPair {
   if (!sensor) return { atOpen: null, atClose: null, change: null };
   const read = (iso: string) => {
     const raw = values.get(valueKey(sensor.id, iso));
@@ -220,14 +237,19 @@ export async function loadDoorReport(
   toIso: string,
   limit = DOOR_REPORT_LIMIT,
   doorLabel?: string | null,
-): Promise<{ rows: DoorReportRow[]; truncated: boolean; error: string | null; readingsError: string | null }> {
+): Promise<{
+  rows: DoorReportRow[];
+  truncated: boolean;
+  error: string | null;
+  readingsError: string | null;
+}> {
   const listed = await listDoorEventsForReport(householdId, fromIso, toIso, limit, doorLabel);
   if (listed.error) return { rows: [], truncated: false, error: listed.error, readingsError: null };
 
   const pairs = pairDoorSensors(devices);
-  const sensorIds = [...pairs.values()].flatMap((p) => [p.temperature?.id, p.humidity?.id]).filter(
-    (id): id is string => Boolean(id),
-  );
+  const sensorIds = [...pairs.values()]
+    .flatMap((p) => [p.temperature?.id, p.humidity?.id])
+    .filter((id): id is string => Boolean(id));
   const times = listed.events.flatMap((e) => [e.openedAt, e.closedAt]);
   const fetched = await fetchValuesBefore(householdId, sensorIds, times);
   return {
@@ -250,7 +272,8 @@ export type DoorReportSummary = {
 };
 
 export function summarizeDoorReport(rows: DoorReportRow[]): DoorReportSummary {
-  const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null);
+  const mean = (values: number[]) =>
+    values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
   const temps = rows.map((r) => r.temperature.change).filter((v): v is number => v != null);
   const hums = rows.map((r) => r.humidity.change).filter((v): v is number => v != null);
   return {
@@ -264,7 +287,8 @@ export function summarizeDoorReport(rows: DoorReportRow[]): DoorReportSummary {
   };
 }
 
-const csvNum = (value: number | null, digits: number) => (value == null ? "" : value.toFixed(digits));
+const csvNum = (value: number | null, digits: number) =>
+  value == null ? "" : value.toFixed(digits);
 
 /** CSV with UTC ISO times; °F and % RH; empty cell = no reading (never 0). */
 export function buildDoorEventsCsv(rows: DoorReportRow[]): string {
@@ -308,7 +332,10 @@ export function buildDoorEventsCsv(rows: DoorReportRow[]): string {
 }
 
 /** The door filter if it names one of the household's door sensors; otherwise every door. */
-export function validDoorFilter(raw: string | null | undefined, devices: DeviceWithSensors[]): string | null {
+export function validDoorFilter(
+  raw: string | null | undefined,
+  devices: DeviceWithSensors[],
+): string | null {
   const wanted = raw?.trim();
   if (!wanted) return null;
   return doorSensorLabels(devices).includes(wanted) ? wanted : null;
@@ -316,7 +343,9 @@ export function validDoorFilter(raw: string | null | undefined, devices: DeviceW
 
 /** The household's door sensor labels, alphabetical, each once. */
 export function doorSensorLabels(devices: DeviceWithSensors[]): string[] {
-  const labels = devices.flatMap((d) => d.sensors.filter((s) => s.kind === "door").map((s) => s.label));
+  const labels = devices.flatMap((d) =>
+    d.sensors.filter((s) => s.kind === "door").map((s) => s.label),
+  );
   return [...new Set(labels)].sort((a, b) => a.localeCompare(b));
 }
 
@@ -336,7 +365,9 @@ export function doorReportRange(
   const days = params.days === 90 ? 90 : params.days === 30 ? 30 : 7;
   const fromDay = params.from?.trim() ? dayStartIso(params.from.trim()) : null;
   const toDay = params.to?.trim() ? dayEndIso(params.to.trim()) : null;
-  const fallbackFrom = new Date(now.getTime() - Math.min(days, historyDays) * 24 * 60 * 60 * 1000).toISOString();
+  const fallbackFrom = new Date(
+    now.getTime() - Math.min(days, historyDays) * 24 * 60 * 60 * 1000,
+  ).toISOString();
   const fromIso = clampIsoToHistoryWindow(fromDay ?? fallbackFrom, historyDays, now);
   return { fromIso, toIso: toDay ?? now.toISOString() };
 }

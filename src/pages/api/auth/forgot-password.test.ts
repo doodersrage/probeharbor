@@ -18,7 +18,9 @@ function makeContext(form: Record<string, string>): APIContext {
   const formData = new FormData();
   for (const [k, v] of Object.entries(form)) formData.set(k, v);
   const request = { formData: async () => formData } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return {
     request,
     redirect,
@@ -67,7 +69,9 @@ describe("POST /api/auth/forgot-password", () => {
     await POST(context);
 
     expect(mockRequestPasswordReset).toHaveBeenCalledWith({ body: { email: "user@example.com" } });
-    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), { emailLocale: "es" });
+    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), {
+      emailLocale: "es",
+    });
     expect(context.redirect).toHaveBeenCalledWith("/forgot-password?sent=1");
   });
 

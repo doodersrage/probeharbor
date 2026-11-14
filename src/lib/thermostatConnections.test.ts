@@ -105,7 +105,13 @@ describe("updateTokensAfterRefresh", () => {
       expiresAtMs: Date.parse("2026-09-01T00:00:00.000Z"),
     });
     expect(error).toBeNull();
-    expect(db.updateTokens).toHaveBeenCalledWith("house-1", "nest", "new-at", "2026-09-01T00:00:00.000Z", null);
+    expect(db.updateTokens).toHaveBeenCalledWith(
+      "house-1",
+      "nest",
+      "new-at",
+      "2026-09-01T00:00:00.000Z",
+      null,
+    );
   });
 
   it("passes a rotated refresh token along", async () => {
@@ -116,6 +122,12 @@ describe("updateTokensAfterRefresh", () => {
       refreshToken: "new-rt",
       expiresAtMs: Date.parse("2026-09-01T00:00:00.000Z"),
     });
-    expect(db.updateTokens).toHaveBeenCalledWith("house-1", "nest", "new-at", "2026-09-01T00:00:00.000Z", "new-rt");
+    expect(db.updateTokens).toHaveBeenCalledWith(
+      "house-1",
+      "nest",
+      "new-at",
+      "2026-09-01T00:00:00.000Z",
+      "new-rt",
+    );
   });
 });

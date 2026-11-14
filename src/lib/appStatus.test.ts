@@ -23,7 +23,8 @@ vi.mock("./jobRuns", () => ({
 const mockFetchLastSuccessfulCollectHistory = vi.fn();
 const mockIsCollectHistoryStale = vi.fn();
 vi.mock("./cronHealth", () => ({
-  fetchLastSuccessfulCollectHistory: (...a: unknown[]) => mockFetchLastSuccessfulCollectHistory(...a),
+  fetchLastSuccessfulCollectHistory: (...a: unknown[]) =>
+    mockFetchLastSuccessfulCollectHistory(...a),
   isCollectHistoryStale: (...a: unknown[]) => mockIsCollectHistoryStale(...a),
 }));
 
@@ -43,7 +44,9 @@ function recentJobs(jobs: Array<{ job_name: string; status: string; started_at: 
 describe("fetchAppStatus", () => {
   it("is healthy when the latest job succeeded, there are no errors, and history isn't stale", async () => {
     mockJobRunsSince.mockResolvedValue(
-      recentJobs([{ job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" }]),
+      recentJobs([
+        { job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" },
+      ]),
     );
     const { fetchAppStatus } = await import("./appStatus");
 
@@ -95,7 +98,9 @@ describe("fetchAppStatus", () => {
 
   it("is unhealthy when the most recent job did not succeed", async () => {
     mockJobRunsSince.mockResolvedValue(
-      recentJobs([{ job_name: "collect-history", status: "running", started_at: "2024-06-15T11:00:00.000Z" }]),
+      recentJobs([
+        { job_name: "collect-history", status: "running", started_at: "2024-06-15T11:00:00.000Z" },
+      ]),
     );
     const { fetchAppStatus } = await import("./appStatus");
 
@@ -104,7 +109,9 @@ describe("fetchAppStatus", () => {
 
   it("is unhealthy when the history poll is stale, even with a successful latest job", async () => {
     mockJobRunsSince.mockResolvedValue(
-      recentJobs([{ job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" }]),
+      recentJobs([
+        { job_name: "collect-history", status: "success", started_at: "2024-06-15T11:00:00.000Z" },
+      ]),
     );
     mockIsCollectHistoryStale.mockReturnValue(true);
     const { fetchAppStatus } = await import("./appStatus");

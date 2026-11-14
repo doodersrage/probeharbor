@@ -12,7 +12,8 @@ const ptBr: FreezeDrillEmailMessages = {
   ctaTest: "Enviar alerta de teste",
   footerNote: "Desative os simulados de pré-temporada em Painel → Alertas.",
   notifyTitle: "Simulado de congelamento pré-temporada",
-  notifyBody: "Preparo de {score}%. Abra o painel e envie um alerta de teste se ainda não fez isso nesta temporada.",
+  notifyBody:
+    "Preparo de {score}%. Abra o painel e envie um alerta de teste se ainda não fez isso nesta temporada.",
 };
 
 export default ptBr;

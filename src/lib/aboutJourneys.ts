@@ -35,8 +35,7 @@ export const aboutJourneys: AboutJourney[] = [
   {
     id: "first-dht22",
     title: "Wire my first DHT22",
-    description:
-      "Sensor basics, pin wiring, and the Arduino sketch that publishes JSON.",
+    description: "Sensor basics, pin wiring, and the Arduino sketch that publishes JSON.",
     ctaHref: "/about/arduino-sketches",
     ctaLabel: "Open Arduino overview",
     steps: [
@@ -72,8 +71,7 @@ export const aboutJourneys: AboutJourney[] = [
   {
     id: "understand-readings",
     title: "Understand my readings",
-    description:
-      "Why garages swing, how data reaches the site, and how to spot stale feeds.",
+    description: "Why garages swing, how data reaches the site, and how to spot stale feeds.",
     ctaHref: "/about/probe-demo",
     ctaLabel: "Try the probe demo",
     steps: [
@@ -86,8 +84,7 @@ export const aboutJourneys: AboutJourney[] = [
   {
     id: "share-household",
     title: "Share with my household",
-    description:
-      "Invite family, understand roles, and keep freeze and leak alerts in one place.",
+    description: "Invite family, understand roles, and keep freeze and leak alerts in one place.",
     ctaHref: "/register?next=/dashboard/devices",
     ctaLabel: "Create a free account",
     steps: [
@@ -124,10 +121,7 @@ export function getJourneysForSlug(slug: string): Array<{
       journey,
       stepIndex,
       previousStep: stepIndex > 0 ? journey.steps[stepIndex - 1]! : null,
-      nextStep:
-        stepIndex < journey.steps.length - 1
-          ? journey.steps[stepIndex + 1]!
-          : null,
+      nextStep: stepIndex < journey.steps.length - 1 ? journey.steps[stepIndex + 1]! : null,
     });
   }
 

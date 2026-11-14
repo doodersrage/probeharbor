@@ -68,7 +68,9 @@ function makeCookies() {
 function makeContext(search: Record<string, string> = {}): APIContext {
   const url = new URL("https://example.com/api/auth/companion/start");
   for (const [k, v] of Object.entries(search)) url.searchParams.set(k, v);
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return {
     url,
     cookies: makeCookies(),
@@ -80,19 +82,26 @@ function makeContext(search: Record<string, string> = {}): APIContext {
 
 beforeEach(() => {
   mockGetAuthFromCookies.mockReset().mockResolvedValue({ session: null, user: null });
-  mockBuildSignInRedirectUrl.mockReset().mockImplementation((code: string) => `/signin?error=${code}`);
+  mockBuildSignInRedirectUrl
+    .mockReset()
+    .mockImplementation((code: string) => `/signin?error=${code}`);
   mockRedirectMobileOAuthComplete.mockReset().mockResolvedValue(null);
   mockSetMobileOAuthCookie.mockReset();
   mockParseCompanionClient.mockReset().mockReturnValue("baybuddy");
   mockSetCompanionClientCookie.mockReset();
   mockSetCompanionLoopbackCookie.mockReset().mockReturnValue(true);
-  mockBuildMfaChallengeUrl.mockReset().mockReturnValue("/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fstart");
+  mockBuildMfaChallengeUrl
+    .mockReset()
+    .mockReturnValue("/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fstart");
   mockHasValidMfaStepUpProof.mockReset().mockResolvedValue(true);
   mockNeedsStepUp.mockReset().mockResolvedValue(false);
   mockCreateAppSessionToken.mockReset().mockResolvedValue("app-token");
-  mockStartBetterAuthOAuth
-    .mockReset()
-    .mockResolvedValue(new Response(null, { status: 302, headers: { Location: "https://provider.example.com/authorize" } }));
+  mockStartBetterAuthOAuth.mockReset().mockResolvedValue(
+    new Response(null, {
+      status: 302,
+      headers: { Location: "https://provider.example.com/authorize" },
+    }),
+  );
 });
 
 describe("GET /api/auth/companion/start", () => {
@@ -126,7 +135,9 @@ describe("GET /api/auth/companion/start", () => {
 
     await GET(context);
 
-    expect(mockBuildMfaChallengeUrl).toHaveBeenCalledWith("/api/auth/companion/start?client=desktop");
+    expect(mockBuildMfaChallengeUrl).toHaveBeenCalledWith(
+      "/api/auth/companion/start?client=desktop",
+    );
     expect(context.redirect).toHaveBeenCalledWith(
       "/signin/mfa?next=%2Fapi%2Fauth%2Fcompanion%2Fstart",
     );
@@ -143,7 +154,11 @@ describe("GET /api/auth/companion/start", () => {
     const response = await GET(context);
 
     expect(mockCreateAppSessionToken).toHaveBeenCalledWith(context.request, "user-1");
-    expect(mockRedirectMobileOAuthComplete).toHaveBeenCalledWith("app-token", "app-token", context.site);
+    expect(mockRedirectMobileOAuthComplete).toHaveBeenCalledWith(
+      "app-token",
+      "app-token",
+      context.site,
+    );
     expect(response).toBe(handoff);
   });
 

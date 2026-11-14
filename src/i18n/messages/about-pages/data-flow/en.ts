@@ -1,4 +1,3 @@
-
 /** /about/data-flow body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 
 const en = {
@@ -10,7 +9,8 @@ const en = {
   step2Title: "Step 2. Publishing JSON",
   step2Html:
     'The board or a nearby relay exposes HTTPS JSON. A Python FastAPI service may cache responses in Redis so the wider internet never hits the residential uplink directly: see <a class="text-link" href="/about/python-feeds">Python scripts and feeds</a>.',
-  jsonAlt: "Browser JSON viewer showing temp probe keys 0, 1, and avg with Fahrenheit Celsius and humidity",
+  jsonAlt:
+    "Browser JSON viewer showing temp probe keys 0, 1, and avg with Fahrenheit Celsius and humidity",
   jsonCaption: "Live feed payload shape consumed by the website after leaving the local network.",
   step3Title: "Step 3. Website fetch and display",
   step3Html:

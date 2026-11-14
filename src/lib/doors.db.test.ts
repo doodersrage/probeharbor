@@ -23,35 +23,33 @@ const ago = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
 
 async function homeWithDoor(email: string, label = "Side door") {
   const userId = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [
-    userId,
-  ]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [userId],
+  );
   const householdId = m!.household_id;
   const [d] = await sql<{ id: string }>(
     "insert into public.devices (household_id, name, source) values ($1, 'Garage', 'push') returning id",
     [householdId],
   );
   const door = (await upsertDeviceSensor(householdId, d!.id, "door1", label, "door")).sensor!;
-  const temp = (await upsertDeviceSensor(householdId, d!.id, "t", "Bay", "temperature", "F")).sensor!;
+  const temp = (await upsertDeviceSensor(householdId, d!.id, "t", "Bay", "temperature", "F"))
+    .sensor!;
   return { householdId, deviceId: d!.id, door, temp };
 }
 
 async function state(sensorId: string, householdId: string, at: string, open: boolean) {
-  await sql("insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_bool) values ($1, $2, $3, $4)", [
-    sensorId,
-    householdId,
-    at,
-    open,
-  ]);
+  await sql(
+    "insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_bool) values ($1, $2, $3, $4)",
+    [sensorId, householdId, at, open],
+  );
 }
 
 async function temp(sensorId: string, householdId: string, at: string, f: number) {
-  await sql("insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values ($1, $2, $3, $4)", [
-    sensorId,
-    householdId,
-    at,
-    f,
-  ]);
+  await sql(
+    "insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values ($1, $2, $3, $4)",
+    [sensorId, householdId, at, f],
+  );
 }
 
 describe("door sessions saved at ingest (Neon)", () => {
@@ -95,11 +93,22 @@ describe("door report (Neon)", () => {
   it("lists closed sessions in range for this household, filters by door, flags truncation", async () => {
     const a = await homeWithDoor("a@example.com");
     const b = await homeWithDoor("b@example.com");
-    const insert = (householdId: string, label: string, openedMin: number, closedMin: number | null) =>
+    const insert = (
+      householdId: string,
+      label: string,
+      openedMin: number,
+      closedMin: number | null,
+    ) =>
       sql(
         `insert into public.door_open_events (household_id, label, opened_at, closed_at, duration_ms)
          values ($1, $2, $3, $4, $5)`,
-        [householdId, label, ago(openedMin), closedMin == null ? null : ago(closedMin), closedMin == null ? null : (openedMin - closedMin) * 60_000],
+        [
+          householdId,
+          label,
+          ago(openedMin),
+          closedMin == null ? null : ago(closedMin),
+          closedMin == null ? null : (openedMin - closedMin) * 60_000,
+        ],
       );
     await insert(a.householdId, "Side door", 100, 90);
     await insert(a.householdId, "Side door", 60, 50);
@@ -145,7 +154,9 @@ describe("chart door bands (Neon)", () => {
     await state(h.door.id, h.householdId, ago(30), false);
     await state(h.door.id, h.householdId, ago(10), true);
 
-    const { bands, error } = await fetchChartDoorBands(h.householdId, ago(600), ago(0), [{ id: h.door.id, label: h.door.label }]);
+    const { bands, error } = await fetchChartDoorBands(h.householdId, ago(600), ago(0), [
+      { id: h.door.id, label: h.door.label },
+    ]);
     expect(error).toBeNull();
     expect(bands).toHaveLength(2);
     expect(bands[0]?.closedAt).not.toBeNull();

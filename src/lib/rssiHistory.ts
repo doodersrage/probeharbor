@@ -9,9 +9,7 @@ export function appendRssiSample(
   maxSamples = 14,
 ): RssiSample[] {
   const existing = Array.isArray(history)
-    ? (history as RssiSample[]).filter(
-        (s) => typeof s.dbm === "number" && typeof s.at === "string",
-      )
+    ? (history as RssiSample[]).filter((s) => typeof s.dbm === "number" && typeof s.at === "string")
     : [];
   return [...existing, { dbm, at }].slice(-maxSamples);
 }

@@ -13,7 +13,10 @@ import {
   saveConnection,
   updateTokensAfterRefresh,
 } from "./thermostatConnections";
-import { fetchThermostatSnapshotChartPoints, insertThermostatSnapshot } from "./thermostatSnapshots";
+import {
+  fetchThermostatSnapshotChartPoints,
+  insertThermostatSnapshot,
+} from "./thermostatSnapshots";
 
 const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -21,25 +24,53 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function home(email: string) {
   const id = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [id]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [id],
+  );
   return { id, home: m!.household_id };
 }
 
 describe("thermostat connections (Neon)", () => {
   it("one per provider; reconnecting replaces it; token refresh keeps or rotates the refresh token", async () => {
     const a = await home("a@example.com");
-    await saveConnection({ householdId: a.home, provider: "nest", refreshToken: "r1", connectedBy: a.id });
-    await saveConnection({ householdId: a.home, provider: "nest", refreshToken: "r2", accessToken: "a2" });
+    await saveConnection({
+      householdId: a.home,
+      provider: "nest",
+      refreshToken: "r1",
+      connectedBy: a.id,
+    });
+    await saveConnection({
+      householdId: a.home,
+      provider: "nest",
+      refreshToken: "r2",
+      accessToken: "a2",
+    });
     await saveConnection({ householdId: a.home, provider: "ecobee", refreshToken: "e1" });
-    expect((await listConnectionsForHousehold(a.home)).map((c) => [c.provider, c.refreshToken])).toEqual([
+    expect(
+      (await listConnectionsForHousehold(a.home)).map((c) => [c.provider, c.refreshToken]),
+    ).toEqual([
       ["ecobee", "e1"],
       ["nest", "r2"],
     ]);
 
-    await updateTokensAfterRefresh(a.home, "nest", { accessToken: "a3", expiresAtMs: Date.now() + 3600_000 });
-    expect(await getConnectionForHousehold(a.home, "nest")).toMatchObject({ accessToken: "a3", refreshToken: "r2" });
-    await updateTokensAfterRefresh(a.home, "nest", { accessToken: "a4", refreshToken: "r3", expiresAtMs: Date.now() });
-    expect(await getConnectionForHousehold(a.home, "nest")).toMatchObject({ accessToken: "a4", refreshToken: "r3" });
+    await updateTokensAfterRefresh(a.home, "nest", {
+      accessToken: "a3",
+      expiresAtMs: Date.now() + 3600_000,
+    });
+    expect(await getConnectionForHousehold(a.home, "nest")).toMatchObject({
+      accessToken: "a3",
+      refreshToken: "r2",
+    });
+    await updateTokensAfterRefresh(a.home, "nest", {
+      accessToken: "a4",
+      refreshToken: "r3",
+      expiresAtMs: Date.now(),
+    });
+    expect(await getConnectionForHousehold(a.home, "nest")).toMatchObject({
+      accessToken: "a4",
+      refreshToken: "r3",
+    });
   });
 
   it("another household can't see, refresh or delete the connection", async () => {
@@ -48,9 +79,16 @@ describe("thermostat connections (Neon)", () => {
     await saveConnection({ householdId: a.home, provider: "nest", refreshToken: "secret" });
     expect(await listConnectionsForHousehold(b.home)).toEqual([]);
     await expect(getConnectionForHousehold(b.home, "nest")).resolves.toBeNull();
-    await updateTokensAfterRefresh(b.home, "nest", { accessToken: "x", refreshToken: "stolen", expiresAtMs: Date.now() });
+    await updateTokensAfterRefresh(b.home, "nest", {
+      accessToken: "x",
+      refreshToken: "stolen",
+      expiresAtMs: Date.now(),
+    });
     await deleteConnection(b.home, "nest");
-    expect(await getConnectionForHousehold(a.home, "nest")).toMatchObject({ refreshToken: "secret", accessToken: null });
+    expect(await getConnectionForHousehold(a.home, "nest")).toMatchObject({
+      refreshToken: "secret",
+      accessToken: null,
+    });
   });
 });
 
@@ -59,7 +97,11 @@ describe("thermostat snapshots (Neon)", () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
     const at = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
-    for (const [m, f] of [[120, 66], [60, 67], [30, 68]] as const) {
+    for (const [m, f] of [
+      [120, 66],
+      [60, 67],
+      [30, 68],
+    ] as const) {
       await insertThermostatSnapshot({
         household_id: a.home,
         provider: "nest",

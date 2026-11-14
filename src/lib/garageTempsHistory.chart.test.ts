@@ -5,10 +5,26 @@ vi.mock("./households", () => ({ getUserHouseholdId: async () => "hh-1" }));
 // 20 posts from one device: "bme_t" and "bme_h" don't share a key, so they can't pair.
 const rows = Array.from({ length: 20 }, (_, i) => {
   const at = new Date(Date.parse("2026-10-29T00:00:00Z") + i * 60000).toISOString();
-  const sensor = (key: string, kind: string, label: string) => ({ key, label, kind, offset_num: 0, devices: { name: "Garage ESP" } });
+  const sensor = (key: string, kind: string, label: string) => ({
+    key,
+    label,
+    kind,
+    offset_num: 0,
+    devices: { name: "Garage ESP" },
+  });
   return [
-    { recorded_at: at, value_num: 50 + i / 10, meta: {}, device_sensors: sensor("bme_t", "temperature", "Garage") },
-    { recorded_at: at, value_num: 60, meta: {}, device_sensors: sensor("bme_h", "humidity", "Garage air humidity") },
+    {
+      recorded_at: at,
+      value_num: 50 + i / 10,
+      meta: {},
+      device_sensors: sensor("bme_t", "temperature", "Garage"),
+    },
+    {
+      recorded_at: at,
+      value_num: 60,
+      meta: {},
+      device_sensors: sensor("bme_h", "humidity", "Garage air humidity"),
+    },
   ];
 }).flat();
 
@@ -42,13 +58,22 @@ describe("fetchGarageTempChartData", () => {
     expect(points.every((p) => p.humidity == null)).toBe(true);
     // ...and the humidity is returned on its own instead of being dropped.
     expect(humidityOnly).toHaveLength(20);
-    expect(humidityOnly?.[0]).toEqual({ timestamp: "2026-10-29T00:00:00.000Z", humidity: 60, probeLabel: "Garage air" });
+    expect(humidityOnly?.[0]).toEqual({
+      timestamp: "2026-10-29T00:00:00.000Z",
+      humidity: 60,
+      probeLabel: "Garage air",
+    });
   });
 
   it("asks the database for temperature and humidity only (not door, leak or battery readings)", async () => {
     mockFetchAllRawSensorRows.mockClear();
     await fetchGarageTempChartData("user-1", 30);
-    expect(mockFetchAllRawSensorRows).toHaveBeenCalledWith("hh-1", expect.any(Object), ["temperature", "humidity"], true);
+    expect(mockFetchAllRawSensorRows).toHaveBeenCalledWith(
+      "hh-1",
+      expect.any(Object),
+      ["temperature", "humidity"],
+      true,
+    );
   });
 });
 

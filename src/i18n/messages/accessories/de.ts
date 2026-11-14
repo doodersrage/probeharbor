@@ -32,7 +32,8 @@ const de: AccessoriesMessages = {
   },
   hub: {
     title: "Hardware-Zubehör",
-    description: "Begleitgeräte und Kit-Teile für ProbeHarbor: Stimmungslichter, Tür- und Leckkontakte, Etiketten und Halterungen.",
+    description:
+      "Begleitgeräte und Kit-Teile für ProbeHarbor: Stimmungslichter, Tür- und Leckkontakte, Etiketten und Halterungen.",
     kicker: "Hardware",
     lede: "Begleitgeräte und Kit-Teile für ProbeHarbor. Temperaturfühler bleiben beim Frostkit – dieses Zubehör bestätigt Anwesenheit, zeigt Stimmungen, sendet Kontakte per POST oder rundet eine Garageninstallation ab.",
     freezeKitBom: "Stückliste Frostkit",
@@ -72,7 +73,8 @@ const de: AccessoriesMessages = {
   },
   claimPuckCase: {
     title: "Gehäuse für den Claim puck",
-    description: "Gehäuse, Claim-Taster und optionaler LED-Diffusor für den ProbeHarbor Claim puck mit RP2040-Zero – mach aus der nackten Platine ein fertiges Gerät.",
+    description:
+      "Gehäuse, Claim-Taster und optionaler LED-Diffusor für den ProbeHarbor Claim puck mit RP2040-Zero – mach aus der nackten Platine ein fertiges Gerät.",
     firmware: "Firmware ↗",
     doesHtml:
       "Macht aus Waveshare RP2040-Zero und GP4-Taster einen schreibtischtauglichen Anwesenheitsschlüssel mit weicherem Stimmungsleuchten.",
@@ -81,7 +83,8 @@ const de: AccessoriesMessages = {
     caption: "Teile für das Claim-puck-Gehäuse",
     zeroWhy: "Mikrocontroller des Claim puck.",
     casePart: "3D-gedrucktes oder gelasertes Gehäuse",
-    caseWhy: "USB-Ausschnitt, Tasterloch, LED-Fenster. Wenn du eine STL-Datei teilst, veröffentliche sie neben dem Firmware-Repo.",
+    caseWhy:
+      "USB-Ausschnitt, Tasterloch, LED-Fenster. Wenn du eine STL-Datei teilst, veröffentliche sie neben dem Firmware-Repo.",
     caseBuy: "Selbst gebaut / Druckservice vor Ort.",
     diffuserPart: "LED-Diffusor (optional)",
     diffuserWhy: "Weichere Stimmungsfarbe für die eingebaute RGB-LED.",
@@ -95,9 +98,11 @@ const de: AccessoriesMessages = {
   },
   alertBeacon: {
     title: "Alert beacon",
-    description: "Stimmungslicht für Schreibtisch oder Flur; spiegelt die Frost- und Wasserstimmungen von ProbeHarbor. Gleiche API wie der Claim puck, kein Temperaturfühler.",
+    description:
+      "Stimmungslicht für Schreibtisch oder Flur; spiegelt die Frost- und Wasserstimmungen von ProbeHarbor. Gleiche API wie der Claim puck, kein Temperaturfühler.",
     moodApi: "Stimmungs-API",
-    doesHtml: "Zeigt die aktuelle Bereichsstimmung (cozy, drafty, shiver, panic, offline, hero) auf einem helleren NeoPixel-Stick oder -Ring, gesteuert über <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
+    doesHtml:
+      "Zeigt die aktuelle Bereichsstimmung (cozy, drafty, shiver, panic, offline, hero) auf einem helleren NeoPixel-Stick oder -Ring, gesteuert über <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
     doesNotHtml:
       'Temperatur messen, SMS/E-Mail von Alerts ersetzen oder allein einen Bereich beanspruchen. Kombiniere es mit einem Frostfühler und optional einem <a class="text-link" href="/claim-puck">Claim puck</a> für die Anwesenheit.',
     caption: "Teile für den Alert beacon",
@@ -119,7 +124,8 @@ const de: AccessoriesMessages = {
   },
   doorPuck: {
     title: "Door puck (Türkontakt)",
-    description: "Reed- oder Tasterkontakt, der Tür offen/zu per POST an ProbeHarbor meldet. Speist die drafty-Stimmung und optionale eigene Alarme – kein Frostfühler.",
+    description:
+      "Reed- oder Tasterkontakt, der Tür offen/zu per POST an ProbeHarbor meldet. Speist die drafty-Stimmung und optionale eigene Alarme – kein Frostfühler.",
     addingDevices: "Geräte hinzufügen",
     doesHtml:
       'Sendet <code>{ "door1": true }</code> (offen) / <code>false</code> (zu) etwa einmal pro Minute oder bei Änderung per POST an deine Push-Ingest-URL.',
@@ -139,7 +145,8 @@ const de: AccessoriesMessages = {
   },
   leakPuck: {
     title: "Leak puck (Leckkontakt)",
-    description: "Wasserkontakte melden nass/trocken per POST an ProbeHarbor. Bei aktivierten Alarmen gibt es bei Nässe automatisch Alarm – kein Frostfühler.",
+    description:
+      "Wasserkontakte melden nass/trocken per POST an ProbeHarbor. Bei aktivierten Alarmen gibt es bei Nässe automatisch Alarm – kein Frostfühler.",
     doesHtml:
       'Sendet bei Nässe <code>{ "leak1": true }</code> (oder <code>flood1</code>) per POST. Schlüssel mit leak/flood werden als Hochwassersensoren importiert.',
     doesNotHtml:
@@ -149,7 +156,7 @@ const de: AccessoriesMessages = {
     probesPart: "Leck-/Feuchtigkeitsfühler",
     probesWhy: "Zwei Leiter am Boden; GPIO4 mit Pull-up, Nässe zieht auf low.",
     probesBuyHtml:
-      'Ein LM393-Modul („Regen-/Wassersensor“) an 3,3 V, DO an den Pin (einfaches Einstiegsteil; die Kontaktflächen korrodieren, wenn sie nass bleiben), oder zwei Edelstahlschrauben im Abstand von etwa 5&nbsp;mm, eine an den Pin, eine an GND (langlebiger). Teste mit deinem eigenen Wasser: Ein dünner Film sauberen Wassers löst womöglich keins von beiden aus.',
+      "Ein LM393-Modul („Regen-/Wassersensor“) an 3,3 V, DO an den Pin (einfaches Einstiegsteil; die Kontaktflächen korrodieren, wenn sie nass bleiben), oder zwei Edelstahlschrauben im Abstand von etwa 5&nbsp;mm, eine an den Pin, eine an GND (langlebiger). Teste mit deinem eigenen Wasser: Ein dünner Film sauberen Wassers löst womöglich keins von beiden aus.",
     stepsHtml: [
       "Lege ein Push-Gerät an oder nutze ein vorhandenes. Flashe <code>sketches/arduino/leak_contact_ingest/</code>.",
       "Überbrücke die Kontakte zum Testen mit einem feuchten Tuch; erwarte <code>POST 200</code> und einen Nass-Messwert.",
@@ -158,7 +165,8 @@ const de: AccessoriesMessages = {
   },
   powerNudge: {
     title: "Power nudge (Stromausfall)",
-    description: "USB-, Netz- oder USV-Kontakt, der Stromausfall und -rückkehr per POST an ProbeHarbor meldet. So weißt du, wann der Bereich dunkel wurde – kein Frostfühler.",
+    description:
+      "USB-, Netz- oder USV-Kontakt, der Stromausfall und -rückkehr per POST an ProbeHarbor meldet. So weißt du, wann der Bereich dunkel wurde – kein Frostfühler.",
     staleReadings: "Veraltete Messwerte",
     doesHtml:
       'Sendet <code>{ "power1": true }</code> per POST, solange Netz-/USB-Spannung anliegt, und <code>false</code> bei Ausfall (Schlüssel mit power/relay werden als Stromsensoren importiert).',
@@ -178,7 +186,8 @@ const de: AccessoriesMessages = {
   },
   kitLabels: {
     title: "QR- und NFC-Etiketten fürs Kit",
-    description: "Druckbare QR-Aufkleber und optionale NFC-Tags mit deiner ProbeHarbor Push-Ingest-URL – Firmware einrichten, ohne den Schlüssel abzutippen.",
+    description:
+      "Druckbare QR-Aufkleber und optionale NFC-Tags mit deiner ProbeHarbor Push-Ingest-URL – Firmware einrichten, ohne den Schlüssel abzutippen.",
     kitQrGuide: "Kit-QR-Anleitung",
     claimsPack: "Nachweispaket",
     doesHtml:
@@ -201,7 +210,8 @@ const de: AccessoriesMessages = {
   },
   probeMountKit: {
     title: "Fühler-Montageset",
-    description: "Kabelbinder, Rohrclips, Klebepads, 4,7k-Pull-up und Montagetipps für den wasserdichten DS18B20 – für einen zuverlässigen ProbeHarbor Frostfühler.",
+    description:
+      "Kabelbinder, Rohrclips, Klebepads, 4,7k-Pull-up und Montagetipps für den wasserdichten DS18B20 – für einen zuverlässigen ProbeHarbor Frostfühler.",
     mountingGuide: "Montageanleitung",
     picoIngest: "Pico-W-Ingest",
     doesHtml:

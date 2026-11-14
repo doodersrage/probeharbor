@@ -1,4 +1,3 @@
-
 /**
  * /about/accounts-and-dashboard body copy. `*Html` keys are trusted inline
  * HTML; hrefs stay English (middleware localizes them). Quoted dashboard
@@ -78,7 +77,8 @@ const fr: AccountsAndDashboardMessages = {
       "<strong>Member</strong> : export CSV.",
       "<strong>Pro</strong> : limites d’appareils plus élevées, SMS, webhooks sortants, portées de partage étendues, dossier de preuves pour les sinistres.",
     ],
-    upgradeHtml: "Changez d’offre depuis la carte Plans du tableau de bord ou depuis la page Alerts.",
+    upgradeHtml:
+      "Changez d’offre depuis la carte Plans du tableau de bord ou depuis la page Alerts.",
   },
   admin: {
     title: "Outils réservés aux administrateurs",

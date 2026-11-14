@@ -89,7 +89,8 @@ const es: ClaimsPackMessages = {
     title: "Cómo generar uno",
     step1:
       "Conecta al menos una sonda y deja que ProbeHarbor reúna algo de historial (las alertas de congelación funcionan desde el primer día; el paquete para reclamaciones cubre el periodo que hayas estado monitoreando).",
-    step2: "Pásate a Pro si aún no lo has hecho: el paquete para reclamaciones es una función de Pro. ¿Ya estás en Free o Member y acabas de tener una helada? Las lecturas que siguen dentro de tu ventana de {free} / {member} se conservan; Pro habilita el paquete sobre ese historial guardado (y amplía cuánto puedes retroceder de ahora en adelante).",
+    step2:
+      "Pásate a Pro si aún no lo has hecho: el paquete para reclamaciones es una función de Pro. ¿Ya estás en Free o Member y acabas de tener una helada? Las lecturas que siguen dentro de tu ventana de {free} / {member} se conservan; Pro habilita el paquete sobre ese historial guardado (y amplía cuánto puedes retroceder de ahora en adelante).",
     step3Html:
       'Desde <a class="text-link" href="/dashboard/history?tab=exports#claims-pack">History → claims pack</a>, elige un rango de fechas y descarga el paquete, o envíalo directamente al correo de un perito.',
     samplePdf: "PDF de ejemplo",
@@ -103,8 +104,10 @@ const es: ClaimsPackMessages = {
         "El paquete para reclamaciones es una función de Pro (y de Portfolio). Los planes Free y Member pueden ver lecturas en vivo e historial, pero para generar y enviar por correo un paquete para reclamaciones necesitas Pro.",
     },
     {
-      question: "Si estoy en Free o Member y algo se acaba de congelar, ¿puedo pasarme a Pro y aun así crear un paquete?",
-      answer: "Sí, siempre que las lecturas sigan dentro de la ventana de historial de tu plan. Free conserva unos {free}; Member, unos {member}; Pro, unos {pro} o más. Cambiar de plan no borra las lecturas guardadas: todo lo que siga dentro de la ventana más larga de Pro queda disponible para gráficos, CSV y el paquete para reclamaciones. Cambia de plan cuanto antes si necesitas un paquete que llegue más atrás de lo que muestra tu plan actual.",
+      question:
+        "Si estoy en Free o Member y algo se acaba de congelar, ¿puedo pasarme a Pro y aun así crear un paquete?",
+      answer:
+        "Sí, siempre que las lecturas sigan dentro de la ventana de historial de tu plan. Free conserva unos {free}; Member, unos {member}; Pro, unos {pro} o más. Cambiar de plan no borra las lecturas guardadas: todo lo que siga dentro de la ventana más larga de Pro queda disponible para gráficos, CSV y el paquete para reclamaciones. Cambia de plan cuanto antes si necesitas un paquete que llegue más atrás de lo que muestra tu plan actual.",
     },
     {
       question: "¿Puedo enviarlo directamente al perito de mi seguro?",

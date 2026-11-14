@@ -55,7 +55,9 @@ function sensorRow(overrides: Partial<LatestSensorRow> = {}): LatestSensorRow {
 beforeEach(() => {
   mockGetRecentNumericReadingSamples.mockReset().mockResolvedValue([]);
   mockFetchForecastMinTemp.mockReset().mockResolvedValue(null);
-  mockBuildThermalRunway.mockReset().mockReturnValue({ hours: null, rateFPerHour: null, message: "", annotations: [] });
+  mockBuildThermalRunway
+    .mockReset()
+    .mockReturnValue({ hours: null, rateFPerHour: null, message: "", annotations: [] });
   mockFormatRunwayAlertSuffix.mockReset().mockReturnValue(null);
   mockFetchRegionalBenchmark.mockReset().mockResolvedValue(null);
   mockFormatBenchmarkAlertSuffix.mockReset().mockReturnValue(null);
@@ -102,11 +104,22 @@ describe("buildFreezeAlertContext", () => {
     await buildFreezeAlertContext({ settings: settings(), coldestTempF: 30 });
     expect(mockFetchRegionalBenchmark).not.toHaveBeenCalled();
 
-    await buildFreezeAlertContext({ householdId: "house-1", settings: settings(), coldestTempF: NaN });
+    await buildFreezeAlertContext({
+      householdId: "house-1",
+      settings: settings(),
+      coldestTempF: NaN,
+    });
     expect(mockFetchRegionalBenchmark).not.toHaveBeenCalled();
 
-    await buildFreezeAlertContext({ householdId: "house-1", settings: settings(), coldestTempF: 30 });
-    expect(mockFetchRegionalBenchmark).toHaveBeenCalledWith({ householdId: "house-1", yourTempF: 30 }, "en");
+    await buildFreezeAlertContext({
+      householdId: "house-1",
+      settings: settings(),
+      coldestTempF: 30,
+    });
+    expect(mockFetchRegionalBenchmark).toHaveBeenCalledWith(
+      { householdId: "house-1", yourTempF: 30 },
+      "en",
+    );
   });
 
   it("includes the benchmark line when formatBenchmarkAlertSuffix returns one", async () => {
@@ -127,7 +140,11 @@ describe("buildFreezeAlertContext", () => {
     mockFetchRegionalBenchmark.mockRejectedValue(new Error("boom"));
     const { buildFreezeAlertContext } = await import("./alertContext");
 
-    await buildFreezeAlertContext({ householdId: "house-1", settings: settings(), coldestTempF: 30 });
+    await buildFreezeAlertContext({
+      householdId: "house-1",
+      settings: settings(),
+      coldestTempF: 30,
+    });
 
     expect(mockFormatBenchmarkAlertSuffix).toHaveBeenCalledWith(null);
   });
@@ -182,16 +199,23 @@ describe("buildFreezeAlertContext", () => {
       weatherCityId: "123",
     });
 
-    expect(mockGetRecentNumericReadingSamples).toHaveBeenCalledWith("house-1", "sensor-1", expect.any(String));
+    expect(mockGetRecentNumericReadingSamples).toHaveBeenCalledWith(
+      "house-1",
+      "sensor-1",
+      expect.any(String),
+    );
     expect(mockFetchForecastMinTemp).toHaveBeenCalledWith("123", 12);
-    expect(mockBuildThermalRunway).toHaveBeenCalledWith({
-      currentTempF: 30,
-      freezeThresholdF: 35,
-      recentSamples: [{ at: "t", tempF: 30 }],
-      forecastMinTempF: 20,
-      forecastHoursAhead: 12,
-      doorOpenNearby: false,
-    }, "en");
+    expect(mockBuildThermalRunway).toHaveBeenCalledWith(
+      {
+        currentTempF: 30,
+        freezeThresholdF: 35,
+        recentSamples: [{ at: "t", tempF: 30 }],
+        forecastMinTempF: 20,
+        forecastHoursAhead: 12,
+        doorOpenNearby: false,
+      },
+      "en",
+    );
     expect(result).toContain("Cooling fast.");
   });
 
@@ -255,6 +279,8 @@ describe("buildFreezeAlertContext", () => {
       latestSensors: [sensorRow({ value_bool: true })],
     });
 
-    expect(result).toBe("Thermostat note.\n\nBenchmark note.\n\nA door sensor is open. Expect faster heat loss until it closes.");
+    expect(result).toBe(
+      "Thermostat note.\n\nBenchmark note.\n\nA door sensor is open. Expect faster heat loss until it closes.",
+    );
   });
 });

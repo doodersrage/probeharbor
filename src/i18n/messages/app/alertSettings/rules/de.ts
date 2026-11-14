@@ -44,18 +44,54 @@ const de: AlertRulesMessages = {
   matched: "Regel „{name}“ hat ausgelöst ({parts}).",
 
   nouns: {
-    temperatureProbe: { name: "Temperaturfühler", count: { one: "{count} Temperaturfühler", other: "{count} Temperaturfühlern" } },
-    humidityReading: { name: "Luftfeuchte-Messwerte", count: { one: "{count} Luftfeuchte-Messwert", other: "{count} Luftfeuchte-Messwerten" } },
-    doorSensor: { name: "Türsensoren", count: { one: "{count} Türsensor", other: "{count} Türsensoren" } },
-    leakSensor: { name: "Lecksensoren", count: { one: "{count} Lecksensor", other: "{count} Lecksensoren" } },
-    powerSensor: { name: "Stromsensoren", count: { one: "{count} Stromsensor", other: "{count} Stromsensoren" } },
-    co2Sensor: { name: "CO₂-Sensoren", count: { one: "{count} CO₂-Sensor", other: "{count} CO₂-Sensoren" } },
-    pressureSensor: { name: "Drucksensoren", count: { one: "{count} Drucksensor", other: "{count} Drucksensoren" } },
-    pm25Sensor: { name: "PM2,5-Sensoren", count: { one: "{count} PM2,5-Sensor", other: "{count} PM2,5-Sensoren" } },
-    vocSensor: { name: "VOC-Sensoren", count: { one: "{count} VOC-Sensor", other: "{count} VOC-Sensoren" } },
-    levelSensor: { name: "Pegelsensoren", count: { one: "{count} Pegelsensor", other: "{count} Pegelsensoren" } },
-    energySensor: { name: "Energiesensoren", count: { one: "{count} Energiesensor", other: "{count} Energiesensoren" } },
-    motionSensor: { name: "Bewegungsmelder", count: { one: "{count} Bewegungsmelder", other: "{count} Bewegungsmeldern" } },
+    temperatureProbe: {
+      name: "Temperaturfühler",
+      count: { one: "{count} Temperaturfühler", other: "{count} Temperaturfühlern" },
+    },
+    humidityReading: {
+      name: "Luftfeuchte-Messwerte",
+      count: { one: "{count} Luftfeuchte-Messwert", other: "{count} Luftfeuchte-Messwerten" },
+    },
+    doorSensor: {
+      name: "Türsensoren",
+      count: { one: "{count} Türsensor", other: "{count} Türsensoren" },
+    },
+    leakSensor: {
+      name: "Lecksensoren",
+      count: { one: "{count} Lecksensor", other: "{count} Lecksensoren" },
+    },
+    powerSensor: {
+      name: "Stromsensoren",
+      count: { one: "{count} Stromsensor", other: "{count} Stromsensoren" },
+    },
+    co2Sensor: {
+      name: "CO₂-Sensoren",
+      count: { one: "{count} CO₂-Sensor", other: "{count} CO₂-Sensoren" },
+    },
+    pressureSensor: {
+      name: "Drucksensoren",
+      count: { one: "{count} Drucksensor", other: "{count} Drucksensoren" },
+    },
+    pm25Sensor: {
+      name: "PM2,5-Sensoren",
+      count: { one: "{count} PM2,5-Sensor", other: "{count} PM2,5-Sensoren" },
+    },
+    vocSensor: {
+      name: "VOC-Sensoren",
+      count: { one: "{count} VOC-Sensor", other: "{count} VOC-Sensoren" },
+    },
+    levelSensor: {
+      name: "Pegelsensoren",
+      count: { one: "{count} Pegelsensor", other: "{count} Pegelsensoren" },
+    },
+    energySensor: {
+      name: "Energiesensoren",
+      count: { one: "{count} Energiesensor", other: "{count} Energiesensoren" },
+    },
+    motionSensor: {
+      name: "Bewegungsmelder",
+      count: { one: "{count} Bewegungsmelder", other: "{count} Bewegungsmeldern" },
+    },
     coolingProbe: {
       name: "Fühler, die in der letzten Stunde abgekühlt sind,",
       count: {
@@ -63,7 +99,10 @@ const de: AlertRulesMessages = {
         other: "{count} Fühlern, die in der letzten Stunde abgekühlt sind",
       },
     },
-    outdoorReading: { name: "Außenmesswerte", count: { one: "{count} Außenmesswert", other: "{count} Außenmesswerten" } },
+    outdoorReading: {
+      name: "Außenmesswerte",
+      count: { one: "{count} Außenmesswert", other: "{count} Außenmesswerten" },
+    },
     device: { name: "Geräte", count: { one: "{count} Gerät", other: "{count} Geräten" } },
   },
   states: {
@@ -86,7 +125,8 @@ const de: AlertRulesMessages = {
   doorOpenFor: "{label} ist seit {minutes} Min. offen (≥ {min} Min.).",
   doorOpenShort: "{label} ist seit {minutes} Min. offen; nötig sind {min}.",
   rateDropped: "{label} ist in der letzten Stunde um {drop} gefallen.",
-  rateBiggest: "Stärkster Abfall: {label} ist in der letzten Stunde um {drop} gefallen; nötig sind {threshold}.",
+  rateBiggest:
+    "Stärkster Abfall: {label} ist in der letzten Stunde um {drop} gefallen; nötig sind {threshold}.",
   outdoorUnknown: "Außentemperatur unbekannt, deshalb trifft diese Bedingung nie zu.",
   unknownCondition: "Unbekannte Art von Bedingung.",
 };

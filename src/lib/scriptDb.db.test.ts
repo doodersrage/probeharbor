@@ -24,7 +24,9 @@ async function accountWithHash(email: string, hash: string) {
   return id;
 }
 
-async function withScriptDb<T>(fn: (scriptDb: ReturnType<typeof openDb>) => Promise<T>): Promise<T> {
+async function withScriptDb<T>(
+  fn: (scriptDb: ReturnType<typeof openDb>) => Promise<T>,
+): Promise<T> {
   const scriptDb = openDb(testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!));
   try {
     return await fn(scriptDb);
@@ -36,7 +38,10 @@ async function withScriptDb<T>(fn: (scriptDb: ReturnType<typeof openDb>) => Prom
 /** Who Better Auth (the app's own setup, secure cookies as in production) says the cookie belongs to. */
 async function sessionUser(cookie: string): Promise<string | null> {
   const pg = (await import("pg")).default;
-  const pool = new pg.Pool({ connectionString: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!), max: 1 });
+  const pool = new pg.Pool({
+    connectionString: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!),
+    max: 1,
+  });
   try {
     const auth = createBetterAuth({
       database: pool,
@@ -58,7 +63,12 @@ describe("ops script sign-in", () => {
   it("a password copied from Supabase (bcrypt) signs in; Better Auth accepts the cookie; end() removes it", async () => {
     const id = await accountWithHash("e2e@example.com", await bcrypt.hash("pw-123456", 4));
     await withScriptDb(async (scriptDb) => {
-      const session = await signInForScript(scriptDb, { email: "E2E@example.com", password: "pw-123456", secret: SECRET, userAgent: "test" });
+      const session = await signInForScript(scriptDb, {
+        email: "E2E@example.com",
+        password: "pw-123456",
+        secret: SECRET,
+        userAgent: "test",
+      });
       expect(session.userId).toBe(id);
       expect(session.cookie).toMatch(/^__Secure-better-auth\.session_token=/);
       expect(await sessionUser(session.cookie)).toBe(id);
@@ -70,7 +80,12 @@ describe("ops script sign-in", () => {
   it("a Better Auth (scrypt) password signs in too", async () => {
     const id = await accountWithHash("e2e@example.com", await hashPassword("pw-123456"));
     await withScriptDb(async (scriptDb) => {
-      const session = await signInForScript(scriptDb, { email: "e2e@example.com", password: "pw-123456", secret: SECRET, userAgent: "test" });
+      const session = await signInForScript(scriptDb, {
+        email: "e2e@example.com",
+        password: "pw-123456",
+        secret: SECRET,
+        userAgent: "test",
+      });
       expect(await sessionUser(session.cookie)).toBe(id);
     });
   });
@@ -94,16 +109,36 @@ describe("e2e password reset", () => {
     const id = await accountWithHash("e2e@example.com", await bcrypt.hash("old-pass-1", 4));
     const other = await accountWithHash("other@example.com", await hashPassword("theirs-123"));
     await withScriptDb(async (scriptDb) => {
-      const before = await signInForScript(scriptDb, { email: "e2e@example.com", password: "old-pass-1", secret: SECRET, userAgent: "test" });
-      const theirs = await signInForScript(scriptDb, { email: "other@example.com", password: "theirs-123", secret: SECRET, userAgent: "test" });
+      const before = await signInForScript(scriptDb, {
+        email: "e2e@example.com",
+        password: "old-pass-1",
+        secret: SECRET,
+        userAgent: "test",
+      });
+      const theirs = await signInForScript(scriptDb, {
+        email: "other@example.com",
+        password: "theirs-123",
+        secret: SECRET,
+        userAgent: "test",
+      });
 
       expect(await setAccountPassword(scriptDb, "e2e@example.com", "new-pass-2")).toBe(true);
       expect(await sessionUser(before.cookie)).toBeNull();
       expect(await sessionUser(theirs.cookie)).toBe(other);
       await expect(
-        signInForScript(scriptDb, { email: "e2e@example.com", password: "old-pass-1", secret: SECRET, userAgent: "test" }),
+        signInForScript(scriptDb, {
+          email: "e2e@example.com",
+          password: "old-pass-1",
+          secret: SECRET,
+          userAgent: "test",
+        }),
       ).rejects.toThrow(/Sign-in failed/);
-      const after = await signInForScript(scriptDb, { email: "e2e@example.com", password: "new-pass-2", secret: SECRET, userAgent: "test" });
+      const after = await signInForScript(scriptDb, {
+        email: "e2e@example.com",
+        password: "new-pass-2",
+        secret: SECRET,
+        userAgent: "test",
+      });
       expect(await sessionUser(after.cookie)).toBe(id);
 
       expect(await setAccountPassword(scriptDb, "nobody@example.com", "x-123456")).toBe(false);

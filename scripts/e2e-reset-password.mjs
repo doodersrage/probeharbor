@@ -73,8 +73,7 @@ for (const [label, url] of targets) {
     if (await setAccountPassword(db, email, password)) {
       updated += 1;
       console.log(`Updated password for ${email} in ${label}`);
-    }
-    else {
+    } else {
       console.error(`No email + password account for ${email} in ${label}; sign up there first.`);
       failed = true;
     }
@@ -94,7 +93,9 @@ if (updated === 0) {
 upsertEnvKey(envPath, "E2E_TEST_PASSWORD", password);
 console.log("Wrote E2E_TEST_PASSWORD to .env (not printed).");
 if (failed) {
-  console.error("Some databases kept the old password (see above); fix them and re-run to bring all in line.");
+  console.error(
+    "Some databases kept the old password (see above); fix them and re-run to bring all in line.",
+  );
   process.exit(1);
 }
 console.log("Next: pnpm setup:e2e-github-secrets, then pnpm test:e2e:auth");

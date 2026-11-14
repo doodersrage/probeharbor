@@ -34,10 +34,13 @@ export const GET: APIRoute = async ({ clientAddress, locals }) => {
         ? await fetchDemoHourlyWeather(weather.lat, weather.lon)
         : [];
     if (hourly.length < 2) {
-      return new Response(JSON.stringify({ error: apiUserMessages(locale).weather.historyUnavailable }), {
-        status: 503,
-        headers: { "Content-Type": "application/json", "Retry-After": "300" },
-      });
+      return new Response(
+        JSON.stringify({ error: apiUserMessages(locale).weather.historyUnavailable }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json", "Retry-After": "300" },
+        },
+      );
     }
     cached = {
       at: Date.now(),

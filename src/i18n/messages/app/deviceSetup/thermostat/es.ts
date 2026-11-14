@@ -10,8 +10,7 @@ const es: DeviceSetupThermostatMessages = {
     noneOption: "Ninguno, usar solo el termostato",
     optionLabel: "{label} ({device})",
     save: "Guardar",
-    configured:
-      "Este hogar tiene configurada una sonda de referencia interior.",
+    configured: "Este hogar tiene configurada una sonda de referencia interior.",
     notSelected: "No hay ninguna referencia interior seleccionada.",
     noOptionsHtml:
       'Primero añade un sensor de temperatura, por ejemplo enviando desde Home Assistant con <code class="text-xs">thermaltrace.push</code> o un ESP en el pasillo. Consulta la <a class="text-link" href="/integrations/home-assistant#indoor-temperature">guía de temperatura interior de HA</a>.',
@@ -25,11 +24,9 @@ const es: DeviceSetupThermostatMessages = {
     errors: {
       state_mismatch: "Ese intento de conexión caducó: inténtalo de nuevo.",
       denied: "Se canceló la conexión.",
-      not_configured:
-        "Este proveedor aún no está configurado en esta instalación.",
+      not_configured: "Este proveedor aún no está configurado en esta instalación.",
       exchange_failed: "No se pudo completar la conexión: inténtalo de nuevo.",
-      save_failed:
-        "Conectado, pero no se pudo guardar la conexión: inténtalo de nuevo.",
+      save_failed: "Conectado, pero no se pudo guardar la conexión: inténtalo de nuevo.",
       generic: "Algo salió mal al conectar tu termostato.",
     },
     sdmDisabledHtml:
@@ -45,8 +42,7 @@ const es: DeviceSetupThermostatMessages = {
       auto: "Automático",
       auxheatonly: "Solo calefacción auxiliar",
     },
-    noLiveReading:
-      "Conectado, pero ahora mismo no se pudo obtener una lectura en directo.",
+    noLiveReading: "Conectado, pero ahora mismo no se pudo obtener una lectura en directo.",
     notConnected: "No conectado",
     ecobeeClosedHtml:
       'El registro de desarrolladores de Ecobee está cerrado: usa <a class="text-link" href="/integrations/home-assistant#indoor-temperature">Home Assistant</a> para enviar la temperatura interior y luego elígela en <a class="text-link" href="#indoor-reference">Referencia interior</a> arriba.',

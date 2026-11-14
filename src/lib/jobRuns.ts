@@ -1,10 +1,7 @@
 import * as neonJobs from "./db/jobs";
-import {
-  RAW_READING_RETENTION_DAYS,
-} from "./retentionSchedule";
+import { RAW_READING_RETENTION_DAYS } from "./retentionSchedule";
 
 export { RAW_READING_RETENTION_DAYS, shouldRunDailyRetention } from "./retentionSchedule";
-
 
 export type JobRun = {
   id: number;
@@ -35,7 +32,8 @@ export async function closeAbandonedJobRuns(jobName: string, now = Date.now()): 
       new Date(now - ABANDONED_RUN_MS).toISOString(),
       { abandoned: true, message: "Stopped before it finished (time limit, crash or deploy)." },
     );
-    if (closed > 0) console.error(`job ${jobName}: ${closed} run(s) never finished; marked as errors`);
+    if (closed > 0)
+      console.error(`job ${jobName}: ${closed} run(s) never finished; marked as errors`);
     return closed;
   } catch (error) {
     console.error("Failed to close abandoned job runs:", error);
@@ -101,7 +99,11 @@ export async function runSensorReadingRetention(
     return { rolledUp: result.rolled_up ?? 0, deleted: result.deleted ?? 0, error: null };
   } catch (error) {
     // The function runs as one transaction: if it fails, nothing was deleted.
-    return { rolledUp: 0, deleted: 0, error: error instanceof Error ? error.message : String(error) };
+    return {
+      rolledUp: 0,
+      deleted: 0,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
@@ -125,15 +127,18 @@ export async function runHousekeeping(now = new Date()): Promise<{
   snoozeTokens: number;
   error: string | null;
 }> {
-  const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
+  const daysAgo = (days: number) =>
+    new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
   let jobRuns = 0;
   let snoozeTokens = 0;
   try {
     jobRuns = await neonJobs.pruneJobRuns(daysAgo(JOB_RUN_KEEP_DAYS), HOUSEKEEPING_BATCH);
-    snoozeTokens = await neonJobs.pruneExpiredSnoozeTokens(daysAgo(SNOOZE_TOKEN_KEEP_DAYS_AFTER_EXPIRY), HOUSEKEEPING_BATCH);
+    snoozeTokens = await neonJobs.pruneExpiredSnoozeTokens(
+      daysAgo(SNOOZE_TOKEN_KEEP_DAYS_AFTER_EXPIRY),
+      HOUSEKEEPING_BATCH,
+    );
     return { jobRuns, snoozeTokens, error: null };
   } catch (error) {
     return { jobRuns, snoozeTokens, error: error instanceof Error ? error.message : String(error) };
   }
 }
-

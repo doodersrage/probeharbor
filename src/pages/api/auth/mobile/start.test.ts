@@ -33,7 +33,9 @@ function makeCookies() {
 function makeContext(search: Record<string, string> = {}): APIContext {
   const url = new URL("https://example.com/api/auth/mobile/start");
   for (const [k, v] of Object.entries(search)) url.searchParams.set(k, v);
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return {
     url,
     cookies: makeCookies(),
@@ -44,10 +46,15 @@ function makeContext(search: Record<string, string> = {}): APIContext {
 }
 
 beforeEach(() => {
-  mockBuildSignInRedirectUrl.mockReset().mockImplementation((code: string) => `/signin?error=${code}`);
-  mockStartBetterAuthOAuth
+  mockBuildSignInRedirectUrl
     .mockReset()
-    .mockResolvedValue(new Response(null, { status: 302, headers: { Location: "https://provider.example.com/authorize" } }));
+    .mockImplementation((code: string) => `/signin?error=${code}`);
+  mockStartBetterAuthOAuth.mockReset().mockResolvedValue(
+    new Response(null, {
+      status: 302,
+      headers: { Location: "https://provider.example.com/authorize" },
+    }),
+  );
   mockSetMobileOAuthCookie.mockReset();
 });
 

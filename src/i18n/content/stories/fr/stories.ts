@@ -13,9 +13,20 @@ export default {
       "Récapitulatif hebdomadaire pour le foyer ; lien en direct familial pour un voisin qui garde un œil sur la maison",
     ],
     timeline: [
-      { time: "2 h 14", detail: "Le garage passe sous 1 °C (34 °F) ; ProbeHarbor envoie un SMS aux deux propriétaires et publie sur un canal Telegram familial." },
-      { time: "2 h 22", detail: "L’un des propriétaires redémarre le chauffage via une prise connectée." },
-      { time: "3 h 05", detail: "Le graphique montre la température qui remonte, bien avant que les canalisations n’atteignent 0 °C (32 °F)." },
+      {
+        time: "2 h 14",
+        detail:
+          "Le garage passe sous 1 °C (34 °F) ; ProbeHarbor envoie un SMS aux deux propriétaires et publie sur un canal Telegram familial.",
+      },
+      {
+        time: "2 h 22",
+        detail: "L’un des propriétaires redémarre le chauffage via une prise connectée.",
+      },
+      {
+        time: "3 h 05",
+        detail:
+          "Le graphique montre la température qui remonte, bien avant que les canalisations n’atteignent 0 °C (32 °F).",
+      },
     ],
     outcome:
       "Une panne de chauffage ne tourne à la catastrophe que si personne ne s’en aperçoit avant le matin. Le seuil est fixé quelques degrés au-dessus du point de congélation pour laisser le temps de réagir, et c’est le SMS qui vous réveille à 2 h du matin ; un e-mail, on le rate facilement en dormant.",
@@ -44,9 +55,20 @@ export default {
       "Un ami du coin invité dans le foyer comme relais en cas de besoin",
     ],
     timeline: [
-      { time: "Mar. 11 h 40", detail: "Une micro-coupure réinitialise la chaudière ; le vide sanitaire descend sous 2 °C (36 °F)." },
-      { time: "Mar. 11 h 41", detail: "La notification push et l’e-mail partent ; le propriétaire appelle son ami sur place." },
-      { time: "Mar. 13 h 10", detail: "L’ami relance la chaudière et la courbe remonte avant le froid du soir." },
+      {
+        time: "Mar. 11 h 40",
+        detail:
+          "Une micro-coupure réinitialise la chaudière ; le vide sanitaire descend sous 2 °C (36 °F).",
+      },
+      {
+        time: "Mar. 11 h 41",
+        detail:
+          "La notification push et l’e-mail partent ; le propriétaire appelle son ami sur place.",
+      },
+      {
+        time: "Mar. 13 h 10",
+        detail: "L’ami relance la chaudière et la courbe remonte avant le froid du soir.",
+      },
     ],
     outcome:
       "Les bâtiments vides tombent en panne en silence. Tout l’intérêt, c’est l’avance : une alerte le mardi plutôt que des canalisations gelées découvertes le vendredi.",
@@ -75,9 +97,20 @@ export default {
       "Webhook sortant (Pro) vers Home Assistant pour couper une prise connectée",
     ],
     timeline: [
-      { time: "Ven. 18 h 05", detail: "Le placard atteint 36 °C (96 °F) après la panne d’un ventilateur ; la règle de chaleur se déclenche et le webhook arrive dans Home Assistant." },
-      { time: "Ven. 18 h 06", detail: "Une automatisation éteint le matériel non critique ; un SMS confirme l’alerte." },
-      { time: "Samedi matin", detail: "Le propriétaire remplace le ventilateur ; l’historique montre à quelle vitesse le placard a chauffé." },
+      {
+        time: "Ven. 18 h 05",
+        detail:
+          "Le placard atteint 36 °C (96 °F) après la panne d’un ventilateur ; la règle de chaleur se déclenche et le webhook arrive dans Home Assistant.",
+      },
+      {
+        time: "Ven. 18 h 06",
+        detail: "Une automatisation éteint le matériel non critique ; un SMS confirme l’alerte.",
+      },
+      {
+        time: "Samedi matin",
+        detail:
+          "Le propriétaire remplace le ventilateur ; l’historique montre à quelle vitesse le placard a chauffé.",
+      },
     ],
     outcome:
       "Les mêmes sondes et le même circuit d’ingest couvrent les deux types de panne : le gel côté garage, la chaleur dans le placard.",
@@ -106,9 +139,21 @@ export default {
       "Température du garage comparée à la météo extérieure dans le dashboard",
     ],
     timeline: [
-      { time: "Semaine 1", detail: "Les alertes se déclenchent par nuits claires et sans vent ; on dirait du froid ordinaire." },
-      { time: "Semaine 2", detail: "L’historique et le CSV montrent que la sonde côté porte descend toujours en premier." },
-      { time: "Semaine 3", detail: "Après la pose d’un joint d’étanchéité sur la porte, les nuits restent au-dessus du seuil." },
+      {
+        time: "Semaine 1",
+        detail:
+          "Les alertes se déclenchent par nuits claires et sans vent ; on dirait du froid ordinaire.",
+      },
+      {
+        time: "Semaine 2",
+        detail:
+          "L’historique et le CSV montrent que la sonde côté porte descend toujours en premier.",
+      },
+      {
+        time: "Semaine 3",
+        detail:
+          "Après la pose d’un joint d’étanchéité sur la porte, les nuits restent au-dessus du seuil.",
+      },
     ],
     outcome:
       "Une alerte vous dit que quelque chose ne va pas ; l’historique vous dit où. Un joint bon marché vaut mieux qu’attendre la nuit assez froide pour faire éclater un tuyau.",
@@ -137,9 +182,19 @@ export default {
       "Lien en direct familial pour un proche qui habite à côté",
     ],
     timeline: [
-      { time: "Dim. 4 h 05", detail: "Le vide sanitaire passe sous 2 °C (36 °F), une grille d’aération restée bloquée ouverte." },
-      { time: "Dim. 4 h 06", detail: "SMS et e-mail partent ; le proche consulte le lien en direct et se met en route." },
-      { time: "Dim. 5 h 20", detail: "La grille est refermée et la courbe remonte avant le minimum du matin." },
+      {
+        time: "Dim. 4 h 05",
+        detail:
+          "Le vide sanitaire passe sous 2 °C (36 °F), une grille d’aération restée bloquée ouverte.",
+      },
+      {
+        time: "Dim. 4 h 06",
+        detail: "SMS et e-mail partent ; le proche consulte le lien en direct et se met en route.",
+      },
+      {
+        time: "Dim. 5 h 20",
+        detail: "La grille est refermée et la courbe remonte avant le minimum du matin.",
+      },
     ],
     outcome:
       "Personne ne va vérifier un vide sanitaire à 4 h du matin. Une sonde sur la conduite, pas à la trappe, transforme une grille bloquée en simple formalité.",
@@ -168,9 +223,21 @@ export default {
       "Mode vacances désactivé avant un voyage pour que les alertes continuent d’arriver",
     ],
     timeline: [
-      { time: "Mercredi", detail: "Une alerte météo signale le minimum de la nuit de jeudi ; le propriétaire vérifie que le chauffage est allumé." },
-      { time: "Jeu. 1 h 50", detail: "Le chauffage fait sauter le différentiel ; l’atelier passe sous 1 °C (34 °F) et l’e-mail part." },
-      { time: "Jeu. 2 h 15", detail: "Le propriétaire réarme le circuit via une prise connectée avant que la conduite de l’évier ne gèle." },
+      {
+        time: "Mercredi",
+        detail:
+          "Une alerte météo signale le minimum de la nuit de jeudi ; le propriétaire vérifie que le chauffage est allumé.",
+      },
+      {
+        time: "Jeu. 1 h 50",
+        detail:
+          "Le chauffage fait sauter le différentiel ; l’atelier passe sous 1 °C (34 °F) et l’e-mail part.",
+      },
+      {
+        time: "Jeu. 2 h 15",
+        detail:
+          "Le propriétaire réarme le circuit via une prise connectée avant que la conduite de l’évier ne gèle.",
+      },
     ],
     outcome:
       "Les bâtiments indépendants perdent vite leur chaleur. L’alerte météo couvre le temps de l’anticipation ; l’alerte de seuil couvre la panne elle-même.",
@@ -199,9 +266,20 @@ export default {
       "E-mail et SMS (Pro) ; le seuil de gel continue de surveiller le même espace",
     ],
     timeline: [
-      { time: "3 h 08", detail: "Le contact d’inondation signale de l’eau ; SMS et e-mail partent alors que le mode vacances est activé." },
-      { time: "3 h 20", detail: "Un voisin qui a le lien en direct familial passe voir et trouve une goutte à la vanne de vidange." },
-      { time: "Le matin", detail: "Un plombier resserre la vanne alors que le sol est encore presque sec." },
+      {
+        time: "3 h 08",
+        detail:
+          "Le contact d’inondation signale de l’eau ; SMS et e-mail partent alors que le mode vacances est activé.",
+      },
+      {
+        time: "3 h 20",
+        detail:
+          "Un voisin qui a le lien en direct familial passe voir et trouve une goutte à la vanne de vidange.",
+      },
+      {
+        time: "Le matin",
+        detail: "Un plombier resserre la vanne alors que le sol est encore presque sec.",
+      },
     ],
     outcome:
       "Les fuites n’attendent pas le gel. Les contacts d’inondation partagent le même appareil et le même circuit d’ingest, et les alertes d’eau passent même quand le mode vacances fait taire les alertes de routine.",

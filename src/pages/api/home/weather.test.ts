@@ -15,15 +15,13 @@ vi.mock("../../../lib/FetchWeather", () => ({
 
 const mockCheckWeatherSearchRateLimit = vi.fn();
 vi.mock("../../../lib/weatherSearchLimits", () => ({
-  checkWeatherSearchRateLimit: (...a: unknown[]) =>
-    mockCheckWeatherSearchRateLimit(...a),
+  checkWeatherSearchRateLimit: (...a: unknown[]) => mockCheckWeatherSearchRateLimit(...a),
 }));
 
 const mockFetchWeatherSnapshotForConfig = vi.fn();
 const mockGetPersonalWeatherConfig = vi.fn();
 vi.mock("../../../lib/weatherContext", () => ({
-  fetchWeatherSnapshotForConfig: (...a: unknown[]) =>
-    mockFetchWeatherSnapshotForConfig(...a),
+  fetchWeatherSnapshotForConfig: (...a: unknown[]) => mockFetchWeatherSnapshotForConfig(...a),
   getPersonalWeatherConfig: (...a: unknown[]) => mockGetPersonalWeatherConfig(...a),
 }));
 

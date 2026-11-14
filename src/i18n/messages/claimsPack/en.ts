@@ -23,8 +23,10 @@ const en = {
   startFree: "Start free: build your pack",
   downloadSample: "Download sample PDF",
   seeProPricing: "See Pro pricing",
-  shotPackCaption: "Real claims pack export: freeze-exposure stats, threshold, and devices in scope.",
-  shotVerifyCaption: "Same export’s verification footer. SHA-256 code plus a permanent re-view link.",
+  shotPackCaption:
+    "Real claims pack export: freeze-exposure stats, threshold, and devices in scope.",
+  shotVerifyCaption:
+    "Same export’s verification footer. SHA-256 code plus a permanent re-view link.",
   shotCertCaption:
     "Monitoring certificate: alerts enabled, freeze threshold, retention, and coverage at a glance.",
   contents: {
@@ -87,7 +89,8 @@ const en = {
     title: "How to generate one",
     step1:
       "Connect at least one probe and let ProbeHarbor collect a bit of history (freeze alerts work from day one; the claims pack covers whatever range you've been monitoring).",
-    step2: "Upgrade to Pro if you haven't already: the claims pack is a Pro feature. Already on Free or Member with a recent freeze? Readings still inside your {free} / {member} window stay stored; Pro unlocks the pack over that retained history (and extends how far back you can reach going forward).",
+    step2:
+      "Upgrade to Pro if you haven't already: the claims pack is a Pro feature. Already on Free or Member with a recent freeze? Readings still inside your {free} / {member} window stay stored; Pro unlocks the pack over that retained history (and extends how far back you can reach going forward).",
     step3Html:
       'From <a class="text-link" href="/dashboard/history?tab=exports#claims-pack">History → claims pack</a>, pick a date range and download the pack, or send it straight to an adjuster\'s email.',
     samplePdf: "Sample PDF",
@@ -101,8 +104,10 @@ const en = {
         "The claims pack is a Pro (and Portfolio) feature. Free and Member plans can still see live readings and history, but generating and emailing a claims pack requires Pro.",
     },
     {
-      question: "If I’m on Free or Member and something just froze, can I upgrade and still build a pack?",
-      answer: "Yes, as long as the readings are still inside your plan’s history window. Free keeps about {free}; Member about {member}; Pro about {pro}+. Upgrading does not wipe stored readings: anything still within the longer Pro window becomes available for charts, CSV, and the claims pack. Upgrade promptly if you need a pack that reaches further back than your current plan shows.",
+      question:
+        "If I’m on Free or Member and something just froze, can I upgrade and still build a pack?",
+      answer:
+        "Yes, as long as the readings are still inside your plan’s history window. Free keeps about {free}; Member about {member}; Pro about {pro}+. Upgrading does not wipe stored readings: anything still within the longer Pro window becomes available for charts, CSV, and the claims pack. Upgrade promptly if you need a pack that reaches further back than your current plan shows.",
     },
     {
       question: "Can I send this directly to my insurance adjuster?",

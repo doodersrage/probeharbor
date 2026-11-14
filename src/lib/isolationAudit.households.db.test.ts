@@ -26,7 +26,12 @@ import { oldReadings, setSignatureFormat } from "./db/householdTools";
 import { insertHouseholdWithOwner, upsertHouseholdMember } from "./db/households";
 import { findChartShare, insertChartShare } from "./db/shareLinks";
 import { createHistorySavedView, listHistorySavedViews } from "./historySavedViews";
-import { acceptHouseholdInvite, createHouseholdInvite, getInviteByToken, getInviteTokenState } from "./householdInvites";
+import {
+  acceptHouseholdInvite,
+  createHouseholdInvite,
+  getInviteByToken,
+  getInviteTokenState,
+} from "./householdInvites";
 import {
   addHouseholdMemberByUserId,
   countOwnedHouseholds,
@@ -36,7 +41,11 @@ import {
   listHouseholdIdsForCron,
   removeHouseholdMember,
 } from "./households";
-import { createInboundWebhook, listInboundWebhooks, resolveInboundWebhook } from "./inboundWebhooks";
+import {
+  createInboundWebhook,
+  listInboundWebhooks,
+  resolveInboundWebhook,
+} from "./inboundWebhooks";
 import { createHouseholdApiKey, listHouseholdApiKeys } from "./apiKeys";
 import { storedShareTokenFields } from "./shareLinkTokens";
 import { insertShareLink } from "./shareLinksStore";
@@ -86,9 +95,11 @@ describe("isolation audit: households", () => {
     const b = await userWithHome("b@example.com");
     const created = await insertHouseholdWithOwner(a.id, "Cabin");
     expect(created.error).toBeNull();
-    expect(await sql("select user_id, role from public.household_members where household_id = $1", [created.householdId])).toEqual([
-      { user_id: a.id, role: "owner" },
-    ]);
+    expect(
+      await sql("select user_id, role from public.household_members where household_id = $1", [
+        created.householdId,
+      ]),
+    ).toEqual([{ user_id: a.id, role: "owner" }]);
     await expect(isUserInHousehold(b.id, created.householdId)).resolves.toBe(false);
     await expect(countOwnedHouseholds(b.id)).resolves.toBe(1);
   });
@@ -99,15 +110,15 @@ describe("isolation audit: households", () => {
     const c = await userWithHome("c@example.com");
     await addHouseholdMemberByUserId(b.home, a.id, "member");
     // Active points at a shared household (member, not owner), then at one they're not in at all.
-    await sql("insert into public.user_profiles (user_id, metadata) values ($1, jsonb_build_object('active_household_id', $2::text))", [
-      a.id,
-      b.home,
-    ]);
+    await sql(
+      "insert into public.user_profiles (user_id, metadata) values ($1, jsonb_build_object('active_household_id', $2::text))",
+      [a.id, b.home],
+    );
     await expect(getOwnedHouseholdId(a.id)).resolves.toBe(a.home);
-    await sql("update public.user_profiles set metadata = jsonb_build_object('active_household_id', $2::text) where user_id = $1", [
-      a.id,
-      c.home,
-    ]);
+    await sql(
+      "update public.user_profiles set metadata = jsonb_build_object('active_household_id', $2::text) where user_id = $1",
+      [a.id, c.home],
+    );
     await expect(getOwnedHouseholdId(a.id)).resolves.toBe(a.home);
   });
 
@@ -158,7 +169,13 @@ describe("isolation audit: households", () => {
     const owner = await userWithHome("owner@example.com");
     const member = await userWithHome("member@example.com");
     await addHouseholdMemberByUserId(owner.home, member.id, "member");
-    const { token } = await createHouseholdInvite(owner.home, "owner@example.com", member.id, 7, "viewer");
+    const { token } = await createHouseholdInvite(
+      owner.home,
+      "owner@example.com",
+      member.id,
+      7,
+      "viewer",
+    );
     await acceptHouseholdInvite(token!, owner.id, "owner@example.com");
     await expect(getUserHouseholdRole(owner.id, owner.home)).resolves.toBe("owner");
     expect((await listHouseholdIdsForCron()).map((h) => h.householdId)).toContain(owner.home);
@@ -172,10 +189,21 @@ describe("isolation audit: invites", () => {
     const a = await userWithHome("a@example.com");
     const guest = await userWithHome("guest@example.com");
     const stranger = await userWithHome("stranger@example.com");
-    const { token, invite } = await createHouseholdInvite(a.home, "guest@example.com", a.id, 7, "viewer");
+    const { token, invite } = await createHouseholdInvite(
+      a.home,
+      "guest@example.com",
+      a.id,
+      7,
+      "viewer",
+    );
     expect((await acceptHouseholdInvite(token!, guest.id, "guest@example.com")).error).toBeNull();
     const acceptedAtOf = async (id: string) =>
-      (await sql<{ accepted_at: Date | null }>("select accepted_at from public.household_invites where id = $1", [id]))[0]?.accepted_at;
+      (
+        await sql<{ accepted_at: Date | null }>(
+          "select accepted_at from public.household_invites where id = $1",
+          [id],
+        )
+      )[0]?.accepted_at;
     const acceptedAt = await acceptedAtOf(invite!.id);
     expect(acceptedAt).not.toBeNull();
 
@@ -196,7 +224,11 @@ describe("isolation audit: invites", () => {
     await markInviteAccepted(ia.invite!.id);
     // Accepted: no longer returned as usable, and the state says why.
     await expect(getInviteByToken(ia.token!)).resolves.toBeNull();
-    await expect(getInviteTokenState(ia.token!)).resolves.toEqual({ householdId: a.home, accepted: true, expired: false });
+    await expect(getInviteTokenState(ia.token!)).resolves.toEqual({
+      householdId: a.home,
+      accepted: true,
+      expired: false,
+    });
     expect((await getInviteByToken(ib.token!))?.accepted_at).toBeNull();
   });
 
@@ -212,7 +244,11 @@ describe("isolation audit: invites", () => {
   it("insertApiKey's key lists and resolves only for its own household", async () => {
     const a = await userWithHome("a@example.com");
     const b = await userWithHome("b@example.com");
-    const { key } = await createHouseholdApiKey({ householdId: a.home, name: "k", createdBy: a.id });
+    const { key } = await createHouseholdApiKey({
+      householdId: a.home,
+      name: "k",
+      createdBy: a.id,
+    });
     expect((await listHouseholdApiKeys(a.home)).map((k) => k.id)).toEqual([key!.id]);
     expect(await listHouseholdApiKeys(b.home)).toEqual([]);
   });
@@ -228,7 +264,11 @@ describe("isolation audit: household tools", () => {
     await createInboundWebhook(b.home, b.id, "B");
     const [wa] = (await listInboundWebhooks(a.home)).webhooks;
     await setSignatureFormat(wa!.id, "hmac-sha256");
-    expect(await sql("select household_id, last_signature_format from public.inbound_webhooks order by name")).toEqual([
+    expect(
+      await sql(
+        "select household_id, last_signature_format from public.inbound_webhooks order by name",
+      ),
+    ).toEqual([
       { household_id: a.home, last_signature_format: "hmac-sha256" },
       { household_id: b.home, last_signature_format: null },
     ]);
@@ -243,9 +283,16 @@ describe("isolation audit: household tools", () => {
 
   it("an expired claims pack doesn't open", async () => {
     const a = await userWithHome("a@example.com");
-    const pack = { rangeFrom: "2026-01-01T00:00:00Z", rangeTo: "2026-02-01T00:00:00Z", householdName: "Home" } as never;
+    const pack = {
+      rangeFrom: "2026-01-01T00:00:00Z",
+      rangeTo: "2026-02-01T00:00:00Z",
+      householdName: "Home",
+    } as never;
     const { token } = await createClaimsPackExport(a.home, pack, a.id);
-    await sql("update public.claims_pack_exports set expires_at = now() - interval '1 minute' where token = $1", [token]);
+    await sql(
+      "update public.claims_pack_exports set expires_at = now() - interval '1 minute' where token = $1",
+      [token],
+    );
     await expect(getClaimsPackExportByToken(token!)).resolves.toBeNull();
   });
 
@@ -253,7 +300,12 @@ describe("isolation audit: household tools", () => {
     const a = await userWithHome("a@example.com");
     const c = await userWithHome("c@example.com");
     await addHouseholdMemberByUserId(a.home, c.id, "member");
-    await createHistorySavedView({ userId: a.id, householdId: a.home, name: "Mine", params: { days: 7 } as never });
+    await createHistorySavedView({
+      userId: a.id,
+      householdId: a.home,
+      name: "Mine",
+      params: { days: 7 } as never,
+    });
     expect(await listHistorySavedViews(c.id)).toEqual([]);
   });
 
@@ -289,10 +341,10 @@ describe("isolation audit: share links", () => {
   it("the public readings route refuses an expired link and serves only its own household", async () => {
     const a = await userWithHome("a@example.com");
     const b = await userWithHome("b@example.com");
-    await sql("insert into public.devices (household_id, name, source) values ($1, 'A-probe', 'push'), ($2, 'B-probe', 'push')", [
-      a.home,
-      b.home,
-    ]);
+    await sql(
+      "insert into public.devices (household_id, name, source) values ($1, 'A-probe', 'push'), ($2, 'B-probe', 'push')",
+      [a.home, b.home],
+    );
     await insertShareLink({
       ...(await storedShareTokenFields("live-token-aaaa")),
       household_id: a.home,
@@ -356,9 +408,13 @@ describe("isolation audit: status pages and subscriptions", () => {
 
   it("unsubscribing with one token removes only that subscriber", async () => {
     // Tokens are stored hashed: seed legacy raw tokens (pre-0004 rows) to drive the link.
-    await sql("insert into public.status_subscriptions (email, token) values ('one@example.com', 'tok-one'), ('two@example.com', 'tok-two')");
+    await sql(
+      "insert into public.status_subscriptions (email, token) values ('one@example.com', 'tok-one'), ('two@example.com', 'tok-two')",
+    );
     expect((await unsubscribeStatusSubscription("not-a-token")).ok).toBe(false);
     expect((await unsubscribeStatusSubscription("tok-one")).ok).toBe(true);
-    expect(await sql("select email from public.status_subscriptions")).toEqual([{ email: "two@example.com" }]);
+    expect(await sql("select email from public.status_subscriptions")).toEqual([
+      { email: "two@example.com" },
+    ]);
   });
 });

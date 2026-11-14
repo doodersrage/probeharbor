@@ -62,7 +62,14 @@ export async function fetchContactSubmissions(
 
   const paged = await neonAdmin.pageContacts(filters, from, pageSize);
   if (paged.error) {
-    return { submissions: [], page: safePage, pageSize, totalCount: 0, totalPages: 0, error: paged.error };
+    return {
+      submissions: [],
+      page: safePage,
+      pageSize,
+      totalCount: 0,
+      totalPages: 0,
+      error: paged.error,
+    };
   }
   return {
     submissions: paged.rows,

@@ -1,5 +1,9 @@
 import * as neonRemaining from "./db/remaining";
-import { formatDurationLabel, formatHitsAtLabel, type TimeToFreezeProjection } from "./spaceThermalModel";
+import {
+  formatDurationLabel,
+  formatHitsAtLabel,
+  type TimeToFreezeProjection,
+} from "./spaceThermalModel";
 import { tempUnitLabel, toDisplayDelta, toDisplayTemp } from "./temperatureFormat";
 import { fmt, formatNumber } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
@@ -28,7 +32,10 @@ const MAX_BASELINE_AGE_MS = 24 * 60 * 60 * 1000;
 /** Moves smaller than this aren't worth a sentence. */
 const MIN_SHIFT_MS = 30 * 60 * 1000;
 
-export function snapshotFromProjection(projection: TimeToFreezeProjection, nowMs = Date.now()): FreezeEstimateSnapshot {
+export function snapshotFromProjection(
+  projection: TimeToFreezeProjection,
+  nowMs = Date.now(),
+): FreezeEstimateSnapshot {
   return {
     computedAt: new Date(nowMs).toISOString(),
     hitsAtIso: projection.hours != null && projection.hours > 0 ? projection.hitsAtIso : null,
@@ -61,7 +68,12 @@ export function explainEstimateChange(
   const unit = tempUnitLabel(useCelsius);
   const t = overviewCardsMessages(locale).estimateChange;
   const prevAt = Date.parse(previous.computedAt);
-  if (!Number.isFinite(prevAt) || nowMs - prevAt > MAX_BASELINE_AGE_MS || nowMs - prevAt < 5 * 60 * 1000) return null;
+  if (
+    !Number.isFinite(prevAt) ||
+    nowMs - prevAt > MAX_BASELINE_AGE_MS ||
+    nowMs - prevAt < 5 * 60 * 1000
+  )
+    return null;
   const now = new Date(nowMs);
   const since = formatHitsAtLabel(previous.computedAt, timeZone, now, locale);
   const label = (iso: string) => formatHitsAtLabel(iso, timeZone, now, locale);
@@ -84,8 +96,17 @@ export function explainEstimateChange(
   }
 
   const reasons: string[] = [];
-  if (previous.forecastLowF != null && next.forecastLowF != null && Math.abs(next.forecastLowF - previous.forecastLowF) >= 2) {
-    reasons.push(fmt(t.forecastLow, { from: f(previous.forecastLowF, locale, useCelsius), to: f(next.forecastLowF, locale, useCelsius) }));
+  if (
+    previous.forecastLowF != null &&
+    next.forecastLowF != null &&
+    Math.abs(next.forecastLowF - previous.forecastLowF) >= 2
+  ) {
+    reasons.push(
+      fmt(t.forecastLow, {
+        from: f(previous.forecastLowF, locale, useCelsius),
+        to: f(next.forecastLowF, locale, useCelsius),
+      }),
+    );
   }
   if (
     previous.rateFPerHour != null &&
@@ -106,12 +127,18 @@ export function explainEstimateChange(
         : t.notCooling;
     reasons.push(fmt(t.rate, { from: word(previous.rateFPerHour), to: word(next.rateFPerHour) }));
   }
-  if (previous.offsetF != null && next.offsetF != null && Math.abs(next.offsetF - previous.offsetF) >= 2) {
-    reasons.push(fmt(t.offset, {
+  if (
+    previous.offsetF != null &&
+    next.offsetF != null &&
+    Math.abs(next.offsetF - previous.offsetF) >= 2
+  ) {
+    reasons.push(
+      fmt(t.offset, {
         from: whole(toDisplayDelta(previous.offsetF, useCelsius), locale),
         to: whole(toDisplayDelta(next.offsetF, useCelsius), locale),
         unit,
-      }));
+      }),
+    );
   }
   if (previous.source !== next.source) {
     if (next.source === "forecast_model") reasons.push(t.nowForecast);

@@ -7,7 +7,9 @@ describe("NWS helpers", () => {
       hasFreezeRelatedNwsAlert({
         lat: 36,
         lon: -86,
-        alerts: [{ event: "Freeze Warning", headline: "Cold", severity: "Moderate", expires: null }],
+        alerts: [
+          { event: "Freeze Warning", headline: "Cold", severity: "Moderate", expires: null },
+        ],
       }),
     ).toBe(true);
   });

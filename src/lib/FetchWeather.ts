@@ -54,7 +54,9 @@ export function weatherMapExternalUrl(lat: number, lon: number): string {
 }
 
 function cleanEnv(value: unknown): string {
-  return String(value ?? "").replace(/\r/g, "").trim();
+  return String(value ?? "")
+    .replace(/\r/g, "")
+    .trim();
 }
 
 /** Server-only OpenWeather key. */
@@ -96,9 +98,7 @@ export function normalizeWeatherPayload(raw: OpenWeatherCurrent): WeatherSnapsho
         : null,
     cloudCover: Number(raw?.clouds?.all) || 0,
     description:
-      typeof raw?.weather?.[0]?.description === "string"
-        ? raw.weather[0].description
-        : "—",
+      typeof raw?.weather?.[0]?.description === "string" ? raw.weather[0].description : "—",
   };
 }
 
@@ -304,19 +304,20 @@ export function nightsAtRiskFromForecast(
     if (prev == null || temp < prev) byDay.set(key, temp);
   }
 
-  return [...byDay.entries()]
-    .slice(0, nights)
-    .map(([date, minTempF]) => ({
-      date,
-      dateLabel: new Date(`${date}T12:00:00Z`).toLocaleDateString(locale === "en" ? "en-US" : LOCALE_META[locale].intl, {
+  return [...byDay.entries()].slice(0, nights).map(([date, minTempF]) => ({
+    date,
+    dateLabel: new Date(`${date}T12:00:00Z`).toLocaleDateString(
+      locale === "en" ? "en-US" : LOCALE_META[locale].intl,
+      {
         weekday: "short",
         month: "short",
         day: "numeric",
         timeZone: "UTC",
-      }),
-      minTempF,
-      atRisk: minTempF <= freezeThresholdF,
-    }));
+      },
+    ),
+    minTempF,
+    atRisk: minTempF <= freezeThresholdF,
+  }));
 }
 
 export async function fetchNightsAtRisk(

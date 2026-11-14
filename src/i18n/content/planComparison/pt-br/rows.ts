@@ -3,7 +3,8 @@ import type { PlanComparisonOverlay } from "../index";
 const Y = "Sim";
 const all = { free: Y, member: Y, pro: Y, portfolio: Y };
 const paid = { pro: Y, portfolio: Y };
-const sensors = "Temperatura, umidade, CO₂, qualidade do ar, portas, vazamentos, energia, movimento";
+const sensors =
+  "Temperatura, umidade, CO₂, qualidade do ar, portas, vazamentos, energia, movimento";
 const forecastNws = "Limite + contagem regressiva até o congelamento + previsão + NWS (EUA)";
 const trial = "14 dias (+7 com indicação)";
 

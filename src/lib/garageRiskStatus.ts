@@ -1,8 +1,4 @@
-import {
-  alertsSettingsPath,
-  devicesOpsPath,
-  devicesSetupPath,
-} from "./dashboardDeepLinks";
+import { alertsSettingsPath, devicesOpsPath, devicesSetupPath } from "./dashboardDeepLinks";
 import { fmt, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import {
@@ -149,7 +145,11 @@ export function computeGarageRiskStatus(
     return {
       level: "risk",
       title: t.freezeNow.title,
-      detail: fmt(t.freezeNow.detail, { temp: tempText(input.coldestProbeTempF!), threshold, unit }),
+      detail: fmt(t.freezeNow.detail, {
+        temp: tempText(input.coldestProbeTempF!),
+        threshold,
+        unit,
+      }),
       actionLabel: t.actions.openAlerts,
       actionHref: "/dashboard/alerts",
     };

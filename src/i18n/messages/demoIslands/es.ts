@@ -4,7 +4,8 @@ const es: DemoIslandMessages = {
   temps: {
     loading: "Cargando temperaturas de las sondas…",
     title: "Taller de demostración simulado",
-    subtitle: "Temperaturas de sondas modeladas con el tiempo real de la zona. Crea una cuenta gratis (sin tarjeta) para conectar tus propios sensores.",
+    subtitle:
+      "Temperaturas de sondas modeladas con el tiempo real de la zona. Crea una cuenta gratis (sin tarjeta) para conectar tus propios sensores.",
     loadError: "No se pudieron cargar las temperaturas de las sondas",
     rateLimited: "Demasiadas solicitudes. Inténtalo de nuevo en un momento.",
     retry: "Reintentar ahora",
@@ -12,13 +13,18 @@ const es: DemoIslandMessages = {
     emptyCta: "Crear cuenta gratis y conectar sondas",
     disabled: "Desactivado",
     noProbes: "Este feed todavía no tiene sondas asignadas.",
-    noReading: "No hay lectura disponible para la clave \"{key}\"",
+    noReading: 'No hay lectura disponible para la clave "{key}"',
     updated: "Actualizado a las {time}. Próxima actualización en {seconds} s.",
     nextRefresh: "Próxima actualización en {seconds} s.",
     footerCta: "Cuenta gratis: conecta tus sondas",
     humidity: "humedad",
     feedNames: { example: "Taller de ejemplo (clima simulado)" },
-    probeLabels: { "0": "Pared norte", "1": "Zona de la puerta", "2": "Banco de trabajo", avg: "Promedio" },
+    probeLabels: {
+      "0": "Pared norte",
+      "1": "Zona de la puerta",
+      "2": "Banco de trabajo",
+      avg: "Promedio",
+    },
   },
   weather: {
     loading: "Cargando el tiempo exterior…",
@@ -43,7 +49,8 @@ const es: DemoIslandMessages = {
     mapAttribution: "· © OpenStreetMap · tiempo © OpenWeather",
   },
   history: {
-    unavailable: "El gráfico de 7 días no está disponible ahora mismo. Las lecturas en vivo de arriba siguen actualizándose.",
+    unavailable:
+      "El gráfico de 7 días no está disponible ahora mismo. Las lecturas en vivo de arriba siguen actualizándose.",
     loading: "Cargando los últimos 7 días…",
     outdoor: "Exterior",
     outdoorAt: "Exterior ({location})",
@@ -55,13 +62,16 @@ const es: DemoIslandMessages = {
     house: "Casa",
     comparisonOverlay: "Gris = superposición de comparación",
     notEnough: "Todavía no hay suficientes lecturas para un gráfico.",
-    emptySteps: "{addDevice} → comprueba que lleguen los datos → {openLive} para que se acumulen las lecturas.",
+    emptySteps:
+      "{addDevice} → comprueba que lleguen los datos → {openLive} para que se acumulen las lecturas.",
     emptyAddDevice: "Añade un dispositivo",
     emptyOpenLive: "abre Live",
     summaryLatest: "Última lectura: {temp} {unit}.",
     summaryRange: "Rango en este periodo: de {min} {unit} a {max} {unit}.",
-    summaryBelow: "Bajó hasta la línea de helada de {freeze} {unit} o por debajo en {below} de {total} lecturas.",
-    summaryAbove: "Se mantuvo por encima de la línea de helada de {freeze} {unit} durante todo el periodo.",
+    summaryBelow:
+      "Bajó hasta la línea de helada de {freeze} {unit} o por debajo en {below} de {total} lecturas.",
+    summaryAbove:
+      "Se mantuvo por encima de la línea de helada de {freeze} {unit} durante todo el periodo.",
     hoverAlert: "Alerta: {title}",
     guideFreeze: "Helada",
     guideTarget: "Objetivo",
@@ -102,20 +112,28 @@ const es: DemoIslandMessages = {
     dewPointF: "punto de rocío {unit}",
     dashed: " (discontinua)",
     humidityFrom: " · de {probe}",
-    humidityNoDew: " (sin punto de rocío: este sensor de humedad no tiene una temperatura asociada)",
+    humidityNoDew:
+      " (sin punto de rocío: este sensor de humedad no tiene una temperatura asociada)",
     humidityFromLabel: "Humedad de",
     humidityAuto: "Lectura más reciente",
     humidityAll: "Todas las sondas",
-    humidityAllLegend: "Humedad (línea fina) y punto de rocío (discontinua) en el color de cada sonda",
+    humidityAllLegend:
+      "Humedad (línea fina) y punto de rocío (discontinua) en el color de cada sonda",
     chartTips: "Consejos del gráfico",
-    tipsExpanded: "Vista ampliada: arrastra para seleccionar un rango, usa la rueda para hacer zoom y pulsa Esc o Cerrar para salir.",
-    tipsDefault: "Arrastra para seleccionar un rango (Mayús + arrastrar con zoom), usa la rueda para hacer zoom, Enlace para copiar esta ventana y PNG para guardarla.",
-    tipsAlerts: " Las marcas de colores señalan alertas: pasa el cursor cerca de una para ver los detalles.",
-    tipsTrace: "La línea se vuelve {cool} en la línea de helada o por debajo, y {warm} en la línea alta o por encima.",
-    tipsDew: " La línea discontinua del punto de rocío se calcula con la temperatura y la humedad: las superficies más frías que ella se humedecen.",
+    tipsExpanded:
+      "Vista ampliada: arrastra para seleccionar un rango, usa la rueda para hacer zoom y pulsa Esc o Cerrar para salir.",
+    tipsDefault:
+      "Arrastra para seleccionar un rango (Mayús + arrastrar con zoom), usa la rueda para hacer zoom, Enlace para copiar esta ventana y PNG para guardarla.",
+    tipsAlerts:
+      " Las marcas de colores señalan alertas: pasa el cursor cerca de una para ver los detalles.",
+    tipsTrace:
+      "La línea se vuelve {cool} en la línea de helada o por debajo, y {warm} en la línea alta o por encima.",
+    tipsDew:
+      " La línea discontinua del punto de rocío se calcula con la temperatura y la humedad: las superficies más frías que ella se humedecen.",
     tipsCool: "fría",
     tipsWarm: "cálida",
-    canvasAria: "Gráfico de líneas interactivo: {title}. Arrastra para seleccionar un rango, usa la rueda para hacer zoom o amplíalo para verlo más grande.",
+    canvasAria:
+      "Gráfico de líneas interactivo: {title}. Arrastra para seleccionar un rango, usa la rueda para hacer zoom o amplíalo para verlo más grande.",
     tooltipAlert: "Alerta",
     tooltipDew: "rocío",
     optionsSummary: "Opciones del gráfico: líneas guía",
@@ -133,9 +151,12 @@ const es: DemoIslandMessages = {
     summaryDoors: "Periodos con una puerta abierta sombreados en el gráfico: {list}.",
     summaryDoorItem: "{door}: {count}",
     doorLegendTitle: "Mostrar u ocultar cuándo estuvo abierta {door}",
-    tipsDoors: " Las franjas sombreadas muestran cuándo un sensor de puerta de tu hogar indicó que estaba abierta; si hay más de una puerta, cada una tiene su propia fila encima del gráfico.",
-    doorLanesMore: " Las filas muestran hasta {max} puertas; las demás siguen sombreadas y aparecen al pasar el cursor.",
-    doorsUnavailable: "No se pudo cargar el historial de puertas, así que las puertas abiertas no aparecen sombreadas.",
+    tipsDoors:
+      " Las franjas sombreadas muestran cuándo un sensor de puerta de tu hogar indicó que estaba abierta; si hay más de una puerta, cada una tiene su propia fila encima del gráfico.",
+    doorLanesMore:
+      " Las filas muestran hasta {max} puertas; las demás siguen sombreadas y aparecen al pasar el cursor.",
+    doorsUnavailable:
+      "No se pudo cargar el historial de puertas, así que las puertas abiertas no aparecen sombreadas.",
   },
 };
 

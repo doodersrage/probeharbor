@@ -13,7 +13,8 @@ const de: OverviewInsightsMessages = {
     actions: "Aktionen",
     calmSummary: " · keine offenen Alarme · Bereich als geprüft markieren",
     title: "Schnellaktionen",
-    subtitle: "Alarme bestätigen oder pausieren oder markieren, dass du einen Bereich geprüft hast.",
+    subtitle:
+      "Alarme bestätigen oder pausieren oder markieren, dass du einen Bereich geprüft hast.",
     snooze: "Pausieren",
     hoursShort: "{hours} Std.",
     spaceChecked: "Geprüfter Bereich",
@@ -55,7 +56,8 @@ const de: OverviewInsightsMessages = {
     snoozeCleared: "Pause beendet.",
     vacationSet: "Urlaubsmodus aktiviert.",
     vacationCleared: "Urlaubsmodus beendet.",
-    vacationError: "Urlaubsmodus konnte nicht aktiviert werden. Wähle ein Rückkehrdatum in der Zukunft.",
+    vacationError:
+      "Urlaubsmodus konnte nicht aktiviert werden. Wähle ein Rückkehrdatum in der Zukunft.",
   },
   extras: {
     summary: "Sensor-Extras",
@@ -69,7 +71,8 @@ const de: OverviewInsightsMessages = {
     title: "Luftqualität",
     subtitle: "Neueste Messwerte für CO₂, Feinstaub, VOC und Luftdruck.",
     pressureTitle: "Luftdruck",
-    pressureSubtitle: "Letzter Messwert und die gemessene Änderung der letzten 3 Stunden. Keine Vorhersage.",
+    pressureSubtitle:
+      "Letzter Messwert und die gemessene Änderung der letzten 3 Stunden. Keine Vorhersage.",
     trend: {
       steady: "stabil über 3 Std.",
       rising: "steigt um {delta} hPa in 3 Std.",
@@ -91,7 +94,8 @@ const de: OverviewInsightsMessages = {
   },
   battery: {
     title: "Akkuverlauf",
-    subtitle: "Rückgang laut den letzten Akku-Messwerten der Geräte. Die verbleibenden Tage setzen voraus, dass die Entladerate der letzten 7 Tage anhält.",
+    subtitle:
+      "Rückgang laut den letzten Akku-Messwerten der Geräte. Die verbleibenden Tage setzen voraus, dass die Entladerate der letzten 7 Tage anhält.",
     daysRemaining: {
       one: "~{count} Tag Restlaufzeit bei diesem Verbrauch",
       other: "~{count} Tage Restlaufzeit bei diesem Verbrauch",
@@ -104,7 +108,8 @@ const de: OverviewInsightsMessages = {
   },
   rssi: {
     title: "Signalstärke",
-    subtitle: "WLAN-Signal, das jedes Gerät zuletzt gemeldet hat, in dBm (näher an 0 ist stärker). Schwache Verbindungen verlieren zuerst Messwerte.",
+    subtitle:
+      "WLAN-Signal, das jedes Gerät zuletzt gemeldet hat, in dBm (näher an 0 ist stärker). Schwache Verbindungen verlieren zuerst Messwerte.",
     quality: {
       strong: "stark",
       good: "gut",
@@ -195,7 +200,8 @@ const de: OverviewInsightsMessages = {
         "Aktiviere die Smart Device Management API in Google Cloud und lade dann neu: {url}",
       sdmDisabled:
         "Aktiviere die Smart Device Management API im Google-Cloud-Projekt, zu dem dein Nest-OAuth-Client gehört.",
-      nestAuth: "Die Nest-Autorisierung ist evtl. abgelaufen: Trenne die Verbindung und verbinde dann erneut.",
+      nestAuth:
+        "Die Nest-Autorisierung ist evtl. abgelaufen: Trenne die Verbindung und verbinde dann erneut.",
       nestError: "Nest hat einen Fehler gemeldet, versuche es erneut oder verbinde neu.",
       noToken: "Verbinde dein Thermostat erneut, um den Zugriff wiederherzustellen.",
       ecobeeNetwork: "Ecobee ist nicht erreichbar, versuche es in einer Minute erneut.",

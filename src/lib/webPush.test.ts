@@ -30,7 +30,9 @@ describe("releasePushSubscriptionFromOtherUsers", () => {
 
     expect(run).toHaveBeenCalledTimes(1);
     const [text, params] = run.mock.calls[0]!;
-    expect(text).toMatch(/delete from public\.push_subscriptions where endpoint = \$1 and user_id <> \$2/);
+    expect(text).toMatch(
+      /delete from public\.push_subscriptions where endpoint = \$1 and user_id <> \$2/,
+    );
     expect(params).toEqual(["https://push.example.com/ep1", "user-a"]);
   });
 

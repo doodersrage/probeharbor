@@ -11,14 +11,17 @@ const message = (error: unknown) => (error instanceof Error ? error.message : St
 
 // ---- household activity -----------------------------------------------------
 
-export async function recordActivity(row: { household_id: string; user_id: string | null; action: string; detail: string | null }): Promise<void> {
+export async function recordActivity(row: {
+  household_id: string;
+  user_id: string | null;
+  action: string;
+  detail: string | null;
+}): Promise<void> {
   try {
-    await query("insert into public.household_activity (household_id, user_id, action, detail) values ($1, $2, $3, $4)", [
-      row.household_id,
-      row.user_id,
-      row.action,
-      row.detail,
-    ]);
+    await query(
+      "insert into public.household_activity (household_id, user_id, action, detail) values ($1, $2, $3, $4)",
+      [row.household_id, row.user_id, row.action, row.detail],
+    );
   } catch (error) {
     console.error("Failed to record household activity:", message(error));
   }
@@ -40,13 +43,19 @@ export async function listActivity<T>(householdId: string, limit: number): Promi
 
 /** Throws on failure (caller refuses to issue a token then). */
 export async function recordExchange(jti: string, expiresAtIso: string): Promise<void> {
-  await query("insert into public.mobile_oauth_exchanges (jti, expires_at) values ($1, $2)", [jti, expiresAtIso]);
+  await query("insert into public.mobile_oauth_exchanges (jti, expires_at) values ($1, $2)", [
+    jti,
+    expiresAtIso,
+  ]);
 }
 
 /** Use up an unexpired jti; true only the first time. Any error → false (reject). */
 export async function consumeExchange(jti: string): Promise<boolean> {
   try {
-    const rows = await query("delete from public.mobile_oauth_exchanges where jti = $1 and expires_at > now() returning jti", [jti]);
+    const rows = await query(
+      "delete from public.mobile_oauth_exchanges where jti = $1 and expires_at > now() returning jti",
+      [jti],
+    );
     return rows.length > 0;
   } catch {
     return false;
@@ -56,7 +65,9 @@ export async function consumeExchange(jti: string): Promise<boolean> {
 // ---- freeze-estimate snapshots ----------------------------------------------
 
 /** Throws on failure. */
-export async function getEstimateSnapshot(householdId: string): Promise<{ data: unknown; updated_at: string } | null> {
+export async function getEstimateSnapshot(
+  householdId: string,
+): Promise<{ data: unknown; updated_at: string } | null> {
   const [row] = await query<{ data: unknown; updated_at: string }>(
     "select data, updated_at from public.freeze_estimate_snapshots where household_id = $1",
     [householdId],
@@ -65,7 +76,11 @@ export async function getEstimateSnapshot(householdId: string): Promise<{ data: 
 }
 
 /** Throws on failure. */
-export async function saveEstimateSnapshot(householdId: string, data: unknown, updatedAtIso: string): Promise<void> {
+export async function saveEstimateSnapshot(
+  householdId: string,
+  data: unknown,
+  updatedAtIso: string,
+): Promise<void> {
   await query(
     `insert into public.freeze_estimate_snapshots (household_id, data, updated_at) values ($1, $2::jsonb, $3)
      on conflict (household_id) do update set data = excluded.data, updated_at = excluded.updated_at`,
@@ -77,7 +92,9 @@ export async function saveEstimateSnapshot(householdId: string, data: unknown, u
 
 export async function ownerUserIds(): Promise<string[]> {
   try {
-    const rows = await query<{ user_id: string }>("select distinct user_id from public.household_members where role = 'owner'");
+    const rows = await query<{ user_id: string }>(
+      "select distinct user_id from public.household_members where role = 'owner'",
+    );
     return rows.map((r) => r.user_id);
   } catch {
     return [];
@@ -86,7 +103,10 @@ export async function ownerUserIds(): Promise<string[]> {
 
 export async function stampPortfolioAlert(userId: string): Promise<void> {
   try {
-    await query("update public.alert_settings set last_portfolio_alert_at = now(), updated_at = now() where user_id = $1", [userId]);
+    await query(
+      "update public.alert_settings set last_portfolio_alert_at = now(), updated_at = now() where user_id = $1",
+      [userId],
+    );
   } catch (error) {
     console.error("Failed to stamp portfolio alert:", message(error));
   }
@@ -115,22 +135,33 @@ export async function userByTelegramSecret(secret: string): Promise<string | nul
   }
 }
 
-export async function insertContact(name: string, email: string, text: string): Promise<{ error: string | null }> {
+export async function insertContact(
+  name: string,
+  email: string,
+  text: string,
+): Promise<{ error: string | null }> {
   try {
-    await query("insert into public.contacts (name, email, message) values ($1, $2, $3)", [name, email, text]);
+    await query("insert into public.contacts (name, email, message) values ($1, $2, $3)", [
+      name,
+      email,
+      text,
+    ]);
     return { error: null };
   } catch (error) {
     return { error: message(error) };
   }
 }
 
-export async function setDigestOptIn(householdId: string, userId: string, optIn: boolean): Promise<{ error: string | null }> {
+export async function setDigestOptIn(
+  householdId: string,
+  userId: string,
+  optIn: boolean,
+): Promise<{ error: string | null }> {
   try {
-    await query("update public.household_members set digest_opt_in = $3 where household_id = $1 and user_id = $2", [
-      householdId,
-      userId,
-      optIn,
-    ]);
+    await query(
+      "update public.household_members set digest_opt_in = $3 where household_id = $1 and user_id = $2",
+      [householdId, userId, optIn],
+    );
     return { error: null };
   } catch (error) {
     return { error: message(error) };

@@ -1,4 +1,3 @@
-
 /** /about/esp32-ota-firmware body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 
 const en = {
@@ -15,7 +14,8 @@ const en = {
   independentNote:
     "OTA and ingest are independent: a failed cloud POST does not block OTA, and an OTA update does not change your ProbeHarbor device key.",
   payloadTitle: "Ingest payload with battery and RSSI",
-  payloadIntro: "Optional top-level fields keep Devices health and low-battery / weak-signal alerts accurate:",
+  payloadIntro:
+    "Optional top-level fields keep Devices health and low-battery / weak-signal alerts accurate:",
   payloadAfterHtml:
     'The DS18B20 samples already send <code>rssi</code>. Add <code>battery</code> or <code>battery_pct</code> when you have a voltage divider or fuel gauge. Enable health alerts under <a class="text-link" href="/dashboard/alerts">Dashboard → Alerts</a>.',
   wifiTitle: "Wi‑Fi without recompiling",

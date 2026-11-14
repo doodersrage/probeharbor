@@ -29,14 +29,12 @@ vi.mock("./entitlements", () => ({
 }));
 
 vi.mock("./alertEvents", () => ({
-  countUnacknowledgedAlerts: (...a: unknown[]) =>
-    mockCountUnacknowledgedAlerts(...a),
+  countUnacknowledgedAlerts: (...a: unknown[]) => mockCountUnacknowledgedAlerts(...a),
 }));
 
 vi.mock("./households", () => ({
   listUserHouseholds: (...a: unknown[]) => mockListUserHouseholds(...a),
-  getOrCreateHouseholdForUser: (...a: unknown[]) =>
-    mockGetOrCreateHouseholdForUser(...a),
+  getOrCreateHouseholdForUser: (...a: unknown[]) => mockGetOrCreateHouseholdForUser(...a),
 }));
 
 let mockLatestError: string | null = null;
@@ -78,9 +76,9 @@ beforeEach(() => {
   mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({
     householdId: "hh-1",
   });
-  mockFetchLatestSensorValues.mockReset().mockResolvedValue([
-    { sensor_id: "s1", recorded_at: new Date().toISOString() },
-  ]);
+  mockFetchLatestSensorValues
+    .mockReset()
+    .mockResolvedValue([{ sensor_id: "s1", recorded_at: new Date().toISOString() }]);
   mockLatestError = null;
   mockGetUserSubscription.mockReset().mockResolvedValue(null);
 });
@@ -123,9 +121,7 @@ describe("loadDashboardShell", () => {
       session: fakeSession(),
       user: fakeUser(),
     });
-    mockGetUserEntitlements.mockResolvedValue(
-      fakeEntitlements({ canUsePortfolio: true }),
-    );
+    mockGetUserEntitlements.mockResolvedValue(fakeEntitlements({ canUsePortfolio: true }));
     mockListUserHouseholds.mockResolvedValue({
       households: [{ household_id: "hh-1", name: "Home", role: "owner" }],
       error: null,
@@ -135,9 +131,7 @@ describe("loadDashboardShell", () => {
     const withEntitlement = await loadDashboardShell({} as AstroCookies);
     expect(withEntitlement?.showPortfolioInMonitor).toBe(true);
 
-    mockGetUserEntitlements.mockResolvedValue(
-      fakeEntitlements({ canUsePortfolio: false }),
-    );
+    mockGetUserEntitlements.mockResolvedValue(fakeEntitlements({ canUsePortfolio: false }));
     mockListUserHouseholds.mockResolvedValue({
       households: [
         { household_id: "hh-1", name: "Home", role: "owner" },

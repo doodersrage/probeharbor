@@ -19,11 +19,15 @@ vi.mock("../../../lib/prometheusMetrics", () => ({
 function makeContext(authHeader: string | null): APIContext {
   const headers = new Headers();
   if (authHeader !== null) headers.set("authorization", authHeader);
-  return { request: new Request("https://example.com/api/v1/metrics", { headers }) } as unknown as APIContext;
+  return {
+    request: new Request("https://example.com/api/v1/metrics", { headers }),
+  } as unknown as APIContext;
 }
 
 beforeEach(() => {
-  mockCheckApiPlan.mockReset().mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
+  mockCheckApiPlan
+    .mockReset()
+    .mockResolvedValue({ ok: true, entitlements: { canCreateShareLinks: true, maxDevices: 24 } });
   mockResolveApiKey.mockReset();
   mockBuildPrometheusText.mockReset();
 });
@@ -86,7 +90,11 @@ describe("GET /api/v1/metrics", () => {
 describe("GET /api/v1/metrics plan check", () => {
   it("returns 403 and no metrics after a downgrade", async () => {
     mockResolveApiKey.mockResolvedValue({ householdId: "house-1" });
-    mockCheckApiPlan.mockResolvedValue({ ok: false, status: 403, error: "API access needs a Pro plan" });
+    mockCheckApiPlan.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "API access needs a Pro plan",
+    });
     const { GET } = await import("./metrics");
 
     const response = await GET(makeContext("Bearer gtm_x"));

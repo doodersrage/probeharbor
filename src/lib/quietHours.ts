@@ -47,10 +47,7 @@ export function isWithinQuietWindow(
   return current >= start || current < end;
 }
 
-export function isInQuietHours(
-  settings: AlertSettings,
-  now = new Date(),
-): boolean {
+export function isInQuietHours(settings: AlertSettings, now = new Date()): boolean {
   if (!settings.quietHoursEnabled) return false;
   return isWithinQuietWindow(
     settings.quietHoursStart,
@@ -72,10 +69,7 @@ export function isCriticalNotifyKind(kind: NotifyKind | undefined): boolean {
 }
 
 /** Kinds that bypass quiet hours when bypass_freeze is enabled. */
-export function quietHoursBypassed(
-  settings: AlertSettings,
-  kind: NotifyKind | undefined,
-): boolean {
+export function quietHoursBypassed(settings: AlertSettings, kind: NotifyKind | undefined): boolean {
   if (!settings.quietHoursBypassFreeze) return false;
   return isCriticalNotifyKind(kind);
 }

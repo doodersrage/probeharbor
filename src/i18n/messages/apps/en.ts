@@ -5,7 +5,8 @@
 
 const en = {
   title: "Companion apps",
-  description: "Watch {brand} from Android, desktop, Bay Buddy, or the PWA. These clients sign into your account; they do not sense temperature.",
+  description:
+    "Watch {brand} from Android, desktop, Bay Buddy, or the PWA. These clients sign into your account; they do not sense temperature.",
   breadcrumbHome: "Home",
   breadcrumbApps: "Apps",
   kicker: "Apps",

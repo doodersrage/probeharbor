@@ -1,6 +1,10 @@
 import type { AlertConditionType, AlertRule } from "./alertRules";
 import type { ThresholdSensorScope } from "./thresholdSensorScope";
-import { displayDeltaInputValue, displayTempInputValue, parseDisplayTempInput } from "./temperatureFormat";
+import {
+  displayDeltaInputValue,
+  displayTempInputValue,
+  parseDisplayTempInput,
+} from "./temperatureFormat";
 
 /**
  * Alerts → per-sensor freeze overrides and custom rules, shown and typed in
@@ -20,7 +24,9 @@ export const RULE_CONDITION_TEMP_KIND: Partial<Record<AlertConditionType, "temp"
 };
 
 function toDisplayValue(value: number, kind: "temp" | "delta", useCelsius: boolean): number {
-  return kind === "delta" ? displayDeltaInputValue(value, useCelsius) : displayTempInputValue(value, useCelsius);
+  return kind === "delta"
+    ? displayDeltaInputValue(value, useCelsius)
+    : displayTempInputValue(value, useCelsius);
 }
 
 /** Stored (°F) rules → the values the editor shows (°C to a tenth for °C users). */
@@ -30,7 +36,8 @@ export function rulesToDisplayUnit(rules: AlertRule[], useCelsius: boolean): Ale
     ...rule,
     all: rule.all.map((condition) => {
       const kind = RULE_CONDITION_TEMP_KIND[condition.type];
-      if (!kind || typeof condition.value !== "number" || !Number.isFinite(condition.value)) return condition;
+      if (!kind || typeof condition.value !== "number" || !Number.isFinite(condition.value))
+        return condition;
       return { ...condition, value: toDisplayValue(condition.value, kind, true) };
     }),
   }));
@@ -53,17 +60,26 @@ export function rulesFromDisplayUnit(
     ...rule,
     all: rule.all.map((condition, index) => {
       const kind = RULE_CONDITION_TEMP_KIND[condition.type];
-      if (!kind || typeof condition.value !== "number" || !Number.isFinite(condition.value)) return condition;
+      if (!kind || typeof condition.value !== "number" || !Number.isFinite(condition.value))
+        return condition;
       const before = byId.get(rule.id)?.all[index];
       const fallbackF =
-        before && before.type === condition.type && typeof before.value === "number" ? before.value : Number.NaN;
-      return { ...condition, value: parseDisplayTempInput(String(condition.value), "C", fallbackF, kind) };
+        before && before.type === condition.type && typeof before.value === "number"
+          ? before.value
+          : Number.NaN;
+      return {
+        ...condition,
+        value: parseDisplayTempInput(String(condition.value), "C", fallbackF, kind),
+      };
     }),
   }));
 }
 
 /** Stored per-sensor overrides → display unit (only freeze lines are temperatures). */
-export function thresholdScopeToDisplayUnit(scope: ThresholdSensorScope, useCelsius: boolean): ThresholdSensorScope {
+export function thresholdScopeToDisplayUnit(
+  scope: ThresholdSensorScope,
+  useCelsius: boolean,
+): ThresholdSensorScope {
   if (!useCelsius) return scope;
   const overrides: ThresholdSensorScope["overrides"] = {};
   for (const [sensorId, override] of Object.entries(scope.overrides)) {

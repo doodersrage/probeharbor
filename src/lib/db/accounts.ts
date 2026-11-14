@@ -45,7 +45,10 @@ export async function releaseOwnedHouseholds(userId: string): Promise<string[]> 
 /** The user's shared chart image keys (before the user row and its tokens go). */
 export async function chartShareKeys(userId: string): Promise<string[]> {
   try {
-    const rows = await query<{ r2_key: string }>("select r2_key from public.chart_share_tokens where user_id = $1", [userId]);
+    const rows = await query<{ r2_key: string }>(
+      "select r2_key from public.chart_share_tokens where user_id = $1",
+      [userId],
+    );
     return rows.map((r) => r.r2_key);
   } catch {
     return [];

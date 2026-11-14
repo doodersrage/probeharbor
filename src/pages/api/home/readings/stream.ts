@@ -25,9 +25,7 @@ export const GET: APIRoute = async ({ cookies, request, locals }) => {
     async start(controller) {
       const send = (payload: unknown) => {
         if (closed) return;
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify(payload)}\n\n`),
-        );
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`));
       };
 
       send({ type: "connected", at: new Date().toISOString() });
@@ -35,18 +33,11 @@ export const GET: APIRoute = async ({ cookies, request, locals }) => {
       while (!closed) {
         try {
           const preferences = await getUserPreferences(user);
-          const deviceConfig = await getUserDevicesAsTempConfig(
-            user.id,
-            user.email,
-          );
+          const deviceConfig = await getUserDevicesAsTempConfig(user.id, user.email);
           const visibleProbes = preferences.tempProbes.filter((p) => p.visible);
           const results = await fetchTemps({
-            feeds:
-              preferences.tempFeeds.length > 0
-                ? preferences.tempFeeds
-                : deviceConfig.feeds,
-            probes:
-              visibleProbes.length > 0 ? visibleProbes : deviceConfig.probes,
+            feeds: preferences.tempFeeds.length > 0 ? preferences.tempFeeds : deviceConfig.feeds,
+            probes: visibleProbes.length > 0 ? visibleProbes : deviceConfig.probes,
             devices: deviceConfig.devices,
             householdId: deviceConfig.householdId,
             saveToDatabase: false,

@@ -43,7 +43,8 @@ export function overviewFocus(input: OverviewFocusInput) {
   // Any device or feed, demo included: with freeze email + one alert it ends
   // first-run focus, so the demo feed can still be explored on Overview.
   const hasDevices =
-    input.devices.some((d) => d.source === "push" || d.source === "pull_url") || input.latestCount > 0;
+    input.devices.some((d) => d.source === "push" || d.source === "pull_url") ||
+    input.latestCount > 0;
   const lastAlertAt = latestAlertSentAt(input.alertSettings);
   const hasSentAnyAlert = Boolean(lastAlertAt) || input.hasDelivery;
   /** Live probes or a configured device, alerts on, and a delivered test/real alert. */

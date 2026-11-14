@@ -38,7 +38,8 @@ export default {
   },
   webhooks: {
     title: "Webhooks für Alarme & Messwerte",
-    summary: "Pro-Webhooks funktionieren in beide Richtungen: Einstellung unter Dashboard → Alerts / Share.",
+    summary:
+      "Pro-Webhooks funktionieren in beide Richtungen: Einstellung unter Dashboard → Alerts / Share.",
     cta: "Anleitung in der App",
     bullets: [
       "Ausgehend: Alarm-POSTs (optional mit HMAC) und Messwert-Webhooks mit hohem Volumen beim Ingest",

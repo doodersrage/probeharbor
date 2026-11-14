@@ -50,7 +50,8 @@ const es: PublicShareMessages = {
       updatesEvery: "Se actualiza cada 90 segundos",
       trendTitle: "Tendencia de temperatura de 7 días",
       trendAria: "Gráfico del historial de temperatura",
-      emptyTitle: "Aún no hay lecturas. Puede que los sensores de este enlace no hayan enviado datos.",
+      emptyTitle:
+        "Aún no hay lecturas. Puede que los sensores de este enlace no hayan enviado datos.",
       emptyNote: "Esta página sigue comprobando automáticamente.",
       loadError: "No se pudo cargar este enlace compartido.",
       fetchError: "No se pudieron cargar las lecturas compartidas.",
@@ -110,7 +111,8 @@ const es: PublicShareMessages = {
   pipeFreeze: {
     heading: "Pronóstico de congelación de tuberías · {place}",
     thisArea: "Esta zona",
-    source: "Mínimas exteriores del National Weather Service (EE. UU.), evaluadas para tuberías en espacios sin calefacción.",
+    source:
+      "Mínimas exteriores del National Weather Service (EE. UU.), evaluadas para tuberías en espacios sin calefacción.",
     hours: "{hours} h a {temp} o menos",
     needCoords: "Añade ?lat= y ?lon= de una ubicación en EE. UU.",
     usOnly: "El pronóstico solo cubre ubicaciones en EE. UU.",

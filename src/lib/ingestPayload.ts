@@ -28,10 +28,7 @@ const FLAT_INGEST_SKIP = new Set([
   "readings",
 ]);
 
-function appendFlatIngestKeys(
-  body: Record<string, unknown>,
-  typed: TypedSensorValue[],
-): void {
+function appendFlatIngestKeys(body: Record<string, unknown>, typed: TypedSensorValue[]): void {
   if (body.temp || Array.isArray(body.sensors)) return;
 
   for (const [key, value] of Object.entries(body)) {

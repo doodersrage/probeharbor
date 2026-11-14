@@ -29,7 +29,9 @@ export async function insertHouseholdWithOwner(
       [name, userId],
     );
     const id = rows[0]?.id;
-    return id ? { householdId: id, error: null } : { householdId: "", error: "Failed to create household" };
+    return id
+      ? { householdId: id, error: null }
+      : { householdId: "", error: "Failed to create household" };
   } catch (error) {
     return { householdId: "", error: message(error) };
   }
@@ -87,7 +89,11 @@ export async function listUserHouseholds(
       [userId],
     );
     return {
-      households: rows.map((r) => ({ household_id: r.household_id, role: r.role, name: r.name ?? "Household" })),
+      households: rows.map((r) => ({
+        household_id: r.household_id,
+        role: r.role,
+        name: r.name ?? "Household",
+      })),
       error: null,
     };
   } catch (error) {
@@ -123,7 +129,10 @@ export async function getPreferredHouseholdId(userId: string): Promise<string | 
   return (owner ?? members[0]!).household_id;
 }
 
-export async function setActiveHousehold(userId: string, householdId: string): Promise<{ error: string | null }> {
+export async function setActiveHousehold(
+  userId: string,
+  householdId: string,
+): Promise<{ error: string | null }> {
   try {
     await mergeUserMetadata(userId, { active_household_id: householdId });
     return { error: null };
@@ -147,7 +156,10 @@ export async function listHouseholdMembers(
   }
 }
 
-export async function getUserHouseholdRole(userId: string, householdId: string): Promise<HouseholdRole | null> {
+export async function getUserHouseholdRole(
+  userId: string,
+  householdId: string,
+): Promise<HouseholdRole | null> {
   try {
     const rows = await query<{ role: HouseholdRole }>(
       "select role from public.household_members where user_id = $1 and household_id = $2",
@@ -240,7 +252,10 @@ export async function updateHouseholdMemberRole(
   }
 }
 
-export async function removeHouseholdMember(householdId: string, userId: string): Promise<{ error: string | null }> {
+export async function removeHouseholdMember(
+  householdId: string,
+  userId: string,
+): Promise<{ error: string | null }> {
   try {
     const role = await getUserHouseholdRole(userId, householdId);
     if (role === "owner") return { error: "Cannot remove the household owner" };
@@ -255,7 +270,10 @@ export async function removeHouseholdMember(householdId: string, userId: string)
   }
 }
 
-export async function updateHouseholdName(householdId: string, name: string): Promise<{ error: string | null }> {
+export async function updateHouseholdName(
+  householdId: string,
+  name: string,
+): Promise<{ error: string | null }> {
   try {
     await query("update public.households set name = $2 where id = $1", [householdId, name]);
     return { error: null };
@@ -275,7 +293,9 @@ export async function listAllHouseholdOwnerUserIds(): Promise<string[]> {
   }
 }
 
-export async function listHouseholdIdsForCron(): Promise<Array<{ householdId: string; ownerUserId: string }>> {
+export async function listHouseholdIdsForCron(): Promise<
+  Array<{ householdId: string; ownerUserId: string }>
+> {
   try {
     // One row per household: its earliest owner.
     const rows = await query<{ household_id: string; user_id: string }>(

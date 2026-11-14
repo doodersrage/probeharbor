@@ -3,7 +3,10 @@ import { findGaps, findSharedGaps, gapThresholdMs, MIN_GAP_MS } from "./chartGap
 
 const min = 60 * 1000;
 const every = (startMin: number, endMin: number, stepMin: number) =>
-  Array.from({ length: Math.floor((endMin - startMin) / stepMin) + 1 }, (_, i) => (startMin + i * stepMin) * min);
+  Array.from(
+    { length: Math.floor((endMin - startMin) / stepMin) + 1 },
+    (_, i) => (startMin + i * stepMin) * min,
+  );
 
 describe("chart gaps", () => {
   it("scales the threshold to the reporting cadence, with a floor", () => {

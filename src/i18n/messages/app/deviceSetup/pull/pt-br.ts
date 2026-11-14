@@ -4,10 +4,8 @@ const ptBr: DeviceSetupPullMessages = {
   title: "Feeds JSON consultados",
   subtitle:
     "JSON via HTTPS que buscamos periodicamente. As chaves das sondas são importadas ao salvar: renomeie abaixo se precisar.",
-  exampleSummary:
-    "Ainda não tem um feed próprio? Experimente o feed de exemplo",
-  viewOnly:
-    "Acesso somente leitura: as configurações de feeds e sondas estão ocultas.",
+  exampleSummary: "Ainda não tem um feed próprio? Experimente o feed de exemplo",
+  viewOnly: "Acesso somente leitura: as configurações de feeds e sondas estão ocultas.",
   feeds: {
     heading: "URLs dos feeds",
     introHtml:
@@ -21,10 +19,8 @@ const ptBr: DeviceSetupPullMessages = {
     namePlaceholder: "Oficina",
     url: "URL HTTPS",
     jsonRoot: "Chave raiz JSON",
-    jsonRootTitle:
-      "Letra ou sublinhado, seguido de letras, números ou sublinhados",
-    jsonRootHintHtml:
-      "Objeto que contém as chaves das sondas (geralmente <code>temp</code>).",
+    jsonRootTitle: "Letra ou sublinhado, seguido de letras, números ou sublinhados",
+    jsonRootHintHtml: "Objeto que contém as chaves das sondas (geralmente <code>temp</code>).",
     enabled: "Ativado",
     delete: "Excluir",
     deleteConfirm: "Excluir este feed?",
@@ -45,8 +41,7 @@ const ptBr: DeviceSetupPullMessages = {
     test: "Testar URL do feed",
   },
   probeMapper: {
-    importedAuto:
-      "Chaves das sondas importadas do seu feed: renomeie abaixo e salve.",
+    importedAuto: "Chaves das sondas importadas do seu feed: renomeie abaixo e salve.",
     enterUrl: "Informe primeiro a URL de um feed.",
     noProbes: "Nenhuma sonda encontrada no feed.",
     imported: {
@@ -55,12 +50,10 @@ const ptBr: DeviceSetupPullMessages = {
     },
     unableRead: "Não foi possível ler o feed.",
     appliedSuggested: "Nomes sugeridos aplicados: edite abaixo e salve.",
-    hiddenAvg:
-      'Sondas "avg" ocultas no Início: salve a configuração para manter.',
+    hiddenAvg: 'Sondas "avg" ocultas no Início: salve a configuração para manter.',
     saveFailed: "Falha ao salvar a configuração de consulta.",
     unableSave: "Não foi possível salvar a configuração de consulta.",
-    saveFeedFirst:
-      "Salve primeiro a URL de um feed e depois detecte aqui as chaves das sondas.",
+    saveFeedFirst: "Salve primeiro a URL de um feed e depois detecte aqui as chaves das sondas.",
     heading: "Nomes das sondas",
     intro:
       "Detecte as sondas no JSON do seu feed e renomeie para o Início. As chaves continuam ligadas ao feed; você só edita os nomes exibidos.",

@@ -40,9 +40,15 @@ export async function sendPushChannelToUser(
       ? "push_no_subscription"
       : reasons.includes("push_no_subscription") && reasons.includes("fcm_no_token")
         ? "push_no_subscription"
-        : reasons.find((r) => r && !r.endsWith("_not_configured") && !r.endsWith("_no_token") && r !== "push_no_subscription") ??
+        : (reasons.find(
+            (r) =>
+              r &&
+              !r.endsWith("_not_configured") &&
+              !r.endsWith("_no_token") &&
+              r !== "push_no_subscription",
+          ) ??
           reasons[0] ??
-          "push_no_subscription";
+          "push_no_subscription");
 
   return { delivered: 0, failed, skippedReason, web, fcm };
 }

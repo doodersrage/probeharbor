@@ -2,7 +2,8 @@ import type { PlansMessages } from "./en";
 
 const de: PlansMessages = {
   title: "Tarife",
-  subtitle: "Vergleiche die Tarife und wechsle, wenn du längeren Verlauf, SMS oder mehr Objekte brauchst.",
+  subtitle:
+    "Vergleiche die Tarife und wechsle, wenn du längeren Verlauf, SMS oder mehr Objekte brauchst.",
   comparisonTitle: "Funktionsvergleich",
   comparisonHint: "Deine Spalte ist hervorgehoben.",
   card: {

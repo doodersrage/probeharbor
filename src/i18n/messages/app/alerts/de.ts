@@ -3,7 +3,8 @@ import type { AlertsMessages } from "./en";
 const de: AlertsMessages = {
   page: {
     title: "Alarme",
-    subtitle: "Was ausgelöst hat und wer benachrichtigt wurde. In den Einstellungen legst du fest, wann und wie alarmiert wird.",
+    subtitle:
+      "Was ausgelöst hat und wer benachrichtigt wurde. In den Einstellungen legst du fest, wann und wie alarmiert wird.",
     tabsLabel: "Alarm-Bereiche",
     tabActivity: "Aktivität",
     tabActivityCount: "Aktivität ({count})",
@@ -19,15 +20,18 @@ const de: AlertsMessages = {
       "Eine deiner Webhook-URLs ist keine gültige https://-Adresse oder zeigt auf ein privates Netzwerk. Korrigiere sie und speichere erneut.",
     weakTelegramSecret:
       "Das Telegram-Webhook-Secret muss mindestens 16 Zeichen lang sein – es ist der einzige Schutz für diesen Endpunkt. Verwende einen längeren Zufallswert und speichere erneut.",
-    restoreFailed: "Diese Einstellungen konnten nicht wiederhergestellt werden. Es wurde nichts geändert.",
+    restoreFailed:
+      "Diese Einstellungen konnten nicht wiederhergestellt werden. Es wurde nichts geändert.",
     saveFailed: "Alarmeinstellungen konnten nicht gespeichert werden.",
     testSentSkipped: "Test gesendet über {sent}. Unvollständig und übersprungen: {skipped}.",
     testSentVia: "Testalarm gesendet über {channels}.",
     yourEnabledChannels: "deine aktivierten Kanäle",
     testIncomplete:
       "Kein Kanal konnte senden: Aktiviere einen Kanal, trage sein Ziel ein und versuche es erneut.",
-    testNoChannels: "Keine Alarmkanäle aktiviert. Schalte mindestens einen Kanal ein, speichere und versuche es erneut.",
-    testFailed: "Testalarm konnte nicht gesendet werden. Prüfe die Kanaleinstellungen und versuche es erneut.",
+    testNoChannels:
+      "Keine Alarmkanäle aktiviert. Schalte mindestens einen Kanal ein, speichere und versuche es erneut.",
+    testFailed:
+      "Testalarm konnte nicht gesendet werden. Prüfe die Kanaleinstellungen und versuche es erneut.",
     ackOk: "Alarm als erledigt markiert.",
     ackError: "Alarm konnte nicht bestätigt werden.",
   },
@@ -44,13 +48,17 @@ const de: AlertsMessages = {
     stillSend: "Frost-, Leck-, Strom- und Offline-Alarme werden weiterhin gesendet.",
     resume: "Alarme fortsetzen",
     endVacation: "Urlaub beenden",
-    householdSnoozedUntil: "Eine Integration hat die Routinealarme dieses Haushalts bis {time} pausiert, für alle Mitglieder.",
-    householdVacationUntil: "Eine Integration hat diesen Haushalt bis {time} in den Urlaubsmodus versetzt: Routinealarme werden für alle Mitglieder zurückgehalten.",
-    householdClearHint: "Zum vorzeitigen Beenden clear_snooze oder clear_vacation aus der Integration senden.",
+    householdSnoozedUntil:
+      "Eine Integration hat die Routinealarme dieses Haushalts bis {time} pausiert, für alle Mitglieder.",
+    householdVacationUntil:
+      "Eine Integration hat diesen Haushalt bis {time} in den Urlaubsmodus versetzt: Routinealarme werden für alle Mitglieder zurückgehalten.",
+    householdClearHint:
+      "Zum vorzeitigen Beenden clear_snooze oder clear_vacation aus der Integration senden.",
     /** Resume buttons for the household hold (owners and editors). */
     householdResume: "Alarme für alle fortsetzen",
     householdEndVacation: "Urlaub für alle beenden",
-    householdResumeHint: "Das Fortsetzen hebt die Pause dieses Haushalts für alle Mitglieder auf; die Integration kann sie erneut setzen.",
+    householdResumeHint:
+      "Das Fortsetzen hebt die Pause dieses Haushalts für alle Mitglieder auf; die Integration kann sie erneut setzen.",
   },
   activity: {
     heading: "Letzte Alarmaktivität",
@@ -132,7 +140,8 @@ const de: AlertsMessages = {
   },
   ack: {
     imOnIt: "Ich kümmere mich",
-    imOnItTitle: "Stoppt wiederholte Alarme, bis der Bereich wieder über deinem Schwellenwert liegt",
+    imOnItTitle:
+      "Stoppt wiederholte Alarme, bis der Bereich wieder über deinem Schwellenwert liegt",
     more: "Mehr",
     snooze1h: "Erledigt & 1 Std. pausieren",
     snooze4h: "Erledigt & 4 Std. pausieren",
@@ -211,7 +220,8 @@ const de: AlertsMessages = {
   },
   referral: {
     heading: "Verschenke einen Winter Überwachung",
-    introHtml: "Teile deinen Link: Neue Anmeldungen bekommen <strong>7 zusätzliche Tage</strong> Pro-Testphase.",
+    introHtml:
+      "Teile deinen Link: Neue Anmeldungen bekommen <strong>7 zusätzliche Tage</strong> Pro-Testphase.",
     bonusDays: {
       one: "Du hast {count} Bonus-Testtag durch erfolgreiche Empfehlungen.",
       other: "Du hast {count} Bonus-Testtage durch erfolgreiche Empfehlungen.",
@@ -240,8 +250,10 @@ const de: AlertsMessages = {
     fixChannels: "Kanäle prüfen",
     fixPause: "Pause-Einstellungen",
     heldTitle: "Absichtlich zurückgehalten, daher wurde niemand benachrichtigt.",
-    failedTitle: "Das Senden ist fehlgeschlagen, oder dem Kanal fehlt Adresse, Nummer oder Webhook.",
-    notSetUpTitle: "Für diesen Alarm war kein Kanal aktiv, oder Routing-Regeln haben keinen übrig gelassen.",
+    failedTitle:
+      "Das Senden ist fehlgeschlagen, oder dem Kanal fehlt Adresse, Nummer oder Webhook.",
+    notSetUpTitle:
+      "Für diesen Alarm war kein Kanal aktiv, oder Routing-Regeln haben keinen übrig gelassen.",
   },
 };
 

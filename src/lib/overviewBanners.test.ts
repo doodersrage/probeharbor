@@ -48,9 +48,15 @@ describe("overviewBanners", () => {
   });
 
   it("has no failing-channel row when nothing failed", () => {
-    const partitioned = partitionOverviewBanners(buildOverviewBannerQueue({ ...base, channelFailing: false }));
+    const partitioned = partitionOverviewBanners(
+      buildOverviewBannerQueue({ ...base, channelFailing: false }),
+    );
     expect(partitioned.primaryBannerIds.has("channelFailing")).toBe(false);
-    expect(partitionOverviewBanners(buildOverviewBannerQueue(base)).primaryBannerIds.has("channelFailing")).toBe(false);
+    expect(
+      partitionOverviewBanners(buildOverviewBannerQueue(base)).primaryBannerIds.has(
+        "channelFailing",
+      ),
+    ).toBe(false);
   });
 
   it("does not count cold-snap as an Attention strip item", () => {

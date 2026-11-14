@@ -15,7 +15,13 @@ const message = (error: unknown) => (error instanceof Error ? error.message : St
 
 export async function updateFreezeMapSettings(
   householdId: string,
-  s: { optIn: boolean; cityId: string | null; lat: number | null; lon: number | null; label: string | null },
+  s: {
+    optIn: boolean;
+    cityId: string | null;
+    lat: number | null;
+    lon: number | null;
+    label: string | null;
+  },
 ): Promise<{ error: string | null }> {
   try {
     await query(
@@ -56,7 +62,9 @@ export async function getFreezeMapSettings(householdId: string): Promise<{
 
 export async function countOptIns(): Promise<number> {
   try {
-    const [row] = await query<{ n: number }>("select count(*) as n from public.households where freeze_map_opt_in");
+    const [row] = await query<{ n: number }>(
+      "select count(*) as n from public.households where freeze_map_opt_in",
+    );
     return row?.n ?? 0;
   } catch {
     return 0;
@@ -65,7 +73,13 @@ export async function countOptIns(): Promise<number> {
 
 /** Throws on failure. */
 export function optedInHouseholds(): Promise<
-  Array<{ id: string; freeze_map_city_id: string | null; freeze_map_lat: number | null; freeze_map_lon: number | null; freeze_map_label: string | null }>
+  Array<{
+    id: string;
+    freeze_map_city_id: string | null;
+    freeze_map_lat: number | null;
+    freeze_map_lon: number | null;
+    freeze_map_label: string | null;
+  }>
 > {
   return query(
     `select id, freeze_map_city_id, freeze_map_lat, freeze_map_lon, freeze_map_label
@@ -86,9 +100,14 @@ export async function insertSnapshots(rows: Array<Record<string, unknown>>): Pro
   );
 }
 
-export async function pruneSnapshots(cutoffIso: string): Promise<{ deleted: number; error: string | null }> {
+export async function pruneSnapshots(
+  cutoffIso: string,
+): Promise<{ deleted: number; error: string | null }> {
   try {
-    const rows = await query("delete from public.freeze_map_snapshots where captured_at < $1 returning id", [cutoffIso]);
+    const rows = await query(
+      "delete from public.freeze_map_snapshots where captured_at < $1 returning id",
+      [cutoffIso],
+    );
     return { deleted: rows.length, error: null };
   } catch (error) {
     return { deleted: 0, error: message(error) };
@@ -116,7 +135,10 @@ export async function getIndoorReference(householdId: string): Promise<string | 
 }
 
 /** The sensor's kind if it belongs to this household, else null. Throws on failure. */
-export async function householdSensorKind(householdId: string, sensorId: string): Promise<string | null> {
+export async function householdSensorKind(
+  householdId: string,
+  sensorId: string,
+): Promise<string | null> {
   const [row] = await query<{ kind: string }>(
     `select s.kind from public.device_sensors s join public.devices d on d.id = s.device_id
      where s.id = $1 and d.household_id = $2`,
@@ -130,7 +152,10 @@ export async function householdSensorKind(householdId: string, sensorId: string)
  * sensor of one of the household's devices is stored; otherwise nothing
  * changes and an error is returned.
  */
-export async function setIndoorReference(householdId: string, sensorId: string | null): Promise<{ error: string | null }> {
+export async function setIndoorReference(
+  householdId: string,
+  sensorId: string | null,
+): Promise<{ error: string | null }> {
   try {
     const rows = await query(
       `update public.households set indoor_reference_sensor_id = $2::uuid
@@ -149,16 +174,25 @@ export async function setIndoorReference(householdId: string, sensorId: string |
 
 // ---- cross-property snapshots -------------------------------------------------
 
-export async function devicesForHouseholds(
-  householdIds: string[],
-): Promise<Array<{ id: string; household_id: string; enabled: boolean; last_seen_at: string | null; meta: unknown }>> {
+export async function devicesForHouseholds(householdIds: string[]): Promise<
+  Array<{
+    id: string;
+    household_id: string;
+    enabled: boolean;
+    last_seen_at: string | null;
+    meta: unknown;
+  }>
+> {
   return query(
     "select id, household_id, enabled, last_seen_at, meta from public.devices where household_id = any($1::uuid[])",
     [householdIds],
   );
 }
 
-export async function sensorsOfKinds(deviceIds: string[], kinds: string[]): Promise<Array<{ id: string; device_id: string; kind: string }>> {
+export async function sensorsOfKinds(
+  deviceIds: string[],
+  kinds: string[],
+): Promise<Array<{ id: string; device_id: string; kind: string }>> {
   return query(
     "select id, device_id, kind from public.device_sensors where device_id = any($1::uuid[]) and kind = any($2::text[])",
     [deviceIds, kinds],
@@ -172,7 +206,14 @@ export function recentReadings(
   sinceIso: string,
   limit: number,
   onlyTrue: boolean,
-): Promise<Array<{ household_id: string; value_num: number | null; value_bool: boolean | null; recorded_at: string }>> {
+): Promise<
+  Array<{
+    household_id: string;
+    value_num: number | null;
+    value_bool: boolean | null;
+    recorded_at: string;
+  }>
+> {
   return query(
     `select household_id, value_num, value_bool, recorded_at from public.sensor_readings
      where household_id = any($1::uuid[]) and sensor_id = any($2::uuid[]) and recorded_at >= $3
@@ -185,7 +226,10 @@ export function recentReadings(
 // ---- house reference line -----------------------------------------------------
 
 /** Label and kind of a sensor in this household. Throws on failure. */
-export async function householdSensor(householdId: string, sensorId: string): Promise<{ label: string; kind: string } | null> {
+export async function householdSensor(
+  householdId: string,
+  sensorId: string,
+): Promise<{ label: string; kind: string } | null> {
   const [row] = await query<{ label: string; kind: string }>(
     `select s.label, s.kind from public.device_sensors s join public.devices d on d.id = s.device_id
      where s.id = $1 and d.household_id = $2`,
@@ -209,11 +253,19 @@ export function sensorBucketAverages(
 }
 
 /** The newest freeze-map snapshot for one city key, or null. */
-export async function latestSnapshotForCity(
-  cityId: string,
-): Promise<{ city_label: string; avg_temp_f: number | null; min_temp_f: number | null; sample_count: number } | null> {
+export async function latestSnapshotForCity(cityId: string): Promise<{
+  city_label: string;
+  avg_temp_f: number | null;
+  min_temp_f: number | null;
+  sample_count: number;
+} | null> {
   try {
-    const [row] = await query<{ city_label: string; avg_temp_f: number | null; min_temp_f: number | null; sample_count: number }>(
+    const [row] = await query<{
+      city_label: string;
+      avg_temp_f: number | null;
+      min_temp_f: number | null;
+      sample_count: number;
+    }>(
       `select city_label, avg_temp_f, min_temp_f, sample_count from public.freeze_map_snapshots
        where city_id = $1 order by captured_at desc, id desc limit 1`,
       [cityId],

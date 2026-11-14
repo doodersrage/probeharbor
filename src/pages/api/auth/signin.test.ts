@@ -7,7 +7,8 @@ vi.mock("../../../lib/signInErrors", () => ({
 }));
 
 vi.mock("../../../lib/mfa", () => ({
-  buildMfaChallengeUrl: (next: string | null) => `/signin/mfa${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+  buildMfaChallengeUrl: (next: string | null) =>
+    `/signin/mfa${next ? `?next=${encodeURIComponent(next)}` : ""}`,
 }));
 
 const mockSanitizeNextPath = vi.fn();
@@ -64,7 +65,9 @@ function makeContext(form: Record<string, string>, locale?: string): APIContext 
   const formData = new FormData();
   for (const [k, v] of Object.entries(form)) formData.set(k, v);
   const request = { formData: async () => formData } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return {
     request,
     cookies: makeCookies(),
@@ -82,15 +85,22 @@ function signedIn(body: Record<string, unknown>): Response {
 }
 
 beforeEach(() => {
-  mockBuildSignInRedirectUrl.mockReset().mockImplementation((code: string) => `/signin?error=${code}`);
-  mockSanitizeNextPath.mockReset().mockImplementation((v: string | null | undefined) => v || null);
-  mockStartBetterAuthOAuth
+  mockBuildSignInRedirectUrl
     .mockReset()
-    .mockResolvedValue(new Response(null, { status: 302, headers: { Location: "https://provider.example.com/authorize" } }));
+    .mockImplementation((code: string) => `/signin?error=${code}`);
+  mockSanitizeNextPath.mockReset().mockImplementation((v: string | null | undefined) => v || null);
+  mockStartBetterAuthOAuth.mockReset().mockResolvedValue(
+    new Response(null, {
+      status: 302,
+      headers: { Location: "https://provider.example.com/authorize" },
+    }),
+  );
   mockSignInEmail.mockReset().mockImplementation(async () => signedIn({ user: { id: "user-1" } }));
   mockWithBetterAuth
     .mockReset()
-    .mockImplementation((_req: unknown, fn: (auth: unknown) => unknown) => fn({ api: { signInEmail: mockSignInEmail } }));
+    .mockImplementation((_req: unknown, fn: (auth: unknown) => unknown) =>
+      fn({ api: { signInEmail: mockSignInEmail } }),
+    );
   mockGetUserMetadata.mockReset().mockResolvedValue({});
   mockMergeUserMetadata.mockReset().mockResolvedValue(undefined);
   mockGetTurnstileToken.mockReset().mockReturnValue("token");
@@ -118,8 +128,16 @@ describe("POST /api/auth/signin — OAuth", () => {
 
     await POST(context);
 
-    expect(context.cookies.set).toHaveBeenCalledWith("oauth_next", "/dashboard/alerts", expect.objectContaining({ httpOnly: true, maxAge: 600 }));
-    expect(context.cookies.set).toHaveBeenCalledWith("oauth_ref", "ref1", expect.objectContaining({ httpOnly: true, maxAge: 600 }));
+    expect(context.cookies.set).toHaveBeenCalledWith(
+      "oauth_next",
+      "/dashboard/alerts",
+      expect.objectContaining({ httpOnly: true, maxAge: 600 }),
+    );
+    expect(context.cookies.set).toHaveBeenCalledWith(
+      "oauth_ref",
+      "ref1",
+      expect.objectContaining({ httpOnly: true, maxAge: 600 }),
+    );
   });
 
   it("clears stale next and ref cookies when none are given", async () => {
@@ -144,7 +162,11 @@ describe("POST /api/auth/signin — OAuth", () => {
 
   it("does not treat provider as OAuth when a password is also present", async () => {
     const { POST } = await import("./signin");
-    const context = makeContext({ provider: "google", email: "a@example.com", password: "password1" });
+    const context = makeContext({
+      provider: "google",
+      email: "a@example.com",
+      password: "password1",
+    });
 
     await POST(context);
 
@@ -186,7 +208,9 @@ describe("POST /api/auth/signin — email/password", () => {
   });
 
   it("records a failure and redirects on invalid credentials", async () => {
-    mockSignInEmail.mockResolvedValue(Response.json({ code: "INVALID_EMAIL_OR_PASSWORD" }, { status: 401 }));
+    mockSignInEmail.mockResolvedValue(
+      Response.json({ code: "INVALID_EMAIL_OR_PASSWORD" }, { status: 401 }),
+    );
     const { POST } = await import("./signin");
     const context = makeContext({ email: "a@example.com", password: "wrong" });
 
@@ -198,7 +222,9 @@ describe("POST /api/auth/signin — email/password", () => {
   });
 
   it("says email_not_confirmed for an unconfirmed address", async () => {
-    mockSignInEmail.mockResolvedValue(Response.json({ code: "EMAIL_NOT_VERIFIED" }, { status: 403 }));
+    mockSignInEmail.mockResolvedValue(
+      Response.json({ code: "EMAIL_NOT_VERIFIED" }, { status: 403 }),
+    );
     const { POST } = await import("./signin");
     const context = makeContext({ email: "a@example.com", password: "password1" });
 
@@ -213,7 +239,10 @@ describe("POST /api/auth/signin — email/password", () => {
 
     const response = await POST(context);
 
-    expect(mockSignInEmail).toHaveBeenCalledWith({ body: { email: "a@example.com", password: "password1" }, asResponse: true });
+    expect(mockSignInEmail).toHaveBeenCalledWith({
+      body: { email: "a@example.com", password: "password1" },
+      asResponse: true,
+    });
     expect(mockClearSigninFailures).toHaveBeenCalledWith("a@example.com");
     expect(response.headers.get("Location")).toBe("/dashboard");
     expect(response.headers.getSetCookie().join(";")).toContain("session_token=abc");
@@ -221,7 +250,9 @@ describe("POST /api/auth/signin — email/password", () => {
 
   it("honors a safe next path on success", async () => {
     const { POST } = await import("./signin");
-    const response = await POST(makeContext({ email: "a@example.com", password: "password1", next: "/dashboard/alerts" }));
+    const response = await POST(
+      makeContext({ email: "a@example.com", password: "password1", next: "/dashboard/alerts" }),
+    );
 
     expect(response.headers.get("Location")).toBe("/dashboard/alerts");
   });
@@ -229,9 +260,13 @@ describe("POST /api/auth/signin — email/password", () => {
   it("sends a two-factor user to the MFA challenge, keeping next", async () => {
     mockSignInEmail.mockImplementation(async () => signedIn({ twoFactorRedirect: true }));
     const { POST } = await import("./signin");
-    const response = await POST(makeContext({ email: "a@example.com", password: "password1", next: "/dashboard/alerts" }));
+    const response = await POST(
+      makeContext({ email: "a@example.com", password: "password1", next: "/dashboard/alerts" }),
+    );
 
-    expect(response.headers.get("Location")).toBe(`/signin/mfa?next=${encodeURIComponent("/dashboard/alerts")}`);
+    expect(response.headers.get("Location")).toBe(
+      `/signin/mfa?next=${encodeURIComponent("/dashboard/alerts")}`,
+    );
     expect(mockClearSigninFailures).not.toHaveBeenCalled();
   });
 
@@ -255,7 +290,9 @@ describe("POST /api/auth/signin — email/password", () => {
   it("still signs in when saving the language fails", async () => {
     mockGetUserMetadata.mockRejectedValue(new Error("down"));
     const { POST } = await import("./signin");
-    const response = await POST(makeContext({ email: "a@example.com", password: "password1" }, "es"));
+    const response = await POST(
+      makeContext({ email: "a@example.com", password: "password1" }, "es"),
+    );
 
     expect(response.headers.get("Location")).toBe("/dashboard");
   });

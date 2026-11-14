@@ -12,8 +12,10 @@ const ptBr: PipeForecastMessages = {
   lede: "Confira as próximas cinco noites na sua região: a mínima, quantas horas fica abaixo de zero, o vento e se os canos de uma garagem, porão ou sótão sem aquecimento correm risco.",
   getAlerts: "Receba alertas de congelamento grátis por e-mail",
   whenGaragePipes: "Quando os canos da garagem congelam",
-  alertsConfirmed: "Os alertas de congelamento estão ativados. Enviaremos um e-mail na tarde anterior a uma noite de congelamento.",
-  alertsInvalid: "Esse link de confirmação não é mais válido. Procure sua região abaixo e cadastre-se de novo.",
+  alertsConfirmed:
+    "Os alertas de congelamento estão ativados. Enviaremos um e-mail na tarde anterior a uma noite de congelamento.",
+  alertsInvalid:
+    "Esse link de confirmação não é mais válido. Procure sua região abaixo e cadastre-se de novo.",
   levelsTitle: "Como ler os níveis de risco",
   levelsHtml: [
     "<strong>Risco alto:</strong> a mínima externa é de −7 °C (20 °F) ou menos, o ponto mais citado a partir do qual os canos congelam em espaços sem aquecimento.",
@@ -28,7 +30,8 @@ const ptBr: PipeForecastMessages = {
   startFree: "Comece grátis",
   kitParts: "Peças do kit de congelamento ESP32",
   sourcesTitle: "Fontes",
-  sourceKxan: "At what temperature do pipes freeze? (KXAN, em inglês, citando pesquisa da Universidade de Illinois)",
+  sourceKxan:
+    "At what temperature do pipes freeze? (KXAN, em inglês, citando pesquisa da Universidade de Illinois)",
   sourceFarmBureau: "How pipes freeze and burst (Farm Bureau Insurance, em inglês)",
   sourceNws: "API do National Weather Service",
   sourceNwsNote: ": dados de previsão por hora",
@@ -66,12 +69,14 @@ const ptBr: PipeForecastMessages = {
     errorUsOnly: "Esta previsão usa o National Weather Service, então só cobre locais nos EUA.",
     errorRateLimited: "Pesquisas demais em um minuto. Tente de novo daqui a pouco.",
     errorService: "O serviço de previsão não respondeu. Tente de novo em um minuto.",
-    errorNoGeolocation: "Este navegador não consegue compartilhar a localização. Pesquise uma cidade ou CEP (ZIP).",
+    errorNoGeolocation:
+      "Este navegador não consegue compartilhar a localização. Pesquise uma cidade ou CEP (ZIP).",
     errorGeoDeclined: "A permissão de localização foi negada. Pesquise uma cidade ou CEP (ZIP).",
     tonight: "Hoje à noite",
     weekdayNight: "Noite de {weekday}",
     headlineNone: "Nenhuma noite de previsão recebida",
-    headlineHigh: "Hoje à noite: risco alto de congelamento em espaços sem aquecimento (mínima {low})",
+    headlineHigh:
+      "Hoje à noite: risco alto de congelamento em espaços sem aquecimento (mínima {low})",
     headlineWatch: "Hoje à noite: abaixo de zero (mínima {low}), fique de olho nos canos expostos",
     headlineColderLater: "Hoje à noite não congela, mas vêm noites mais frias",
     headlineClear: "Nenhuma noite de congelamento na previsão",
@@ -83,7 +88,8 @@ const ptBr: PipeForecastMessages = {
       "Abaixo de zero por cerca de {hours} horas, mínima {low}. Canos expostos em paredes externas, perto da porta da garagem ou em porões ventilados ainda podem congelar numa noite longa ou com vento.",
     describeAbove: "Fica acima de zero (mínima {low}).",
     describeWind: "Vento de até {wind} abaixo de zero tira calor mais rápido dos canos expostos.",
-    describeNextDay: "O dia seguinte também fica abaixo de zero, então os espaços sem aquecimento não vão se aquecer de novo.",
+    describeNextDay:
+      "O dia seguinte também fica abaixo de zero, então os espaços sem aquecimento não vão se aquecer de novo.",
     signupTitle: "Avise-me por e-mail antes das noites de congelamento em {place}",
     signupLede:
       "Grátis, sem hardware. Um e-mail na tarde anterior à primeira noite de congelamento de uma onda de frio, e antes de cada noite a {temp} ou menos. Cancele com um clique.",

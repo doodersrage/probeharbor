@@ -5,8 +5,10 @@
 
 const en = {
   title: "Android app",
-  descriptionLive: "{brand} Android companion on Google Play: live probes, freeze and flood alerts, MFA, and household tools. Phone is not a sensor.",
-  descriptionPwa: "Use {brand} on Android via the installable web app. Native Play app is in review. Live probes, freeze and flood alerts. Phone is not a sensor.",
+  descriptionLive:
+    "{brand} Android companion on Google Play: live probes, freeze and flood alerts, MFA, and household tools. Phone is not a sensor.",
+  descriptionPwa:
+    "Use {brand} on Android via the installable web app. Native Play app is in review. Live probes, freeze and flood alerts. Phone is not a sensor.",
   breadcrumbHome: "Home",
   breadcrumbApps: "Apps",
   breadcrumbAndroid: "Android app",
@@ -23,7 +25,8 @@ const en = {
   githubSideload: "GitHub · build or sideload",
   sourceOnGithub: "Source on GitHub",
   requestLaunchNote: "Request Play launch note",
-  imageAlt: "{brand} lifestyle photo: checking probe readings on phone and laptop beside a DIY install near copper pipes",
+  imageAlt:
+    "{brand} lifestyle photo: checking probe readings on phone and laptop beside a DIY install near copper pipes",
   imageCaption:
     "DIY install vibe: phone and laptop as companions to your own probes. Screens in this illustration are stylized, not a product screenshot.",
   phoneTitle: "What the phone does (and does not)",
@@ -59,7 +62,8 @@ const en = {
   deepLinksHtml:
     "Deep links stay aligned with the web app (<code>/dashboard</code>, alerts, household) so the native client and PWA feel familiar.",
   ossTitle: "Open source",
-  ossHtml: 'App repository: <a class="text-link" href="{repo}" target="_blank" rel="noreferrer">probeharbor-android</a> · Privacy: <a class="text-link" href="/privacy">how Android push tokens are handled</a> · API: <a class="text-link" href="/docs/api">HTTP reference</a>',
+  ossHtml:
+    'App repository: <a class="text-link" href="{repo}" target="_blank" rel="noreferrer">probeharbor-android</a> · Privacy: <a class="text-link" href="/privacy">how Android push tokens are handled</a> · API: <a class="text-link" href="/docs/api">HTTP reference</a>',
   faqLede: "Straight answers for Play reviewers and homeowners waiting on the listing.",
   backToApps: "← All companion apps",
 };

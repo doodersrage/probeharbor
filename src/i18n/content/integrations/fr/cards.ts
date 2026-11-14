@@ -37,7 +37,8 @@ export default {
   },
   webhooks: {
     title: "Webhooks d’alertes et de relevés",
-    summary: "Les webhooks Pro fonctionnent dans les deux sens : à configurer dans Dashboard → Alerts / Share.",
+    summary:
+      "Les webhooks Pro fonctionnent dans les deux sens : à configurer dans Dashboard → Alerts / Share.",
     cta: "Guide dans l’app",
     bullets: [
       "Sortant : POST d’alertes (HMAC optionnel) et webhooks de relevés à fort volume à l’ingestion",

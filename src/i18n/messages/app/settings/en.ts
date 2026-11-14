@@ -6,7 +6,8 @@ const en = {
   subtitle: "Display, what Overview suggests, and your account.",
   notices: {
     passwordUpdated: "Password updated.",
-    signOutAllFailed: "Could not sign out other devices. You're still signed in here; try again in a minute.",
+    signOutAllFailed:
+      "Could not sign out other devices. You're still signed in here; try again in a minute.",
     prefsSaved: "Display preferences saved.",
     prefsError: "Could not save display preferences.",
     pinnedSaved: "Pinned metrics saved.",
@@ -16,7 +17,8 @@ const en = {
     tipsHidden: "Companion tips hidden on Overview.",
     tipsReset: "Companion tips shown on Overview again.",
     retentionSaved: "Retention preference saved.",
-    retentionError: "Could not save the retention preference. Your previous setting is unchanged; try again.",
+    retentionError:
+      "Could not save the retention preference. Your previous setting is unchanged; try again.",
     tenantSaved: "Tenant contact saved.",
     tenantError: "Could not save tenant contact.",
   },
@@ -54,7 +56,8 @@ const en = {
     ambientCredentials: "Ambient station credentials",
     ambientMacLabel: "Station MAC address",
     ambientKeyLabel: "Ambient API key",
-    ambientKeyHint: "From your Ambient account → API keys. Stored on your account for outdoor readings only.",
+    ambientKeyHint:
+      "From your Ambient account → API keys. Stored on your account for outdoor readings only.",
     weatherflowCredentials: "WeatherFlow station credentials",
     weatherflowStationLabel: "Station ID",
     weatherflowTokenLabel: "Personal access token",
@@ -85,7 +88,8 @@ const en = {
     showRecommendations: "Show recommendations",
     hideRecommendations: "Hide recommendations for 7 days",
     tipsHeading: "Companion app tips",
-    tipsBody: "Nest, PWA, Android, and Bay Buddy on Overview Tips. Also auto-hides 14 days after signup once you are live.",
+    tipsBody:
+      "Nest, PWA, Android, and Bay Buddy on Overview Tips. Also auto-hides 14 days after signup once you are live.",
     showTips: "Show companion tips on Overview",
     hideTips: "Hide companion tips",
     checklistHeading: "Getting started checklist",
@@ -141,7 +145,10 @@ const en = {
     /** `{unfinished}` is `unfinishedCount`. */
     someUnfinished: "{verified} enrolled · {unfinished} (remove if stuck).",
     onlyUnfinished: "{unfinished} — verify or remove to continue.",
-    unfinishedCount: { one: "{count} unfinished enrollment", other: "{count} unfinished enrollments" },
+    unfinishedCount: {
+      one: "{count} unfinished enrollment",
+      other: "{count} unfinished enrollments",
+    },
     enrollFailed: "Enrollment failed",
     scanQr:
       "Scan the QR code with your authenticator app (or Yubico Authenticator on a YubiKey), then enter a verification code below.",
@@ -154,7 +161,8 @@ const en = {
       "Security key enrolled successfully. Sign-in will ask for your key or authenticator code next time.",
     keyEnrollmentFailed: "Security key enrollment failed",
     yubikeyEnrollFailed: "YubiKey enrollment failed",
-    yubikeyEnrolled: "YubiKey enrolled. Sign-in will ask for a YubiKey tap or authenticator code next time.",
+    yubikeyEnrolled:
+      "YubiKey enrolled. Sign-in will ask for a YubiKey tap or authenticator code next time.",
     yubikeyRemoveFailed: "Could not remove YubiKey",
     yubikeyRemoved: "YubiKey removed.",
     factorRemoveFailed: "Could not remove factor",
@@ -179,7 +187,8 @@ const en = {
     passwordLabel: "Account password",
     passwordHint: "Needed to turn the authenticator app on or off.",
     passkeysHeading: "Passkeys",
-    passkeysHint: "Sign in with your fingerprint, face or device PIN instead of a password and code. A passkey skips the authenticator-app step.",
+    passkeysHint:
+      "Sign in with your fingerprint, face or device PIN instead of a password and code. A passkey skips the authenticator-app step.",
     addPasskey: "Add a passkey",
     passkeyDefaultName: "Passkey",
     passkeyAdded: "Passkey added.",

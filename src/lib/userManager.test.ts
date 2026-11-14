@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  managedUserListQueryString,
-  parseManagedUserListQuery,
-} from "./userManager";
+import { managedUserListQueryString, parseManagedUserListQuery } from "./userManager";
 
 describe("parseManagedUserListQuery", () => {
   it("defaults to newest-first with no filters", () => {

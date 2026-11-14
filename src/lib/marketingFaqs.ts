@@ -10,8 +10,7 @@ export const marketingFaqs = {
   home: [
     {
       question: "What is ProbeHarbor?",
-      answer:
-        `${BRAND_DESCRIPTION} Build with ESP32, Pico W, or Arduino; ProbeHarbor handles the hosted dashboard, history, and household alerts.`,
+      answer: `${BRAND_DESCRIPTION} Build with ESP32, Pico W, or Arduino; ProbeHarbor handles the hosted dashboard, history, and household alerts.`,
     },
     {
       question: "How do I connect ESP32, Pico W, or Arduino sensors?",
@@ -84,8 +83,7 @@ export const marketingFaqs = {
   pricing: [
     {
       question: "What is included on the Free plan?",
-      answer:
-        `Live readings for temperature, humidity, air quality, doors, leaks, energy, and motion across ${BRAND_SPACES}; 7 days of history; threshold freeze and leak alerts plus a time-to-freeze clock; email and chat-style channels; a limited number of devices; one family live share link; and household sharing so family can watch the same sensors.`,
+      answer: `Live readings for temperature, humidity, air quality, doors, leaks, energy, and motion across ${BRAND_SPACES}; 7 days of history; threshold freeze and leak alerts plus a time-to-freeze clock; email and chat-style channels; a limited number of devices; one family live share link; and household sharing so family can watch the same sensors.`,
     },
     {
       question: "When should I upgrade to Member or Pro?",
@@ -126,8 +124,7 @@ export const marketingFaqs = {
     },
     {
       question: "How does ProbeHarbor compare to Govee or SmartThings?",
-      answer:
-        `Govee and SmartThings are general consumer/smart-home apps. ProbeHarbor is purpose-built for ${BRAND_SPACES}: ESP/Arduino or JSON ingest, freeze workflows, air quality, doors, leaks, energy, and CSV history, rather than a catch-all device dashboard.`,
+      answer: `Govee and SmartThings are general consumer/smart-home apps. ProbeHarbor is purpose-built for ${BRAND_SPACES}: ESP/Arduino or JSON ingest, freeze workflows, air quality, doors, leaks, energy, and CSV history, rather than a catch-all device dashboard.`,
     },
     {
       question: "Do I need a public IP for my Arduino?",
@@ -151,8 +148,7 @@ export const marketingFaqs = {
     },
     {
       question: "I already have Govee or a Tempest: do I still need this?",
-      answer:
-        `Govee is a consumer room sensor; Tempest is outdoor weather. ProbeHarbor watches probe curves in ${BRAND_SPACES} on hardware you control. They can coexist: see the Govee and Tempest comparison pages for when each tool is the better fit.`,
+      answer: `Govee is a consumer room sensor; Tempest is outdoor weather. ProbeHarbor watches probe curves in ${BRAND_SPACES} on hardware you control. They can coexist: see the Govee and Tempest comparison pages for when each tool is the better fit.`,
     },
   ],
   "freeze-map": [
@@ -173,8 +169,7 @@ export const marketingFaqs = {
     },
     {
       question: "How many households does it take before my city shows real data?",
-      answer:
-        `A city appears on the default map once at least ${FREEZE_MAP_SAMPLE_FLOOR} opted-in households with a live temperature probe contribute in the same snapshot window. Cities below that floor never show temperatures, trends, or freeze-risk shares, because with so few homes those numbers would reveal a neighbor’s readings; they appear only by name and household count until enough homes join. Until any city meets the floor, the page shows a clearly labeled sample preview.`,
+      answer: `A city appears on the default map once at least ${FREEZE_MAP_SAMPLE_FLOOR} opted-in households with a live temperature probe contribute in the same snapshot window. Cities below that floor never show temperatures, trends, or freeze-risk shares, because with so few homes those numbers would reveal a neighbor’s readings; they appear only by name and household count until enough homes join. Until any city meets the floor, the page shows a clearly labeled sample preview.`,
     },
     {
       question: "What if I only have one probe: does that count?",
@@ -318,7 +313,7 @@ export const marketingFaqs = {
     {
       question: "What does the door contact puck post?",
       answer:
-        "JSON like {\"door1\":true} when open. Sketch: sketches/arduino/door_contact_ingest. Guide: probeharbor.dev/door-puck.",
+        'JSON like {"door1":true} when open. Sketch: sketches/arduino/door_contact_ingest. Guide: probeharbor.dev/door-puck.',
     },
     {
       question: "Will an open door trigger freeze SMS by itself?",
@@ -335,7 +330,7 @@ export const marketingFaqs = {
     {
       question: "What does the leak contact puck post?",
       answer:
-        "JSON like {\"leak1\":true} when wet. Flood/leak keys auto-alert when wet once alerts are on. Guide: probeharbor.dev/leak-puck.",
+        'JSON like {"leak1":true} when wet. Flood/leak keys auto-alert when wet once alerts are on. Guide: probeharbor.dev/leak-puck.',
     },
     {
       question: "Can leak and temperature share one device key?",
@@ -352,7 +347,7 @@ export const marketingFaqs = {
     {
       question: "What does the power outage nudge post?",
       answer:
-        "JSON like {\"power1\":false} when sensed mains/USB is lost. The reporting ESP32 should stay on a UPS. Guide: probeharbor.dev/power-nudge.",
+        'JSON like {"power1":false} when sensed mains/USB is lost. The reporting ESP32 should stay on a UPS. Guide: probeharbor.dev/power-nudge.',
     },
     {
       question: "What if the freeze probe loses power too?",

@@ -10,12 +10,11 @@ describe("space channel routing", () => {
         garage: { threshold: ["telegram" as const] },
       },
     };
-    const filtered = filterChannelsForSpace(
-      settings,
-      "garage",
-      "threshold",
-      ["email", "telegram", "sms"],
-    );
+    const filtered = filterChannelsForSpace(settings, "garage", "threshold", [
+      "email",
+      "telegram",
+      "sms",
+    ]);
     expect(filtered).toEqual(["telegram"]);
   });
 });

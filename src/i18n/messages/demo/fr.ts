@@ -112,10 +112,22 @@ const fr: DemoMessages = {
     title: "Continuer l’exploration",
     lede: "Vous avez déjà déclenché une vague de froid simulée ? Regardez l’atelier de démo piloté par la météo, puis essayez un scénario d’inondation ou de fuite, consultez la carte d’une ville ou configurez le QR du kit.",
     items: [
-      { label: "Simulateur de sondes interactif", hint: "La démo pratique principale : porte, soleil, extérieur, seuil de gel" },
-      { label: "Carte communautaire du gel", hint: "Agrégats par ville sur participation volontaire, sans compte" },
-      { label: "Mise en service du kit par QR", hint: "Créer l’appareil → scanner le QR d’ingestion → premier POST" },
-      { label: "Scénario de gel", hint: "Une panne de chauffage à 2 h du matin, alerte par alerte" },
+      {
+        label: "Simulateur de sondes interactif",
+        hint: "La démo pratique principale : porte, soleil, extérieur, seuil de gel",
+      },
+      {
+        label: "Carte communautaire du gel",
+        hint: "Agrégats par ville sur participation volontaire, sans compte",
+      },
+      {
+        label: "Mise en service du kit par QR",
+        hint: "Créer l’appareil → scanner le QR d’ingestion → premier POST",
+      },
+      {
+        label: "Scénario de gel",
+        hint: "Une panne de chauffage à 2 h du matin, alerte par alerte",
+      },
     ],
   },
   faqLede:

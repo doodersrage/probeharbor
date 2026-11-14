@@ -85,11 +85,7 @@ export const POST: APIRoute = async (context) => {
     return redirect(withQuery(redirectTo, { claims_error: "no_household" }));
   }
 
-  const { token, contentHash, error } = await createClaimsPackExport(
-    householdId,
-    pack,
-    user.id,
-  );
+  const { token, contentHash, error } = await createClaimsPackExport(householdId, pack, user.id);
   if (!token) {
     console.error("Failed to persist claims pack export for email:", error);
     if (asJson) return jsonResponse({ error: "send_failed" }, 500);
@@ -100,25 +96,26 @@ export const POST: APIRoute = async (context) => {
   // Written in the sender's language: the adjuster's language isn't known.
   const t = apiMoreBillingMessages(apiLocale(context)).claimsEmail;
   const household = pack.householdLabel;
-  const rangeLabel = fmt(t.range, { from: pack.rangeFrom.slice(0, 10), to: pack.rangeTo.slice(0, 10) });
+  const rangeLabel = fmt(t.range, {
+    from: pack.rangeFrom.slice(0, 10),
+    to: pack.rangeTo.slice(0, 10),
+  });
 
   try {
-    const parts = brandedEmailParts({
-      eyebrow: t.eyebrow,
-      preheader: fmt(t.preheader, { household }),
-      title: fmt(t.title, { household }),
-      intro: fmt(t.intro, { range: rangeLabel }),
-      paragraphs: [
-        t.body,
-        fmt(t.verificationCode, { code: String(contentHash) }),
-      ],
-      cta: { label: t.cta, url: verifyUrl },
-      secondaryCta: pack.historyUrl
-        ? { label: t.historyCta, url: pack.historyUrl }
-        : undefined,
-      tone: "brand",
-      footerNote: t.footerNote,
-    }, apiLocale(context));
+    const parts = brandedEmailParts(
+      {
+        eyebrow: t.eyebrow,
+        preheader: fmt(t.preheader, { household }),
+        title: fmt(t.title, { household }),
+        intro: fmt(t.intro, { range: rangeLabel }),
+        paragraphs: [t.body, fmt(t.verificationCode, { code: String(contentHash) })],
+        cta: { label: t.cta, url: verifyUrl },
+        secondaryCta: pack.historyUrl ? { label: t.historyCta, url: pack.historyUrl } : undefined,
+        tone: "brand",
+        footerNote: t.footerNote,
+      },
+      apiLocale(context),
+    );
     await sendEmail(adjusterEmail, fmt(t.subject, { household }), parts.text, {
       html: parts.html,
     });

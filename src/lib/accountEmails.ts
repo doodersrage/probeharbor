@@ -8,7 +8,11 @@ import { accountEmailMessages } from "../i18n/messages/app/email/account";
 import { ensureLocale } from "../i18n/catalog";
 import type { Locale } from "../i18n/locales";
 
-export function accountEmailLink(siteUrl: string, type: "signup" | "recovery", token: string): string {
+export function accountEmailLink(
+  siteUrl: string,
+  type: "signup" | "recovery",
+  token: string,
+): string {
   const params = new URLSearchParams({ token_hash: token, type });
   return `${siteUrl.replace(/\/+$/, "")}/api/auth/confirm?${params.toString()}`;
 }
@@ -19,9 +23,17 @@ export function accountEmailLink(siteUrl: string, type: "signup" | "recovery", t
  * /forgot-password). Never reports success itself; the caller only says
  * "check your email".
  */
-async function sendAccountEmail(kind: "confirm" | "reset", to: string, url: string, locale: Locale): Promise<void> {
+async function sendAccountEmail(
+  kind: "confirm" | "reset",
+  to: string,
+  url: string,
+  locale: Locale,
+): Promise<void> {
   try {
-    const [{ sendEmail }, { brandedEmailParts }] = await Promise.all([import("./mailer"), import("./emailLayout")]);
+    const [{ sendEmail }, { brandedEmailParts }] = await Promise.all([
+      import("./mailer"),
+      import("./emailLayout"),
+    ]);
     await ensureLocale(locale, ["app"]);
     const t = accountEmailMessages(locale)[kind];
     const parts = brandedEmailParts(
@@ -43,5 +55,7 @@ async function sendAccountEmail(kind: "confirm" | "reset", to: string, url: stri
   }
 }
 
-export const sendConfirmationEmail = (to: string, url: string, locale: Locale) => sendAccountEmail("confirm", to, url, locale);
-export const sendPasswordResetEmail = (to: string, url: string, locale: Locale) => sendAccountEmail("reset", to, url, locale);
+export const sendConfirmationEmail = (to: string, url: string, locale: Locale) =>
+  sendAccountEmail("confirm", to, url, locale);
+export const sendPasswordResetEmail = (to: string, url: string, locale: Locale) =>
+  sendAccountEmail("reset", to, url, locale);

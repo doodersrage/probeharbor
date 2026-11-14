@@ -66,8 +66,11 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
     userMetadata: user.user_metadata as Record<string, unknown>,
   });
 
-  const displayFeeds = preferences.tempFeeds.length > 0 ? preferences.tempFeeds : deviceConfig.feeds;
-  const demoFeedIds = new Set(displayFeeds.filter((feed) => isDemoFeedUrl(feed.url)).map((feed) => feed.id));
+  const displayFeeds =
+    preferences.tempFeeds.length > 0 ? preferences.tempFeeds : deviceConfig.feeds;
+  const demoFeedIds = new Set(
+    displayFeeds.filter((feed) => isDemoFeedUrl(feed.url)).map((feed) => feed.id),
+  );
   const groups = buildFeedDisplayGroups(
     displayFeeds,
     preferences.tempProbes.length > 0 ? preferences.tempProbes : deviceConfig.probes,
@@ -81,9 +84,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
     probes: group.probes.map((probe) => ({
       key: probe.key,
       label: probe.label,
-      data: probe.data
-        ? { f: probe.data.f, c: probe.data.c, h: probe.data.h }
-        : null,
+      data: probe.data ? { f: probe.data.f, c: probe.data.c, h: probe.data.h } : null,
     })),
   }));
 
@@ -105,7 +106,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
     for (const sensor of device.sensors.filter((s) => s.visible)) {
       const liveTemp =
         sensor.kind === "temperature"
-          ? liveByKey.get(`${device.id}:${sensor.key}`) ?? liveByKey.get(sensor.key)
+          ? (liveByKey.get(`${device.id}:${sensor.key}`) ?? liveByKey.get(sensor.key))
           : null;
 
       sensors.push({
@@ -125,7 +126,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
         recorded_at: null,
         temp:
           sensor.kind === "temperature"
-            ? liveTemp ?? null
+            ? (liveTemp ?? null)
             : sensor.kind === "humidity" && liveTemp
               ? { f: liveTemp.f, c: liveTemp.c, h: liveTemp.h }
               : null,
@@ -137,7 +138,8 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
     const latest = await fetchLatestSensorValues(deviceConfig.householdId);
     for (const row of latest) {
       const existing = sensors.find(
-        (s) => s.key === row.sensor.key && s.kind === row.sensor.kind && s.deviceName === row.deviceName,
+        (s) =>
+          s.key === row.sensor.key && s.kind === row.sensor.kind && s.deviceName === row.deviceName,
       );
       if (existing) {
         if (existing.value_num == null) existing.value_num = row.value_num;
@@ -152,15 +154,14 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
           deviceId: row.sensor.device_id,
           deviceName: row.deviceName,
           deviceSource:
-            deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.source ??
-            null,
-          reportIntervalMs: intervalMs(deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.meta),
+            deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.source ?? null,
+          reportIntervalMs: intervalMs(
+            deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.meta,
+          ),
           deviceDemo:
             row.deviceDemo === true ||
             isDemoDevice(deviceConfig.devices.find((d) => d.id === row.sensor.device_id)),
-          space:
-            deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.space ??
-            null,
+          space: deviceConfig.devices.find((d) => d.id === row.sensor.device_id)?.space ?? null,
           key: row.sensor.key,
           label: row.sensor.label,
           kind: row.sensor.kind,
@@ -180,10 +181,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
     if (sensor.kind !== "temperature") continue;
     if (sensor.temp) continue;
     const humid = sensors.find(
-      (s) =>
-        s.kind === "humidity" &&
-        s.key === sensor.key &&
-        s.deviceId === sensor.deviceId,
+      (s) => s.kind === "humidity" && s.key === sensor.key && s.deviceId === sensor.deviceId,
     );
     if (sensor.value_num != null) {
       const f = sensor.value_num;
@@ -199,9 +197,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
   const filtered =
     spaceFilter == null
       ? sensors
-      : sensors.filter(
-          (s) => (s.space ?? "").toLowerCase() === spaceFilter,
-        );
+      : sensors.filter((s) => (s.space ?? "").toLowerCase() === spaceFilter);
 
   return new Response(
     JSON.stringify({
@@ -210,9 +206,7 @@ export const GET: APIRoute = async ({ cookies, url, request, locals }) => {
       sensors: filtered,
       spaces: [
         ...new Set(
-          deviceConfig.devices
-            .map((d) => d.space)
-            .filter((s): s is string => Boolean(s?.trim())),
+          deviceConfig.devices.map((d) => d.space).filter((s): s is string => Boolean(s?.trim())),
         ),
       ].sort(),
     }),

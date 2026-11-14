@@ -5,7 +5,8 @@ const es: AlertJobsMessages = {
     confirm: {
       eyebrow: "Alertas de congelación",
       title: "Confirma tus alertas de congelación",
-      intro: "Haz clic abajo y te enviaremos un correo la tarde antes de cada noche de helada en {place}.",
+      intro:
+        "Haz clic abajo y te enviaremos un correo la tarde antes de cada noche de helada en {place}.",
       ignore: "Si no lo pediste, ignora este mensaje. No recibirás nada si no lo confirmas.",
       cta: "Confirmar alertas de congelación",
       footerNote:
@@ -15,9 +16,11 @@ const es: AlertJobsMessages = {
     move: {
       eyebrow: "Alertas de congelación",
       title: "¿Cambiar tus alertas de congelación a {place}?",
-      intro: "Esta dirección ya recibe alertas de congelación para {current}. Alguien acaba de pedir que se envíen para {place} en su lugar.",
+      intro:
+        "Esta dirección ya recibe alertas de congelación para {current}. Alguien acaba de pedir que se envíen para {place} en su lugar.",
       keep: "No cambia nada hasta que hagas clic abajo. Tus alertas para {current} siguen llegando como siempre.",
-      ignore: "Si no lo pediste, ignora este mensaje. El enlace deja de funcionar después de 7 días.",
+      ignore:
+        "Si no lo pediste, ignora este mensaje. El enlace deja de funcionar después de 7 días.",
       cta: "Cambiar mis alertas de congelación",
       footerNote:
         "Recibes este correo porque alguien introdujo esta dirección en el pronóstico de congelación de tuberías de ProbeHarbor.",
@@ -58,13 +61,17 @@ const es: AlertJobsMessages = {
       },
       above: "Se mantiene sobre cero (mínima {low}).",
       wind: "Un viento de hasta {wind} con temperaturas bajo cero enfría más rápido las tuberías expuestas.",
-      nextDay: "El día siguiente también se mantiene bajo cero, así que los espacios sin calefacción no volverán a calentarse.",
+      nextDay:
+        "El día siguiente también se mantiene bajo cero, así que los espacios sin calefacción no volverán a calentarse.",
     },
   },
   stuck: {
-    faultReset: "el valor que envía un DS18B20 tras un reinicio (a menudo por alimentación débil o un cable largo)",
-    faultDisconnected: "el valor que envía la biblioteca del DS18B20 cuando la sonda está desconectada",
-    faultMessage: "{label} marca {value} °F, {why}. Revisa el cableado de la sonda; no es una temperatura real.",
+    faultReset:
+      "el valor que envía un DS18B20 tras un reinicio (a menudo por alimentación débil o un cable largo)",
+    faultDisconnected:
+      "el valor que envía la biblioteca del DS18B20 cuando la sonda está desconectada",
+    faultMessage:
+      "{label} marca {value} °F, {why}. Revisa el cableado de la sonda; no es una temperatura real.",
     faultDetail: "{label} marca {value} {unit} (fallo del sensor), revisa el cableado",
     stuckMessage:
       "{label} lleva {span} enviando exactamente {value} °F. La sonda puede estar atascada o la placa puede estar reenviando un valor antiguo; una helada aquí podría pasar desapercibida.",
@@ -76,14 +83,16 @@ const es: AlertJobsMessages = {
     title: "Propiedades en riesgo hoy ({count})",
     intro: {
       one: "Resumen para propietarios: {count} propiedad está en el umbral de congelación o por debajo:",
-      other: "Resumen para propietarios: {count} propiedades están en el umbral de congelación o por debajo:",
+      other:
+        "Resumen para propietarios: {count} propiedades están en el umbral de congelación o por debajo:",
     },
     line: "{name}: {temp} °F (umbral {threshold} °F)",
   },
   tenant: {
     greetingName: "Hola, {name}:",
     greeting: "Hola:",
-    intro: "El administrador de {household} nos pidió que te reenviáramos una alerta de riesgo de congelación:",
+    intro:
+      "El administrador de {household} nos pidió que te reenviáramos una alerta de riesgo de congelación:",
     eyebrow: "Alerta reenviada al inquilino",
     footerNote:
       "Recibes este correo porque el propietario te indicó como contacto en el lugar. No es un acceso completo al panel.",
@@ -109,12 +118,16 @@ const es: AlertJobsMessages = {
     ackFailed: "No se pudo confirmar la alerta.",
     raised:
       "Falsa alarma gestionada: umbral de congelación subido a {value} °F y alertas pospuestas 24 h.",
-    falseAlarmTip: "Marcada como falsa alarma: alertas pospuestas 24 h. Solución sugerida: {tip}. Abre {href}",
+    falseAlarmTip:
+      "Marcada como falsa alarma: alertas pospuestas 24 h. Solución sugerida: {tip}. Abre {href}",
     results: {
       ack: "Alerta marcada como gestionada.",
-      snooze_1h: "Alerta gestionada: otras alertas pospuestas 1 hora. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
-      snooze_4h: "Alerta gestionada: otras alertas pospuestas 4 horas. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
-      snooze_24h: "Alerta gestionada: otras alertas pospuestas 24 horas. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
+      snooze_1h:
+        "Alerta gestionada: otras alertas pospuestas 1 hora. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
+      snooze_4h:
+        "Alerta gestionada: otras alertas pospuestas 4 horas. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
+      snooze_24h:
+        "Alerta gestionada: otras alertas pospuestas 24 horas. Las alertas de congelación siguen activas; esta no se repetirá mientras continúe.",
       false_alarm:
         "Marcada como falsa alarma: alertas pospuestas 24 h. Si se repite, revisa dónde está colocada la sonda.",
       raise_threshold: "Falsa alarma gestionada y umbral de congelación subido.",
@@ -124,14 +137,17 @@ const es: AlertJobsMessages = {
   },
   telegram: {
     help: "Comandos: /status [nombre], /snooze [horas], /vacation [días], /help",
-    commandsDisabled: "Los comandos de Telegram están desactivados hasta que guardes un Chat ID en Alertas.",
+    commandsDisabled:
+      "Los comandos de Telegram están desactivados hasta que guardes un Chat ID en Alertas.",
     snoozed: {
       one: "Alertas pospuestas {count} hora. Las alertas de congelación y de fuga se siguen enviando.",
-      other: "Alertas pospuestas {count} horas. Las alertas de congelación y de fuga se siguen enviando.",
+      other:
+        "Alertas pospuestas {count} horas. Las alertas de congelación y de fuga se siguen enviando.",
     },
     vacation: {
       one: "Modo vacaciones activado durante {count} día. Las alertas de congelación y de fuga se siguen enviando.",
-      other: "Modo vacaciones activado durante {count} días. Las alertas de congelación y de fuga se siguen enviando.",
+      other:
+        "Modo vacaciones activado durante {count} días. Las alertas de congelación y de fuga se siguen enviando.",
     },
     noHousehold: "No hay ningún hogar activo.",
     open: "ABIERTO",
@@ -162,7 +178,10 @@ const es: AlertJobsMessages = {
     missingToken: "Falta el token",
     resultInvalid: "Enlace para posponer no válido o ya usado.",
     resultExpired: "El enlace para posponer ha caducado.",
-    resultSnoozed: { one: "Alertas pospuestas {count} hora.", other: "Alertas pospuestas {count} horas." },
+    resultSnoozed: {
+      one: "Alertas pospuestas {count} hora.",
+      other: "Alertas pospuestas {count} horas.",
+    },
   },
 };
 

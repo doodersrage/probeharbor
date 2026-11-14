@@ -112,9 +112,7 @@ describe("GET /api/user/history", () => {
   it("includes house overlay when requested and clamps days", async () => {
     const { GET } = await import("./history");
 
-    const response = await GET(
-      makeContext("?days=999&include=house_overlay&feed=Garage"),
-    );
+    const response = await GET(makeContext("?days=999&include=house_overlay&feed=Garage"));
     const body = (await response.json()) as {
       days: number;
       house_overlay: unknown;

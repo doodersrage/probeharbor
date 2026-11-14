@@ -32,7 +32,9 @@ vi.mock("../../../lib/householdAuth", () => ({
     redirect: (url: string) => Response,
   ) => {
     if (manager.ok) return null;
-    return redirect(`${redirectTo}?error=${manager.error === "manager_required" ? "manager_required" : "1"}`);
+    return redirect(
+      `${redirectTo}?error=${manager.error === "manager_required" ? "manager_required" : "1"}`,
+    );
   },
 }));
 
@@ -65,10 +67,16 @@ function makeContext(fields: Record<string, string>): APIContext {
 }
 
 beforeEach(() => {
-  mockGetAuthFromCookies.mockReset().mockResolvedValue({ user: { id: "user-1", email: "a@b.com" } });
-  mockRequireHouseholdManager.mockReset().mockResolvedValue({ ok: true, ctx: { householdId: "house-1" } });
+  mockGetAuthFromCookies
+    .mockReset()
+    .mockResolvedValue({ user: { id: "user-1", email: "a@b.com" } });
+  mockRequireHouseholdManager
+    .mockReset()
+    .mockResolvedValue({ ok: true, ctx: { householdId: "house-1" } });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ canCreateShareLinks: true });
-  mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({ householdId: "house-1", error: null });
+  mockGetOrCreateHouseholdForUser
+    .mockReset()
+    .mockResolvedValue({ householdId: "house-1", error: null });
   mockCreateHouseholdApiKey.mockReset().mockResolvedValue({ plaintext: "gtm_secret", error: null });
   mockRevokeHouseholdApiKey.mockReset().mockResolvedValue(undefined);
   mockRecordHouseholdActivity.mockReset().mockResolvedValue(undefined);
@@ -156,7 +164,9 @@ describe("POST /api/api-keys", () => {
 
     await POST(makeContext(field === undefined ? { name: "k" } : { name: "k", scope: field }));
 
-    expect(mockCreateHouseholdApiKey).toHaveBeenCalledWith(expect.objectContaining({ scope: expected }));
+    expect(mockCreateHouseholdApiKey).toHaveBeenCalledWith(
+      expect.objectContaining({ scope: expected }),
+    );
   });
 
   it("a non-manager can't create a write key", async () => {

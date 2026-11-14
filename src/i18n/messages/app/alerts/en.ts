@@ -27,8 +27,10 @@ const en = {
     testSentSkipped: "Test sent via {sent}. Skipped incomplete: {skipped}.",
     testSentVia: "Test alert sent via {channels}.",
     yourEnabledChannels: "your enabled channels",
-    testIncomplete: "No channels could send: enable a channel and fill in its destination, then try again.",
-    testNoChannels: "No alert channels are enabled. Turn on at least one channel, save, then retry.",
+    testIncomplete:
+      "No channels could send: enable a channel and fill in its destination, then try again.",
+    testNoChannels:
+      "No alert channels are enabled. Turn on at least one channel, save, then retry.",
     testFailed: "Could not send test alert. Check channel settings and try again.",
     ackOk: "Alert marked as handled.",
     ackError: "Could not acknowledge alert.",
@@ -48,13 +50,17 @@ const en = {
     resume: "Resume alerts",
     endVacation: "End vacation",
     /** Set on the household by its inbound webhook (an integration), for everyone in it. */
-    householdSnoozedUntil: "An integration snoozed this household's routine alerts until {time}, for everyone in it.",
-    householdVacationUntil: "An integration put this household in vacation mode until {time}: routine alerts are held for everyone in it.",
-    householdClearHint: "To end it early, send clear_snooze or clear_vacation from the integration.",
+    householdSnoozedUntil:
+      "An integration snoozed this household's routine alerts until {time}, for everyone in it.",
+    householdVacationUntil:
+      "An integration put this household in vacation mode until {time}: routine alerts are held for everyone in it.",
+    householdClearHint:
+      "To end it early, send clear_snooze or clear_vacation from the integration.",
     /** Resume buttons for the household hold (owners and editors). */
     householdResume: "Resume alerts for everyone",
     householdEndVacation: "End vacation for everyone",
-    householdResumeHint: "Resuming lifts this household's hold for everyone in it; the integration can set it again.",
+    householdResumeHint:
+      "Resuming lifts this household's hold for everyone in it; the integration can set it again.",
   },
   activity: {
     heading: "Recent alert activity",
@@ -100,7 +106,8 @@ const en = {
     heading: "Recent changes",
     body: "Each save, newest first. Restore puts settings back to how they were just before that save; your current version is kept here too.",
     confirmUndo: "Undo your last alert settings change?",
-    confirmRestore: "Put alert settings back to how they were before this change? Later changes are undone too.",
+    confirmRestore:
+      "Put alert settings back to how they were before this change? Later changes are undone too.",
     undo: "Undo",
     restoreBefore: "Restore to before this",
   },

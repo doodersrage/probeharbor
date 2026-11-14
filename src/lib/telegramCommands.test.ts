@@ -25,13 +25,8 @@ describe("telegramCommands", () => {
   });
 
   it("filters status rows by label", () => {
-    const rows = [
-      { sensor: { label: "Garage temp" } },
-      { sensor: { label: "House humidity" } },
-    ];
+    const rows = [{ sensor: { label: "Garage temp" } }, { sensor: { label: "House humidity" } }];
     expect(telegramStatusQuery("/status garage")).toBe("garage");
-    expect(filterRowsByLabel(rows, "garage").map((r) => r.sensor.label)).toEqual([
-      "Garage temp",
-    ]);
+    expect(filterRowsByLabel(rows, "garage").map((r) => r.sensor.label)).toEqual(["Garage temp"]);
   });
 });

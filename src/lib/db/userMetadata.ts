@@ -18,7 +18,10 @@ export async function getUserMetadata(userId: string): Promise<Record<string, un
  * different keys at the same time can't drop each other's change (the old
  * Supabase code read, merged in JS, then wrote the whole object).
  */
-export async function mergeUserMetadata(userId: string, patch: Record<string, unknown>): Promise<void> {
+export async function mergeUserMetadata(
+  userId: string,
+  patch: Record<string, unknown>,
+): Promise<void> {
   await query(
     `insert into public.user_profiles (user_id, metadata) values ($1, $2::jsonb)
      on conflict (user_id) do update

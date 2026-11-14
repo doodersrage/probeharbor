@@ -4,13 +4,8 @@ import * as neonAccess from "./db/access";
 export type { ApiKeyScope } from "./apiKeyScope";
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function randomApiKey(): string {
@@ -30,9 +25,7 @@ export type ApiKeyRow = {
   revoked_at: string | null;
 };
 
-export async function listHouseholdApiKeys(
-  householdId: string,
-): Promise<ApiKeyRow[]> {
+export async function listHouseholdApiKeys(householdId: string): Promise<ApiKeyRow[]> {
   return neonAccess.listApiKeys(householdId);
 }
 
@@ -54,7 +47,9 @@ export async function createHouseholdApiKey(input: {
     createdBy: input.createdBy,
     scope: parseApiKeyScope(input.scope),
   });
-  return created.key ? { plaintext, key: created.key, error: null } : { plaintext: null, key: null, error: created.error };
+  return created.key
+    ? { plaintext, key: created.key, error: null }
+    : { plaintext: null, key: null, error: created.error };
 }
 
 export async function revokeHouseholdApiKey(

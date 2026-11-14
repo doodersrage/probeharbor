@@ -1,7 +1,6 @@
 /** Links for the official Home Assistant HACS integration. */
 
-export const HACS_REPO_URL =
-  "https://github.com/doodersrage/probeharbor-home-assistant";
+export const HACS_REPO_URL = "https://github.com/doodersrage/probeharbor-home-assistant";
 
 export const HA_INTEGRATION_PAGE = "/integrations/home-assistant";
 
@@ -10,8 +9,7 @@ export const HA_DESCRIPTION =
 
 export const INTEGRATIONS_HUB_PAGE = "/integrations";
 
-export const HA_DEV_DOCS_INGEST =
-  "https://probeharbor.dev/developers/ingest/home-assistant";
+export const HA_DEV_DOCS_INGEST = "https://probeharbor.dev/developers/ingest/home-assistant";
 
 export const HA_DEV_DOCS_INTEGRATIONS =
   "https://probeharbor.dev/developers/integrations/home-assistant";

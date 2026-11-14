@@ -51,7 +51,11 @@ describe("fetchThermostatSnapshotChartPoints", () => {
     });
 
     expect(points.map((p) => [p.timestamp, p.tempf])).toEqual([["2026-10-02T00:00:00.000Z", 70]]);
-    expect(run.mock.calls[0]![1]).toEqual(["hh-1", "2026-09-30T00:00:00.000Z", "2026-10-03T00:00:00.000Z"]);
+    expect(run.mock.calls[0]![1]).toEqual([
+      "hh-1",
+      "2026-09-30T00:00:00.000Z",
+      "2026-10-03T00:00:00.000Z",
+    ]);
   });
 
   it("returns no points (and logs) when the query fails", async () => {

@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { pickHumiditySource } from "./chartHumidity";
 
-const p = (probeLabel: string, timestamp: string, humidity: number | null) => ({ probeLabel, timestamp, humidity });
+const p = (probeLabel: string, timestamp: string, humidity: number | null) => ({
+  probeLabel,
+  timestamp,
+  humidity,
+});
 
 // "Old DHT" was taken down on the 25th; "Bay" still reports humidity.
 const points = [
@@ -38,7 +42,12 @@ describe("pickHumiditySource", () => {
   });
 
   it("returns null when no probe has two humidity readings (0 and missing don't count)", () => {
-    expect(pickHumiditySource([p("A", "2026-10-29T10:00:00Z", 0), p("A", "2026-10-29T11:00:00Z", 50)], new Set(["A"]))).toBeNull();
+    expect(
+      pickHumiditySource(
+        [p("A", "2026-10-29T10:00:00Z", 0), p("A", "2026-10-29T11:00:00Z", 50)],
+        new Set(["A"]),
+      ),
+    ).toBeNull();
     expect(pickHumiditySource([], new Set())).toBeNull();
   });
 });

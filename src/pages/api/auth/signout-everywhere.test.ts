@@ -7,16 +7,23 @@ vi.mock("../../../lib/auth", () => ({
 }));
 vi.mock("../../../lib/mfa", () => ({ MFA_REQUIRED_COOKIE: "mfa_required" }));
 const mockClearMfaStepUpCookie = vi.fn();
-vi.mock("../../../lib/mfaStepUpProof", () => ({ clearMfaStepUpCookie: (...a: unknown[]) => mockClearMfaStepUpCookie(...a) }));
+vi.mock("../../../lib/mfaStepUpProof", () => ({
+  clearMfaStepUpCookie: (...a: unknown[]) => mockClearMfaStepUpCookie(...a),
+}));
 
 const mockRevokeSessions = vi.fn();
 vi.mock("../../../lib/betterAuthRuntime", () => ({
-  withBetterAuth: (_req: unknown, fn: (auth: unknown) => unknown) => fn({ api: { revokeSessions: mockRevokeSessions } }),
+  withBetterAuth: (_req: unknown, fn: (auth: unknown) => unknown) =>
+    fn({ api: { revokeSessions: mockRevokeSessions } }),
 }));
 
 function makeContext(): APIContext {
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
-  const request = new Request("https://example.com/api/auth/signout-everywhere", { method: "POST" });
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
+  const request = new Request("https://example.com/api/auth/signout-everywhere", {
+    method: "POST",
+  });
   return { cookies: { delete: vi.fn() }, redirect, request } as unknown as APIContext;
 }
 

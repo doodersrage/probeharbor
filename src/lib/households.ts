@@ -1,11 +1,6 @@
 import * as neon from "./db/households";
 
-export type HouseholdRole =
-  | "owner"
-  | "member"
-  | "viewer"
-  | "alert_only"
-  | "property_manager";
+export type HouseholdRole = "owner" | "member" | "viewer" | "alert_only" | "property_manager";
 
 export type Household = {
   id: string;
@@ -65,9 +60,7 @@ async function getPreferredHouseholdId(userId: string): Promise<string | null> {
   return neon.getPreferredHouseholdId(userId);
 }
 
-export async function getUserHouseholdId(
-  userId: string,
-): Promise<string | null> {
+export async function getUserHouseholdId(userId: string): Promise<string | null> {
   return getPreferredHouseholdId(userId);
 }
 
@@ -137,10 +130,7 @@ export async function createAdditionalHouseholdForUser(
   return created;
 }
 
-export async function isUserInHousehold(
-  userId: string,
-  householdId: string,
-): Promise<boolean> {
+export async function isUserInHousehold(userId: string, householdId: string): Promise<boolean> {
   return neon.isUserInHousehold(userId, householdId);
 }
 

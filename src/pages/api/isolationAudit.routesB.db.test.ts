@@ -23,7 +23,11 @@ vi.mock("../../lib/apiPlan", () => ({
   checkApiPlan: async () => ({ ok: true, entitlements: { maxDevices: 50 } }),
 }));
 vi.mock("../../lib/feedDiscovery", () => ({
-  discoverAndMergeFeedProbes: async (feeds: unknown[], probes: unknown[]) => ({ feeds, probes, discovered: 0 }),
+  discoverAndMergeFeedProbes: async (feeds: unknown[], probes: unknown[]) => ({
+    feeds,
+    probes,
+    discovered: 0,
+  }),
 }));
 
 import { POST as pullSetup } from "./v1/pull-setup";
@@ -34,7 +38,10 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function home(email: string) {
   const id = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [id]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [id],
+  );
   return { id, home: m!.household_id };
 }
 
@@ -59,11 +66,14 @@ function post(key: string, body: unknown): APIContext {
 }
 
 const pullDevices = (householdId: string) =>
-  sql<{ pull_url: string }>("select pull_url from public.devices where household_id = $1 and source = 'pull_url' order by pull_url", [
-    householdId,
-  ]);
+  sql<{ pull_url: string }>(
+    "select pull_url from public.devices where household_id = $1 and source = 'pull_url' order by pull_url",
+    [householdId],
+  );
 
-const ALICE_FEED = { feeds: [{ id: "alice-feed", name: "Alice feed", url: "https://alice.example/feed.json" }] };
+const ALICE_FEED = {
+  feeds: [{ id: "alice-feed", name: "Alice feed", url: "https://alice.example/feed.json" }],
+};
 
 describe("POST /api/v1/pull-setup (household API key)", () => {
   it("control: an owner with one household gets the feed in the key's household", async () => {
@@ -73,7 +83,9 @@ describe("POST /api/v1/pull-setup (household API key)", () => {
     const res = await pullSetup(post(key, ALICE_FEED));
 
     expect(res.status).toBe(200);
-    expect(await pullDevices(alice.home)).toEqual([{ pull_url: "https://alice.example/feed.json" }]);
+    expect(await pullDevices(alice.home)).toEqual([
+      { pull_url: "https://alice.example/feed.json" },
+    ]);
   });
 
   // Fixed 2026-11-08 (audit gap, src/pages/api/v1/pull-setup.ts:122-136 → src/lib/userTempConfig.ts:227-235):
@@ -85,17 +97,24 @@ describe("POST /api/v1/pull-setup (household API key)", () => {
   it("a key for household A never changes household B's pull devices (owner is also in B)", async () => {
     const alice = await home("alice@example.com");
     const carol = await home("carol@example.com");
-    await sql("insert into public.household_members (household_id, user_id, role) values ($1, $2, 'viewer')", [carol.home, alice.id]);
-    await sql("insert into public.devices (household_id, name, source, pull_url) values ($1, 'Carol feed', 'pull_url', $2)", [
-      carol.home,
-      "https://carol.example/feed.json",
-    ]);
+    await sql(
+      "insert into public.household_members (household_id, user_id, role) values ($1, $2, 'viewer')",
+      [carol.home, alice.id],
+    );
+    await sql(
+      "insert into public.devices (household_id, name, source, pull_url) values ($1, 'Carol feed', 'pull_url', $2)",
+      [carol.home, "https://carol.example/feed.json"],
+    );
     const key = await apiKeyFor(alice.home, alice.id);
 
     const res = await pullSetup(post(key, ALICE_FEED));
 
     expect(res.status).toBe(200);
-    expect(await pullDevices(carol.home)).toEqual([{ pull_url: "https://carol.example/feed.json" }]);
-    expect(await pullDevices(alice.home)).toEqual([{ pull_url: "https://alice.example/feed.json" }]);
+    expect(await pullDevices(carol.home)).toEqual([
+      { pull_url: "https://carol.example/feed.json" },
+    ]);
+    expect(await pullDevices(alice.home)).toEqual([
+      { pull_url: "https://alice.example/feed.json" },
+    ]);
   });
 });

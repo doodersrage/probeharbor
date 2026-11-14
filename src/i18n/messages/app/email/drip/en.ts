@@ -8,7 +8,8 @@ const en = {
     eyebrow: "Getting started",
     preheader: "Create a device key, POST JSON, sensors auto-import — about 10 minutes.",
     title: "Connect your first probe",
-    intro: "Welcome to ProbeHarbor. Your free account is ready — next step is a live reading on Home.",
+    intro:
+      "Welcome to ProbeHarbor. Your free account is ready — next step is a live reading on Home.",
     paragraphs: [
       "Open Devices and pick what you have. Each path creates a device and hands you a snippet with its key; sensors auto-import on the first reading.",
     ],
@@ -46,7 +47,9 @@ const en = {
     title: "Level up with a free Pro trial",
     intro:
       "You’ve had a week to explore ProbeHarbor. Pro adds the channels and sharing tools that matter at 2 a.m. (Free already includes one family live link.)",
-    paragraphs: ["Start a 14-day trial from Pricing — cancel anytime from the dashboard billing portal."],
+    paragraphs: [
+      "Start a 14-day trial from Pricing — cancel anytime from the dashboard billing portal.",
+    ],
     bullets: [
       "SMS and browser push freeze and leak alerts",
       "History, metrics, and never-expire share links plus embeds",

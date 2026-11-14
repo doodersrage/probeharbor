@@ -26,9 +26,7 @@ export function renderIngestQrSvg(text: string, size = 200): string {
   const escaped = svg
     .replace(/d="([^"]*)"/g, (_m, d: string) => `d="${escapeXml(d)}"`)
     .replace(/<svg\b([^>]*)>/, (_m, attrs: string) => {
-      const cleaned = attrs
-        .replace(/\swidth="[^"]*"/g, "")
-        .replace(/\sheight="[^"]*"/g, "");
+      const cleaned = attrs.replace(/\swidth="[^"]*"/g, "").replace(/\sheight="[^"]*"/g, "");
       return `<svg width="${size}" height="${size}"${cleaned}>`;
     });
 

@@ -40,9 +40,7 @@ function parseServiceAccountJson(jsonRaw: string): Partial<ServiceAccount> | nul
   let current: unknown = jsonRaw.trim();
   for (let depth = 0; depth < 4; depth++) {
     if (typeof current !== "string") {
-      return current && typeof current === "object"
-        ? (current as Partial<ServiceAccount>)
-        : null;
+      return current && typeof current === "object" ? (current as Partial<ServiceAccount>) : null;
     }
     const text = current.trim();
     if (!text) return null;
@@ -184,9 +182,7 @@ async function getAccessToken(account: ServiceAccount): Promise<string> {
 export function isStaleFcmError(status: number, errorCode?: string): boolean {
   if (status === 404) return true;
   return (
-    errorCode === "NOT_FOUND" ||
-    errorCode === "UNREGISTERED" ||
-    errorCode === "INVALID_ARGUMENT"
+    errorCode === "NOT_FOUND" || errorCode === "UNREGISTERED" || errorCode === "INVALID_ARGUMENT"
   );
 }
 
@@ -222,9 +218,7 @@ export function buildFcmMessage(token: string, payload: FcmPayload) {
         body: payload.body,
         deep_link: "alerts",
         click_action: "OPEN_ALERTS",
-        ...(payload.eventId != null
-          ? { event_id: String(payload.eventId) }
-          : {}),
+        ...(payload.eventId != null ? { event_id: String(payload.eventId) } : {}),
       },
       android: {
         priority: "HIGH",
@@ -301,8 +295,9 @@ export async function sendFcmToUser(
 
       let errorCode: string | undefined;
       try {
-        errorCode = (JSON.parse(errBody) as { error?: { details?: Array<{ errorCode?: string }> } })
-          .error?.details?.find((d) => d.errorCode)?.errorCode;
+        errorCode = (
+          JSON.parse(errBody) as { error?: { details?: Array<{ errorCode?: string }> } }
+        ).error?.details?.find((d) => d.errorCode)?.errorCode;
       } catch {
         /* ignore */
       }
@@ -312,7 +307,10 @@ export async function sendFcmToUser(
         try {
           await neonPush.deleteFcmToken(userId, row.token);
         } catch (err) {
-          console.error("Failed to delete stale FCM token:", err instanceof Error ? err.message : err);
+          console.error(
+            "Failed to delete stale FCM token:",
+            err instanceof Error ? err.message : err,
+          );
         }
       }
     } catch (err) {

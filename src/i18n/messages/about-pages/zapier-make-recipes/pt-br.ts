@@ -1,4 +1,3 @@
-
 /**
  * /about/zapier-make-recipes body copy. Zapier/Make UI labels and dashboard screen
  * names stay English. `*Html` keys are trusted inline HTML.
@@ -16,7 +15,8 @@ const ptBr: Messages = {
   othersHtml:
     'O mesmo webhook de saída funciona com o IFTTT Maker e com o n8n auto-hospedado, incluindo um fluxo para baixar <a class="text-link" href="/n8n/probeharbor-alert-to-sheets.json" download>n8n → Google Sheets</a>. Receitas completas: <a class="text-link" href="/integrations/automation">IFTTT, n8n e Sheets</a>.',
   inboundTitle: "Entrada: pausar alertas por automação",
-  inboundHtml: "Residências Pro podem criar um webhook de entrada em Dashboard → Share. Faça um POST:",
+  inboundHtml:
+    "Residências Pro podem criar um webhook de entrada em Dashboard → Share. Faça um POST:",
   inboundUseHtml:
     "Use <strong>HTTP POST</strong> no Make ou no Zapier quando sair de casa ou ativar o alarme, para pausar os alertas não críticos.",
   haTitle: "Home Assistant",

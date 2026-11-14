@@ -35,9 +35,7 @@ describe("firmwareSketches", () => {
   });
 
   it("builds Arduino snippet with real path and host", () => {
-    const snippet = buildArduinoHttpClientSnippet(url, [
-      { key: "temp1", kind: "temperature" },
-    ]);
+    const snippet = buildArduinoHttpClientSnippet(url, [{ key: "temp1", kind: "temperature" }]);
     expect(snippet).toContain("POST /api/ingest/abc123key HTTP/1.1");
     expect(snippet).toContain("Host: probeharbor.dev");
     expect(snippet).not.toContain("YOUR_KEY");

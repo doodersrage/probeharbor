@@ -13,7 +13,8 @@ const de: PipeForecastMessages = {
   getAlerts: "Kostenlose Frostalarme per E-Mail",
   whenGaragePipes: "Wann Rohre in der Garage einfrieren",
   alertsConfirmed: "Frostalarme sind aktiv. Wir schreiben dir am Nachmittag vor einer Frostnacht.",
-  alertsInvalid: "Dieser Bestätigungslink ist nicht mehr gültig. Such unten deine Gegend und melde dich erneut an.",
+  alertsInvalid:
+    "Dieser Bestätigungslink ist nicht mehr gültig. Such unten deine Gegend und melde dich erneut an.",
   levelsTitle: "So liest du die Risikostufen",
   levelsHtml: [
     "<strong>Hohes Risiko:</strong> Der Tiefstwert draußen liegt bei −7 °C (20 °F) oder darunter, dem häufig genannten Punkt, an dem Rohre in unbeheizten Räumen einfrieren.",
@@ -28,7 +29,8 @@ const de: PipeForecastMessages = {
   startFree: "Kostenlos starten",
   kitParts: "Teile für das ESP32-Frost-Kit",
   sourcesTitle: "Quellen",
-  sourceKxan: "At what temperature do pipes freeze? (KXAN, englisch, mit Verweis auf Forschung der University of Illinois)",
+  sourceKxan:
+    "At what temperature do pipes freeze? (KXAN, englisch, mit Verweis auf Forschung der University of Illinois)",
   sourceFarmBureau: "How pipes freeze and burst (Farm Bureau Insurance, englisch)",
   sourceNws: "National Weather Service API",
   sourceNwsNote: ": stündliche Prognosedaten",
@@ -63,16 +65,21 @@ const de: PipeForecastMessages = {
     riskHigh: "Hohes Risiko",
     riskWatch: "Beobachten",
     riskLow: "Geringes Risiko",
-    errorUsOnly: "Diese Prognose nutzt den National Weather Service und deckt deshalb nur Orte in den USA ab.",
+    errorUsOnly:
+      "Diese Prognose nutzt den National Weather Service und deckt deshalb nur Orte in den USA ab.",
     errorRateLimited: "Zu viele Suchen in einer Minute. Versuch es gleich noch einmal.",
-    errorService: "Der Prognosedienst hat nicht geantwortet. Versuch es in einer Minute noch einmal.",
-    errorNoGeolocation: "Dieser Browser kann seinen Standort nicht teilen. Such stattdessen nach einer Stadt oder ZIP-Postleitzahl.",
-    errorGeoDeclined: "Der Standortzugriff wurde abgelehnt. Such stattdessen nach einer Stadt oder ZIP-Postleitzahl.",
+    errorService:
+      "Der Prognosedienst hat nicht geantwortet. Versuch es in einer Minute noch einmal.",
+    errorNoGeolocation:
+      "Dieser Browser kann seinen Standort nicht teilen. Such stattdessen nach einer Stadt oder ZIP-Postleitzahl.",
+    errorGeoDeclined:
+      "Der Standortzugriff wurde abgelehnt. Such stattdessen nach einer Stadt oder ZIP-Postleitzahl.",
     tonight: "Heute Nacht",
     weekdayNight: "{weekday}nacht",
     headlineNone: "Keine Prognosenächte erhalten",
     headlineHigh: "Heute Nacht: hohes Frostrisiko für unbeheizte Räume (Tiefstwert {low})",
-    headlineWatch: "Heute Nacht: unter null (Tiefstwert {low}), freiliegende Rohre im Blick behalten",
+    headlineWatch:
+      "Heute Nacht: unter null (Tiefstwert {low}), freiliegende Rohre im Blick behalten",
     headlineColderLater: "Heute Nacht bleibt es frostfrei, aber kältere Nächte kommen",
     headlineClear: "Keine Frostnächte in der Prognose",
     describeHigh:
@@ -83,7 +90,8 @@ const de: PipeForecastMessages = {
       "Etwa {hours} Stunden unter null, Tiefstwert {low}. Freiliegende Rohre an Außenwänden, nahe am Garagentor oder in belüfteten Kriechkellern können in einer langen oder windigen Nacht trotzdem einfrieren.",
     describeAbove: "Bleibt über null (Tiefstwert {low}).",
     describeWind: "Wind bis {wind} bei Frost entzieht freiliegenden Rohren schneller Wärme.",
-    describeNextDay: "Auch der nächste Tag bleibt unter null, unbeheizte Räume wärmen sich also nicht wieder auf.",
+    describeNextDay:
+      "Auch der nächste Tag bleibt unter null, unbeheizte Räume wärmen sich also nicht wieder auf.",
     signupTitle: "Schick mir vor Frostnächten in {place} eine E-Mail",
     signupLede:
       "Kostenlos, ohne Hardware. Eine E-Mail am Nachmittag vor der ersten Frostnacht einer Kältewelle und vor jeder Nacht mit {temp} oder kälter. Abmeldung mit einem Klick.",

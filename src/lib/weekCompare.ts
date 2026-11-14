@@ -28,9 +28,7 @@ export function compareWeekAverages(
   const thisWeekAvgF = averageTempF(thisWeek);
   const priorYearAvgF = averageTempF(priorYearWeek);
   const deltaF =
-    thisWeekAvgF != null && priorYearAvgF != null
-      ? thisWeekAvgF - priorYearAvgF
-      : null;
+    thisWeekAvgF != null && priorYearAvgF != null ? thisWeekAvgF - priorYearAvgF : null;
 
   return {
     thisWeekAvgF,

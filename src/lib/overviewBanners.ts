@@ -47,8 +47,7 @@ export function buildOverviewBannerQueue(flags: OverviewBannerFlags): OverviewBa
       id: "upgrade",
       priority: 20,
       show:
-        !flags.quietActive &&
-        (flags.upgradeTarget === "member" || flags.upgradeTarget === "pro"),
+        !flags.quietActive && (flags.upgradeTarget === "member" || flags.upgradeTarget === "pro"),
     },
   ];
 }

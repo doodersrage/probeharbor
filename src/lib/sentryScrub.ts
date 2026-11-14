@@ -109,7 +109,8 @@ export function scrubText(text: string): string {
     .replace(TOKEN_LIKE, REDACTED);
 }
 
-const DROP_HEADERS = /^(cookie|set-cookie|authorization|x-ingest-key|x-api-key|proxy-authorization)$|signature/i;
+const DROP_HEADERS =
+  /^(cookie|set-cookie|authorization|x-ingest-key|x-api-key|proxy-authorization)$|signature/i;
 
 type Headers = Record<string, unknown>;
 type RequestData = {
@@ -144,7 +145,8 @@ export function scrubEvent<T extends ScrubbableEvent>(event: T): T {
   const request = event.request;
   if (request) {
     if (typeof request.url === "string") request.url = scrubUrl(request.url);
-    if (typeof request.query_string === "string") request.query_string = scrubQuery(request.query_string);
+    if (typeof request.query_string === "string")
+      request.query_string = scrubQuery(request.query_string);
     else if (request.query_string != null) request.query_string = REDACTED;
     if (request.headers) {
       for (const name of Object.keys(request.headers)) {

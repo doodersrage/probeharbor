@@ -1,4 +1,3 @@
-
 /** Body copy for /about/temperature-probe-case-study. Hrefs stay English; middleware localizes them. */
 const FIRMWARE_LINK =
   '<a class="text-link" target="_blank" rel="noreferrer" href="https://github.com/doodersrage/arduino-network-json-temperature-sever">arduino-network-json-temperature-sever</a>';
@@ -30,7 +29,8 @@ const en = {
     'Placement followed the rules in the <a class="text-link" href="/about/temperature-probes">temperature probes guide</a>: away from direct sun patches and exhaust fans, roughly shoulder height, with ventilated mounting so air could move past the sensor head. Labels in the dashboard map JSON keys <code>0</code> and <code>1</code> to human-readable zone names.',
   ],
   rev1Alt: "First revision probe board on a breadboard with DHT22 sensors and LCD",
-  rev1Caption: "Revision one validated wiring, read intervals, and JSON shape on the bench before garage mounting.",
+  rev1Caption:
+    "Revision one validated wiring, read intervals, and JSON shape on the bench before garage mounting.",
   timelineTitle: "Build timeline",
   timelineHtml: [
     "<strong>Bench bring-up:</strong> Serial logging confirmed DHT22 reads, LCD formatting, and stable <code>temp</code> JSON keys before the board left the desk.",
@@ -40,7 +40,8 @@ const en = {
     "<strong>Website integration:</strong> Astro pages map feeds to cards; signed-in history stores snapshots for trend review and CSV export.",
   ],
   dataTitle: "What the data showed",
-  dataLede: "After a full winter and summer cycle, the probes paid off in ways a single reading would have missed:",
+  dataLede:
+    "After a full winter and summer cycle, the probes paid off in ways a single reading would have missed:",
   data: [
     "Door-adjacent temperature could swing 8–12 °F within minutes of opening the overhead door while the back wall moved modestly.",
     "Overnight lows near the north wall tracked freeze risk more reliably than outdoor forecasts alone.",

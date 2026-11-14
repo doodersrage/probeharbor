@@ -19,7 +19,11 @@ import { hasMobileOAuthCookie } from "../../../lib/mobileAuthRedirect";
 function errorCode(code: string): SignInErrorCode {
   if (code === "access_denied") return "oauth_denied";
   // GitHub link refused, or an email that isn't verified on one side.
-  if (code === "account_not_linked" || code === "unable_to_link_account" || code === "account_already_linked_to_different_user") {
+  if (
+    code === "account_not_linked" ||
+    code === "unable_to_link_account" ||
+    code === "account_already_linked_to_different_user"
+  ) {
     return "oauth_account_exists";
   }
   return "oauth_exchange_failed";
@@ -42,9 +46,13 @@ export const GET: APIRoute = async (context) => {
   const locale = requestLocale(context);
   try {
     const metadata = await getUserMetadata(user.id);
-    if (!metadata.locale && (isNew || locale !== DEFAULT_LOCALE)) await mergeUserMetadata(user.id, { locale });
+    if (!metadata.locale && (isNew || locale !== DEFAULT_LOCALE))
+      await mergeUserMetadata(user.id, { locale });
   } catch (error) {
-    console.error("oauth: could not save account language", error instanceof Error ? error.message : error);
+    console.error(
+      "oauth: could not save account language",
+      error instanceof Error ? error.message : error,
+    );
   }
 
   const refCode = cookies.get(OAUTH_REF_COOKIE)?.value?.trim().toLowerCase() ?? "";

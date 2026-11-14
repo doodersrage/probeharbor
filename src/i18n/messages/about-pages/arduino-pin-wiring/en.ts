@@ -1,4 +1,3 @@
-
 /** /about/arduino-pin-wiring body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 const ETH_LINK =
   '<a class="text-link" href="https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest" target="_blank" rel="noreferrer"><code>ethernet_dht22_ingest</code></a>';
@@ -7,7 +6,8 @@ const en = {
   introHtml:
     "The pin-level diagram below matches the firmware's <code>LiquidCrystal</code> constructor and the DHT22 data lines used in this project. Use it when verifying jumper wires against the sketch: especially if analog pins are serving as digital I/O.",
   diagramAlt: "Pin-level wiring diagram for Arduino Uno connecting LCD and two DHT22 sensors",
-  diagramCaption: "RS, RW, EN, data lines, backlight, and both DHT22 data pins mapped to specific Uno pins.",
+  diagramCaption:
+    "RS, RW, EN, data lines, backlight, and both DHT22 data pins mapped to specific Uno pins.",
   lcdTitle: "16×2 LCD pin map",
   lcdIntroHtml:
     "The sketch uses the seven-argument <code>LiquidCrystal(rs, rw, enable, d4, d5, d6, d7)</code> form. In this build:",

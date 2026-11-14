@@ -90,9 +90,7 @@ export const GET: APIRoute = async (context) => {
       .filter((row) => row.value_num != null)
       .map((row) => ({
         target: `${row.deviceName}/${row.sensor.label}`,
-        datapoints: [
-          [row.value_num as number, Date.parse(row.recorded_at) || Date.now()],
-        ],
+        datapoints: [[row.value_num as number, Date.parse(row.recorded_at) || Date.now()]],
       }));
     return new Response(JSON.stringify(series), {
       status: 200,

@@ -59,7 +59,10 @@ export default {
       { label: "Szenario: ausgefallene Garagenheizung" },
     ],
     sources: [
-      { label: "Bei welcher Temperatur frieren Rohre ein? (KXAN, unter Berufung auf Forschung der University of Illinois)" },
+      {
+        label:
+          "Bei welcher Temperatur frieren Rohre ein? (KXAN, unter Berufung auf Forschung der University of Illinois)",
+      },
       { label: farmBureau },
     ],
   },
@@ -288,7 +291,10 @@ export default {
       { label: "Sollte man Wasserhähne tropfen lassen, damit Rohre nicht einfrieren?" },
     ],
     sources: [
-      { label: "Wie Rohre einfrieren und platzen (Farm Bureau Insurance, unter Berufung auf Forschung der University of Illinois)" },
+      {
+        label:
+          "Wie Rohre einfrieren und platzen (Farm Bureau Insurance, unter Berufung auf Forschung der University of Illinois)",
+      },
     ],
   },
   "vacant-house-winter-thermostat-setting": {
@@ -673,7 +679,8 @@ export default {
     ],
   },
   "landlord-vacant-rental-freeze-monitoring": {
-    question: "Wie kann ein Vermieter eine leerstehende Mietwohnung auf gefrorene Rohre überwachen?",
+    question:
+      "Wie kann ein Vermieter eine leerstehende Mietwohnung auf gefrorene Rohre überwachen?",
     description:
       "Heizung auf mindestens 13 °C (55 °F), ein Temperatursensor an den Leitungen jeder Einheit und Alarme an die Person, die am schnellsten vor Ort ist.",
     shortAnswer:

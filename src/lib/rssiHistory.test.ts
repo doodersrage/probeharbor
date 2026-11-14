@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import {
-  appendRssiSample,
-  enrichDeviceMetaHistories,
-  parseRssiHistory,
-} from "./rssiHistory";
+import { appendRssiSample, enrichDeviceMetaHistories, parseRssiHistory } from "./rssiHistory";
 
 describe("rssiHistory", () => {
   it("appends and trims rssi samples", () => {
     let history: unknown = [];
     for (let i = 0; i < 16; i++) {
-      history = appendRssiSample(history, -50 - i, `2026-01-${String(i + 1).padStart(2, "0")}T00:00:00Z`);
+      history = appendRssiSample(
+        history,
+        -50 - i,
+        `2026-01-${String(i + 1).padStart(2, "0")}T00:00:00Z`,
+      );
     }
     expect(history).toHaveLength(14);
     expect((history as { dbm: number }[])[0]?.dbm).toBe(-52);

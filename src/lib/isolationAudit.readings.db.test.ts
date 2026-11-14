@@ -36,44 +36,58 @@ const ago = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
 /** A household with one device ("Garage") holding temperature, humidity and door sensors, same keys in every household. */
 async function household(email: string) {
   const userId = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [
-    userId,
-  ]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [userId],
+  );
   const householdId = m!.household_id;
   const [d] = await sql<{ id: string }>(
     "insert into public.devices (household_id, name, source, meta) values ($1, 'Garage', 'push', '{}') returning id",
     [householdId],
   );
   const deviceId = d!.id;
-  const temp = (await ingest.upsertDeviceSensor(householdId, deviceId, "0", "Bay", "temperature", "F")).sensor!.id;
-  const hum = (await ingest.upsertDeviceSensor(householdId, deviceId, "0", "Bay humidity", "humidity", "%")).sensor!.id;
-  const door = (await ingest.upsertDeviceSensor(householdId, deviceId, "door1", "Side door", "door")).sensor!.id;
+  const temp = (
+    await ingest.upsertDeviceSensor(householdId, deviceId, "0", "Bay", "temperature", "F")
+  ).sensor!.id;
+  const hum = (
+    await ingest.upsertDeviceSensor(householdId, deviceId, "0", "Bay humidity", "humidity", "%")
+  ).sensor!.id;
+  const door = (
+    await ingest.upsertDeviceSensor(householdId, deviceId, "door1", "Side door", "door")
+  ).sensor!.id;
   return { userId, householdId, deviceId, temp, hum, door };
 }
 
 async function num(sensorId: string, householdId: string, at: string, value: number) {
-  await sql("insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values ($1, $2, $3, $4)", [
-    sensorId,
-    householdId,
-    at,
-    value,
-  ]);
+  await sql(
+    "insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values ($1, $2, $3, $4)",
+    [sensorId, householdId, at, value],
+  );
 }
 
 async function bool(sensorId: string, householdId: string, at: string, value: boolean) {
-  await sql("insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_bool) values ($1, $2, $3, $4)", [
-    sensorId,
-    householdId,
-    at,
-    value,
-  ]);
+  await sql(
+    "insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_bool) values ($1, $2, $3, $4)",
+    [sensorId, householdId, at, value],
+  );
 }
 
-async function doorEvent(householdId: string, openedAt: string, closedAt: string | null, label = "Side door") {
+async function doorEvent(
+  householdId: string,
+  openedAt: string,
+  closedAt: string | null,
+  label = "Side door",
+) {
   await sql(
     `insert into public.door_open_events (household_id, label, opened_at, closed_at, duration_ms)
      values ($1, $2, $3, $4, $5)`,
-    [householdId, label, openedAt, closedAt, closedAt ? Date.parse(closedAt) - Date.parse(openedAt) : null],
+    [
+      householdId,
+      label,
+      openedAt,
+      closedAt,
+      closedAt ? Date.parse(closedAt) - Date.parse(openedAt) : null,
+    ],
   );
 }
 
@@ -83,9 +97,21 @@ describe("isolation: places.ts", () => {
   it("updateFreezeMapSettings / getFreezeMapSettings change and read only the given household", async () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");
-    await places.updateFreezeMapSettings(b.householdId, { optIn: true, cityId: "b-city", lat: 1, lon: 2, label: "B" });
+    await places.updateFreezeMapSettings(b.householdId, {
+      optIn: true,
+      cityId: "b-city",
+      lat: 1,
+      lon: 2,
+      label: "B",
+    });
     await expect(
-      places.updateFreezeMapSettings(a.householdId, { optIn: false, cityId: "a-city", lat: 3, lon: 4, label: "A" }),
+      places.updateFreezeMapSettings(a.householdId, {
+        optIn: false,
+        cityId: "a-city",
+        lat: 3,
+        lon: 4,
+        label: "A",
+      }),
     ).resolves.toEqual({ error: null });
 
     await expect(places.getFreezeMapSettings(b.householdId)).resolves.toEqual({
@@ -95,7 +121,9 @@ describe("isolation: places.ts", () => {
       freeze_map_lon: 2,
       freeze_map_label: "B",
     });
-    await expect(places.getFreezeMapSettings(a.householdId)).resolves.toMatchObject({ freeze_map_city_id: "a-city" });
+    await expect(places.getFreezeMapSettings(a.householdId)).resolves.toMatchObject({
+      freeze_map_city_id: "a-city",
+    });
   });
 
   it("setIndoorReference / getIndoorReference touch only the given household", async () => {
@@ -134,7 +162,13 @@ describe("isolation: places.ts", () => {
     const b = await household("b@example.com");
     await num(a.temp, a.householdId, ago(5), 40);
     await num(b.temp, b.householdId, ago(5), 99);
-    const rows = await places.recentReadings([a.householdId], [a.temp, b.temp], ago(60), 100, false);
+    const rows = await places.recentReadings(
+      [a.householdId],
+      [a.temp, b.temp],
+      ago(60),
+      100,
+      false,
+    );
     expect(rows.map((r) => [r.household_id, r.value_num])).toEqual([[a.householdId, 40]]);
   });
 
@@ -152,7 +186,9 @@ describe("isolation: places.ts", () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");
     await num(b.temp, b.householdId, ago(30), 99);
-    await expect(places.sensorBucketAverages(a.householdId, b.temp, ago(120), ago(0), 3600)).resolves.toEqual([]);
+    await expect(
+      places.sensorBucketAverages(a.householdId, b.temp, ago(120), ago(0), 3600),
+    ).resolves.toEqual([]);
   });
 });
 
@@ -177,7 +213,10 @@ describe("isolation: history.ts", () => {
     await num(b.temp, b.householdId, ago(10), 99);
     await num(b.temp, b.householdId, ago(20), 98);
     const filters = { feedName: "Garage", probeKey: "0" };
-    await expect(history.countTemperatureHistoryRows(a.householdId, filters)).resolves.toEqual({ count: 1, error: null });
+    await expect(history.countTemperatureHistoryRows(a.householdId, filters)).resolves.toEqual({
+      count: 1,
+      error: null,
+    });
     const page = await history.fetchTemperatureHistoryPage(a.householdId, filters, 0, 50);
     expect(page.rows.map((r) => r.value_num)).toEqual([40]);
   });
@@ -195,7 +234,14 @@ describe("isolation: history.ts", () => {
     const b = await household("b@example.com");
     await num(a.temp, a.householdId, ago(10), 40);
     await num(b.temp, b.householdId, ago(10), 99);
-    const rows = await history.sensorBucketSamples(a.householdId, [a.temp, b.temp], [a.temp, b.temp], ago(60), ago(0), 60);
+    const rows = await history.sensorBucketSamples(
+      a.householdId,
+      [a.temp, b.temp],
+      [a.temp, b.temp],
+      ago(60),
+      ago(0),
+      60,
+    );
     expect(rows?.map((r) => [r.sensor_id, r.value_num])).toEqual([[a.temp, 40]]);
   });
 
@@ -205,7 +251,9 @@ describe("isolation: history.ts", () => {
     const mine = ago(60);
     await num(a.temp, a.householdId, mine, 40);
     await num(b.temp, b.householdId, ago(6000), 99);
-    expect(Date.parse((await history.fetchEarliestSensorReadingAt(a.householdId))!)).toBe(Date.parse(mine));
+    expect(Date.parse((await history.fetchEarliestSensorReadingAt(a.householdId))!)).toBe(
+      Date.parse(mine),
+    );
   });
 
   it("temperatureReadingCounts: B's readings and rollups don't count, even with B's sensor ids passed", async () => {
@@ -221,12 +269,16 @@ describe("isolation: history.ts", () => {
        values ($1, $2, $3, 20, 20, 12)`,
       [b.temp, b.householdId, hour.toISOString()],
     );
-    await expect(history.temperatureReadingCounts(a.householdId, ago(600), ago(0), 36, null)).resolves.toEqual({
+    await expect(
+      history.temperatureReadingCounts(a.householdId, ago(600), ago(0), 36, null),
+    ).resolves.toEqual({
       total_count: 1,
       below_count: 1,
       from_rollups: false,
     });
-    await expect(history.temperatureReadingCounts(a.householdId, ago(600), ago(0), 36, [b.temp])).resolves.toEqual({
+    await expect(
+      history.temperatureReadingCounts(a.householdId, ago(600), ago(0), 36, [b.temp]),
+    ).resolves.toEqual({
       total_count: 0,
       below_count: 0,
       from_rollups: false,
@@ -246,10 +298,16 @@ describe("isolation: readings.ts", () => {
 
     const h = a.householdId;
     await expect(readings.getRecentNumericReadings(h, a.temp, ago(60))).resolves.toEqual([40]);
-    expect((await readings.getRecentNumericReadingSamples(h, a.temp, ago(60))).map((s) => s.tempF)).toEqual([40]);
-    await expect(readings.getNumericReadingInWindow(h, a.temp, ago(60), ago(0))).resolves.toMatchObject({ value: 40 });
+    expect(
+      (await readings.getRecentNumericReadingSamples(h, a.temp, ago(60))).map((s) => s.tempF),
+    ).toEqual([40]);
+    await expect(
+      readings.getNumericReadingInWindow(h, a.temp, ago(60), ago(0)),
+    ).resolves.toMatchObject({ value: 40 });
     await expect(readings.hasNumericReadingAboveSince(h, a.temp, ago(60), 50)).resolves.toBe(false);
-    expect((await readings.getDwellAnchor(h, a.temp, ago(60), ago(0))).map((s) => s.tempF)).toEqual([40]);
+    expect((await readings.getDwellAnchor(h, a.temp, ago(60), ago(0))).map((s) => s.tempF)).toEqual(
+      [40],
+    );
   });
 
   it("another household's sensor id passed with A's household reads nothing", async () => {
@@ -260,13 +318,19 @@ describe("isolation: readings.ts", () => {
     const h = a.householdId;
     await expect(readings.getRecentNumericReadings(h, b.temp, ago(60))).resolves.toEqual([]);
     await expect(readings.getRecentNumericReadingSamples(h, b.temp, ago(60))).resolves.toEqual([]);
-    await expect(readings.getNumericReadingInWindow(h, b.temp, ago(60), ago(0))).resolves.toBeNull();
+    await expect(
+      readings.getNumericReadingInWindow(h, b.temp, ago(60), ago(0)),
+    ).resolves.toBeNull();
     await expect(readings.hasNumericReadingAboveSince(h, b.temp, ago(60), 50)).resolves.toBe(false);
     await expect(readings.getDwellAnchor(h, b.temp, ago(60), ago(0))).resolves.toEqual([]);
     await expect(readings.fetchRecentBoolReadings(h, b.door, ago(60))).resolves.toEqual([]);
     // B's own household still reads them (the filter isn't simply "nothing").
-    await expect(readings.getRecentNumericReadings(b.householdId, b.temp, ago(60))).resolves.toEqual([99]);
-    await expect(readings.hasNumericReadingAboveSince(b.householdId, b.temp, ago(60), 50)).resolves.toBe(true);
+    await expect(
+      readings.getRecentNumericReadings(b.householdId, b.temp, ago(60)),
+    ).resolves.toEqual([99]);
+    await expect(
+      readings.hasNumericReadingAboveSince(b.householdId, b.temp, ago(60), 50),
+    ).resolves.toBe(true);
   });
 
   it("fetchRecentBoolReadings reads only the given sensor", async () => {
@@ -274,7 +338,9 @@ describe("isolation: readings.ts", () => {
     const b = await household("b@example.com");
     await bool(a.door, a.householdId, ago(30), false);
     await bool(b.door, b.householdId, ago(20), true);
-    expect((await readings.fetchRecentBoolReadings(a.householdId, a.door, ago(60))).map((r) => r.value)).toEqual([false]);
+    expect(
+      (await readings.fetchRecentBoolReadings(a.householdId, a.door, ago(60))).map((r) => r.value),
+    ).toEqual([false]);
   });
 });
 
@@ -302,7 +368,14 @@ describe("isolation: doors.ts", () => {
     const closed = ago(50);
     await doorEvent(b.householdId, opened, closed);
     await doors.insertDoorSessions([
-      { household_id: a.householdId, sensor_id: a.door, label: "Side door", opened_at: opened, closed_at: closed, duration_ms: 600_000 },
+      {
+        household_id: a.householdId,
+        sensor_id: a.door,
+        label: "Side door",
+        opened_at: opened,
+        closed_at: closed,
+        duration_ms: 600_000,
+      },
     ]);
     const rows = await sql<{ household_id: string; sensor_id: string | null }>(
       "select household_id, sensor_id from public.door_open_events order by household_id",
@@ -324,9 +397,9 @@ describe("isolation: doors.ts", () => {
       closed_at: ago(5),
       duration_ms: 1,
     });
-    await expect(doors.insertDoorSessions([session(a.door, ago(60)), session(b.door, ago(50))])).rejects.toThrow(
-      /outside its household/,
-    );
+    await expect(
+      doors.insertDoorSessions([session(a.door, ago(60)), session(b.door, ago(50))]),
+    ).rejects.toThrow(/outside its household/);
     expect(errors.mock.calls.flat().join(" ")).toContain(b.door);
     errors.mockRestore();
     await expect(sql("select 1 from public.door_open_events")).resolves.toEqual([]);
@@ -367,13 +440,33 @@ describe("isolation: ingest.ts", () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");
     await sql("update public.device_sensors set unit = 'C' where id = $1", [b.temp]);
-    const found = await ingest.upsertDeviceSensor(a.householdId, a.deviceId, "0", "Bay", "temperature", "F");
+    const found = await ingest.upsertDeviceSensor(
+      a.householdId,
+      a.deviceId,
+      "0",
+      "Bay",
+      "temperature",
+      "F",
+    );
     expect(found.sensor?.id).toBe(a.temp);
-    const created = await ingest.upsertDeviceSensor(a.householdId, a.deviceId, "new", "New", "humidity", "%");
+    const created = await ingest.upsertDeviceSensor(
+      a.householdId,
+      a.deviceId,
+      "new",
+      "New",
+      "humidity",
+      "%",
+    );
     expect(created.sensor?.device_id).toBe(a.deviceId);
-    const [bSensor] = await sql<{ unit: string }>("select unit from public.device_sensors where id = $1", [b.temp]);
+    const [bSensor] = await sql<{ unit: string }>(
+      "select unit from public.device_sensors where id = $1",
+      [b.temp],
+    );
     expect(bSensor?.unit).toBe("C");
-    const [n] = await sql<{ n: number }>("select count(*)::int as n from public.device_sensors where device_id = $1", [b.deviceId]);
+    const [n] = await sql<{ n: number }>(
+      "select count(*)::int as n from public.device_sensors where device_id = $1",
+      [b.deviceId],
+    );
     expect(n?.n).toBe(3);
   });
 
@@ -381,10 +474,24 @@ describe("isolation: ingest.ts", () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");
     await sql("update public.device_sensors set unit = 'C' where id = $1", [b.temp]);
-    const existing = await ingest.upsertDeviceSensor(a.householdId, b.deviceId, "0", "Bay", "temperature", "F");
+    const existing = await ingest.upsertDeviceSensor(
+      a.householdId,
+      b.deviceId,
+      "0",
+      "Bay",
+      "temperature",
+      "F",
+    );
     expect(existing.sensor).toBeNull();
     expect(existing.error).toBeTruthy();
-    const created = await ingest.upsertDeviceSensor(a.householdId, b.deviceId, "new", "New", "humidity", "%");
+    const created = await ingest.upsertDeviceSensor(
+      a.householdId,
+      b.deviceId,
+      "new",
+      "New",
+      "humidity",
+      "%",
+    );
     expect(created.sensor).toBeNull();
     const rows = await sql<{ key: string; unit: string | null }>(
       "select key, unit from public.device_sensors where device_id = $1 order by key, kind",
@@ -422,7 +529,9 @@ describe("isolation: ingest.ts", () => {
     errors.mockRestore();
     await expect(sql("select 1 from public.sensor_readings")).resolves.toEqual([]);
     // A's own sensor tagged with B's household is refused too.
-    const swapped = await ingest.insertSensorReadings([{ sensor_id: a.temp, household_id: b.householdId, value_num: 1 }]);
+    const swapped = await ingest.insertSensorReadings([
+      { sensor_id: a.temp, household_id: b.householdId, value_num: 1 },
+    ]);
     expect(swapped.error).toBeTruthy();
     await expect(sql("select 1 from public.sensor_readings")).resolves.toEqual([]);
   });
@@ -447,7 +556,13 @@ describe("isolation: ingest.ts", () => {
     const at = ago(3);
     await expect(
       ingest.insertSensorReadings([
-        { sensor_id: a.temp, household_id: a.householdId, recorded_at: at, value_num: 40.5, meta: { tempc: 4.7 } },
+        {
+          sensor_id: a.temp,
+          household_id: a.householdId,
+          recorded_at: at,
+          value_num: 40.5,
+          meta: { tempc: 4.7 },
+        },
         { sensor_id: a.door, household_id: a.householdId, recorded_at: at, value_bool: true },
       ]),
     ).resolves.toEqual({ error: null, inserted: 2 });
@@ -458,8 +573,24 @@ describe("isolation: ingest.ts", () => {
       [a.temp],
     );
     expect(rows).toEqual([
-      { sensor_id: a.temp, household_id: a.householdId, recorded_ms: Date.parse(at), value_num: 40.5, value_bool: null, value_text: null, meta: { tempc: 4.7 } },
-      { sensor_id: a.door, household_id: a.householdId, recorded_ms: Date.parse(at), value_num: null, value_bool: true, value_text: null, meta: {} },
+      {
+        sensor_id: a.temp,
+        household_id: a.householdId,
+        recorded_ms: Date.parse(at),
+        value_num: 40.5,
+        value_bool: null,
+        value_text: null,
+        meta: { tempc: 4.7 },
+      },
+      {
+        sensor_id: a.door,
+        household_id: a.householdId,
+        recorded_ms: Date.parse(at),
+        value_num: null,
+        value_bool: true,
+        value_text: null,
+        meta: {},
+      },
     ]);
   });
 
@@ -482,6 +613,8 @@ describe("isolation: ingest.ts", () => {
     await ingest.recordIngestStat(a.householdId, a.deviceId, true, day);
     await ingest.recordIngestStat(b.householdId, b.deviceId, false, day);
     const rows = await ingest.listIngestStatsForHousehold(a.householdId, day);
-    expect(rows.map((r) => [r.device_id, r.success_count, r.error_count])).toEqual([[a.deviceId, 1, 0]]);
+    expect(rows.map((r) => [r.device_id, r.success_count, r.error_count])).toEqual([
+      [a.deviceId, 1, 0],
+    ]);
   });
 });

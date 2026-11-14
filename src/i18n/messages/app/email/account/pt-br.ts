@@ -15,7 +15,8 @@ const ptBr: AccountEmailMessages = {
     eyebrow: "Redefinição de senha",
     preheader: "Escolha uma nova senha para sua conta no ProbeHarbor.",
     title: "Redefina sua senha",
-    intro: "Recebemos uma solicitação para redefinir sua senha. Siga o link abaixo para escolher uma nova. O link expira em 1 hora.",
+    intro:
+      "Recebemos uma solicitação para redefinir sua senha. Siga o link abaixo para escolher uma nova. O link expira em 1 hora.",
     cta: "Redefinir senha",
     footerNote: "Se você não fez essa solicitação, pode ignorar este e-mail.",
   },

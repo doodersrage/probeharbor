@@ -22,7 +22,10 @@ type PdfWriter = {
   drawHero(data: MonitoringCertificateData): void;
   drawStatRow(items: Array<{ label: string; value: string; detail?: string }>): void;
   drawHeading(text: string): void;
-  drawLine(text: string, opts?: { bold?: boolean; size?: number; indent?: number; color?: typeof TEXT }): void;
+  drawLine(
+    text: string,
+    opts?: { bold?: boolean; size?: number; indent?: number; color?: typeof TEXT },
+  ): void;
   drawBullets(items: string[]): void;
 };
 
@@ -93,9 +96,10 @@ function createWriter(doc: PDFDocument, font: PDFFont, fontBold: PDFFont): PdfWr
         color: MUTED,
       });
 
-      const title = data.householdLabel.length > 48
-        ? `${data.householdLabel.slice(0, 45)}…`
-        : data.householdLabel;
+      const title =
+        data.householdLabel.length > 48
+          ? `${data.householdLabel.slice(0, 45)}…`
+          : data.householdLabel;
       this.page.drawText(title, {
         x: MARGIN + 14,
         y: PAGE_HEIGHT - MARGIN - 64,

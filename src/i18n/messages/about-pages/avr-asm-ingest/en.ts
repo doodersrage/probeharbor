@@ -1,16 +1,17 @@
-
 /** Body copy for /about/avr-asm-ingest. Hrefs stay English; middleware localizes them. */
 
 const en = {
   introHtml:
     'Almost no Ethernet freeze probe <strong>requires</strong> assembly. PADAUK, PIC10F, and ATtiny10 are assembly-first (or assembly-only in practice), but they do not have a TCP stack or the RAM to POST JSON. The path we can actually support is <strong>GNU AVR assembly</strong> on an Arduino <strong>Uno / ATmega328P</strong> plus a <strong>W5100</strong> Ethernet shield: the same garage hardware as <a class="text-link" href="/about/arduino-sketches">Uno Ethernet</a>, without Arduino C.',
-  relay: "W5100 cannot TLS. This sample uses the same LAN HTTP→HTTPS relay as Uno C, STM32 Zephyr, and CH32V WCHNET.",
+  relay:
+    "W5100 cannot TLS. This sample uses the same LAN HTTP→HTTPS relay as Uno C, STM32 Zephyr, and CH32V WCHNET.",
   partsTitle: "Parts",
   partsCaption: "Parts for an AVR assembly freeze probe",
   colPart: "Part",
   colWhy: "Why",
   colBuy: "Buy",
-  unoWhyHtml: "16 MHz AVR. Programmed with <code>avr-gcc</code> / <code>avrdude</code>, not the Arduino IDE.",
+  unoWhyHtml:
+    "16 MHz AVR. Programmed with <code>avr-gcc</code> / <code>avrdude</code>, not the Arduino IDE.",
   shieldPart: "W5100 Ethernet shield",
   shieldWhy: "SPI socket chip. Same shield as the Arduino Ethernet DHT22 sample.",
   probePart: "Waterproof DS18B20",

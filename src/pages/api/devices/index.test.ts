@@ -74,9 +74,8 @@ vi.mock("../../../lib/householdActivity", () => ({
 
 const mockFormRedirectPath = vi.fn();
 vi.mock("../../../lib/siteUrl", async () => {
-  const actual = await vi.importActual<typeof import("../../../lib/siteUrl")>(
-    "../../../lib/siteUrl",
-  );
+  const actual =
+    await vi.importActual<typeof import("../../../lib/siteUrl")>("../../../lib/siteUrl");
   return {
     ...actual,
     formRedirectPath: (...a: unknown[]) => mockFormRedirectPath(...a),
@@ -98,7 +97,9 @@ function makeContext(form: Record<string, string>): APIContext {
   const formData = new FormData();
   for (const [k, v] of Object.entries(form)) formData.set(k, v);
   const request = { formData: async () => formData } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return { request, cookies: {}, redirect } as unknown as APIContext;
 }
 
@@ -296,7 +297,11 @@ describe("POST /api/devices", () => {
       expect.any(String),
       expect.any(String),
     );
-    expect(mockSetSecretFlash).toHaveBeenCalledWith(context.cookies, "ingest_key", expect.any(String));
+    expect(mockSetSecretFlash).toHaveBeenCalledWith(
+      context.cookies,
+      "ingest_key",
+      expect.any(String),
+    );
     expect(mockPersistEncryptedIngestKey).toHaveBeenCalledWith("house-1", "d1", expect.any(String));
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?key_rotated=1");
   });
@@ -341,7 +346,9 @@ describe("POST /api/devices", () => {
   });
 
   it("rejects adding a sensor to a device the household doesn't own", async () => {
-    mockListHouseholdDevices.mockResolvedValue({ devices: [{ id: "other-device", source: "push" }] });
+    mockListHouseholdDevices.mockResolvedValue({
+      devices: [{ id: "other-device", source: "push" }],
+    });
     const { POST } = await import("./index");
     const context = makeContext({
       action: "add_sensor",
@@ -444,13 +451,27 @@ describe("POST /api/devices", () => {
   it("replaces a sensor, logs it, and reports how many readings moved", async () => {
     mockListHouseholdDevices.mockResolvedValue({
       devices: [
-        { id: "d1", name: "Old board", source: "push", sensors: [{ id: "s-old", key: "t1", label: "Garage pipe" }] },
-        { id: "d2", name: "New board", source: "push", sensors: [{ id: "s-new", key: "temp1", label: "temp1" }] },
+        {
+          id: "d1",
+          name: "Old board",
+          source: "push",
+          sensors: [{ id: "s-old", key: "t1", label: "Garage pipe" }],
+        },
+        {
+          id: "d2",
+          name: "New board",
+          source: "push",
+          sensors: [{ id: "s-new", key: "temp1", label: "temp1" }],
+        },
       ],
     });
     mockReplaceDeviceSensor.mockResolvedValue({ movedReadings: 1200, error: null });
     const { POST } = await import("./index");
-    const context = makeContext({ action: "replace_sensor", old_sensor_id: "s-old", new_sensor_id: "s-new" });
+    const context = makeContext({
+      action: "replace_sensor",
+      old_sensor_id: "s-old",
+      new_sensor_id: "s-new",
+    });
 
     await POST(context);
 
@@ -466,9 +487,13 @@ describe("POST /api/devices", () => {
 
   it("redirects with an error code, not the raw database error, when replacement fails", async () => {
     mockListHouseholdDevices.mockResolvedValue({ devices: [] });
-    mockReplaceDeviceSensor.mockResolvedValue({ movedReadings: 0, error: 'P0001: kind_mismatch' });
+    mockReplaceDeviceSensor.mockResolvedValue({ movedReadings: 0, error: "P0001: kind_mismatch" });
     const { POST } = await import("./index");
-    const context = makeContext({ action: "replace_sensor", old_sensor_id: "a", new_sensor_id: "b" });
+    const context = makeContext({
+      action: "replace_sensor",
+      old_sensor_id: "a",
+      new_sensor_id: "b",
+    });
 
     await POST(context);
 
@@ -478,11 +503,20 @@ describe("POST /api/devices", () => {
 
   it("saves name, space, and enabled together from the device page", async () => {
     const { POST } = await import("./index");
-    const context = makeContext({ action: "update_device", device_id: "d1", name: "Garage pipe", space: "Garage" });
+    const context = makeContext({
+      action: "update_device",
+      device_id: "d1",
+      name: "Garage pipe",
+      space: "Garage",
+    });
 
     await POST(context);
 
-    expect(mockUpdateDeviceDetails).toHaveBeenCalledWith("house-1", "d1", { name: "Garage pipe", space: "Garage", enabled: false });
+    expect(mockUpdateDeviceDetails).toHaveBeenCalledWith("house-1", "d1", {
+      name: "Garage pipe",
+      space: "Garage",
+      enabled: false,
+    });
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/devices?device_saved=1");
   });
 
@@ -493,8 +527,24 @@ describe("POST /api/devices", () => {
           id: "d1",
           source: "push",
           sensors: [
-            { id: "s1", key: "temp1", label: "temp1", kind: "temperature", unit: "F", visible: true, offset_num: 0 },
-            { id: "s2", key: "hum1", label: "Humidity", kind: "humidity", unit: "F", visible: true, offset_num: 0 },
+            {
+              id: "s1",
+              key: "temp1",
+              label: "temp1",
+              kind: "temperature",
+              unit: "F",
+              visible: true,
+              offset_num: 0,
+            },
+            {
+              id: "s2",
+              key: "hum1",
+              label: "Humidity",
+              kind: "humidity",
+              unit: "F",
+              visible: true,
+              offset_num: 0,
+            },
           ],
         },
       ],
@@ -534,7 +584,12 @@ describe("POST /api/devices", () => {
       devices: [{ id: "d1", source: "push", sensors: [{ id: "s1" }, { id: "s2" }] }],
     });
     const { POST } = await import("./index");
-    const context = makeContext({ action: "update_sensors", device_id: "d1", delete_sensor_id: "s2", "label:s1": "x" });
+    const context = makeContext({
+      action: "update_sensors",
+      device_id: "d1",
+      delete_sensor_id: "s2",
+      "label:s1": "x",
+    });
 
     await POST(context);
 
@@ -545,7 +600,11 @@ describe("POST /api/devices", () => {
 
   it("won't touch sensors on a device outside the property", async () => {
     const { POST } = await import("./index");
-    const context = makeContext({ action: "update_sensors", device_id: "elsewhere", delete_sensor_id: "s1" });
+    const context = makeContext({
+      action: "update_sensors",
+      device_id: "elsewhere",
+      delete_sensor_id: "s1",
+    });
 
     await POST(context);
 
@@ -556,7 +615,13 @@ describe("POST /api/devices", () => {
   it("creates a device with the space it was given", async () => {
     const { POST } = await import("./index");
     await POST(makeContext({ action: "create_push", name: "Attic probe", space: "Attic" }));
-    expect(mockCreatePushDevice).toHaveBeenCalledWith("house-1", "Attic probe", expect.any(String), expect.any(String), "Attic");
+    expect(mockCreatePushDevice).toHaveBeenCalledWith(
+      "house-1",
+      "Attic probe",
+      expect.any(String),
+      expect.any(String),
+      "Attic",
+    );
   });
 
   it("blocks device creation past the plan's device limit", async () => {
@@ -583,7 +648,11 @@ describe("POST /api/devices", () => {
       expect.any(String),
       null,
     );
-    expect(mockSetSecretFlash).toHaveBeenCalledWith(context.cookies, "ingest_key", expect.any(String));
+    expect(mockSetSecretFlash).toHaveBeenCalledWith(
+      context.cookies,
+      "ingest_key",
+      expect.any(String),
+    );
     expect(context.redirect).toHaveBeenCalledWith(
       "/dashboard/devices?device_created=1&focus_device=new-device",
     );

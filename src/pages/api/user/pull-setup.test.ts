@@ -36,11 +36,13 @@ function fakeRedirect(path: string): Response {
   return new Response(null, { status: 302, headers: { Location: path } });
 }
 
-function makeContext(options: {
-  body?: Record<string, unknown> | string;
-  json?: boolean;
-  form?: Record<string, string>;
-} = {}): APIContext {
+function makeContext(
+  options: {
+    body?: Record<string, unknown> | string;
+    json?: boolean;
+    form?: Record<string, string>;
+  } = {},
+): APIContext {
   const { body, json = false, form } = options;
   const headers: Record<string, string> = {};
   if (json) headers["content-type"] = "application/json";

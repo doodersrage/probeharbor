@@ -18,12 +18,14 @@ const fr: StatusEmailMessages = {
     subjectDegraded: "ProbeHarbor : service dégradé",
     titleHealthy: "ProbeHarbor fonctionne de nouveau normalement",
     titleDegraded: "ProbeHarbor est dégradé",
-    introHealthy: "Les tâches planifiées et la surveillance de l’ingestion sont de nouveau opérationnelles.",
+    introHealthy:
+      "Les tâches planifiées et la surveillance de l’ingestion sont de nouveau opérationnelles.",
     introDegraded:
       "Nous constatons des échecs de tâches ou des exécutions manquées. Nous enquêtons.",
     cta: "Voir l’état du système",
     unsubscribe: "Se désabonner des mises à jour de l’état",
-    footerNote: "Vous recevez cet e-mail car vous êtes abonné aux mises à jour de l’état de ProbeHarbor.",
+    footerNote:
+      "Vous recevez cet e-mail car vous êtes abonné aux mises à jour de l’état de ProbeHarbor.",
   },
 };
 

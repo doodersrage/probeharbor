@@ -30,10 +30,7 @@ vi.mock("../../../../lib/pucks", () => ({
   setBayMoodOverride: (...a: unknown[]) => mockSetBayMoodOverride(...a),
 }));
 
-function makeContext(options: {
-  bayId?: string;
-  body?: unknown | string;
-} = {}): APIContext {
+function makeContext(options: { bayId?: string; body?: unknown | string } = {}): APIContext {
   const { bayId = "bay-1", body } = options;
   const request = {
     json: async () => {
@@ -49,8 +46,12 @@ beforeEach(() => {
     session: { access_token: "at" },
     user: { id: "user-1", email: "user@example.com" },
   });
-  mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({ householdId: "house-1", error: null });
-  mockRequireHouseholdEditor.mockReset().mockResolvedValue({ ok: true, ctx: { householdId: "house-1", role: "owner" } });
+  mockGetOrCreateHouseholdForUser
+    .mockReset()
+    .mockResolvedValue({ householdId: "house-1", error: null });
+  mockRequireHouseholdEditor
+    .mockReset()
+    .mockResolvedValue({ ok: true, ctx: { householdId: "house-1", role: "owner" } });
   mockIsBayMood.mockReset().mockReturnValue(true);
   mockResolveBayMoodForHousehold.mockReset().mockResolvedValue({
     ok: true,
@@ -84,7 +85,11 @@ describe("GET /api/bays/[bay_id]/mood", () => {
   });
 
   it("returns the mapped error status when resolution fails", async () => {
-    mockResolveBayMoodForHousehold.mockResolvedValue({ ok: false, status: 404, error: "not_found" });
+    mockResolveBayMoodForHousehold.mockResolvedValue({
+      ok: false,
+      status: 404,
+      error: "not_found",
+    });
     const { GET } = await import("./mood");
 
     const response = await GET(makeContext());

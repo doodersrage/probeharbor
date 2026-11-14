@@ -20,7 +20,8 @@ const fr: PropertyManagementMessages = {
   portfolioPrice: "Portfolio : {price}",
   seePortfolioPricing: "Voir les tarifs Portfolio",
   priceAnnual: "{annual}/an jusqu’à {max} biens",
-  priceAnnualWithMonthly: "{annual}/an jusqu’à {max} biens ({monthly}/mois en facturation mensuelle)",
+  priceAnnualWithMonthly:
+    "{annual}/an jusqu’à {max} biens ({monthly}/mois en facturation mensuelle)",
   priceMonthly: "{monthly}/mois jusqu’à {max} biens",
   priceCustom: "Tarif sur mesure jusqu’à {max} biens",
   screenshotCaption:
@@ -67,11 +68,13 @@ const fr: PropertyManagementMessages = {
   faqs: [
     {
       question: "En quoi Portfolio diffère-t-il de Pro ?",
-      answer: "Portfolio comprend tout ce qu’offre le forfait Pro (alertes SMS, alertes officielles de gel et de froid du NWS (États-Unis), dossier de preuves pour sinistre, webhooks, liens de partage), avec en plus un plafond bien plus élevé de biens en propre (Pro en autorise déjà jusqu’à {pro} ; Portfolio monte à {portfolio}), et un tarif pensé pour cette échelle plutôt que pour un seul bien.",
+      answer:
+        "Portfolio comprend tout ce qu’offre le forfait Pro (alertes SMS, alertes officielles de gel et de froid du NWS (États-Unis), dossier de preuves pour sinistre, webhooks, liens de partage), avec en plus un plafond bien plus élevé de biens en propre (Pro en autorise déjà jusqu’à {pro} ; Portfolio monte à {portfolio}), et un tarif pensé pour cette échelle plutôt que pour un seul bien.",
     },
     {
       question: "Ai-je besoin de Portfolio si je n’ai que 2 ou 3 biens ?",
-      answer: "Probablement pas : Pro couvre déjà quelques biens (jusqu’à {pro} foyers en propre) avec le même tableau de bord multi-biens et la même synthèse des alertes. Portfolio s’adresse aux structures plus importantes : une société de gestion immobilière ou un bailleur avec de nombreux lots, pour qui un tarif individuel forfaitaire ne reflète pas l’échelle.",
+      answer:
+        "Probablement pas : Pro couvre déjà quelques biens (jusqu’à {pro} foyers en propre) avec le même tableau de bord multi-biens et la même synthèse des alertes. Portfolio s’adresse aux structures plus importantes : une société de gestion immobilière ou un bailleur avec de nombreux lots, pour qui un tarif individuel forfaitaire ne reflète pas l’échelle.",
     },
     {
       question: "Mes gestionnaires ou le personnel sur place peuvent-ils avoir leur propre accès ?",

@@ -30,13 +30,25 @@ const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] 
 
 async function owner(email: string) {
   const id = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [id]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [id],
+  );
   return { id, email, home: m!.household_id };
 }
 
 async function link(householdId: string, createdBy: string, token: string, scope = "live") {
-  await insertShareLink({ ...(await storedShareTokenFields(token)), household_id: householdId, scope, label: null, expires_at: null, created_by: createdBy });
-  return (await listShareLinks(householdId)).links.find((l) => l.token_preview === token.slice(-4))!;
+  await insertShareLink({
+    ...(await storedShareTokenFields(token)),
+    household_id: householdId,
+    scope,
+    label: null,
+    expires_at: null,
+    created_by: createdBy,
+  });
+  return (await listShareLinks(householdId)).links.find(
+    (l) => l.token_preview === token.slice(-4),
+  )!;
 }
 
 describe("share links (Neon)", () => {
@@ -54,7 +66,10 @@ describe("share links (Neon)", () => {
   it("a row holding only a raw token (no hash) is never matched", async () => {
     const a = await owner("a@example.com");
     const raw = "a".repeat(48);
-    await sql("insert into public.share_links (token, household_id, scope) values ($1, $2, 'live')", [raw, a.home]);
+    await sql(
+      "insert into public.share_links (token, household_id, scope) values ($1, $2, 'live')",
+      [raw, a.home],
+    );
     await expect(resolveShareToken(await sha256Hex(raw))).resolves.toBeNull();
     await expect(resolveShareToken(raw)).resolves.toBeNull();
   });
@@ -65,15 +80,35 @@ describe("share links (Neon)", () => {
     const row = await link(a.home, a.id, "share-token-bbbb");
 
     await expect(findShareLink(b.home, row.id)).resolves.toBeNull();
-    expect((await replaceShareLinkToken(b.home, row.id, await storedShareTokenFields("hijack-token-cccc"))).error).toBeTruthy();
+    expect(
+      (
+        await replaceShareLinkToken(
+          b.home,
+          row.id,
+          await storedShareTokenFields("hijack-token-cccc"),
+        )
+      ).error,
+    ).toBeTruthy();
     await deleteShareLink(b.home, row.id);
     expect((await listShareLinks(b.home)).links).toEqual([]);
-    await expect(resolveShareToken(await sha256Hex("share-token-bbbb"))).resolves.toMatchObject({ household_id: a.home });
+    await expect(resolveShareToken(await sha256Hex("share-token-bbbb"))).resolves.toMatchObject({
+      household_id: a.home,
+    });
 
     // The owner can regenerate: the old token stops working.
-    expect((await replaceShareLinkToken(a.home, row.id, await storedShareTokenFields("share-token-dddd"))).error).toBeNull();
+    expect(
+      (
+        await replaceShareLinkToken(
+          a.home,
+          row.id,
+          await storedShareTokenFields("share-token-dddd"),
+        )
+      ).error,
+    ).toBeNull();
     await expect(resolveShareToken(await sha256Hex("share-token-bbbb"))).resolves.toBeNull();
-    await expect(resolveShareToken(await sha256Hex("share-token-dddd"))).resolves.toMatchObject({ household_id: a.home });
+    await expect(resolveShareToken(await sha256Hex("share-token-dddd"))).resolves.toMatchObject({
+      household_id: a.home,
+    });
     await deleteShareLink(a.home, row.id);
     await expect(resolveShareToken(await sha256Hex("share-token-dddd"))).resolves.toBeNull();
   });
@@ -82,10 +117,18 @@ describe("share links (Neon)", () => {
     const a = await owner("a@example.com");
     const row = await link(a.home, a.id, "share-token-gggg");
     const hash = await sha256Hex("share-token-gggg");
-    await expect(resolveShareToken(hash)).resolves.toMatchObject({ household_id: a.home, expires_at: null });
-    await sql("update public.share_links set expires_at = now() + interval '1 day' where id = $1", [row.id]);
+    await expect(resolveShareToken(hash)).resolves.toMatchObject({
+      household_id: a.home,
+      expires_at: null,
+    });
+    await sql("update public.share_links set expires_at = now() + interval '1 day' where id = $1", [
+      row.id,
+    ]);
     await expect(resolveShareToken(hash)).resolves.toMatchObject({ household_id: a.home });
-    await sql("update public.share_links set expires_at = now() - interval '1 minute' where id = $1", [row.id]);
+    await sql(
+      "update public.share_links set expires_at = now() - interval '1 minute' where id = $1",
+      [row.id],
+    );
     await expect(resolveShareToken(hash)).resolves.toBeNull();
   });
 
@@ -105,7 +148,10 @@ describe("share links (Neon)", () => {
     await link(b.home, b.id, "share-token-ffff");
     signedIn.user = { id: a.id, email: a.email };
 
-    const response = await listRoute({ request: new Request("https://example.com/api/share/manage"), cookies: {} } as unknown as APIContext);
+    const response = await listRoute({
+      request: new Request("https://example.com/api/share/manage"),
+      cookies: {},
+    } as unknown as APIContext);
     expect(response.status).toBe(200);
     const text = await response.text();
     expect(text).not.toContain("token_hash");
@@ -119,9 +165,18 @@ describe("chart image shares (Neon)", () => {
     const a = await owner("a@example.com");
     const expires = new Date(Date.now() + 86400_000).toISOString();
     await expect(
-      insertChartShare({ token: "chart-tok", user_id: a.id, r2_key: "chart-shares/chart-tok.png", title: "Week", expires_at: expires }),
+      insertChartShare({
+        token: "chart-tok",
+        user_id: a.id,
+        r2_key: "chart-shares/chart-tok.png",
+        title: "Week",
+        expires_at: expires,
+      }),
     ).resolves.toEqual({ error: null });
-    await expect(findChartShare("chart-tok")).resolves.toMatchObject({ r2_key: "chart-shares/chart-tok.png", title: "Week" });
+    await expect(findChartShare("chart-tok")).resolves.toMatchObject({
+      r2_key: "chart-shares/chart-tok.png",
+      title: "Week",
+    });
     await expect(findChartShare("nope")).resolves.toBeNull();
   });
 

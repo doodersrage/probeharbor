@@ -3,7 +3,12 @@ import { STALE_MS } from "./relativeTime";
 import { fmt, formatNumber, plural } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { portfolioMessages } from "../i18n/messages/app/portfolio";
-import { displayTempInputValue, formatTempBand, tempUnitLabel, toDisplayTemp } from "./temperatureFormat";
+import {
+  displayTempInputValue,
+  formatTempBand,
+  tempUnitLabel,
+  toDisplayTemp,
+} from "./temperatureFormat";
 
 /** "Watch" when the coldest probe is within this many °F of the freeze line. */
 export const NEAR_THRESHOLD_BAND_F = 5;
@@ -27,7 +32,10 @@ export function scorePropertyHealth(
 ): PropertyHealth {
   const t = portfolioMessages(locale).health;
   const unit = tempUnitLabel(useCelsius);
-  const threshold = formatNumber(displayTempInputValue(property.freezeThresholdF, useCelsius), locale);
+  const threshold = formatNumber(
+    displayTempInputValue(property.freezeThresholdF, useCelsius),
+    locale,
+  );
   if (property.deviceCount <= 0) {
     return {
       score: 20,
@@ -86,7 +94,9 @@ export function scorePropertyHealth(
     return {
       score: 50,
       label: "watch",
-      detail: plural(t.silent, property.deviceCount, locale, { silent: formatNumber(silent, locale) }),
+      detail: plural(t.silent, property.deviceCount, locale, {
+        silent: formatNumber(silent, locale),
+      }),
     };
   }
 

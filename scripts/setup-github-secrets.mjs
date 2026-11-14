@@ -70,8 +70,7 @@ function setSecret(name, value) {
 }
 
 const token = process.env.CLOUDFLARE_API_TOKEN?.trim();
-const accountId =
-  process.env.CLOUDFLARE_ACCOUNT_ID?.trim() || "9efb4c64e198020c56125722f95aae7f";
+const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim() || "9efb4c64e198020c56125722f95aae7f";
 
 if (!token) {
   console.error("Set CLOUDFLARE_API_TOKEN (from Cloudflare Dashboard → API Tokens).");
@@ -110,7 +109,5 @@ for (const key of BUILD_SECRET_KEYS) {
   synced += 1;
 }
 
-console.log(
-  `\nSynced ${synced} build secrets from .env (${skipped} empty keys skipped).`,
-);
+console.log(`\nSynced ${synced} build secrets from .env (${skipped} empty keys skipped).`);
 console.log("GitHub Actions Deploy can now build and publish a real production Worker.");

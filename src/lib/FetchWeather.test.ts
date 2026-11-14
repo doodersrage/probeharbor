@@ -313,9 +313,11 @@ describe("fetchForecastMinTemp / fetchForecastMinTempByCoords", () => {
     const now = Date.now();
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        jsonResponse({ list: [{ dt: (now + 3600_000) / 1000, main: { temp: 22 } }] }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          jsonResponse({ list: [{ dt: (now + 3600_000) / 1000, main: { temp: 22 } }] }),
+        ),
     );
 
     const result = await fetchForecastMinTemp(undefined, 24);

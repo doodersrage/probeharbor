@@ -4,15 +4,18 @@ export default {
   categories: {
     hardware: {
       title: "Hardware einrichten",
-      description: "Sensoren, Verkabelung, Firmware und das Anlegen von Push-/Pull-Geräten im Dashboard.",
+      description:
+        "Sensoren, Verkabelung, Firmware und das Anlegen von Push-/Pull-Geräten im Dashboard.",
     },
     alerts: {
       title: "Alarme",
-      description: "Frostschwellenwerte, Leckalarme, Leitfäden für Kälteeinbrüche und Benachrichtigungskanäle.",
+      description:
+        "Frostschwellenwerte, Leckalarme, Leitfäden für Kälteeinbrüche und Benachrichtigungskanäle.",
     },
     sharing: {
       title: "Teilen",
-      description: "Haushaltszugriff, die Handy-App, die du heute schon installieren kannst, und öffentliche Statusseiten.",
+      description:
+        "Haushaltszugriff, die Handy-App, die du heute schon installieren kannst, und öffentliche Statusseiten.",
     },
     integrations: {
       title: "Integrationen",
@@ -30,7 +33,10 @@ export default {
       label: "Hardware-Zubehör",
       summary: "Claim Puck, Alarmleuchte, Tür-/Leck-/Stromkontakte, Kit-Etiketten, Halterungen.",
     },
-    "/claim-puck": { label: "Claim Puck", summary: "RP2040-Zero-Anwesenheitsschlüssel und Stimmungs-LED für den Stellplatz." },
+    "/claim-puck": {
+      label: "Claim Puck",
+      summary: "RP2040-Zero-Anwesenheitsschlüssel und Stimmungs-LED für den Stellplatz.",
+    },
     "/leak-puck": {
       label: "Leak Puck (Leckkontakt)",
       summary: "Wassersensor-Pads, die Nass/Trocken-Hochwassersensoren per POST melden.",
@@ -41,16 +47,22 @@ export default {
     },
     "/stories/water-heater-pad-leak": {
       label: "Leck-Szenario",
-      summary: "Wie ein Nässekontakt unter dem Warmwasserbereiter in der Garage ein Tropfen meldet, bevor es den Boden durchnässt.",
+      summary:
+        "Wie ein Nässekontakt unter dem Warmwasserbereiter in der Garage ein Tropfen meldet, bevor es den Boden durchnässt.",
     },
-    "/apps": { label: "Begleit-Apps", summary: "Android-, Desktop-, Bay-Buddy- und PWA-Clients für dein Konto." },
+    "/apps": {
+      label: "Begleit-Apps",
+      summary: "Android-, Desktop-, Bay-Buddy- und PWA-Clients für dein Konto.",
+    },
     "/android": {
       label: "Android-App (Early Access)",
-      summary: "GitHub-Build zum manuellen Installieren, solange die Play-Prüfung läuft; die PWA funktioniert schon heute.",
+      summary:
+        "GitHub-Build zum manuellen Installieren, solange die Play-Prüfung läuft; die PWA funktioniert schon heute.",
     },
     "/integrations": {
       label: "Integrationsübersicht",
-      summary: "Home Assistant HACS, Matter, Node-RED, Influx, MQTT, Grafana, Webhooks, Nest/Ecobee, Zapier, IFTTT/n8n.",
+      summary:
+        "Home Assistant HACS, Matter, Node-RED, Influx, MQTT, Grafana, Webhooks, Nest/Ecobee, Zapier, IFTTT/n8n.",
     },
     "/integrations/home-assistant": {
       label: "Home Assistant (HACS)",
@@ -62,7 +74,10 @@ export default {
       summary:
         "Matterbridge-Plugin: Sensoren per Freigabelink in Apple Home, Google Home und Alexa (nicht CSA-zertifiziert).",
     },
-    "/integrations/node-red": { label: "Node-RED", summary: "MQTT→HTTPS-Flow importieren; Mosquitto bleibt lokal." },
+    "/integrations/node-red": {
+      label: "Node-RED",
+      summary: "MQTT→HTTPS-Flow importieren; Mosquitto bleibt lokal.",
+    },
     "/integrations/influx": {
       label: "InfluxDB & Telegraf",
       summary: "Pro-Prometheus-Metriken in Influx oder VictoriaMetrics abgreifen.",
@@ -73,7 +88,8 @@ export default {
     },
     "/compare/diy-mqtt": {
       label: "Im Vergleich zu DIY-MQTT",
-      summary: "Wann gehostete Frost- und Leckalarme besser sind als selbst betriebenes Mosquitto mit Cron.",
+      summary:
+        "Wann gehostete Frost- und Leckalarme besser sind als selbst betriebenes Mosquitto mit Cron.",
     },
     "/docs/api": {
       label: "HTTP-API-Dokumentation",

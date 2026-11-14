@@ -9,9 +9,9 @@ import FreezeHoursChart from "./FreezeHoursChart";
 
 // Same approach as HistoryChart.units.test.ts: server-render to HTML with the
 // ESM build of Astro's preact-render-to-string.
-const prtsPkg = createRequire(createRequire(import.meta.url).resolve("@astrojs/preact/package.json")).resolve(
-  "preact-render-to-string/package.json",
-);
+const prtsPkg = createRequire(
+  createRequire(import.meta.url).resolve("@astrojs/preact/package.json"),
+).resolve("preact-render-to-string/package.json");
 const { render } = (await import(pathToFileURL(join(dirname(prtsPkg), "dist/index.mjs")).href)) as {
   render: (vnode: unknown) => string;
 };
@@ -45,8 +45,12 @@ describe("comparison charts follow the °C preference", () => {
 
   it("freeze hours: the threshold in the hint converts; hours don't", () => {
     const days = [{ day: "2026-01-01", hoursBelow: 3, coldestF: 30 }];
-    const c = render(h(FreezeHoursChart, { days: days as never, thresholdF: 34, useCelsius: true }));
+    const c = render(
+      h(FreezeHoursChart, { days: days as never, thresholdF: 34, useCelsius: true }),
+    );
     expect(c).toContain("Hours at or below 1.1°C each day");
-    expect(render(h(FreezeHoursChart, { days: days as never, thresholdF: 34 }))).toContain("Hours at or below 34°F");
+    expect(render(h(FreezeHoursChart, { days: days as never, thresholdF: 34 }))).toContain(
+      "Hours at or below 34°F",
+    );
   });
 });

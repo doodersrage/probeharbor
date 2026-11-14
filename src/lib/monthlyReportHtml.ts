@@ -90,13 +90,18 @@ export function summarizeProbesForReport(points: ChartPoint[]): MonthlyProbeSumm
   });
 }
 
-export function buildMonthlyReportPlainText(data: MonthlyReportData, locale: Locale = "en"): string {
+export function buildMonthlyReportPlainText(
+  data: MonthlyReportData,
+  locale: Locale = "en",
+): string {
   const t = reportEmailMessages(locale);
   const p = t.plain;
   const num = (value: number | null, digits: number) =>
     value == null ? "—" : formatEmailNumber(value, digits, locale);
   const lines = [
-    fmt(data.reportKind === "quarterly" ? p.headerQuarterly : p.headerMonthly, { label: data.monthLabel }),
+    fmt(data.reportKind === "quarterly" ? p.headerQuarterly : p.headerMonthly, {
+      label: data.monthLabel,
+    }),
     "",
     fmt(p.readings, { days: data.periodDays, count: formatEmailValue(data.readingCount, locale) }),
     fmt(p.coldest, { temp: formatTemp(data.minTempF, locale) }),
@@ -156,7 +161,10 @@ function statBlock(label: string, value: string, detail?: string): string {
   </div>`;
 }
 
-export function buildMonthlyReportHtmlDocument(data: MonthlyReportData, locale: Locale = "en"): string {
+export function buildMonthlyReportHtmlDocument(
+  data: MonthlyReportData,
+  locale: Locale = "en",
+): string {
   const t = reportEmailMessages(locale);
   const num = (value: number | null, digits: number) =>
     value == null ? "—" : formatEmailNumber(value, digits, locale);
@@ -267,12 +275,18 @@ function freezeCalloutBody(data: MonthlyReportData, locale: Locale = "en"): stri
     readings: formatEmailCount(t.readings, data.freezeHours.readingsBelow34, locale),
   };
   return data.freezeHours.coldestF != null
-    ? fmt(t.freezeSomeColdest, { ...vars, coldest: formatEmailNumber(data.freezeHours.coldestF, 1, locale) })
+    ? fmt(t.freezeSomeColdest, {
+        ...vars,
+        coldest: formatEmailNumber(data.freezeHours.coldestF, 1, locale),
+      })
     : fmt(t.freezeSome, vars);
 }
 
 /** Shorter HTML for the email body (stats, freeze callout, compact tables). */
-export function buildMonthlyReportHtmlEmail(data: MonthlyReportData, locale: Locale = "en"): string {
+export function buildMonthlyReportHtmlEmail(
+  data: MonthlyReportData,
+  locale: Locale = "en",
+): string {
   const t = reportEmailMessages(locale);
   const num = (value: number | null, digits: number) =>
     value == null ? "—" : formatEmailNumber(value, digits, locale);

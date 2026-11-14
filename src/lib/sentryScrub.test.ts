@@ -17,7 +17,10 @@ describe("scrubUrl", () => {
     [`https://probeharbor.dev/api/ingest/${KEY}`, `https://probeharbor.dev/api/ingest/${REDACTED}`],
     [`/share/${KEY}`, `/share/${REDACTED}`],
     [`/embed/${KEY}`, `/embed/${REDACTED}`],
-    [`/api/share/${KEY}/readings?format=prometheus`, `/api/share/${REDACTED}/readings?format=prometheus`],
+    [
+      `/api/share/${KEY}/readings?format=prometheus`,
+      `/api/share/${REDACTED}/readings?format=prometheus`,
+    ],
     ["/status/ffffffffffffffffffffffffffffffffffff", `/status/${REDACTED}`],
     ["/badge/status/abc123.svg", `/badge/status/${REDACTED}`],
     ["/invite/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", `/invite/${REDACTED}`],
@@ -46,8 +49,12 @@ describe("scrubUrl", () => {
     expect(scrubUrl("https://api.telegram.org/bot123456%3AAAH-secret_x/sendMessage")).toBe(
       `https://api.telegram.org/${REDACTED}`,
     );
-    expect(scrubUrl("https://hooks.zapier.com/hooks/catch/123/ab1cd2/")).toBe(`https://hooks.zapier.com/${REDACTED}`);
-    expect(scrubUrl("https://n8n.example.com/webhook?pw=short")).toBe(`https://n8n.example.com/${REDACTED}`);
+    expect(scrubUrl("https://hooks.zapier.com/hooks/catch/123/ab1cd2/")).toBe(
+      `https://hooks.zapier.com/${REDACTED}`,
+    );
+    expect(scrubUrl("https://n8n.example.com/webhook?pw=short")).toBe(
+      `https://n8n.example.com/${REDACTED}`,
+    );
     expect(scrubUrl("https://example.com")).toBe("https://example.com");
   });
 
@@ -58,7 +65,9 @@ describe("scrubUrl", () => {
   });
 
   it("scrubs own-host absolute URLs by path, not by origin", () => {
-    expect(scrubUrl(`https://www.probeharbor.dev/share/${KEY}`)).toBe(`https://www.probeharbor.dev/share/${REDACTED}`);
+    expect(scrubUrl(`https://www.probeharbor.dev/share/${KEY}`)).toBe(
+      `https://www.probeharbor.dev/share/${REDACTED}`,
+    );
   });
 });
 
@@ -77,7 +86,12 @@ describe("scrubEvent", () => {
       request: {
         url: `https://probeharbor.dev/api/ingest/${KEY}`,
         query_string: "token=abc&x=1",
-        headers: { "X-Ingest-Key": KEY, Cookie: "sb=1", "X-ProbeHarbor-Signature": "sha256=1", "User-Agent": "ESP32" },
+        headers: {
+          "X-Ingest-Key": KEY,
+          Cookie: "sb=1",
+          "X-ProbeHarbor-Signature": "sha256=1",
+          "User-Agent": "ESP32",
+        },
         cookies: { sb: "1" },
         data: '{"password":"wifi"}',
       },
@@ -97,12 +111,16 @@ describe("scrubEvent", () => {
 
 describe("scrubBreadcrumb / scrubDeep", () => {
   it("scrubs fetch breadcrumb URLs and navigation targets", () => {
-    const crumb = scrubBreadcrumb({ data: { url: `/api/share/${KEY}/readings`, to: `/invite/${KEY}`, from: "/" } });
+    const crumb = scrubBreadcrumb({
+      data: { url: `/api/share/${KEY}/readings`, to: `/invite/${KEY}`, from: "/" },
+    });
     expect(JSON.stringify(crumb)).not.toContain(KEY);
   });
 
   it("scrubs strings nested in replay recording events", () => {
-    const recording = scrubDeep({ data: { payload: { description: `https://probeharbor.dev/share/${KEY}`, list: [KEY] } } });
+    const recording = scrubDeep({
+      data: { payload: { description: `https://probeharbor.dev/share/${KEY}`, list: [KEY] } },
+    });
     expect(JSON.stringify(recording)).not.toContain(KEY);
   });
 });
@@ -130,7 +148,9 @@ describe("scrubSpan", () => {
     expect(json).not.toContain("secret");
     expect(json).not.toContain("v1=abc");
     expect(span.name).toBe(`GET /api/ingest/${REDACTED}`);
-    expect(span.attributes["url.full"]).toBe(`https://probeharbor.dev/api/alerts/snooze?token=${REDACTED}&lang=de`);
+    expect(span.attributes["url.full"]).toBe(
+      `https://probeharbor.dev/api/alerts/snooze?token=${REDACTED}&lang=de`,
+    );
     expect(span.attributes).not.toHaveProperty("http.request.header.x_ingest_key");
     expect(span.attributes).not.toHaveProperty("http.request.header.stripe-signature");
     expect(span.attributes["http.request.header.user_agent"]).toBe("ESP32");
@@ -140,7 +160,9 @@ describe("scrubSpan", () => {
   });
 
   it("keeps ordinary span names readable", () => {
-    expect(scrubSpan({ name: "GET /dashboard/sensors", attributes: {} }).name).toBe("GET /dashboard/sensors");
+    expect(scrubSpan({ name: "GET /dashboard/sensors", attributes: {} }).name).toBe(
+      "GET /dashboard/sensors",
+    );
   });
 });
 
@@ -152,6 +174,8 @@ describe("SENTRY_DATA_COLLECTION", () => {
     expect(SENTRY_DATA_COLLECTION.databaseQueryData).toBe(false);
     expect(SENTRY_DATA_COLLECTION.queues).toBe(false);
     expect(SENTRY_DATA_COLLECTION.genAI).toEqual({ inputs: false, outputs: false });
-    expect(SENTRY_DATA_COLLECTION.httpHeaders.request).toEqual({ deny: expect.arrayContaining(["-ip", "forwarded"]) });
+    expect(SENTRY_DATA_COLLECTION.httpHeaders.request).toEqual({
+      deny: expect.arrayContaining(["-ip", "forwarded"]),
+    });
   });
 });

@@ -34,8 +34,7 @@ const GUIDE_HUB_DEFS: GuideHubCategoryDef[] = [
   {
     id: "hardware",
     title: "Hardware setup",
-    description:
-      "Sensors, wiring, firmware, and creating push/pull devices on the dashboard.",
+    description: "Sensors, wiring, firmware, and creating push/pull devices on the dashboard.",
     links: [
       {
         href: "/about/adding-devices",
@@ -93,7 +92,8 @@ const GUIDE_HUB_DEFS: GuideHubCategoryDef[] = [
       {
         href: "/stories/water-heater-pad-leak",
         label: "Leak scenario",
-        summary: "How a wet contact under a garage water heater flags a drip before it soaks the slab.",
+        summary:
+          "How a wet contact under a garage water heater flags a drip before it soaks the slab.",
       },
     ],
   },
@@ -126,7 +126,8 @@ const GUIDE_HUB_DEFS: GuideHubCategoryDef[] = [
       {
         href: "/integrations",
         label: "Integrations hub",
-        summary: "Home Assistant HACS, Matter, Node-RED, Influx, MQTT, Grafana, webhooks, Nest/Ecobee, Zapier, IFTTT/n8n.",
+        summary:
+          "Home Assistant HACS, Matter, Node-RED, Influx, MQTT, Grafana, webhooks, Nest/Ecobee, Zapier, IFTTT/n8n.",
       },
       {
         href: "/integrations/home-assistant",

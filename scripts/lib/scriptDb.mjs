@@ -29,7 +29,9 @@ export function openDb(connectionString, label = "database") {
   return {
     async rows(text, params = []) {
       const result = await pool.query(text, params);
-      return result.rows.map((row) => Object.fromEntries(Object.entries(row).map(([k, v]) => [k, iso(v)])));
+      return result.rows.map((row) =>
+        Object.fromEntries(Object.entries(row).map(([k, v]) => [k, iso(v)])),
+      );
     },
     end: () => pool.end(),
   };
@@ -59,7 +61,8 @@ export async function passwordMatches(hash, password) {
  * Refuses accounts with an authenticator app (the scripts can't pass it).
  */
 export async function signInForScript(db, { email, password, secret, userAgent, minutes = 30 }) {
-  if (!secret?.trim()) throw new Error("BETTER_AUTH_SECRET is required to sign the session cookie.");
+  if (!secret?.trim())
+    throw new Error("BETTER_AUTH_SECRET is required to sign the session cookie.");
   const account = await findAccount(db, email);
   if (!account || !(await passwordMatches(account.password, password))) {
     throw new Error(`Sign-in failed for ${email}: wrong password or no password on the account.`);

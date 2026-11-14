@@ -46,11 +46,13 @@ const en = {
     },
     "/gift": {
       label: "Gift / referral",
-      summary: "Share an invite link: they get extra Pro trial days, and so do you when they subscribe.",
+      summary:
+        "Share an invite link: they get extra Pro trial days, and so do you when they subscribe.",
     },
   } as Record<string, { label: string; summary: string }>,
   itemListName: "ProbeHarbor guides by job",
-  itemListDescription: "Hardware setup, freeze and flood alerts, household sharing, and API guides.",
+  itemListDescription:
+    "Hardware setup, freeze and flood alerts, household sharing, and API guides.",
   faqLede: "Quick answers before you dive into a category.",
   faqs: [
     {

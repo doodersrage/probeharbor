@@ -29,7 +29,11 @@ const message = (error: unknown) => (error instanceof Error ? error.message : St
 type NumericRow = { value_num: number; recorded_at: string };
 
 /** Numeric readings since `sinceIso`, oldest first, newest MAX_SERIES_ROWS kept. */
-async function numericSeries(householdId: string, sensorId: string, sinceIso: string): Promise<NumericRow[]> {
+async function numericSeries(
+  householdId: string,
+  sensorId: string,
+  sinceIso: string,
+): Promise<NumericRow[]> {
   const rows = await query<NumericRow>(
     `select value_num, recorded_at from public.sensor_readings
      where sensor_id = $1 and household_id = $3 and recorded_at >= $2 and value_num is not null
@@ -62,7 +66,10 @@ export async function getRecentNumericReadingSamples(
   sinceIso: string,
 ): Promise<Array<{ at: string; tempF: number }>> {
   try {
-    return (await numericSeries(householdId, sensorId, sinceIso)).map((r) => ({ at: r.recorded_at, tempF: r.value_num }));
+    return (await numericSeries(householdId, sensorId, sinceIso)).map((r) => ({
+      at: r.recorded_at,
+      tempF: r.value_num,
+    }));
   } catch (error) {
     console.error("getRecentNumericReadingSamples failed:", message(error));
     return [];
@@ -114,7 +121,9 @@ export async function getNumericReadingInWindow(
       [sensorId, notBeforeIso, atOrBeforeIso, householdId],
     );
     // The newest row in the window wins even if its value is null; then this returns null.
-    return row && typeof row.value_num === "number" ? { value: row.value_num, at: row.recorded_at } : null;
+    return row && typeof row.value_num === "number"
+      ? { value: row.value_num, at: row.recorded_at }
+      : null;
   } catch {
     return null;
   }
@@ -173,7 +182,9 @@ export async function fetchRecentBoolReadings(
       [sensorId, sinceIso, householdId],
     );
     if (rows.length === MAX_SERIES_ROWS) {
-      console.warn(`fetchRecentBoolReadings(${sensorId}): row cap hit; oldest readings not included`);
+      console.warn(
+        `fetchRecentBoolReadings(${sensorId}): row cap hit; oldest readings not included`,
+      );
     }
     return rows.reverse().map((r) => ({ value: r.value_bool, recordedAt: r.recorded_at }));
   } catch (error) {
@@ -255,7 +266,11 @@ export async function fetchLatestSensorValuesResult(
         value_bool: r.value_bool,
         value_text: r.value_text,
         recorded_at: r.recorded_at,
-        deviceDemo: isDemoDevice({ source: r.device_source, pull_url: r.device_pull_url, meta: r.device_meta }),
+        deviceDemo: isDemoDevice({
+          source: r.device_source,
+          pull_url: r.device_pull_url,
+          meta: r.device_meta,
+        }),
         reportIntervalMs: reportIntervalMsFromMeta(r.device_meta) ?? null,
       };
     }),

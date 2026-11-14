@@ -53,10 +53,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
       if (body.action === "toggle" && typeof body.metric === "string") {
         const allowed = new Set<string>(PINNABLE_OVERVIEW_METRICS);
         if (!allowed.has(body.metric)) {
-          return new Response(JSON.stringify({ error: apiUserMessages(locale).pinned.invalidMetric }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          });
+          return new Response(
+            JSON.stringify({ error: apiUserMessages(locale).pinned.invalidMetric }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         }
         const current = getPinnedOverviewMetrics(user);
         const id = body.metric as PinnableOverviewMetric;
@@ -66,7 +69,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
         } else if (current.length >= PINNED_METRICS_MAX) {
           return new Response(
             JSON.stringify({
-              error: fmt(apiUserMessages(locale).pinned.max, { max: formatNumber(PINNED_METRICS_MAX, locale) }),
+              error: fmt(apiUserMessages(locale).pinned.max, {
+                max: formatNumber(PINNED_METRICS_MAX, locale),
+              }),
               atMax: true,
               metrics: current,
             }),
@@ -81,7 +86,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
       } else if (Array.isArray(body.metrics)) {
         if (countPinnedOverviewMetricsInput(body.metrics.map(String)) > PINNED_METRICS_MAX) {
           return new Response(
-            JSON.stringify({ error: fmt(apiUserMessages(locale).pinned.max, { max: formatNumber(PINNED_METRICS_MAX, locale) }), atMax: true }),
+            JSON.stringify({
+              error: fmt(apiUserMessages(locale).pinned.max, {
+                max: formatNumber(PINNED_METRICS_MAX, locale),
+              }),
+              atMax: true,
+            }),
             { status: 400, headers: { "Content-Type": "application/json" } },
           );
         }
@@ -127,11 +137,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect(withQuery(redirectTo, { pinned_error: "1" }));
   }
 
-  const { error } = await updatePinnedOverviewMetrics(
-    accessToken,
-    refreshToken,
-    metrics,
-  );
+  const { error } = await updatePinnedOverviewMetrics(accessToken, refreshToken, metrics);
 
   if (error) {
     if (asJson) {
@@ -143,7 +149,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     return redirect(withQuery(redirectTo, { pinned_error: "1" }));
   }
 
-
   if (asJson) {
     return new Response(JSON.stringify({ ok: true, metrics }), {
       status: 200,
@@ -151,7 +156,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
     });
   }
 
-  return redirect(
-    `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}pinned_saved=1`,
-  );
+  return redirect(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}pinned_saved=1`);
 };

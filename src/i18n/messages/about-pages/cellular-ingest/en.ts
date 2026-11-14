@@ -1,4 +1,3 @@
-
 /** Body copy for /about/cellular-ingest. Hrefs stay English; middleware localizes them. */
 
 const en = {

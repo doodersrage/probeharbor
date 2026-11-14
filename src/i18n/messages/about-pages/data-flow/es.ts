@@ -1,4 +1,3 @@
-
 /** /about/data-flow body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
@@ -11,8 +10,10 @@ const es: Messages = {
   step2Title: "Paso 2. Publicación del JSON",
   step2Html:
     'La placa o un relé cercano expone JSON por HTTPS. Un servicio FastAPI en Python puede almacenar las respuestas en caché en Redis para que el resto de internet nunca acceda directamente a la conexión de casa: consulta <a class="text-link" href="/about/python-feeds">scripts y feeds en Python</a>.',
-  jsonAlt: "Visor JSON del navegador con las claves de sonda 0, 1 y avg, con Fahrenheit, Celsius y humedad",
-  jsonCaption: "Estructura del feed en vivo que consume el sitio web una vez que sale de la red local.",
+  jsonAlt:
+    "Visor JSON del navegador con las claves de sonda 0, 1 y avg, con Fahrenheit, Celsius y humedad",
+  jsonCaption:
+    "Estructura del feed en vivo que consume el sitio web una vez que sale de la red local.",
   step3Title: "Paso 3. Obtención y visualización en el sitio",
   step3Html:
     "Al cargar la página principal, el servidor obtiene cada URL de feed configurada, interpreta las claves de las sondas y genera las tarjetas de datos. Los usuarios con sesión iniciada cargan desde la base de datos (Postgres en Neon) sus propias asignaciones de feeds y sondas en lugar de las predeterminadas. Los datos meteorológicos siguen un camino paralelo a través de OpenWeather, con la ciudad que hayas elegido si la indicas.",

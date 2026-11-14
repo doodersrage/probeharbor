@@ -101,7 +101,11 @@ async function upsertEmailSuppression(
     return { ok: false, error: "Enter a valid email address" };
   }
   try {
-    await neonEmail.upsertSuppression(normalized, reason.trim().slice(0, 80) || "manual", lastError?.trim().slice(0, 500) || null);
+    await neonEmail.upsertSuppression(
+      normalized,
+      reason.trim().slice(0, 80) || "manual",
+      lastError?.trim().slice(0, 500) || null,
+    );
     return { ok: true, error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -122,7 +126,12 @@ export async function listEmailSuppressions(
   limit = 200,
 ): Promise<{ rows: EmailSuppressionRow[]; error: string | null }> {
   try {
-    return { rows: await neonEmail.listSuppressions<EmailSuppressionRow>(Math.min(Math.max(limit, 1), 500)), error: null };
+    return {
+      rows: await neonEmail.listSuppressions<EmailSuppressionRow>(
+        Math.min(Math.max(limit, 1), 500),
+      ),
+      error: null,
+    };
   } catch (error) {
     return {
       rows: [],
@@ -131,7 +140,9 @@ export async function listEmailSuppressions(
   }
 }
 
-export async function unsuppressEmail(email: string): Promise<{ ok: boolean; error: string | null }> {
+export async function unsuppressEmail(
+  email: string,
+): Promise<{ ok: boolean; error: string | null }> {
   const normalized = normalizeEmailAddress(email);
   if (!normalized) return { ok: false, error: "Missing email" };
   try {

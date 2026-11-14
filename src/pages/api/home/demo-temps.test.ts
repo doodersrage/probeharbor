@@ -8,8 +8,7 @@ vi.mock("../../../lib/demoTempsLimits", () => ({
 
 const mockFetchWeatherSimulatedFeed = vi.fn();
 vi.mock("../../../lib/weatherSimulatedFeed", () => ({
-  fetchWeatherSimulatedFeed: (...a: unknown[]) =>
-    mockFetchWeatherSimulatedFeed(...a),
+  fetchWeatherSimulatedFeed: (...a: unknown[]) => mockFetchWeatherSimulatedFeed(...a),
 }));
 
 function makeContext(search = "", clientAddress = "1.2.3.4"): APIContext {

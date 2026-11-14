@@ -1,10 +1,6 @@
 import type { APIRoute } from "astro";
 import { getAuthFromCookies } from "../../../lib/auth";
-import {
-  buildSiteUrl,
-  createStripeClient,
-  isActiveSubscriptionStatus,
-} from "../../../lib/stripe";
+import { buildSiteUrl, createStripeClient, isActiveSubscriptionStatus } from "../../../lib/stripe";
 import { getUserSubscription } from "../../../lib/stripeSubscriptions";
 import { resolveStripePriceId } from "../../../lib/planTier";
 import {
@@ -29,14 +25,11 @@ export const POST: APIRoute = async (context) => {
   const formData = await request.formData().catch(() => null);
   const planRaw = formData?.get("plan")?.toString().trim() ?? "";
   const plan =
-    planRaw === "portfolio" || planRaw === "pro" || planRaw === "member"
-      ? planRaw
-      : null;
+    planRaw === "portfolio" || planRaw === "pro" || planRaw === "member" ? planRaw : null;
   if (!plan) {
     return new Response(t.unknownPlan, { status: 400 });
   }
-  const interval =
-    formData?.get("interval")?.toString() === "annual" ? "annual" : "monthly";
+  const interval = formData?.get("interval")?.toString() === "annual" ? "annual" : "monthly";
   const checkoutSource = formData?.get("source")?.toString().trim() || null;
   const priceId = resolveStripePriceId(plan, interval);
 
@@ -45,25 +38,19 @@ export const POST: APIRoute = async (context) => {
   }
 
   if (!priceId.startsWith("price_")) {
-    return new Response(
-      "Stripe price IDs must start with price_.",
-      { status: 500 },
-    );
+    return new Response("Stripe price IDs must start with price_.", { status: 500 });
   }
 
   // referred_by / referral_reward_days live in app_metadata, not
   // user_metadata -- only the server writes app_metadata, so a user can't
   // grant themselves extra trial days.
   const appMetadata = user.app_metadata as Record<string, unknown> | undefined;
-  const referredBy =
-    typeof appMetadata?.referred_by === "string" ? appMetadata.referred_by : null;
+  const referredBy = typeof appMetadata?.referred_by === "string" ? appMetadata.referred_by : null;
   const existing = await getUserSubscription(user.id);
   // Trials are for first-time subscribers, not cancel-and-resubscribe loops.
   const proTrialDays =
     !existing && (plan === "pro" || plan === "portfolio")
-      ? PRO_TRIAL_DAYS +
-        referralBonusTrialDays(referredBy) +
-        referralRewardTrialDays(appMetadata)
+      ? PRO_TRIAL_DAYS + referralBonusTrialDays(referredBy) + referralRewardTrialDays(appMetadata)
       : undefined;
 
   try {
@@ -139,14 +126,8 @@ export const POST: APIRoute = async (context) => {
         billing_interval: interval,
         checkout_source: checkoutSource ?? "",
       },
-      success_url: buildSiteUrl(
-        request,
-        "/dashboard/history?subscription=success",
-      ),
-      cancel_url: buildSiteUrl(
-        request,
-        "/dashboard/history?subscription=cancelled",
-      ),
+      success_url: buildSiteUrl(request, "/dashboard/history?subscription=success"),
+      cancel_url: buildSiteUrl(request, "/dashboard/history?subscription=cancelled"),
       allow_promotion_codes: true,
     });
 
@@ -166,8 +147,7 @@ export const POST: APIRoute = async (context) => {
 
     return redirect(checkoutSession.url);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : t.checkoutFailed;
+    const message = error instanceof Error ? error.message : t.checkoutFailed;
     return new Response(message, { status: 500 });
   }
 };

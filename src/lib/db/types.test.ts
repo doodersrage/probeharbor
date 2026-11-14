@@ -3,7 +3,9 @@ import { makeGetTypeParser, parseNumber, parseTimestamp, parseTimestamptz, PG_OI
 
 describe("timestamptz matches Supabase's text, with microseconds", () => {
   it("keeps all six fraction digits", () => {
-    expect(parseTimestamptz("2026-11-07 13:22:38.104689+00")).toBe("2026-11-07T13:22:38.104689+00:00");
+    expect(parseTimestamptz("2026-11-07 13:22:38.104689+00")).toBe(
+      "2026-11-07T13:22:38.104689+00:00",
+    );
   });
 
   it("has no fraction when Postgres has none", () => {

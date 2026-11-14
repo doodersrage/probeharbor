@@ -77,7 +77,10 @@ export function numericField(value: unknown): number | null {
  * endpoint stores. Shared by the endpoint and the payload checker so the
  * checker can't disagree with what really happens.
  */
-export function interpretIngestPayload(payload: unknown, deviceName?: string | null): InterpretedIngest {
+export function interpretIngestPayload(
+  payload: unknown,
+  deviceName?: string | null,
+): InterpretedIngest {
   const discovered = discoverIngestPayload(payload, deviceName);
   const { tempProbes, typed } = parseIngestPayload(payload);
   const readings: InterpretedReading[] = [];
@@ -97,32 +100,36 @@ export function interpretIngestPayload(payload: unknown, deviceName?: string | n
   // Only store values the payload actually reported: a probe without
   // humidity gets no humidity row (never a fake 0%), and vice versa.
   for (const [key, reading] of Object.entries(classic)) {
-    if (reading.f != null) readings.push({
-      key,
-      label: labelForPushSensorKey(discovered, key, "temperature") ?? `Probe ${key}`,
-      kind: "temperature",
-      unit: "F",
-      value_num: reading.f,
-      value_bool: null,
-      value_text: null,
-      meta: { tempc: reading.c, tempf: reading.f },
-    });
-    if (reading.h != null) readings.push({
-      key,
-      label: labelForPushSensorKey(discovered, key, "humidity") ?? `Probe ${key} humidity`,
-      kind: "humidity",
-      unit: "%",
-      value_num: reading.h,
-      value_bool: null,
-      value_text: null,
-      meta: { humidity: reading.h },
-    });
+    if (reading.f != null)
+      readings.push({
+        key,
+        label: labelForPushSensorKey(discovered, key, "temperature") ?? `Probe ${key}`,
+        kind: "temperature",
+        unit: "F",
+        value_num: reading.f,
+        value_bool: null,
+        value_text: null,
+        meta: { tempc: reading.c, tempf: reading.f },
+      });
+    if (reading.h != null)
+      readings.push({
+        key,
+        label: labelForPushSensorKey(discovered, key, "humidity") ?? `Probe ${key} humidity`,
+        kind: "humidity",
+        unit: "%",
+        value_num: reading.h,
+        value_bool: null,
+        value_text: null,
+        meta: { humidity: reading.h },
+      });
   }
 
   for (const item of typed) {
     const kind = inferSensorKind(item.key, item);
     const converted =
-      kind === "temperature" && item.value != null ? temperatureToFahrenheit(item.value, item.unit) : null;
+      kind === "temperature" && item.value != null
+        ? temperatureToFahrenheit(item.value, item.unit)
+        : null;
     readings.push({
       key: item.key,
       label: item.label ?? labelForPushSensorKey(discovered, item.key, kind) ?? item.key,

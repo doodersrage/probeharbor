@@ -14,7 +14,8 @@ const ptBr: FreezeMapMessages = {
   embed: "Incorporar",
   freezeSeason: "Temporada de congelamento",
   shareKit: "Kit de divulgação",
-  seedIntroHtml: "<strong>Mostrando dados de exemplo</strong>: as leituras reais de cada cidade aparecem quando domicílios suficientes participam ({floor}+ sondas por cidade).",
+  seedIntroHtml:
+    "<strong>Mostrando dados de exemplo</strong>: as leituras reais de cada cidade aparecem quando domicílios suficientes participam ({floor}+ sondas por cidade).",
   optInNone: "Nenhum domicílio participa ainda: seja o primeiro da sua região.",
   optInCount: {
     one: "Até agora, {count} domicílio participa.",
@@ -24,13 +25,16 @@ const ptBr: FreezeMapMessages = {
   linkCreate: "Crie uma conta para contribuir",
   liveNotice: {
     one: "Dados agregados ao vivo · {count} domicílio contribuindo · cidades precisam de {floor}+ domicílios para mostrar leituras",
-    other: "Dados agregados ao vivo · {count} domicílios contribuindo · cidades precisam de {floor}+ domicílios para mostrar leituras",
+    other:
+      "Dados agregados ao vivo · {count} domicílios contribuindo · cidades precisam de {floor}+ domicílios para mostrar leituras",
   },
   lastSnapshot: " · Último retrato {label}",
   liveOptOut: ". Saia quando quiser pelo Household.",
   momentumTitle: "Progresso",
-  momentumApproaching: "Cidades mais perto de mostrar dados reais ({floor} domicílios cada). Sua participação aumenta a contagem.",
-  momentumWaiting: "Quando uma cidade chega a {floor} domicílios participantes com uma sonda ativa, a prévia de exemplo dessa região é substituída por leituras reais.",
+  momentumApproaching:
+    "Cidades mais perto de mostrar dados reais ({floor} domicílios cada). Sua participação aumenta a contagem.",
+  momentumWaiting:
+    "Quando uma cidade chega a {floor} domicílios participantes com uma sonda ativa, a prévia de exemplo dessa região é substituída por leituras reais.",
   householdsProgress: "{count}/{floor} domicílios",
   moreToGo: {
     one: " · falta {count} para mostrar dados reais",
@@ -47,7 +51,8 @@ const ptBr: FreezeMapMessages = {
   },
   sparsePrivate: {
     one: "{count} cidade tem menos de {floor} domicílios, então suas leituras ficam privadas até que mais domicílios participem. Ela aparece em Progresso apenas com o número de domicílios.",
-    other: "{count} cidades têm menos de {floor} domicílios, então suas leituras ficam privadas até que mais domicílios participem. Elas aparecem em Progresso apenas com o número de domicílios.",
+    other:
+      "{count} cidades têm menos de {floor} domicílios, então suas leituras ficam privadas até que mais domicílios participem. Elas aparecem em Progresso apenas com o número de domicílios.",
   },
   mapTitle: "Mapa",
   mapSubtitle:

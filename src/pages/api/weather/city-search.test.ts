@@ -17,7 +17,9 @@ vi.mock("../../../lib/FetchWeather", () => ({
 }));
 
 function makeContext(q: string | null, clientAddress = "1.2.3.4"): APIContext {
-  const url = new URL(`https://example.com/api/weather/city-search${q === null ? "" : `?q=${encodeURIComponent(q)}`}`);
+  const url = new URL(
+    `https://example.com/api/weather/city-search${q === null ? "" : `?q=${encodeURIComponent(q)}`}`,
+  );
   return { url, clientAddress } as unknown as APIContext;
 }
 
@@ -110,7 +112,8 @@ describe("GET /api/weather/city-search", () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: () => Promise.resolve({ zip: "23219", name: "Richmond", lat: 37.5, lon: -77.4, country: "US" }),
+      json: () =>
+        Promise.resolve({ zip: "23219", name: "Richmond", lat: 37.5, lon: -77.4, country: "US" }),
     });
     vi.stubGlobal("fetch", fetchMock);
     mockNormalizeGeocodeResults.mockImplementation((raw: unknown) => raw);

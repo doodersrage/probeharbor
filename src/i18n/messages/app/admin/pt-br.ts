@@ -30,8 +30,10 @@ const ptBr: AdminMessages = {
     pushNoSubscriptionHtml:
       'Abra <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-channels">Alertas → Canais → Push</a>, clique em <strong>Ativar push do navegador neste dispositivo</strong>, permita as notificações, salve se necessário e tente de novo.',
     channelErrors: {
-      sms_no_phone: "Nenhum telefone de SMS nas configurações de alerta nem no campo de substituição.",
-      sms_send_failed: "O envio do SMS pelo Twilio falhou. Confira as credenciais do Twilio e o número de destino.",
+      sms_no_phone:
+        "Nenhum telefone de SMS nas configurações de alerta nem no campo de substituição.",
+      sms_send_failed:
+        "O envio do SMS pelo Twilio falhou. Confira as credenciais do Twilio e o número de destino.",
       unknown_kind: "Tipo de teste de canal desconhecido.",
       sms_not_configured: "SMS (Twilio não configurado no servidor)",
       push_not_configured: "push (chaves VAPID ausentes no servidor)",
@@ -44,8 +46,10 @@ const ptBr: AdminMessages = {
       "{count} preço(s) exibido(s) do Stripe não batem com os valores reais do Stripe: atualize os secrets `STRIPE_DISPLAY_*` do Worker.",
     checklist: {
       title: "Checklist semanal",
-      scanHtml: "Confira <strong>Saúde da plataforma</strong> e os erros de página recentes abaixo.",
-      stripeAudit: "Confirme que a auditoria de preços do Stripe mostra Confere para os quatro preços.",
+      scanHtml:
+        "Confira <strong>Saúde da plataforma</strong> e os erros de página recentes abaixo.",
+      stripeAudit:
+        "Confirme que a auditoria de preços do Stripe mostra Confere para os quatro preços.",
       funnel: "Analise as origens do funil de checkout: invista nos avisos que mais convertem.",
       drip: "Envie um teste de e-mail de boas-vindas ou de avaliação depois de mudar modelos.",
       verifySecrets: "Verifique os secrets do Twilio + VAPID",
@@ -79,7 +83,8 @@ const ptBr: AdminMessages = {
     },
     priceAudit: {
       title: "Auditoria de preços exibidos do Stripe",
-      subtitle: "Compara as variáveis de exibição do Worker com os valores reais dos preços no Stripe.",
+      subtitle:
+        "Compara as variáveis de exibição do Worker com os valores reais dos preços no Stripe.",
       displayEnv: "Variável exibida",
       stripeApi: "API do Stripe",
       match: "Confere",
@@ -112,7 +117,8 @@ const ptBr: AdminMessages = {
       smsPhone: "Telefone para SMS (substituição opcional)",
       testSms: "Testar SMS",
       testPush: "Testar push do navegador",
-      hintStart: "Se a substituição estiver vazia, o SMS usa seu telefone de alertas. Push do navegador:",
+      hintStart:
+        "Se a substituição estiver vazia, o SMS usa seu telefone de alertas. Push do navegador:",
       subscriptions: {
         one: " {count} inscrição salva para sua conta.",
         other: " {count} inscrições salvas para sua conta.",
@@ -120,11 +126,13 @@ const ptBr: AdminMessages = {
       notSubscribed: " este navegador ainda não está inscrito.",
       enableUnder: "Ative em",
       alertsPush: "Alertas → Push",
-      hintEnd: "antes de testar. Os tokens FCM do Android são registrados pelo app nativo quando os secrets do FCM estão definidos.",
+      hintEnd:
+        "antes de testar. Os tokens FCM do Android são registrados pelo app nativo quando os secrets do FCM estão definidos.",
     },
     funnel: {
       title: "Funil de checkout (30 dias)",
-      subtitle: "Sessões de checkout do Stripe iniciadas, incluindo as origens dos avisos de upgrade.",
+      subtitle:
+        "Sessões de checkout do Stripe iniciadas, incluindo as origens dos avisos de upgrade.",
       started: "Checkouts iniciados",
       allTime: "Desde o início (últimos 500 registrados)",
       bySource: "Por origem",
@@ -175,12 +183,14 @@ const ptBr: AdminMessages = {
     title: "Tarefas",
     subtitle: "Histórico do cron, resumos e monitoramento de abuso de ingestão.",
     abuseTitle: "Monitoramento de abuso de ingestão",
-    abuseSubtitle: "Dispositivos com ≥50% de erros de ingestão nos últimos 7 dias (mínimo de 5 envios).",
+    abuseSubtitle:
+      "Dispositivos com ≥50% de erros de ingestão nos últimos 7 dias (mínimo de 5 envios).",
     abuseEmpty: "Nenhum padrão de ingestão suspeito no momento.",
     abuseRow: " em {day}: {errors} erros / {total} no total ({rate}%)",
     runsTitle: "Execuções de tarefas",
     runsError: "Não foi possível carregar as execuções: {error}",
-    runsEmpty: "Nenhuma execução registrada ainda. Elas aparecem após a primeira consulta agendada (a cada 15 minutos).",
+    runsEmpty:
+      "Nenhuma execução registrada ainda. Elas aparecem após a primeira consulta agendada (a cada 15 minutos).",
     started: "Início",
     job: "Tarefa",
     finished: "Fim",
@@ -201,7 +211,8 @@ const ptBr: AdminMessages = {
     title: "Contatos",
     subtitle: "Revise as mensagens do formulário de contato do site.",
     heading: "Mensagens do formulário de contato",
-    intro: "Mensagens enviadas pelo formulário de contato público, salvas quando o e-mail é entregue.",
+    intro:
+      "Mensagens enviadas pelo formulário de contato público, salvas quando o e-mail é entregue.",
     downloadCsv: "Baixar CSV",
     all: "Todos",
     statusNew: "Nova",
@@ -228,7 +239,8 @@ const ptBr: AdminMessages = {
     removed: "Bloqueio removido.",
     updateError: "Não foi possível atualizar: {error}",
     addTitle: "Bloquear endereço",
-    addSubtitle: "Bloqueie um endereço manualmente antes do próximo envio (bounce conhecido, noreply, lixo de teste).",
+    addSubtitle:
+      "Bloqueie um endereço manualmente antes do próximo envio (bounce conhecido, noreply, lixo de teste).",
     reason: "Motivo",
     reasons: {
       manual: "manual",
@@ -247,7 +259,8 @@ const ptBr: AdminMessages = {
     remove: "Remover",
     showing: {
       one: "Mostrando {count} linha (máx. 200). Revise também os bloqueios do Cloudflare Email Service no painel dele.",
-      other: "Mostrando {count} linhas (máx. 200). Revise também os bloqueios do Cloudflare Email Service no painel dele.",
+      other:
+        "Mostrando {count} linhas (máx. 200). Revise também os bloqueios do Cloudflare Email Service no painel dele.",
     },
   },
   api: {

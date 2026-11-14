@@ -52,7 +52,13 @@ const groups = [
   },
   {
     label: "Stripe",
-    keys: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_ID", "STRIPE_PRICE_ID_PRO", "STRIPE_PRICE_ID_PORTFOLIO"],
+    keys: [
+      "STRIPE_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET",
+      "STRIPE_PRICE_ID",
+      "STRIPE_PRICE_ID_PRO",
+      "STRIPE_PRICE_ID_PORTFOLIO",
+    ],
   },
   {
     label: "Cron & ack links",
@@ -79,9 +85,7 @@ for (const group of groups) {
   // FCM can be JSON blob OR split project/email/key.
   if (group.label.startsWith("Android FCM")) {
     const splitOk =
-      env.FCM_PROJECT_ID?.trim() &&
-      env.FCM_CLIENT_EMAIL?.trim() &&
-      env.FCM_PRIVATE_KEY?.trim();
+      env.FCM_PROJECT_ID?.trim() && env.FCM_CLIENT_EMAIL?.trim() && env.FCM_PRIVATE_KEY?.trim();
     if (splitOk) missing = [];
   }
   if (missing.length === 0) {
@@ -99,7 +103,9 @@ console.log("  pnpm secrets:push     — sync .env secrets to Cloudflare Worker"
 console.log("  pnpm ops:smoke        — public pages + sitemap after deploy");
 console.log("  pnpm ops:dogfood      — alert test + Ops email smokes (needs E2E admin)");
 console.log("  pnpm test:e2e:auth    — authenticated alert settings (needs E2E_TEST_*)");
-console.log("  GSC                   — confirm https://probeharbor.dev/sitemap-index.xml in Search Console");
+console.log(
+  "  GSC                   — confirm https://probeharbor.dev/sitemap-index.xml in Search Console",
+);
 if (!env.TWILIO_ACCOUNT_SID?.trim()) {
   console.log("  Twilio                — add TWILIO_* to .env for SMS/WhatsApp, then secrets:push");
 }
@@ -112,7 +118,9 @@ if (
   );
 }
 if (!env.E2E_TEST_EMAIL?.trim() || !env.E2E_TEST_PASSWORD?.trim()) {
-  console.log("  E2E                   — set E2E_TEST_EMAIL / E2E_TEST_PASSWORD for Playwright auth");
+  console.log(
+    "  E2E                   — set E2E_TEST_EMAIL / E2E_TEST_PASSWORD for Playwright auth",
+  );
 }
 
 process.exit(failed ? 1 : 0);

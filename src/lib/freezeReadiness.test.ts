@@ -51,7 +51,13 @@ describe("computeFreezeReadiness", () => {
           sensors: [{ id: "f1", kind: "flood", label: "Pad" }],
         } as never,
       ],
-      latest: [{ sensor: { id: "s1", label: "T", kind: "temperature" }, value_num: 40, recorded_at: new Date().toISOString() } as never],
+      latest: [
+        {
+          sensor: { id: "s1", label: "T", kind: "temperature" },
+          value_num: 40,
+          recorded_at: new Date().toISOString(),
+        } as never,
+      ],
       weatherLocationConfigured: true,
       canUseForecast: true,
       canUseNws: true,
@@ -74,7 +80,13 @@ describe("computeFreezeReadiness", () => {
         nwsFreezeAlertsEnabled: true,
       },
       devices: [{ id: "d1", name: "Garage", sensors: [] } as never],
-      latest: [{ sensor: { id: "s1", label: "T", kind: "temperature" }, value_num: 40, recorded_at: new Date().toISOString() } as never],
+      latest: [
+        {
+          sensor: { id: "s1", label: "T", kind: "temperature" },
+          value_num: 40,
+          recorded_at: new Date().toISOString(),
+        } as never,
+      ],
       weatherLocationConfigured: true,
       canUseForecast: true,
       canUseNws: true,

@@ -8,10 +8,12 @@ const de: ApiMoreActionsMessages = {
   displayPrefsSaveFailed: "Anzeigeeinstellungen konnten nicht gespeichert werden.",
   displayPrefsSaved: "Anzeigeeinstellungen gespeichert.",
   expectedFormData: "Formulardaten erwartet.",
-  invalidWebhookUrl: "Eine deiner Webhook-URLs ist keine gültige https://-Adresse oder zeigt auf ein privates Netzwerk.",
+  invalidWebhookUrl:
+    "Eine deiner Webhook-URLs ist keine gültige https://-Adresse oder zeigt auf ein privates Netzwerk.",
   weakTelegramSecret: "Das Telegram-Webhook-Secret muss mindestens 16 Zeichen lang sein.",
   alertSettingsSaveFailed: "Alarmeinstellungen konnten nicht gespeichert werden.",
-  alertSettingsSavedIncomplete: "Alarmeinstellungen gespeichert – bei einigen Kanälen fehlt das Ziel.",
+  alertSettingsSavedIncomplete:
+    "Alarmeinstellungen gespeichert – bei einigen Kanälen fehlt das Ziel.",
   alertSettingsSaved: "Alarmeinstellungen gespeichert.",
   snoozed24h: "Alarme für 24 Stunden pausiert.",
   vacation7d: "Urlaubsmodus für 7 Tage aktiv.",
@@ -25,7 +27,8 @@ const de: ApiMoreActionsMessages = {
   inviteSent: "Einladung an {email} gesendet.",
   ownerOnlyRename: "Nur der Eigentümer des Haushalts kann ihn umbenennen.",
   householdNameSaved: "Name des Haushalts gespeichert.",
-  ownerOnlyFreezeMap: "Nur der Eigentümer des Haushalts kann die Einstellungen der Frostkarte ändern.",
+  ownerOnlyFreezeMap:
+    "Nur der Eigentümer des Haushalts kann die Einstellungen der Frostkarte ändern.",
   freezeMapSaved: "Einstellungen der Frostkarte gespeichert.",
   deviceRenamed: "Gerät umbenannt.",
   deviceSpaceSaved: "Bereich des Geräts gespeichert.",

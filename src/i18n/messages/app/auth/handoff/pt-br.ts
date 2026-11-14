@@ -32,9 +32,11 @@ const ptBr: AuthHandoffMessages = {
       title: "Voltar para o Bay Buddy",
       description: "Conclua o login no ProbeHarbor voltando para o Bay Buddy.",
       open: "Abrir Bay Buddy",
-      handoff: "Se o Bay Buddy estiver aguardando, ele deve continuar automaticamente. Se não, toque no botão abaixo.",
+      handoff:
+        "Se o Bay Buddy estiver aguardando, ele deve continuar automaticamente. Se não, toque no botão abaixo.",
       close: "Você pode fechar esta aba quando o Bay Buddy mostrar o clima ao vivo da sua garagem.",
-      missing: "Esta página leva você de volta ao Bay Buddy depois do login. Abra o Bay Buddy e escolha Connect novamente.",
+      missing:
+        "Esta página leva você de volta ao Bay Buddy depois do login. Abra o Bay Buddy e escolha Connect novamente.",
     },
     desktop: {
       title: "Voltar para o ProbeHarbor Desktop",

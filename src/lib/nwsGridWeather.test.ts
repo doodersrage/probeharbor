@@ -132,18 +132,14 @@ describe("fetchNwsGridForecast", () => {
   it("defaults gridId/gridX/gridY when missing from the points response", async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(
-        jsonResponse({ properties: { forecast: "https://forecast.example" } }),
-      )
+      .mockResolvedValueOnce(jsonResponse({ properties: { forecast: "https://forecast.example" } }))
       .mockResolvedValueOnce(forecastResponse([]));
     vi.stubGlobal("fetch", fetchMock);
     const { fetchNwsGridForecast } = await import("./nwsGridWeather");
 
     const result = await fetchNwsGridForecast(39.7, -104.9);
 
-    expect(result).toEqual(
-      expect.objectContaining({ gridId: "", gridX: 0, gridY: 0 }),
-    );
+    expect(result).toEqual(expect.objectContaining({ gridId: "", gridX: 0, gridY: 0 }));
   });
 });
 

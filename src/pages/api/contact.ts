@@ -38,24 +38,18 @@ export const POST: APIRoute = async (context) => {
       status: 429,
       headers: {
         "Content-Type": "application/json",
-        ...(rate.retryAfterSec
-          ? { "Retry-After": String(rate.retryAfterSec) }
-          : {}),
+        ...(rate.retryAfterSec ? { "Retry-After": String(rate.retryAfterSec) } : {}),
       },
     });
   }
 
-  const turnstile = await verifyTurnstileToken(
-    getTurnstileToken(data),
-    clientAddress,
-    locale,
-  );
+  const turnstile = await verifyTurnstileToken(getTurnstileToken(data), clientAddress, locale);
 
   if (!turnstile.success) {
-    return new Response(
-      JSON.stringify({ message: turnstile.error ?? t.verificationFailed }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ message: turnstile.error ?? t.verificationFailed }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const name = data.get("name")?.toString().trim();
@@ -63,26 +57,26 @@ export const POST: APIRoute = async (context) => {
   const message = data.get("message")?.toString().trim();
 
   if (!name || !email || !message) {
-    return new Response(
-      JSON.stringify({ message: t.missingFields }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ message: t.missingFields }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   if (message.length > CONTACT_MAX_MESSAGE_CHARS) {
-    return new Response(
-      JSON.stringify({ message: t.tooLong }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ message: t.tooLong }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const from = requireSmtpMailFrom();
   const to = import.meta.env.SMTP_MAIL_TO?.trim();
   if (!to) {
-    return new Response(
-      JSON.stringify({ message: t.recipientMissing }),
-      { status: 503, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ message: t.recipientMissing }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const msg = createMimeMessage();
@@ -113,9 +107,9 @@ export const POST: APIRoute = async (context) => {
     const errorMessage = e instanceof Error ? e.message : "Unknown error";
     console.error("Contact form error:", errorMessage);
 
-    return new Response(
-      JSON.stringify({ message: t.sendFailed }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ message: t.sendFailed }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };

@@ -22,7 +22,8 @@ const en = {
     dashboardShare: "Dashboard → Share",
     startFree: "Start free",
     hacsStatus: "Official HACS integration, listed in the default HACS store.",
-    devDocsHtml: 'Looking for OpenAPI schemas or Grafana dashboard JSON details? <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">Developer docs (GitHub Pages)</a> open in a new tab. Also: <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
+    devDocsHtml:
+      'Looking for OpenAPI schemas or Grafana dashboard JSON details? <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">Developer docs (GitHub Pages)</a> open in a new tab. Also: <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
     learnMore: "Learn more",
     more: "More",
     opensDevDocs: " (opens developer docs)",
@@ -55,13 +56,17 @@ const en = {
     addsFootHtml:
       'Two directions, use either or both: push entities from Home Assistant to ProbeHarbor for off-site alerts (YAML is generated with your key under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> when you pick Home Assistant), and pull ProbeHarbor probes into Home Assistant as entities with the HACS integration below. Background: <a class="text-link" href="/answers/home-assistant-freeze-alert">setting up a freeze alert in Home Assistant</a> and <a class="text-link" href="/answers/wifi-freeze-alarm-power-outage">what happens in a power outage</a>.',
     installTitle: "Install via HACS",
-    installStep1Html: "In Home Assistant, open <strong>HACS</strong> and search for <strong>ProbeHarbor</strong>",
-    installStep2Html: 'Open it and select <strong>Download</strong> (repository: <code class="text-xs break-all">{repo}</code>)',
+    installStep1Html:
+      "In Home Assistant, open <strong>HACS</strong> and search for <strong>ProbeHarbor</strong>",
+    installStep2Html:
+      'Open it and select <strong>Download</strong> (repository: <code class="text-xs break-all">{repo}</code>)',
     installStep3Html: "Restart Home Assistant",
-    installStep4Html: "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
+    installStep4Html:
+      "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
     installStep5Html:
       'Create a <strong>live</strong> share link under <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> (Free includes one family live link; Pro adds history/metrics and never-expire) and paste the token from <code>/share/YOUR_TOKEN</code>',
-    installFootHtml: 'Extended developer walkthrough: <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">Home Assistant guide ↗</a> · Manual YAML recipes still work if you prefer REST sensors over HACS.',
+    installFootHtml:
+      'Extended developer walkthrough: <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">Home Assistant guide ↗</a> · Manual YAML recipes still work if you prefer REST sensors over HACS.',
     showsTitle: "What shows up in HA",
     showsItemsHtml: [
       "<strong>Sensors</strong>: temperature, humidity, CO₂, pressure, PM2.5, VOC, level, energy, and generic numeric probes",
@@ -89,7 +94,8 @@ const en = {
     nestTitle: "Nest OAuth (Pro, preferred when available)",
     nestCopyHtml:
       'On <strong>probeharbor.dev</strong>, Pro households can connect Nest from <a class="text-link" href="/dashboard/devices">Dashboard → Temperature</a> for live indoor temp, setpoint, and HVAC mode next to attic/crawlspace/shop probes: freeze alerts can include that context. History stores thermostat snapshots on the same ~15-minute cron as other Pro collectors.',
-    nestCompareHtml: 'End-user compare: <a class="text-link" href="/compare/nest">ProbeHarbor vs Nest</a>',
+    nestCompareHtml:
+      'End-user compare: <a class="text-link" href="/compare/nest">ProbeHarbor vs Nest</a>',
     nestOperatorHtml:
       'Self-hosted operators enabling OAuth secrets: <a class="text-link" href="/about/thermostat-oauth">Nest &amp; Ecobee operator setup</a>',
     planBTitle: "Plan B: push indoor air from Home Assistant",
@@ -114,7 +120,8 @@ const en = {
     alertsLede:
       "Pro outbound webhooks fire when ProbeHarbor sends a freeze, leak, or custom-rule alert. Point the URL at your HA webhook endpoint or import the blueprint.",
     downloadBlueprint: "Download webhook blueprint YAML",
-    entityYamlHtml: '<a class="text-link" href="{href}" download>Entity naming YAML</a> for push devices',
+    entityYamlHtml:
+      '<a class="text-link" href="{href}" download>Entity naming YAML</a> for push devices',
     productGuideHtml:
       'Product guide: <a class="text-link" href="/about/ingest-and-webhooks">Ingest &amp; webhooks</a>',
     configureTokensHtml:
@@ -139,7 +146,8 @@ const en = {
     installTitle: "Install",
     installStep1Html:
       'Install <a class="text-link" href="https://matterbridge.io/" target="_blank" rel="noreferrer">Matterbridge</a> on a LAN host (Raspberry Pi, NAS, or always-on PC). Matter pairing needs local mDNS — it does not run on Cloudflare Workers.',
-    installStep2Html: 'Clone <code class="text-xs break-all">{repo}</code>, run <code>npm install &amp;&amp; npm run build</code>, then <code>matterbridge --add .</code>',
+    installStep2Html:
+      'Clone <code class="text-xs break-all">{repo}</code>, run <code>npm install &amp;&amp; npm run build</code>, then <code>matterbridge --add .</code>',
     installStep3Html:
       'Create a <strong>family live</strong> share link under <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> and paste the token from <code>/share/YOUR_TOKEN</code> into the plugin config.',
     installStep4: "Restart Matterbridge and pair the QR code in Apple Home / Google Home / Alexa.",
@@ -180,8 +188,10 @@ const en = {
       "Copy the IFTTT Maker URL into ProbeHarbor <strong>Pro → Alerts → Outbound webhook</strong>. Optionally set a signing secret and verify <code>X-Signature</code> in a filter step if your plan allows code.",
       "Action: notify, toggle a smart plug, or append to a Google Sheet via IFTTT’s Sheets service.",
     ],
-    n8nStep1Html: 'Import <a class="text-link" href="{href}" download>probeharbor-alert-to-sheets.json</a> (Webhook → Set → Google Sheets append).',
-    n8nStep2: "Activate the workflow; copy the production webhook URL into ProbeHarbor outbound webhook.",
+    n8nStep1Html:
+      'Import <a class="text-link" href="{href}" download>probeharbor-alert-to-sheets.json</a> (Webhook → Set → Google Sheets append).',
+    n8nStep2:
+      "Activate the workflow; copy the production webhook URL into ProbeHarbor outbound webhook.",
     n8nStep3Html:
       "Replace <code>YOUR_GOOGLE_SHEET_ID</code>; sheet headers: <code>sent_at</code>, <code>kind</code>, <code>title</code>, <code>body</code>.",
     n8nFootHtml:
@@ -215,7 +225,8 @@ const en = {
     quickTitle: "Quick start",
     quickStep1Html:
       'Create a Pro API key under <a class="text-link" href="/dashboard/share">Dashboard → Share</a>.',
-    quickStep2Html: 'Download <a class="text-link" href="{href}" download>telegraf/probeharbor.conf</a> and set <code>PROBEHARBOR_API_KEY</code>, <code>INFLUX_TOKEN</code>, <code>INFLUX_ORG</code>, <code>INFLUX_BUCKET</code>.',
+    quickStep2Html:
+      'Download <a class="text-link" href="{href}" download>telegraf/probeharbor.conf</a> and set <code>PROBEHARBOR_API_KEY</code>, <code>INFLUX_TOKEN</code>, <code>INFLUX_ORG</code>, <code>INFLUX_BUCKET</code>.',
     quickStep3Html:
       "<code>telegraf --config probeharbor.conf</code> — confirm <code>probeharbor_sensor_value</code> points land in the bucket.",
     shapeTitle: "Metric shape",
@@ -241,10 +252,12 @@ const en = {
     installTitle: "Install",
     step1Html:
       'Create a <strong>push device</strong> under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> and copy the ingest key.',
-    step2Html: 'In Node-RED: <strong>Menu → Import</strong> → upload <a class="text-link" href="{href}" download>mqtt-to-probeharbor.json</a> (or paste the URL).',
+    step2Html:
+      'In Node-RED: <strong>Menu → Import</strong> → upload <a class="text-link" href="{href}" download>mqtt-to-probeharbor.json</a> (or paste the URL).',
     step3Html:
       "Set env <code>PROBEHARBOR_INGEST_KEY</code> (or edit the function node). Point MQTT nodes at your broker.",
-    step4: "Deploy and confirm HTTP 200 on the debug node. Readings appear under Devices / Overview.",
+    step4:
+      "Deploy and confirm HTTP 200 on the debug node. Readings appear under Devices / Overview.",
     installFoot:
       "The flow rate-limits to about 1 POST per minute and includes an optional garage-door tab. ProbeHarbor is not an MQTT broker — keep Mosquitto on the LAN.",
     postsTitle: "What it POSTs",
@@ -274,9 +287,12 @@ const en = {
     setupTitle: "Setup",
     setupStep1Html:
       'Create a family live share link under <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a>.',
-    setupStep2Html: 'Install Matterbridge + <a class="text-link" href="{href}" target="_blank" rel="noreferrer">probeharbor-matter</a> on a Pi/NAS.',
-    setupStep3: "In the SmartThings app: add a Matter device / scan the Matterbridge QR (same flow as other Matter bridges).",
-    setupStep4: "Keep freeze SMS on ProbeHarbor push ingest — Matter polling is for glance and local automations.",
+    setupStep2Html:
+      'Install Matterbridge + <a class="text-link" href="{href}" target="_blank" rel="noreferrer">probeharbor-matter</a> on a Pi/NAS.',
+    setupStep3:
+      "In the SmartThings app: add a Matter device / scan the Matterbridge QR (same flow as other Matter bridges).",
+    setupStep4:
+      "Keep freeze SMS on ProbeHarbor push ingest — Matter polling is for glance and local automations.",
     aloneTitle: "When to stay on ProbeHarbor alone",
     aloneCopyHtml:
       'Consumer ST/Govee pods win on price for bedrooms. For detached garages and shops, ESP ingest + household freeze/leak channels still beat vendor Bluetooth range. See <a class="text-link" href="/compare/govee">ProbeHarbor vs Govee / SmartThings</a>.',

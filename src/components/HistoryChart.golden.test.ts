@@ -11,9 +11,9 @@ import { h } from "preact";
 import { describe, expect, it } from "vitest";
 import HistoryChart from "./HistoryChart";
 
-const prtsPkg = createRequire(createRequire(import.meta.url).resolve("@astrojs/preact/package.json")).resolve(
-  "preact-render-to-string/package.json",
-);
+const prtsPkg = createRequire(
+  createRequire(import.meta.url).resolve("@astrojs/preact/package.json"),
+).resolve("preact-render-to-string/package.json");
 const render = (await import(pathToFileURL(join(dirname(prtsPkg), "dist/index.mjs")).href)) as {
   render: (vnode: unknown) => string;
 };
@@ -40,7 +40,15 @@ const rich = {
   defaultTargetAmbientF: 40,
   showHumidity: true,
   sampleIntervalMs: 3_600_000,
-  alertMarkers: [{ id: 7, createdAt: hour(9), kind: "threshold", title: "Garage below 34°F", acknowledgedAt: null }],
+  alertMarkers: [
+    {
+      id: 7,
+      createdAt: hour(9),
+      kind: "threshold",
+      title: "Garage below 34°F",
+      acknowledgedAt: null,
+    },
+  ],
   highlightAlertId: 7,
   doorBands: [{ label: "Side door", openedAt: hour(3), closedAt: hour(4) }],
   canUseClaimsPack: true,
@@ -61,13 +69,19 @@ describe("HistoryChart markup (snapshots)", () => {
     expect(html({ points: [] })).toMatchSnapshot();
   });
   it("guest view, hidden title, door history failed to load", () => {
-    expect(html({ ...rich, guest: true, hideTitle: true, doorBands: [], doorBandsError: true })).toMatchSnapshot();
+    expect(
+      html({ ...rich, guest: true, hideTitle: true, doorBands: [], doorBandsError: true }),
+    ).toMatchSnapshot();
   });
   it("humidity-only probe, non-English locale", () => {
     expect(
       html({
         points: [],
-        humidityOnlyPoints: Array.from({ length: 6 }, (_, i) => ({ timestamp: hour(i), humidity: 50 + i, probeLabel: "Basement" })),
+        humidityOnlyPoints: Array.from({ length: 6 }, (_, i) => ({
+          timestamp: hour(i),
+          humidity: 50 + i,
+          probeLabel: "Basement",
+        })),
         showHumidity: true,
         locale: "de",
       }),

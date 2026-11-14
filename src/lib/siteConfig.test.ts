@@ -142,7 +142,9 @@ describe("legacyHostRedirectUrl", () => {
 
   it("leaves file downloads and www.probeharbor.dev unflagged", () => {
     expect(
-      legacyHostRedirectUrl(new URL("https://thermaltrace.dev/esphome/thermaltrace.yaml")).toString(),
+      legacyHostRedirectUrl(
+        new URL("https://thermaltrace.dev/esphome/thermaltrace.yaml"),
+      ).toString(),
     ).toBe("https://probeharbor.dev/esphome/thermaltrace.yaml");
     expect(legacyHostRedirectUrl(new URL("https://www.probeharbor.dev/pricing")).toString()).toBe(
       "https://probeharbor.dev/pricing",

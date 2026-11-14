@@ -68,7 +68,11 @@ export function scoreDeviceHealth(
 
   const ageMs = nowMs - Date.parse(device.last_seen_at);
   // Shared freshness rule: 2 h, or longer for a device that reports slowly.
-  const stale = readingFreshness(device.last_seen_at, reportIntervalMsFromMeta(device.meta), nowMs).stale;
+  const stale = readingFreshness(
+    device.last_seen_at,
+    reportIntervalMsFromMeta(device.meta),
+    nowMs,
+  ).stale;
 
   const deviceLatest = latest.filter((row) => row.sensor.device_id === device.id);
   const floodWet = deviceLatest.some(

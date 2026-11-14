@@ -1,4 +1,3 @@
-
 /**
  * /about/pico-w-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Pin names, part numbers,

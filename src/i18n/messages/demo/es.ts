@@ -112,10 +112,22 @@ const es: DemoMessages = {
     title: "Sigue explorando",
     lede: "¿Ya provocaste una ola de frío simulada? Mira el taller de demostración según el tiempo real y luego prueba una historia de inundación o fuga, consulta el mapa de una ciudad o configura el QR del kit.",
     items: [
-      { label: "Simulador interactivo de sondas", hint: "La demo práctica principal: puerta, sol, exterior, umbral de helada" },
-      { label: "Mapa comunitario de heladas", hint: "Datos agregados por ciudad (voluntarios), sin cuenta" },
-      { label: "Alta del kit con QR", hint: "Crear dispositivo → escanear QR de ingesta → primer POST" },
-      { label: "Escenario de helada", hint: "Cómo se ve, alerta a alerta, un calefactor que falla a las 2 de la madrugada" },
+      {
+        label: "Simulador interactivo de sondas",
+        hint: "La demo práctica principal: puerta, sol, exterior, umbral de helada",
+      },
+      {
+        label: "Mapa comunitario de heladas",
+        hint: "Datos agregados por ciudad (voluntarios), sin cuenta",
+      },
+      {
+        label: "Alta del kit con QR",
+        hint: "Crear dispositivo → escanear QR de ingesta → primer POST",
+      },
+      {
+        label: "Escenario de helada",
+        hint: "Cómo se ve, alerta a alerta, un calefactor que falla a las 2 de la madrugada",
+      },
     ],
   },
   faqLede:

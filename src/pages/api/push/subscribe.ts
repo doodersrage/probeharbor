@@ -36,14 +36,22 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   }
 
   if (!body.endpoint || !body.keys?.p256dh || !body.keys?.auth) {
-    return new Response(JSON.stringify({ error: apiUserMessages(locale).push.invalidSubscription }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: apiUserMessages(locale).push.invalidSubscription }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 
   await releasePushSubscriptionFromOtherUsers(null, user.id, body.endpoint);
-  const saved = await neonPush.savePushSubscription(user.id, body.endpoint, body.keys.p256dh, body.keys.auth);
+  const saved = await neonPush.savePushSubscription(
+    user.id,
+    body.endpoint,
+    body.keys.p256dh,
+    body.keys.auth,
+  );
 
   if (saved.error) {
     return new Response(JSON.stringify({ error: saved.error }), {

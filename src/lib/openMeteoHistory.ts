@@ -81,9 +81,7 @@ export function openMeteoPointsToChartPoints(
   probeLabel = "Outdoor (estimated)",
 ): ChartPoint[] {
   return points.map((point) => ({
-    timestamp: point.timestamp.endsWith("Z")
-      ? point.timestamp
-      : `${point.timestamp}Z`,
+    timestamp: point.timestamp.endsWith("Z") ? point.timestamp : `${point.timestamp}Z`,
     tempf: point.tempf,
     humidity: 0,
     probeLabel,

@@ -27,7 +27,9 @@ export function buildPortfolioDigest(
     );
   };
   const lines = atRisk
-    .map((p) => fmt(t.line, { name: p.name, temp: num(p.minTempF, 1), threshold: num(p.freezeThresholdF) }))
+    .map((p) =>
+      fmt(t.line, { name: p.name, temp: num(p.minTempF, 1), threshold: num(p.freezeThresholdF) }),
+    )
     .join("\n");
   const count = atRisk.length;
   return {
@@ -90,7 +92,9 @@ export async function sendPortfolioAlertsForAllUsers(): Promise<{
         continue;
       }
 
-      const locale = localeFromMetadata(userData.user?.user_metadata as Record<string, unknown> | undefined);
+      const locale = localeFromMetadata(
+        userData.user?.user_metadata as Record<string, unknown> | undefined,
+      );
       const digest = buildPortfolioDigest(atRisk, locale);
 
       const payload = { title: digest.title, body: digest.body, kind: "threshold" as const };
@@ -102,9 +106,7 @@ export async function sendPortfolioAlertsForAllUsers(): Promise<{
 
       sent += 1;
     } catch (err) {
-      errors.push(
-        `${userId}: ${err instanceof Error ? err.message : "Unknown error"}`,
-      );
+      errors.push(`${userId}: ${err instanceof Error ? err.message : "Unknown error"}`);
     }
   }
 

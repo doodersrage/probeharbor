@@ -50,9 +50,9 @@ describe("mobile OAuth return URLs", () => {
     expect(buildMobileOAuthCustomUrl(token, "dev.probeharbor.android")).toBe(
       "dev.probeharbor.android://oauth?exchange=payload.sig",
     );
-    expect(buildMobileOAuthHttpsUrl(token, "https://probeharbor.dev", "dev.probeharbor.android")).toBe(
-      "https://probeharbor.dev/app/oauth?exchange=payload.sig&app=dev.probeharbor.android",
-    );
+    expect(
+      buildMobileOAuthHttpsUrl(token, "https://probeharbor.dev", "dev.probeharbor.android"),
+    ).toBe("https://probeharbor.dev/app/oauth?exchange=payload.sig&app=dev.probeharbor.android");
     expect(buildMobileOAuthIntentUrl(token, "dev.probeharbor.android")).toBe(
       "intent://oauth?exchange=payload.sig#Intent;scheme=dev.probeharbor.android;package=dev.probeharbor.android;end",
     );

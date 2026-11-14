@@ -42,8 +42,8 @@ describe("historyUrls", () => {
     ).toBe(
       "https://probeharbor.dev/dashboard/history?from=2026-09-01&to=2026-09-09&tab=exports&alert=42",
     );
-    expect(
-      buildHistoryChartUrl(null, { from: "2026-09-01", to: "2026-09-09" }),
-    ).toBe("/dashboard/history?from=2026-09-01&to=2026-09-09");
+    expect(buildHistoryChartUrl(null, { from: "2026-09-01", to: "2026-09-09" })).toBe(
+      "/dashboard/history?from=2026-09-01&to=2026-09-09",
+    );
   });
 });

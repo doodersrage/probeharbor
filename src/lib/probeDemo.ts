@@ -274,9 +274,7 @@ export function applyProbeNoise(probes: DemoProbe[]): {
 } {
   const noisyProbes = probes.map((probe) => {
     const f = round1(probe.reading.f + (Math.random() - 0.5) * 0.6);
-    const h = round1(
-      clamp(probe.reading.h + (Math.random() - 0.5) * 1.2, 18, 92),
-    );
+    const h = round1(clamp(probe.reading.h + (Math.random() - 0.5) * 1.2, 18, 92));
 
     return {
       ...probe,

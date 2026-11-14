@@ -30,8 +30,10 @@ const es: AdminMessages = {
     pushNoSubscriptionHtml:
       'Abre <a class="text-link" href="/dashboard/alerts?tab=settings#alert-section-channels">Alertas → Canales → Push</a>, haz clic en <strong>Activar push del navegador en este dispositivo</strong>, permite las notificaciones, guarda si hace falta y vuelve a intentarlo.',
     channelErrors: {
-      sms_no_phone: "No hay teléfono para SMS en los ajustes de alertas ni en el campo de reemplazo.",
-      sms_send_failed: "Falló el envío del SMS por Twilio. Revisa las credenciales de Twilio y el número de destino.",
+      sms_no_phone:
+        "No hay teléfono para SMS en los ajustes de alertas ni en el campo de reemplazo.",
+      sms_send_failed:
+        "Falló el envío del SMS por Twilio. Revisa las credenciales de Twilio y el número de destino.",
       unknown_kind: "Tipo de prueba de canal desconocido.",
       sms_not_configured: "SMS (Twilio no está configurado en el servidor)",
       push_not_configured: "push (faltan las claves VAPID en el servidor)",
@@ -44,8 +46,10 @@ const es: AdminMessages = {
       "{count} precio(s) de Stripe mostrados no coinciden con los importes reales de Stripe: actualiza los secretos `STRIPE_DISPLAY_*` del Worker.",
     checklist: {
       title: "Lista semanal",
-      scanHtml: "Revisa <strong>Estado de la plataforma</strong> y los errores de página recientes más abajo.",
-      stripeAudit: "Comprueba que la auditoría de precios de Stripe muestre Coincide en los cuatro precios.",
+      scanHtml:
+        "Revisa <strong>Estado de la plataforma</strong> y los errores de página recientes más abajo.",
+      stripeAudit:
+        "Comprueba que la auditoría de precios de Stripe muestre Coincide en los cuatro precios.",
       funnel: "Revisa los orígenes del embudo de pago: refuerza los avisos que mejor funcionan.",
       drip: "Envía una prueba de correo de bienvenida o de prueba gratuita después de cambiar plantillas.",
       verifySecrets: "Verifica los secretos de Twilio + VAPID",
@@ -112,7 +116,8 @@ const es: AdminMessages = {
       smsPhone: "Teléfono para SMS (reemplazo opcional)",
       testSms: "Probar SMS",
       testPush: "Probar push del navegador",
-      hintStart: "Si el reemplazo está vacío, el SMS usa tu teléfono de alertas. Push del navegador:",
+      hintStart:
+        "Si el reemplazo está vacío, el SMS usa tu teléfono de alertas. Push del navegador:",
       subscriptions: {
         one: " {count} suscripción guardada para tu cuenta.",
         other: " {count} suscripciones guardadas para tu cuenta.",
@@ -120,11 +125,13 @@ const es: AdminMessages = {
       notSubscribed: " este navegador aún no está suscrito.",
       enableUnder: "Actívalo en",
       alertsPush: "Alertas → Push",
-      hintEnd: "antes de probar. Los tokens FCM de Android se registran desde la app nativa cuando los secretos de FCM están definidos.",
+      hintEnd:
+        "antes de probar. Los tokens FCM de Android se registran desde la app nativa cuando los secretos de FCM están definidos.",
     },
     funnel: {
       title: "Embudo de pago (30 días)",
-      subtitle: "Sesiones de pago de Stripe iniciadas: incluye los orígenes de los avisos de mejora.",
+      subtitle:
+        "Sesiones de pago de Stripe iniciadas: incluye los orígenes de los avisos de mejora.",
       started: "Pagos iniciados",
       allTime: "Total (últimos 500 registrados)",
       bySource: "Por origen",
@@ -138,7 +145,8 @@ const es: AdminMessages = {
     title: "Usuarios",
     subtitle: "Gestiona las cuentas registradas y la pertenencia al grupo de administradores.",
     referralTitle: "Programa de referidos",
-    referralSubtitle: "Registros y recompensas para quien refiere, otorgadas con la suscripción Pro.",
+    referralSubtitle:
+      "Registros y recompensas para quien refiere, otorgadas con la suscripción Pro.",
     referrerRewards: "Recompensas otorgadas a referentes",
     signups: { one: "{count} registro", other: "{count} registros" },
     manager: {
@@ -175,12 +183,14 @@ const es: AdminMessages = {
     title: "Tareas",
     subtitle: "Historial de cron, resúmenes y vigilancia de abuso de ingesta.",
     abuseTitle: "Vigilancia de abuso de ingesta",
-    abuseSubtitle: "Dispositivos con ≥50 % de errores de ingesta en los últimos 7 días (mínimo 5 envíos).",
+    abuseSubtitle:
+      "Dispositivos con ≥50 % de errores de ingesta en los últimos 7 días (mínimo 5 envíos).",
     abuseEmpty: "Ahora mismo no hay patrones de ingesta sospechosos.",
     abuseRow: " el {day}: {errors} errores / {total} en total ({rate} %)",
     runsTitle: "Ejecuciones de tareas",
     runsError: "No se pudieron cargar las ejecuciones: {error}",
-    runsEmpty: "Aún no hay ejecuciones registradas. Aparecen tras la primera consulta programada (cada 15 minutos).",
+    runsEmpty:
+      "Aún no hay ejecuciones registradas. Aparecen tras la primera consulta programada (cada 15 minutos).",
     started: "Inicio",
     job: "Tarea",
     finished: "Fin",
@@ -201,7 +211,8 @@ const es: AdminMessages = {
     title: "Contactos",
     subtitle: "Revisa los mensajes del formulario de contacto del sitio.",
     heading: "Mensajes del formulario de contacto",
-    intro: "Mensajes enviados desde el formulario de contacto público; se guardan cuando el correo se entrega correctamente.",
+    intro:
+      "Mensajes enviados desde el formulario de contacto público; se guardan cuando el correo se entrega correctamente.",
     downloadCsv: "Descargar CSV",
     all: "Todos",
     statusNew: "Nuevo",
@@ -228,7 +239,8 @@ const es: AdminMessages = {
     removed: "Bloqueo eliminado.",
     updateError: "No se pudo actualizar: {error}",
     addTitle: "Bloquear dirección",
-    addSubtitle: "Bloquea una dirección manualmente antes del próximo envío (rebote conocido, noreply, basura de pruebas).",
+    addSubtitle:
+      "Bloquea una dirección manualmente antes del próximo envío (rebote conocido, noreply, basura de pruebas).",
     reason: "Motivo",
     reasons: {
       manual: "manual",
@@ -247,7 +259,8 @@ const es: AdminMessages = {
     remove: "Quitar",
     showing: {
       one: "Mostrando {count} fila (máx. 200). Revisa también los bloqueos de Cloudflare Email Service en su panel.",
-      other: "Mostrando {count} filas (máx. 200). Revisa también los bloqueos de Cloudflare Email Service en su panel.",
+      other:
+        "Mostrando {count} filas (máx. 200). Revisa también los bloqueos de Cloudflare Email Service en su panel.",
     },
   },
   api: {

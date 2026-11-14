@@ -51,9 +51,7 @@ describe("POST /api/admin/email-suppressions/remove", () => {
     const { POST } = await import("./remove");
     const response = await POST(makeContext("Bad@Example.com"));
     expect(mockUnsuppressEmail).toHaveBeenCalledWith("Bad@Example.com");
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/email-suppressions?removed=1",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/email-suppressions?removed=1");
   });
 
   it("redirects with an error when removal fails", async () => {

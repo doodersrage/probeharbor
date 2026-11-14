@@ -19,24 +19,25 @@ export function buildReadingsFromResults(
     const feed = results.find((result) => result.id === probe.feedId);
     const data = feed?.probes[probe.key];
     // No temperature reported: nothing to evaluate (never treat it as 0°F).
-    if (!feed || feed.error || !data || data.f == null || implausibleReason("temperature", data.f)) return [];
+    if (!feed || feed.error || !data || data.f == null || implausibleReason("temperature", data.f))
+      return [];
     const device = devicesById.get(probe.feedId);
-    const tempSensor = device?.sensors.find(
-      (s) => s.key === probe.key && s.kind === "temperature",
-    );
+    const tempSensor = device?.sensors.find((s) => s.key === probe.key && s.kind === "temperature");
     const humiditySensor = device?.sensors.find(
       (s) => s.key === probe.key && s.kind === "humidity",
     );
-    return [{
-      label: probe.label,
-      tempf: applySensorOffset(data.f, tempSensor?.offset_num ?? 0),
-      humidity:
-        data.h == null || implausibleReason("humidity", data.h)
-          ? null
-          : applySensorOffset(data.h, humiditySensor?.offset_num ?? 0),
-      space: spaceByFeedId.get(probe.feedId) ?? null,
-      sensorId: tempSensor?.id,
-    }];
+    return [
+      {
+        label: probe.label,
+        tempf: applySensorOffset(data.f, tempSensor?.offset_num ?? 0),
+        humidity:
+          data.h == null || implausibleReason("humidity", data.h)
+            ? null
+            : applySensorOffset(data.h, humiditySensor?.offset_num ?? 0),
+        space: spaceByFeedId.get(probe.feedId) ?? null,
+        sensorId: tempSensor?.id,
+      },
+    ];
   });
 }
 
@@ -112,7 +113,9 @@ export function buildAlertReadingsFromLatestSensors(
     entry.label = row.sensor.label.replace(/\s+humidity$/i, "") || row.sensor.label;
     entry.sensorId = row.sensor.id;
     entry.recordedAt = row.recorded_at ?? null;
-    entry.humidity = humidityByPair.get(`${row.sensor.device_id}:${probePairingKey(row.sensor.key)}`);
+    entry.humidity = humidityByPair.get(
+      `${row.sensor.device_id}:${probePairingKey(row.sensor.key)}`,
+    );
 
     byKey.set(mapKey, entry);
   }

@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { conditionOptions, evaluateAlertRules, explainAlertRules, parseAlertRulesFromForm, type AlertRule, type RuleEvalContext } from "./alertRules";
+import {
+  conditionOptions,
+  evaluateAlertRules,
+  explainAlertRules,
+  parseAlertRulesFromForm,
+  type AlertRule,
+  type RuleEvalContext,
+} from "./alertRules";
 import { ensureLocale } from "../i18n/catalog";
-import {
-  DEFAULT_ALERT_SETTINGS,
-  evaluateForecastFreeze,
-} from "./alerts";
-import {
-  isInQuietHours,
-  isWithinQuietWindow,
-  shouldSuppressForQuietHours,
-} from "./quietHours";
+import { DEFAULT_ALERT_SETTINGS, evaluateForecastFreeze } from "./alerts";
+import { isInQuietHours, isWithinQuietWindow, shouldSuppressForQuietHours } from "./quietHours";
 import { minForecastTempInWindow } from "./FetchWeather";
 import { compareYearOverYear } from "./seasonalInsights";
 
@@ -135,15 +135,26 @@ describe("alert rules", () => {
       all: [{ type: "temp_below", value: 38, labelIncludes: "pipe" }, { type: "outdoor_below" }],
     };
     expect(evaluateAlertRules([both], { ...ctx, outdoorTempF: 25 })).toHaveLength(0);
-    expect(evaluateAlertRules([both], { ...ctx, outdoorTempF: 18 })[0]).toContain("temp below AND outdoor below");
+    expect(evaluateAlertRules([both], { ...ctx, outdoorTempF: 18 })[0]).toContain(
+      "temp below AND outdoor below",
+    );
     expect(evaluateAlertRules([both], { ...ctx, outdoorTempF: null })).toHaveLength(0);
 
-    const either: AlertRule = { ...both, match: "any", all: [{ type: "door_open" }, { type: "temp_below", value: 38 }] };
+    const either: AlertRule = {
+      ...both,
+      match: "any",
+      all: [{ type: "door_open" }, { type: "temp_below", value: 38 }],
+    };
     expect(evaluateAlertRules([either], ctx)[0]).toContain("door open OR temp below");
   });
 
   it("keeps match when parsing the form", () => {
-    const parsed = parseAlertRulesFromForm(JSON.stringify([{ id: "a", name: "x", all: [], match: "any" }, { id: "b", name: "y", all: [] }]));
+    const parsed = parseAlertRulesFromForm(
+      JSON.stringify([
+        { id: "a", name: "x", all: [], match: "any" },
+        { id: "b", name: "y", all: [] },
+      ]),
+    );
     expect(parsed.map((r) => r.match)).toEqual(["any", "all"]);
   });
 
@@ -202,9 +213,13 @@ describe("alert rules", () => {
       rateChangeF: 15,
       outageHours: 2,
     };
-    const rule = (all: AlertRule["all"]): AlertRule[] => [{ id: "h", enabled: true, name: "Heat", all }];
+    const rule = (all: AlertRule["all"]): AlertRule[] => [
+      { id: "h", enabled: true, name: "Heat", all },
+    ];
     expect(evaluateAlertRules(rule([{ type: "temp_above" }]), ctx)).toHaveLength(1);
-    expect(evaluateAlertRules(rule([{ type: "temp_above", labelIncludes: "garage" }]), ctx)).toHaveLength(0);
+    expect(
+      evaluateAlertRules(rule([{ type: "temp_above", labelIncludes: "garage" }]), ctx),
+    ).toHaveLength(0);
     expect(
       evaluateAlertRules(rule([{ type: "temp_above", value: 90, labelIncludes: "garage" }]), ctx),
     ).toHaveLength(1);
@@ -286,7 +301,14 @@ describe("explainAlertRules", () => {
 
   it("says which condition held it back and how close it came", () => {
     const [result] = explainAlertRules(
-      [{ id: "r1", enabled: true, name: "Garage cold", all: [{ type: "temp_below", labelIncludes: "garage" }, { type: "door_open" }] }],
+      [
+        {
+          id: "r1",
+          enabled: true,
+          name: "Garage cold",
+          all: [{ type: "temp_below", labelIncludes: "garage" }, { type: "door_open" }],
+        },
+      ],
       ctx,
     );
     expect(result?.matched).toBe(false);
@@ -296,7 +318,15 @@ describe("explainAlertRules", () => {
 
   it("names the reading that satisfied a condition", () => {
     const [result] = explainAlertRules(
-      [{ id: "r2", enabled: true, name: "Any", match: "any", all: [{ type: "temp_below", value: 40 }, { type: "flood" }] }],
+      [
+        {
+          id: "r2",
+          enabled: true,
+          name: "Any",
+          match: "any",
+          all: [{ type: "temp_below", value: 40 }, { type: "flood" }],
+        },
+      ],
       ctx,
     );
     expect(result?.matched).toBe(true);
@@ -307,35 +337,66 @@ describe("explainAlertRules", () => {
   it("flags label filters that match nothing, unknown weather, and disabled rules", () => {
     const [scoped, weather] = explainAlertRules(
       [
-        { id: "r3", enabled: false, name: "Shed", all: [{ type: "temp_below", labelIncludes: "shed" }] },
-        { id: "r4", enabled: true, name: "Outdoor", all: [{ type: "outdoor_below" }, { type: "rate_drop" }] },
+        {
+          id: "r3",
+          enabled: false,
+          name: "Shed",
+          all: [{ type: "temp_below", labelIncludes: "shed" }],
+        },
+        {
+          id: "r4",
+          enabled: true,
+          name: "Outdoor",
+          all: [{ type: "outdoor_below" }, { type: "rate_drop" }],
+        },
       ],
       ctx,
     );
     expect(scoped?.matched).toBe(false);
     expect(scoped?.conditions[0]?.detail).toBe('No temperature probe with "shed" in its name.');
     expect(weather?.conditions[0]?.detail).toMatch(/unknown/);
-    expect(weather?.conditions[1]?.detail).toBe("Biggest: Garage pipe dropped 2°F in the last hour; needs 5°F.");
+    expect(weather?.conditions[1]?.detail).toBe(
+      "Biggest: Garage pipe dropped 2°F in the last hour; needs 5°F.",
+    );
   });
 
   it("writes the sentences in °C for a °C viewer, without changing what matches", () => {
     const rules = [
-      { id: "c1", enabled: true, name: "Garage cold", all: [{ type: "temp_below" as const, labelIncludes: "garage" }] },
-      { id: "c2", enabled: true, name: "Below 40", all: [{ type: "temp_below" as const, value: 40 }] },
-      { id: "c3", enabled: true, name: "Cold out", all: [{ type: "outdoor_below" as const, value: 32 }, { type: "rate_drop" as const }] },
+      {
+        id: "c1",
+        enabled: true,
+        name: "Garage cold",
+        all: [{ type: "temp_below" as const, labelIncludes: "garage" }],
+      },
+      {
+        id: "c2",
+        enabled: true,
+        name: "Below 40",
+        all: [{ type: "temp_below" as const, value: 40 }],
+      },
+      {
+        id: "c3",
+        enabled: true,
+        name: "Cold out",
+        all: [{ type: "outdoor_below" as const, value: 32 }, { type: "rate_drop" as const }],
+      },
     ];
     const withOutdoor = { ...ctx, outdoorTempF: 30 };
     const inF = explainAlertRules(rules, withOutdoor);
     const inC = explainAlertRules(rules, withOutdoor, "en", true);
 
     expect(inC.map((r) => r.matched)).toEqual(inF.map((r) => r.matched));
-    expect(inC.map((r) => r.conditions.map((c) => c.matched))).toEqual(inF.map((r) => r.conditions.map((c) => c.matched)));
+    expect(inC.map((r) => r.conditions.map((c) => c.matched))).toEqual(
+      inF.map((r) => r.conditions.map((c) => c.matched)),
+    );
     // Temperatures: (°F − 32) × 5/9. 36 → 2.2, 34 → 1.1, 40 → 4.4, 30 → −1.1, 32 → 0.
     expect(inC[0]?.conditions[0]?.detail).toBe("Closest: Garage pipe at 2.2°C; needs ≤ 1.1°C.");
     expect(inC[1]?.conditions[0]?.detail).toBe("Garage pipe at 2.2°C (≤ 4.4°C).");
     expect(inC[2]?.conditions[0]?.detail).toBe("Outdoor at -1.1°C (≤ 0°C).");
     // A drop is a difference: × 5/9, no offset. 2 → 1.1, 5 → 2.8.
-    expect(inC[2]?.conditions[1]?.detail).toBe("Biggest: Garage pipe dropped 1.1°C in the last hour; needs 2.8°C.");
+    expect(inC[2]?.conditions[1]?.detail).toBe(
+      "Biggest: Garage pipe dropped 1.1°C in the last hour; needs 2.8°C.",
+    );
     // Non-temperature units are untouched.
     const [humid] = explainAlertRules(
       [{ id: "h", enabled: true, name: "Damp", all: [{ type: "humidity_above", value: 45 }] }],
@@ -349,11 +410,20 @@ describe("explainAlertRules", () => {
   it("explains conditions and matched rules in the user's language", async () => {
     await ensureLocale("de", ["app"]);
     const [result] = explainAlertRules(
-      [{ id: "r1", enabled: true, name: "Garage kalt", all: [{ type: "temp_below", labelIncludes: "garage" }, { type: "door_open" }] }],
+      [
+        {
+          id: "r1",
+          enabled: true,
+          name: "Garage kalt",
+          all: [{ type: "temp_below", labelIncludes: "garage" }, { type: "door_open" }],
+        },
+      ],
       { ...ctx, readings: [{ label: "Garage pipe", tempf: 36.5, humidity: 40 }] },
       "de",
     );
-    expect(result?.conditions[0]?.detail).toBe("Am nächsten: Garage pipe mit 36,5°F; nötig ist ≤ 34°F.");
+    expect(result?.conditions[0]?.detail).toBe(
+      "Am nächsten: Garage pipe mit 36,5°F; nötig ist ≤ 34°F.",
+    );
     expect(result?.conditions[1]?.detail).toBe("Keiner von 1 Türsensor meldet „offen“.");
     const [line] = evaluateAlertRules(
       [{ id: "x", enabled: true, name: "Kalt", all: [{ type: "temp_below", value: 40 }] }],
@@ -384,7 +454,9 @@ describe("explainAlertRules", () => {
       { id: "a", enabled: true, name: "A", all: [{ type: "temp_below" as const, value: 40 }] },
       { id: "b", enabled: true, name: "B", all: [{ type: "door_open" as const }] },
     ];
-    const explained = explainAlertRules(rules, ctx).filter((r) => r.matched).map((r) => r.name);
+    const explained = explainAlertRules(rules, ctx)
+      .filter((r) => r.matched)
+      .map((r) => r.name);
     expect(evaluateAlertRules(rules, ctx).map((m) => m.match(/"(.+)"/)?.[1])).toEqual(explained);
   });
 });
@@ -410,7 +482,12 @@ describe("door_open_duration: open longer than N minutes", () => {
     outageHours: 2,
     now: NOW,
   });
-  const openSince = (iso: string, label = "Garage door") => ({ label, openedAt: iso, durationMs: null, stillOpen: true });
+  const openSince = (iso: string, label = "Garage door") => ({
+    label,
+    openedAt: iso,
+    durationMs: null,
+    stillOpen: true,
+  });
   const closed = (minutes: number, label = "Garage door") => ({
     label,
     openedAt: "2026-10-29T06:00:00Z",
@@ -441,10 +518,17 @@ describe("door_open_duration: open longer than N minutes", () => {
   });
 
   it("only looks at doors matching the label filter", () => {
-    expect(evaluateAlertRules([rule], ctx([openSince("2026-10-29T09:00:00Z", "Side door")]))).toHaveLength(0);
+    expect(
+      evaluateAlertRules([rule], ctx([openSince("2026-10-29T09:00:00Z", "Side door")])),
+    ).toHaveLength(0);
   });
 
   it("doesn't fire when the open time is unknown", () => {
-    expect(evaluateAlertRules([rule], ctx([{ label: "Garage door", durationMs: null, stillOpen: true }]))).toHaveLength(0);
+    expect(
+      evaluateAlertRules(
+        [rule],
+        ctx([{ label: "Garage door", durationMs: null, stillOpen: true }]),
+      ),
+    ).toHaveLength(0);
   });
 });

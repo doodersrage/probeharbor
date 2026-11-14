@@ -14,13 +14,16 @@ const en = {
       openDevices: "Open Devices",
       overview: "Overview",
     },
-    introCsv: "Browse saved temperature and humidity snapshots by feed and probe. Download CSV from the Table tab or Exports below.",
-    introNoCsv: "Browse saved temperature and humidity snapshots by feed and probe. Subscribe to unlock CSV export of your saved history.",
+    introCsv:
+      "Browse saved temperature and humidity snapshots by feed and probe. Download CSV from the Table tab or Exports below.",
+    introNoCsv:
+      "Browse saved temperature and humidity snapshots by feed and probe. Subscribe to unlock CSV export of your saved history.",
     tabsAria: "History views",
     tabs: { chart: "Chart", table: "Table", exports: "Exports", doors: "Doors" },
     retentionTitle: "Raw readings older than 90 days roll into hourly averages for longer windows.",
     /** `{plan}` stays English (plan name); `{retention}` is `retentionYears`/`retentionDays`; `{plus}` is "+" or "". */
-    retention: "Your {plan} plan keeps {retention}{plus} of history; readings older than 90 days are kept as hourly averages.",
+    retention:
+      "Your {plan} plan keeps {retention}{plus} of history; readings older than 90 days are kept as hourly averages.",
     adminPlan: "Admin",
     retentionYears: { one: "{count} year", other: "{count} years" },
     retentionDays: { one: "{count} day", other: "{count} days" },
@@ -43,7 +46,8 @@ const en = {
     summary: "Compare",
     outdoorTitle: "Indoor vs outdoor",
     outdoorSubtitle: "Chart-window probe average compared with current outdoor weather.",
-    outdoorSubtitleCity: "Chart-window probe average compared with current outdoor weather in {city}.",
+    outdoorSubtitleCity:
+      "Chart-window probe average compared with current outdoor weather in {city}.",
     indoorAvg: "Indoor avg",
     outdoorNow: "Outdoor now",
     delta: "Delta",
@@ -57,7 +61,8 @@ const en = {
   },
   exports: {
     summaryTitle: "Window summary",
-    summarySubtitle: "Snapshot for {from} → {to} (same window as claims pack below). Open the Chart tab to explore, or download evidence from Exports.",
+    summarySubtitle:
+      "Snapshot for {from} → {to} (same window as claims pack below). Open the Chart tab to explore, or download evidence from Exports.",
     notEnough: "Not enough readings in this window for a summary yet.",
     coldest: "Coldest",
     hoursAtOrBelow: "Estimated hours ≤ {temp}{unit}",
@@ -77,16 +82,21 @@ const en = {
       recipient_not_allowed: "That email address could not be delivered to.",
       send_failed: "Couldn't send the claims pack email. Try again.",
     },
-    claimsUsesFilters: "Uses the History filters above when set ({from} → {to}). Downloads a PDF summary; companion CSVs cover the same window.",
+    claimsUsesFilters:
+      "Uses the History filters above when set ({from} → {to}). Downloads a PDF summary; companion CSVs cover the same window.",
     htmlVersion: "HTML version",
     adjusterEmail: "Email to adjuster",
     adjusterPlaceholder: "adjuster@insurer.com",
     sendClaims: "Send claims pack",
     claimsUpgrade: "Upgrade to Pro to download the claims pack from this tab.",
     certificateTitle: "Monitoring certificate",
-    certificateSubtitle: "One-page PDF summary of your alert configuration and monitored devices: useful for insurers, landlords, or property managers.",
+    certificateSubtitle:
+      "One-page PDF summary of your alert configuration and monitored devices: useful for insurers, landlords, or property managers.",
     certificateDownload: "Download monitoring certificate (PDF)",
-    seasonalTitle: { one: "Seasonal insights ({count} day)", other: "Seasonal insights ({count} days)" },
+    seasonalTitle: {
+      one: "Seasonal insights ({count} day)",
+      other: "Seasonal insights ({count} days)",
+    },
     icalLink: "Subscribe to freeze outlook (iCal)",
   },
   table: {
@@ -96,9 +106,13 @@ const en = {
     downloadCsv: "Download CSV",
     csvTimesUtc: "Times in the CSV are UTC (ISO 8601, ending in Z).",
     chartTitleDates: "Temperature trend (selected dates)",
-    chartTitleDays: { one: "Temperature trend (last {count} day)", other: "Temperature trend (last {count} days)" },
+    chartTitleDays: {
+      one: "Temperature trend (last {count} day)",
+      other: "Temperature trend (last {count} days)",
+    },
     anomaliesTitle: "Unusual patterns detected in the chart window",
-    anomaliesHow: "Flagged when a probe falls {band} or more between two readings up to 60 minutes apart; a door open within 30 minutes is mentioned.",
+    anomaliesHow:
+      "Flagged when a probe falls {band} or more between two readings up to 60 minutes apart; a door open within 30 minutes is mentioned.",
     feed: "Feed",
     allFeeds: "All feeds",
     probe: "Probe",
@@ -130,10 +144,12 @@ const en = {
     saveView: "Save view",
     loadError: "Unable to load historic readings: {error}",
     noMatch: "No readings match these filters. Try a wider date range or clear filters.",
-    noHistory: "No climate history yet. Snapshots collect when devices are online and when you open Home while signed in.",
+    noHistory:
+      "No climate history yet. Snapshots collect when devices are online and when you open Home while signed in.",
     stepAddDevice: "Add a device or feed",
     stepVerify: "Verify ingest on the Devices page",
-    stepLiveHtml: '<a class="text-link" href="/dashboard/live">Open Live</a> to confirm live readings',
+    stepLiveHtml:
+      '<a class="text-link" href="/dashboard/live">Open Live</a> to confirm live readings',
     goDevices: "Go to Devices",
     humidityRh: "{value}% RH",
     colRecorded: "Recorded",
@@ -159,7 +175,10 @@ const en = {
     minutes: "{count} min",
     hours: "{hours} h",
     timelineAria: "Cold snap timeline",
-    tones: { cold: "Cold", alert: "Alert", ok: "Recovered", info: "Note" } as Record<string, string>,
+    tones: { cold: "Cold", alert: "Alert", ok: "Recovered", info: "Note" } as Record<
+      string,
+      string
+    >,
     otherLows: "Other probes over the same stretch: {list}.",
     otherLow: "{probe} {temp}{unit}",
     listSeparator: ", ",
@@ -191,15 +210,20 @@ const en = {
     matchDevice: "same device",
     matchSpace: "same space",
     howTitle: "How these numbers are worked out",
-    howBody: "Each door is compared with one temperature and one humidity sensor: the first one on the door's own device, otherwise one on another device in the same space (set spaces on Devices). \"Open\" and \"close\" values are that sensor's latest reading at or before each moment, if it is at most 30 minutes old; otherwise the cell says so. The change is close minus open. It shows how the room moved while the door was open, not what caused it.",
+    howBody:
+      'Each door is compared with one temperature and one humidity sensor: the first one on the door\'s own device, otherwise one on another device in the same space (set spaces on Devices). "Open" and "close" values are that sensor\'s latest reading at or before each moment, if it is at most 30 minutes old; otherwise the cell says so. The change is close minus open. It shows how the room moved while the door was open, not what caused it.',
     empty: "No door openings saved in this period.",
-    emptyHint: "An opening is saved when the door sensor reports closed again. Doors left open for more than 24 hours aren't saved yet.",
+    emptyHint:
+      "An opening is saved when the door sensor reports closed again. Doors left open for more than 24 hours aren't saved yet.",
     noDoorSensors: "No door sensors yet. Add one on Devices to see door openings here.",
-    truncated: "Showing the newest {count} openings in this period. Narrow the dates to see older ones.",
+    truncated:
+      "Showing the newest {count} openings in this period. Narrow the dates to see older ones.",
     loadError: "Door history couldn't be loaded. Try again in a moment.",
-    readingsError: "Temperature and humidity at each opening couldn't be loaded, so those columns are empty.",
+    readingsError:
+      "Temperature and humidity at each opening couldn't be loaded, so those columns are empty.",
     downloadCsv: "Download CSV",
-    csvNote: "CSV times are UTC (ISO 8601). Temperatures in °F, humidity in %. Empty cells mean no reading.",
+    csvNote:
+      "CSV times are UTC (ISO 8601). Temperatures in °F, humidity in %. Empty cells mean no reading.",
     csvUpgrade: "CSV export of door openings is included with a subscription.",
   },
 };

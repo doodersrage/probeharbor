@@ -26,15 +26,18 @@ const es: DeviceDetailMessages = {
     title: "Estado",
     health: "Salud",
     healthHowSummary: "Cómo se calcula la puntuación",
-    healthHow: "La puntuación muestra el problema más grave encontrado, revisado en este orden: desactivado (25) o nunca visto (30); un sensor de fuga mojado (10–20); sin envíos durante un día (20) o 2 horas (45); lecturas atascadas (40); batería al 15 % o menos (55) o con 14 días o menos previstos (60); Wi‑Fi en tu umbral de señal o por debajo (65). Sin nada de eso, está bien (95).",
-    batteryHow: "Los días restantes suponen que la batería sigue bajando al ritmo de los últimos 7 días. Solo aparecen si bajó más de un 0,5 % al día durante al menos medio día.",
+    healthHow:
+      "La puntuación muestra el problema más grave encontrado, revisado en este orden: desactivado (25) o nunca visto (30); un sensor de fuga mojado (10–20); sin envíos durante un día (20) o 2 horas (45); lecturas atascadas (40); batería al 15 % o menos (55) o con 14 días o menos previstos (60); Wi‑Fi en tu umbral de señal o por debajo (65). Sin nada de eso, está bien (95).",
+    batteryHow:
+      "Los días restantes suponen que la batería sigue bajando al ritmo de los últimos 7 días. Solo aparecen si bajó más de un 0,5 % al día durante al menos medio día.",
     lastSeen: "Última conexión",
     never: "Nunca",
     battery: "Batería",
     wifiSignal: "Señal Wi-Fi",
     firmware: "Firmware",
     updateTo: "Actualizar a {version}",
-    tlsUnverified: "Esta sonda no puede verificar el certificado de ProbeHarbor, así que su conexión no está protegida contra manipulaciones. Las lecturas siguen llegando. Suele deberse a un cambio de la autoridad de certificación del sitio; una actualización de firmware lo soluciona.",
+    tlsUnverified:
+      "Esta sonda no puede verificar el certificado de ProbeHarbor, así que su conexión no está protegida contra manipulaciones. Las lecturas siguen llegando. Suele deberse a un cambio de la autoridad de certificación del sitio; una actualización de firmware lo soluciona.",
     state: "Estado",
     disabled: "Desactivado: se ignoran las lecturas",
     noReadingsYet:
@@ -67,7 +70,8 @@ const es: DeviceDetailMessages = {
   },
   sensors: {
     title: "Sensores ({count})",
-    noneYetPush: "Aún ninguno: se añaden automáticamente a partir de las claves JSON de la primera subida.",
+    noneYetPush:
+      "Aún ninguno: se añaden automáticamente a partir de las claves JSON de la primera subida.",
     noneYetPull: "Aún ninguno: aparecen tras la próxima consulta del feed.",
     intro: "Ponles el nombre de lo que miden. Un solo Guardar sirve para todos los sensores.",
     name: "Nombre",
@@ -86,7 +90,8 @@ const es: DeviceDetailMessages = {
     deleteSensor: "Eliminar sensor",
     saveSensors: "Guardar sensores",
     addByHand: "Añadir un sensor manualmente",
-    addHint: "Solo hace falta para ponerle nombre antes de la primera subida; si no, las claves se añaden automáticamente.",
+    addHint:
+      "Solo hace falta para ponerle nombre antes de la primera subida; si no, las claves se añaden automáticamente.",
     addLabelPlaceholder: "Tubería del garaje",
     addSensor: "Añadir sensor",
   },
@@ -128,7 +133,8 @@ const es: DeviceDetailMessages = {
   },
   connection: {
     title: "Conexión",
-    sendsJsonHtml: "El dispositivo envía JSON a <code>{url}</code>. Su clave empieza por <code>{prefix}</code>.",
+    sendsJsonHtml:
+      "El dispositivo envía JSON a <code>{url}</code>. Su clave empieza por <code>{prefix}</code>.",
     checkPayload: "Comprobar un payload",
     browserFlasher: "Flasheador en el navegador",
     ingestDocs: "Documentación de ingesta",
@@ -143,15 +149,18 @@ const es: DeviceDetailMessages = {
     title: "Mantenimiento",
     downloadDiagnostics: "Descargar diagnóstico",
     historyChart: "Gráfico del historial",
-    diagnosticsHint: "El diagnóstico es un archivo JSON anonimizado que puedes adjuntar a un informe de error o a un correo de soporte.",
+    diagnosticsHint:
+      "El diagnóstico es un archivo JSON anonimizado que puedes adjuntar a un informe de error o a un correo de soporte.",
     moveTo: "Mover a otra propiedad",
     moveDevice: "Mover dispositivo",
   },
   danger: {
     title: "Clave y eliminación",
     rotateTitle: "Renovar la clave de ingesta",
-    rotateBody: "Genera una clave nueva. La anterior deja de funcionar al instante; vuelve a flashear o actualiza el dispositivo.",
-    rotateConfirm: "¿Renovar esta clave de ingesta? La clave anterior deja de funcionar de inmediato.",
+    rotateBody:
+      "Genera una clave nueva. La anterior deja de funcionar al instante; vuelve a flashear o actualiza el dispositivo.",
+    rotateConfirm:
+      "¿Renovar esta clave de ingesta? La clave anterior deja de funcionar de inmediato.",
     rotateButton: "Renovar clave",
     deleteTitle: "Eliminar dispositivo",
     deleteBody: "Lo elimina junto con sus sensores y su historial. No se puede deshacer.",
@@ -163,7 +172,8 @@ const es: DeviceDetailMessages = {
     title: "Reemplazar un sensor",
     intro:
       "¿Cambiaste una sonda averiada o una placa entera? Cuando el sensor nuevo haya enviado una lectura, pásale el historial del antiguo para que los gráficos, informes y alertas continúen como un solo sensor.",
-    confirm: "¿Mover todo el historial del sensor antiguo al nuevo y eliminar el antiguo? No se puede deshacer.",
+    confirm:
+      "¿Mover todo el historial del sensor antiguo al nuevo y eliminar el antiguo? No se puede deshacer.",
     oldSensor: "Sensor antiguo (retirado)",
     newSensor: "Sensor nuevo",
     choose: "Elige…",

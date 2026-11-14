@@ -1,4 +1,3 @@
-
 /** /about/python-feeds body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 
 const en = {
@@ -17,8 +16,10 @@ const en = {
   consumerTitle: "Example consumer fetch",
   consumerBodyHtml:
     "The Astro site’s fetch layer requests your configured HTTPS URL, parses the <code>temp</code> object (or auto-detects SenML / Home Assistant REST JSON when that root is missing), and maps keys to dashboard probes. The same URL can power Node scripts, Grafana JSON plugins, or Home Assistant REST sensors.",
-  figureAlt: "Browser JSON viewer showing temp probe keys 0, 1, and avg with Fahrenheit Celsius and humidity",
-  figureCaption: "Example relay payload shape the website expects after caching upstream Arduino JSON.",
+  figureAlt:
+    "Browser JSON viewer showing temp probe keys 0, 1, and avg with Fahrenheit Celsius and humidity",
+  figureCaption:
+    "Example relay payload shape the website expects after caching upstream Arduino JSON.",
   scriptsTitle: "Operational scripts",
   scriptsBody:
     "Beyond the API, small Python utilities validate JSON schema, backfill CSV archives, or compare probe averages against OpenWeather forecasts. Because probes expose plain JSON, you can prototype analytics in a notebook before promoting logic into production services.",
@@ -29,7 +30,6 @@ const en = {
   unoBodyHtml:
     'A W5100 shield cannot POST to <code>https://probeharbor.dev</code>. The stdlib relay <a class="text-link" target="_blank" rel="noreferrer" href="https://github.com/doodersrage/probeharbor/blob/main/sketches/relay/push_https_forward.py"><code>sketches/relay/push_https_forward.py</code></a> listens for HTTP from the Arduino and forwards the same path and body over HTTPS. Pair it with <a class="text-link" target="_blank" rel="noreferrer" href="https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ethernet_dht22_ingest"><code>ethernet_dht22_ingest</code></a> (DHT22 on A4/A5, classic <code>temp</code> JSON).',
 };
-
 
 export type PythonFeedsMessages = typeof en;
 export default en;

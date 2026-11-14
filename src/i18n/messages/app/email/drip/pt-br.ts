@@ -4,9 +4,11 @@ const ptBr: DripEmailMessages = {
   day1: {
     subject: "Adicione sua primeira sonda ao ProbeHarbor",
     eyebrow: "Primeiros passos",
-    preheader: "Crie uma chave de dispositivo, envie JSON por POST e os sensores são importados automaticamente — cerca de 10 minutos.",
+    preheader:
+      "Crie uma chave de dispositivo, envie JSON por POST e os sensores são importados automaticamente — cerca de 10 minutos.",
     title: "Conecte sua primeira sonda",
-    intro: "Boas-vindas ao ProbeHarbor. Sua conta gratuita está pronta — o próximo passo é ver uma leitura ao vivo na Visão geral.",
+    intro:
+      "Boas-vindas ao ProbeHarbor. Sua conta gratuita está pronta — o próximo passo é ver uma leitura ao vivo na Visão geral.",
     paragraphs: [
       "Abra Dispositivos e escolha o que você tem. Cada caminho cria um dispositivo e entrega um trecho de código com a chave dele; os sensores são importados automaticamente na primeira leitura.",
     ],
@@ -44,7 +46,9 @@ const ptBr: DripEmailMessages = {
     title: "Vá além com um teste grátis do Pro",
     intro:
       "Você já teve uma semana para conhecer o ProbeHarbor. O Pro adiciona os canais e as ferramentas de compartilhamento que fazem diferença às 2 da manhã. (O Free já inclui um link ao vivo para a família.)",
-    paragraphs: ["Comece um teste de 14 dias em Preços — cancele quando quiser pelo portal de cobrança no painel."],
+    paragraphs: [
+      "Comece um teste de 14 dias em Preços — cancele quando quiser pelo portal de cobrança no painel.",
+    ],
     bullets: [
       "Alertas de congelamento e vazamento por SMS e push no navegador",
       "Histórico, métricas e links de compartilhamento que nunca expiram, além de incorporações",

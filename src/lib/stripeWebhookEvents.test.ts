@@ -22,10 +22,10 @@ describe("claimStripeWebhookEvent", () => {
     const result = await claimStripeWebhookEvent("evt_1", "checkout.session.completed");
 
     expect(result.alreadyProcessed).toBe(false);
-    expect(run).toHaveBeenCalledWith(expect.stringContaining("insert into public.stripe_webhook_events"), [
-      "evt_1",
-      "checkout.session.completed",
-    ]);
+    expect(run).toHaveBeenCalledWith(
+      expect.stringContaining("insert into public.stripe_webhook_events"),
+      ["evt_1", "checkout.session.completed"],
+    );
   });
 
   it("recognizes a duplicate delivery (the id was already recorded)", async () => {
@@ -53,7 +53,10 @@ describe("releaseStripeWebhookEvent", () => {
 
     await releaseStripeWebhookEvent("evt_retry");
 
-    expect(run).toHaveBeenCalledWith(expect.stringContaining("delete from public.stripe_webhook_events"), ["evt_retry"]);
+    expect(run).toHaveBeenCalledWith(
+      expect.stringContaining("delete from public.stripe_webhook_events"),
+      ["evt_retry"],
+    );
   });
 
   it("logs, rather than throws, when the delete fails", async () => {

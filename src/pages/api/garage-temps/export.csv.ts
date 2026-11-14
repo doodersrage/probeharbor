@@ -13,7 +13,11 @@ import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/com
 import { apiUserMessages } from "../../../i18n/messages/app/api/user";
 
 /** A YYYY-MM-DD day in the browser's zone (ph_tz cookie), as on the History page; UTC when unknown. */
-function parseDateParam(value: string | null, timeZone: string, endOfDay = false): string | undefined {
+function parseDateParam(
+  value: string | null,
+  timeZone: string,
+  endOfDay = false,
+): string | undefined {
   if (!value?.trim()) return undefined;
   const iso = endOfDay ? zonedDayEndIso(value, timeZone) : zonedDayStartIso(value, timeZone);
   return iso ?? undefined;

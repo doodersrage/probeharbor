@@ -154,14 +154,14 @@ describe("withQuery", () => {
   });
 
   it("keeps an existing tab query instead of producing a second ?", () => {
-    expect(
-      withQuery("/dashboard/alerts?tab=settings", { alert_saved: "1" }),
-    ).toBe("/dashboard/alerts?tab=settings&alert_saved=1");
+    expect(withQuery("/dashboard/alerts?tab=settings", { alert_saved: "1" })).toBe(
+      "/dashboard/alerts?tab=settings&alert_saved=1",
+    );
   });
 
   it("preserves a hash", () => {
-    expect(
-      withQuery("/dashboard/alerts?tab=settings#send-test-alert", { test_sent: "1" }),
-    ).toBe("/dashboard/alerts?tab=settings&test_sent=1#send-test-alert");
+    expect(withQuery("/dashboard/alerts?tab=settings#send-test-alert", { test_sent: "1" })).toBe(
+      "/dashboard/alerts?tab=settings&test_sent=1#send-test-alert",
+    );
   });
 });

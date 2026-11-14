@@ -130,9 +130,7 @@ describe("parseIngestPayload", () => {
 
 describe("inferSensorKind", () => {
   it("prefers an explicit kind", () => {
-    expect(inferSensorKind("door", { key: "door", kind: "humidity", value: 1 })).toBe(
-      "humidity",
-    );
+    expect(inferSensorKind("door", { key: "door", kind: "humidity", value: 1 })).toBe("humidity");
   });
 
   it("infers boolean door/flood/power/motion kinds", () => {

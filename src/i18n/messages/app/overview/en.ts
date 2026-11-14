@@ -11,7 +11,8 @@ const en = {
     debugGuide: "Debug guide",
   },
   offlineBanner: "Showing last-known dashboard status (offline or stale cache).",
-  viewOnly: "View-only access: you can see live data but cannot change devices, alerts, or sharing.",
+  viewOnly:
+    "View-only access: you can see live data but cannot change devices, alerts, or sharing.",
   attentionTitle: "Attention needed",
   attentionTitleWithReadiness: "Winter readiness {score}% · Attention needed",
   tipsTitle: "Tips",
@@ -50,11 +51,16 @@ const en = {
   },
   metricsHow: {
     summary: "How these numbers are worked out",
-    freezeHours: "Freeze hours: time in the last 7 days when a probe read at or below your {threshold}{unit} freeze line. {unit}·h (degree-hours) adds up how far below the line and for how long: 2{unit} under for 3 hours is 6 {unit}·h.",
-    coldestMargin: "Coldest margin: your coldest live probe minus the {threshold}{unit} freeze line. Amber within {band}, red at or below the line.",
-    indoorOutdoor: "Indoor − outdoor: coldest probe (or the house thermostat) minus the current outdoor temperature. Under {band} (amber) means the space follows outdoor air closely and will cool fast on a cold night.",
-    probeSpread: "Probe spread: warmest minus coldest live probe. {band} or more (amber) can mean a cold spot, layered air, or a failing sensor.",
-    condensation: "Condensation: hours in the last 7 days when the air was within {band} of its dew point (worked out from temperature and humidity), when surfaces can get damp. Amber at 6+ hours, or within {nowBand} right now.",
+    freezeHours:
+      "Freeze hours: time in the last 7 days when a probe read at or below your {threshold}{unit} freeze line. {unit}·h (degree-hours) adds up how far below the line and for how long: 2{unit} under for 3 hours is 6 {unit}·h.",
+    coldestMargin:
+      "Coldest margin: your coldest live probe minus the {threshold}{unit} freeze line. Amber within {band}, red at or below the line.",
+    indoorOutdoor:
+      "Indoor − outdoor: coldest probe (or the house thermostat) minus the current outdoor temperature. Under {band} (amber) means the space follows outdoor air closely and will cool fast on a cold night.",
+    probeSpread:
+      "Probe spread: warmest minus coldest live probe. {band} or more (amber) can mean a cold spot, layered air, or a failing sensor.",
+    condensation:
+      "Condensation: hours in the last 7 days when the air was within {band} of its dew point (worked out from temperature and humidity), when surfaces can get damp. Amber at 6+ hours, or within {nowBand} right now.",
     feedHealth: "Feed health: how many of your pull feeds answered just now, not uptime over time.",
     measured: "All of these come from your readings and weather data; none is a forecast.",
   },
@@ -123,7 +129,8 @@ const en = {
     gettingStarted: "Getting started",
     hardwareSetup: "Hardware setup",
     nextSteps: "Next steps",
-    essentialsProgress: "{done} of {total} essentials: device, freeze+email, test (unlocks Insights)",
+    essentialsProgress:
+      "{done} of {total} essentials: device, freeze+email, test (unlocks Insights)",
     hardwareProgress: "{done} of {total} hardware steps",
     optionalProgress: "{done} of {total} optional steps",
     progressAria: "Setup progress: {done} of {total} steps complete",
@@ -144,10 +151,12 @@ const en = {
     essential: {
       device: {
         title: "Connect your first sensor",
-        detail: "Step 1 of 3: add a device on the Devices page (ESP32 flasher or Home Assistant). A demo feed is for looking around and doesn't count.",
+        detail:
+          "Step 1 of 3: add a device on the Devices page (ESP32 flasher or Home Assistant). A demo feed is for looking around and doesn't count.",
         /** Shown while a device is added but hasn't sent a reading yet. */
         waitingTitle: "Waiting for the first reading",
-        waitingDetail: "Step 1 of 3: your device is added but hasn't reported yet. Open Devices to check its setup.",
+        waitingDetail:
+          "Step 1 of 3: your device is added but hasn't reported yet. Open Devices to check its setup.",
       },
       alerts: {
         title: "Set freeze threshold + email",
@@ -155,13 +164,15 @@ const en = {
       },
       test: {
         title: "Send a test alert",
-        detail: "Step 3 of 3: confirm delivery once so you trust the path before a real freeze night.",
+        detail:
+          "Step 3 of 3: confirm delivery once so you trust the path before a real freeze night.",
       },
     },
     kit: {
       firstPost: {
         title: "First reading received",
-        detail: "Add a device and let it send one reading. Its sensors show up on the Devices page on their own.",
+        detail:
+          "Add a device and let it send one reading. Its sensors show up on the Devices page on their own.",
       },
       rename: {
         title: "Rename imported sensors",

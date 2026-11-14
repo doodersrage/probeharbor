@@ -29,7 +29,9 @@ beforeEach(() => {
 });
 
 function dbCallCount() {
-  return mockDevices.mock.calls.length + mockSensors.mock.calls.length + mockReadings.mock.calls.length;
+  return (
+    mockDevices.mock.calls.length + mockSensors.mock.calls.length + mockReadings.mock.calls.length
+  );
 }
 
 describe("fetchCrossPropertySnapshots", () => {

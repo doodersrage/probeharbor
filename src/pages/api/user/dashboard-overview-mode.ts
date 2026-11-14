@@ -16,22 +16,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const formData = await request.formData();
   const redirectTo = formRedirectPath(formData, "/dashboard");
   const modeRaw = formData.get("mode")?.toString();
-  const mode: DashboardOverviewMode =
-    modeRaw === "insights" ? "insights" : "simple";
+  const mode: DashboardOverviewMode = modeRaw === "insights" ? "insights" : "simple";
 
   const accessToken = session.access_token;
   const refreshToken = session.refresh_token;
 
-  const { error } = await updateDashboardOverviewMode(
-    accessToken,
-    refreshToken,
-    mode,
-  );
+  const { error } = await updateDashboardOverviewMode(accessToken, refreshToken, mode);
 
   if (error) {
     return redirect(withQuery(redirectTo, { overview_mode_error: "1" }));
   }
-
 
   return redirect(redirectTo);
 };

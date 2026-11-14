@@ -1,4 +1,3 @@
-
 /** /about/data-flow body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
@@ -11,7 +10,8 @@ const ptBr: Messages = {
   step2Title: "Passo 2. Publicação do JSON",
   step2Html:
     'A placa ou um relay próximo expõe JSON via HTTPS. Um serviço FastAPI em Python pode guardar as respostas em cache no Redis para que a internet nunca acesse diretamente a conexão da sua casa: veja <a class="text-link" href="/about/python-feeds">scripts e feeds em Python</a>.',
-  jsonAlt: "Visualizador de JSON do navegador mostrando as chaves de sonda 0, 1 e avg com Fahrenheit, Celsius e umidade",
+  jsonAlt:
+    "Visualizador de JSON do navegador mostrando as chaves de sonda 0, 1 e avg com Fahrenheit, Celsius e umidade",
   jsonCaption: "Formato do feed ao vivo consumido pelo site depois de sair da rede local.",
   step3Title: "Passo 3. Busca e exibição no site",
   step3Html:

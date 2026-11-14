@@ -82,16 +82,12 @@ export async function generateMonitoringCertificateForUser(
   const devices: ClaimsDeviceSummary[] = devicesResult.devices.map((d) => ({
     name: d.name,
     space: d.space ?? null,
-    sensors: d.sensors
-      .filter((s) => s.visible)
-      .map((s) => ({ label: s.label, kind: s.kind })),
+    sensors: d.sensors.filter((s) => s.visible).map((s) => ({ label: s.label, kind: s.kind })),
   }));
 
   const exportedAt = new Date().toISOString();
   const householdLabel =
-    (householdRow.data as { name?: string } | null)?.name?.trim() ||
-    user.email ||
-    "Household";
+    (householdRow.data as { name?: string } | null)?.name?.trim() || user.email || "Household";
 
   const data: MonitoringCertificateData = {
     exportedAt,

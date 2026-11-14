@@ -1,7 +1,8 @@
 import type { EmailLayoutMessages } from "./en";
 
 const ptBr: EmailLayoutMessages = {
-  textFooterDefault: "ProbeHarbor — curvas das sondas ao vivo, alertas de congelamento e de alagamento/vazamento, e histórico.",
+  textFooterDefault:
+    "ProbeHarbor — curvas das sondas ao vivo, alertas de congelamento e de alagamento/vazamento, e histórico.",
   htmlFooterDefault:
     "Você está recebendo este e-mail porque tem uma conta ProbeHarbor. Gerencie suas preferências de e-mail em Painel → Alertas.",
   unsubscribeText: "Cancelar inscrição: {url}",

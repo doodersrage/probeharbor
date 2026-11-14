@@ -1,4 +1,9 @@
-import { type AboutPhoto, type AboutPhotoId, aboutHeroPhotoBySlug, aboutPhotos } from "../../../lib/aboutPhotos";
+import {
+  type AboutPhoto,
+  type AboutPhotoId,
+  aboutHeroPhotoBySlug,
+  aboutPhotos,
+} from "../../../lib/aboutPhotos";
 import type { Locale } from "../../locales";
 import { mergeTranslation } from "../../translate";
 import { keyedOverlays } from "../collect";

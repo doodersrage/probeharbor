@@ -1,4 +1,3 @@
-
 /** Body copy for /about/pic18-ethernet-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -17,7 +16,8 @@ const es: Messages = {
   probePart: "DS18B20 resistente al agua",
   probeWhyHtml: "Pin por defecto del ejemplo: <strong>RD0</strong> (cámbialo si tu demo lo usa).",
   resistorPart: "Resistencia de 4.7kΩ",
-  resistorWhy: "Pull-up al VDD de 1-Wire de la placa (usa un adaptador de nivel si las E/S son solo de 5V).",
+  resistorWhy:
+    "Pull-up al VDD de 1-Wire de la placa (usa un adaptador de nivel si las E/S son solo de 5V).",
   ethernetPart: "Toma Ethernet",
   ethernetWhy: "DHCP o IP estática en la demo de MLA. El equipo del relay en la misma LAN.",
   ethernetBuy: "Cable Cat5e hasta tu switch.",

@@ -35,7 +35,9 @@ const LEGACY_ALIASES: Record<string, string> = {
 export type AlertActivityFilter = { id: string; kinds: string[] };
 
 /** The filter for a ?activity_kind= value, or null (show everything) when unknown or empty. */
-export function resolveAlertActivityFilter(raw: string | null | undefined): AlertActivityFilter | null {
+export function resolveAlertActivityFilter(
+  raw: string | null | undefined,
+): AlertActivityFilter | null {
   const value = raw?.trim().toLowerCase() ?? "";
   if (!value) return null;
   const id = LEGACY_ALIASES[value] ?? value;

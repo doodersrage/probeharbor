@@ -37,7 +37,13 @@ describe("thermal runway (translated)", () => {
     const { buildThermalRunway } = await import("./thermalRunway");
     await ensureLocale("fr", ["app"]);
     const runway = buildThermalRunway(
-      { currentTempF: 40, freezeThresholdF: 32, recentSamples: [], forecastMinTempF: 30.5, forecastHoursAhead: 12 },
+      {
+        currentTempF: 40,
+        freezeThresholdF: 32,
+        recentSamples: [],
+        forecastMinTempF: 30.5,
+        forecastHoursAhead: 12,
+      },
       "fr",
     );
     expect(runway.annotations[0]).toContain("environ 30,5 °F dans les 12 prochaines heures");

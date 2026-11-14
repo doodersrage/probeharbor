@@ -1,4 +1,3 @@
-
 /** /about/esp32-web-flash body copy. `Html` keys are trusted inline HTML; hrefs stay English. */
 
 const en = {
@@ -14,8 +13,10 @@ const en = {
   arduinoTitle: "2. Arduino IDE",
   arduinoItem1Html:
     "Install <strong>ESP32</strong> board support (Espressif), not the Uno Ethernet garage-LCD path.",
-  arduinoItem2Html: "Libraries: <code>OneWire</code>, <code>DallasTemperature</code> (Library Manager).",
-  arduinoItem3Html: "Open the downloaded <code>.ino</code>, set <code>WIFI_*</code>, select the port, flash.",
+  arduinoItem2Html:
+    "Libraries: <code>OneWire</code>, <code>DallasTemperature</code> (Library Manager).",
+  arduinoItem3Html:
+    "Open the downloaded <code>.ino</code>, set <code>WIFI_*</code>, select the port, flash.",
   pioTitle: "3. PlatformIO",
   pioBodyHtml:
     'Repo sample <a class="text-link" href="https://github.com/doodersrage/probeharbor/tree/main/sketches/arduino/ds18b20_ingest" target="_blank" rel="noreferrer"><code>sketches/arduino/ds18b20_ingest/</code></a> includes a <code>platformio.ini</code> with pinned libs and <code>monitor_speed = 115200</code>. Pass ingest URL via build flags or paste the Devices-generated sketch into <code>src/main.cpp</code>.',

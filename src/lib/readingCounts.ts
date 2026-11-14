@@ -19,7 +19,11 @@ export async function fetchTemperatureReadingCounts(
   try {
     const row = await temperatureReadingCounts(householdId, fromIso, toIso, thresholdF, sensorIds);
     if (!row) return null;
-    return { total: Number(row.total_count), below: Number(row.below_count), approximate: row.from_rollups === true };
+    return {
+      total: Number(row.total_count),
+      below: Number(row.below_count),
+      approximate: row.from_rollups === true,
+    };
   } catch (err) {
     // A report (e.g. the claims pack) must not fail over a count.
     console.warn("temperature_reading_counts failed:", err instanceof Error ? err.message : err);

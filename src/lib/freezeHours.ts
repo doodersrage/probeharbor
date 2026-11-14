@@ -45,10 +45,7 @@ function coldestReading(points: ChartPoint[]): number | null {
 }
 
 /** Estimate freeze exposure from chart points (readings below threshold). */
-export function computeFreezeHours(
-  points: ChartPoint[],
-  thresholdF = 34,
-): FreezeHoursSummary {
+export function computeFreezeHours(points: ChartPoint[], thresholdF = 34): FreezeHoursSummary {
   const below = points.filter((p) => p.tempf <= thresholdF);
   if (points.length < 2) {
     return {
@@ -60,9 +57,7 @@ export function computeFreezeHours(
     };
   }
 
-  const sorted = [...points].sort(
-    (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-  );
+  const sorted = [...points].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
   let msBelow = 0;
   let degreeMs = 0;
   for (let i = 1; i < sorted.length; i += 1) {
@@ -72,8 +67,7 @@ export function computeFreezeHours(
     if (prev.tempf <= thresholdF || cur.tempf <= thresholdF) {
       msBelow += dt;
       const avgDeficit =
-        (Math.max(0, thresholdF - prev.tempf) + Math.max(0, thresholdF - cur.tempf)) /
-        2;
+        (Math.max(0, thresholdF - prev.tempf) + Math.max(0, thresholdF - cur.tempf)) / 2;
       degreeMs += avgDeficit * dt;
     }
   }
@@ -91,15 +85,10 @@ export function computeFreezeHours(
  * Daily hours at/below freeze for a bar chart.
  * Interval time is attributed to the local day of the earlier sample.
  */
-export function computeDailyFreezeHours(
-  points: ChartPoint[],
-  thresholdF = 34,
-): DailyFreezeHours[] {
+export function computeDailyFreezeHours(points: ChartPoint[], thresholdF = 34): DailyFreezeHours[] {
   if (points.length < 2) return [];
 
-  const sorted = [...points].sort(
-    (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
-  );
+  const sorted = [...points].sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
   const byDay = new Map<string, { msBelow: number; coldestF: number | null }>();
 
   const touchDay = (dayKey: string, ms: number, temps: number[]) => {

@@ -47,13 +47,13 @@ describe("parsePortfolioListQuery", () => {
   });
 
   it("ignores unknown status and sort", () => {
-    expect(
-      parsePortfolioListQuery(new URLSearchParams({ status: "broken", sort: "foo" })),
-    ).toEqual({
-      search: "",
-      status: "",
-      sort: "name_asc",
-    });
+    expect(parsePortfolioListQuery(new URLSearchParams({ status: "broken", sort: "foo" }))).toEqual(
+      {
+        search: "",
+        status: "",
+        sort: "name_asc",
+      },
+    );
   });
 });
 
@@ -149,12 +149,18 @@ describe("filter and sort portfolio properties", () => {
   });
 
   it("sorts by coldest and by name", () => {
-    expect(
-      sortPortfolioProperties(properties, "temp_asc").map((p) => p.name),
-    ).toEqual(["Alpha Garage", "Beta Cabin", "Charlie Shop", "Delta Barn"]);
-    expect(
-      sortPortfolioProperties(properties, "name_asc").map((p) => p.name),
-    ).toEqual(["Alpha Garage", "Beta Cabin", "Charlie Shop", "Delta Barn"]);
+    expect(sortPortfolioProperties(properties, "temp_asc").map((p) => p.name)).toEqual([
+      "Alpha Garage",
+      "Beta Cabin",
+      "Charlie Shop",
+      "Delta Barn",
+    ]);
+    expect(sortPortfolioProperties(properties, "name_asc").map((p) => p.name)).toEqual([
+      "Alpha Garage",
+      "Beta Cabin",
+      "Charlie Shop",
+      "Delta Barn",
+    ]);
   });
 
   it("paginates after filter and sort", () => {

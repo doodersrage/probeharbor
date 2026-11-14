@@ -344,8 +344,7 @@ export const aboutFaqsBySlug: Record<string, AboutFaqItem[]> = {
     },
     {
       question: "Is this Arduino or XC8?",
-      answer:
-        "XC8 / MPLAB X on the MLA Ethernet demo. Not an Arduino .ino.",
+      answer: "XC8 / MPLAB X on the MLA Ethernet demo. Not an Arduino .ino.",
     },
   ],
   "teensy41-ingest": [

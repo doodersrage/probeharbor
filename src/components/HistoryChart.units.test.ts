@@ -9,9 +9,9 @@ import HistoryChart from "./HistoryChart";
 // already depends on (its ESM build, so it shares this test's Preact instance).
 // Covers the text the chart renders on the server (summary, guide labels,
 // freeze line); canvas drawing runs only in a browser.
-const prtsPkg = createRequire(createRequire(import.meta.url).resolve("@astrojs/preact/package.json")).resolve(
-  "preact-render-to-string/package.json",
-);
+const prtsPkg = createRequire(
+  createRequire(import.meta.url).resolve("@astrojs/preact/package.json"),
+).resolve("preact-render-to-string/package.json");
 const render = (await import(pathToFileURL(join(dirname(prtsPkg), "dist/index.mjs")).href)) as {
   render: (vnode: unknown) => string;
 };

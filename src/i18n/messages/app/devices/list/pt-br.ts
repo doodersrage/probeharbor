@@ -3,13 +3,15 @@ import type { DevicesListMessages } from "./en";
 const ptBr: DevicesListMessages = {
   list: {
     title: "Dispositivos ({count})",
-    subtitle: "Do pior para o melhor. Abra um dispositivo para renomeá-lo, definir o espaço ou corrigir os sensores.",
+    subtitle:
+      "Do pior para o melhor. Abra um dispositivo para renomeá-lo, definir o espaço ou corrigir os sensores.",
     addDevice: "Adicionar dispositivo",
     warmHint:
       "marca {gap}{unit} a mais que suas outras sondas. Se esse sensor estiver colado na placa, afaste-o alguns centímetros pelos fios: placas ESP32 esquentam e distorcem a leitura.",
     unplaced: {
       one: "{count} dispositivo não tem espaço definido, então a cobertura e os alertas não conseguem dizer onde ele está.",
-      other: "{count} dispositivos não têm espaço definido, então a cobertura e os alertas não conseguem dizer onde eles estão.",
+      other:
+        "{count} dispositivos não têm espaço definido, então a cobertura e os alertas não conseguem dizer onde eles estão.",
     },
     unplacedBulk: "Use Selecionar vários abaixo para definir um lote de uma vez.",
     unplacedSingle: "Abra-o para definir um.",
@@ -78,9 +80,11 @@ const ptBr: DevicesListMessages = {
     gaps: {
       unassigned: "Defina um espaço nesses dispositivos para acompanhar a cobertura por cômodo.",
       noTemperature: "Sem sonda de temperatura: os alertas de congelamento não cobrem este espaço.",
-      staleTemperature: "A sonda de temperatura não enviou dados recentemente, então os alertas de congelamento não podem disparar aqui.",
+      staleTemperature:
+        "A sonda de temperatura não enviou dados recentemente, então os alertas de congelamento não podem disparar aqui.",
       staleLeak: "O sensor de vazamento não enviou dados recentemente.",
-      noLeakWetSpace: "Não há sensor de vazamento aqui, e esse tipo de espaço costuma ter encanamento.",
+      noLeakWetSpace:
+        "Não há sensor de vazamento aqui, e esse tipo de espaço costuma ter encanamento.",
       staleDoor: "O sensor de porta não enviou dados recentemente.",
       stalePower: "O sensor de energia não enviou dados recentemente.",
     },

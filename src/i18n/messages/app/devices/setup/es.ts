@@ -3,7 +3,8 @@ import type { DevicesSetupMessages } from "./en";
 const es: DevicesSetupMessages = {
   firstRun: {
     title: "Conecta tu primer sensor",
-    subtitle: "Elige lo que tienes hoy. Cada camino termina con una lectura en vivo; las alertas de congelación y fuga vienen justo después.",
+    subtitle:
+      "Elige lo que tienes hoy. Cada camino termina con una lectura en vivo; las alertas de congelación y fuga vienen justo después.",
     viewOnly: "Solo lectura: pide a un propietario que añada un dispositivo.",
     limitReached: "Límite de dispositivos alcanzado.",
     limitUpgrade: "Mejora tu plan para tener más dispositivos",
@@ -51,7 +52,8 @@ const es: DevicesSetupMessages = {
     title: "Configura tu primera alerta de frío + agua",
     subtitle:
       "Un umbral y un email, sin salir de Dispositivos. Los contactos de inundación/fuga mojados alertan automáticamente en cuanto las alertas están activadas (y se saltan la pausa y el modo vacaciones). Añade Telegram, Discord y más después.",
-    savedAndTested: "Alerta de frío + agua guardada y prueba enviada, revisa tu bandeja de entrada.",
+    savedAndTested:
+      "Alerta de frío + agua guardada y prueba enviada, revisa tu bandeja de entrada.",
     saved: "Alerta de frío + agua guardada.",
     /** ?alert_error=1 from /api/user/alert-essentials. */
     saveFailed: "No se pudieron guardar los ajustes de alertas. Inténtalo de nuevo.",

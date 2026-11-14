@@ -44,24 +44,69 @@ const ptBr: AlertRulesMessages = {
   matched: "A regra “{name}” disparou ({parts}).",
 
   nouns: {
-    temperatureProbe: { name: "sondas de temperatura", count: { one: "{count} sonda de temperatura", other: "{count} sondas de temperatura" } },
-    humidityReading: { name: "leituras de umidade", count: { one: "{count} leitura de umidade", other: "{count} leituras de umidade" } },
-    doorSensor: { name: "sensores de porta", count: { one: "{count} sensor de porta", other: "{count} sensores de porta" } },
-    leakSensor: { name: "sensores de vazamento", count: { one: "{count} sensor de vazamento", other: "{count} sensores de vazamento" } },
-    powerSensor: { name: "sensores de energia", count: { one: "{count} sensor de energia", other: "{count} sensores de energia" } },
-    co2Sensor: { name: "sensores de CO₂", count: { one: "{count} sensor de CO₂", other: "{count} sensores de CO₂" } },
-    pressureSensor: { name: "sensores de pressão", count: { one: "{count} sensor de pressão", other: "{count} sensores de pressão" } },
-    pm25Sensor: { name: "sensores de PM2,5", count: { one: "{count} sensor de PM2,5", other: "{count} sensores de PM2,5" } },
-    vocSensor: { name: "sensores de COV", count: { one: "{count} sensor de COV", other: "{count} sensores de COV" } },
-    levelSensor: { name: "sensores de nível", count: { one: "{count} sensor de nível", other: "{count} sensores de nível" } },
-    energySensor: { name: "sensores de energia", count: { one: "{count} sensor de energia", other: "{count} sensores de energia" } },
-    motionSensor: { name: "sensores de movimento", count: { one: "{count} sensor de movimento", other: "{count} sensores de movimento" } },
+    temperatureProbe: {
+      name: "sondas de temperatura",
+      count: { one: "{count} sonda de temperatura", other: "{count} sondas de temperatura" },
+    },
+    humidityReading: {
+      name: "leituras de umidade",
+      count: { one: "{count} leitura de umidade", other: "{count} leituras de umidade" },
+    },
+    doorSensor: {
+      name: "sensores de porta",
+      count: { one: "{count} sensor de porta", other: "{count} sensores de porta" },
+    },
+    leakSensor: {
+      name: "sensores de vazamento",
+      count: { one: "{count} sensor de vazamento", other: "{count} sensores de vazamento" },
+    },
+    powerSensor: {
+      name: "sensores de energia",
+      count: { one: "{count} sensor de energia", other: "{count} sensores de energia" },
+    },
+    co2Sensor: {
+      name: "sensores de CO₂",
+      count: { one: "{count} sensor de CO₂", other: "{count} sensores de CO₂" },
+    },
+    pressureSensor: {
+      name: "sensores de pressão",
+      count: { one: "{count} sensor de pressão", other: "{count} sensores de pressão" },
+    },
+    pm25Sensor: {
+      name: "sensores de PM2,5",
+      count: { one: "{count} sensor de PM2,5", other: "{count} sensores de PM2,5" },
+    },
+    vocSensor: {
+      name: "sensores de COV",
+      count: { one: "{count} sensor de COV", other: "{count} sensores de COV" },
+    },
+    levelSensor: {
+      name: "sensores de nível",
+      count: { one: "{count} sensor de nível", other: "{count} sensores de nível" },
+    },
+    energySensor: {
+      name: "sensores de energia",
+      count: { one: "{count} sensor de energia", other: "{count} sensores de energia" },
+    },
+    motionSensor: {
+      name: "sensores de movimento",
+      count: { one: "{count} sensor de movimento", other: "{count} sensores de movimento" },
+    },
     coolingProbe: {
       name: "sondas que esfriaram na última hora",
-      count: { one: "{count} sonda que esfriou na última hora", other: "{count} sondas que esfriaram na última hora" },
+      count: {
+        one: "{count} sonda que esfriou na última hora",
+        other: "{count} sondas que esfriaram na última hora",
+      },
     },
-    outdoorReading: { name: "leituras externas", count: { one: "{count} leitura externa", other: "{count} leituras externas" } },
-    device: { name: "dispositivos", count: { one: "{count} dispositivo", other: "{count} dispositivos" } },
+    outdoorReading: {
+      name: "leituras externas",
+      count: { one: "{count} leitura externa", other: "{count} leituras externas" },
+    },
+    device: {
+      name: "dispositivos",
+      count: { one: "{count} dispositivo", other: "{count} dispositivos" },
+    },
   },
   states: {
     open: "aberto",

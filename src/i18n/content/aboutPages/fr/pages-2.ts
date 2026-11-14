@@ -6,13 +6,15 @@ export default {
     title: "Câblage Arduino broche par broche",
     description:
       "Affectation exacte des GPIO pour l’écran LCD 16×2, les lignes de données DHT22, le transistor du rétroéclairage et les broches SPI réservées.",
-    summary: "Plan broche par broche conforme au constructeur LiquidCrystal et aux lignes de données des capteurs dans le firmware.",
+    summary:
+      "Plan broche par broche conforme au constructeur LiquidCrystal et aux lignes de données des capteurs dans le firmware.",
   },
   "liquid-crystal-gpio-map": {
     title: "Carte des GPIO LiquidCrystal",
     description:
       "Faites correspondre les broches RS, E et D4–D7 de LiquidCrystal au constructeur de votre sketch pour que l’écran LCD s’allume au lieu de rester vide.",
-    summary: "Les broches du LCD doivent correspondre exactement au sketch, sinon l’écran reste vide.",
+    summary:
+      "Les broches du LCD doivent correspondre exactement au sketch, sinon l’écran reste vide.",
   },
   "dht22-data-line-wiring": {
     title: "Câblage de la ligne de données DHT22",
@@ -51,7 +53,8 @@ export default {
     title: "Erreurs de lecture DHT22 et nouvelles tentatives",
     description:
       "Gérez les erreurs de checksum et de timing avec un délai progressif pour qu’une mauvaise lecture ne vide pas le flux.",
-    summary: "Nouvelles tentatives et intervalles minimum gardent le JSON stable dans les installations exposées aux courants d’air.",
+    summary:
+      "Nouvelles tentatives et intervalles minimum gardent le JSON stable dans les installations exposées aux courants d’air.",
   },
   "lcd-local-display-format": {
     title: "Format de l’affichage LCD local",
@@ -63,7 +66,8 @@ export default {
     title: "Logique de moyenne à double sonde",
     description:
       "Calculez la moyenne JSON sur les sondes en bon état tout en gardant les valeurs par zone sur l’écran LCD et dans les flux.",
-    summary: "Quand moyenner, quand exclure une lecture ratée, et comment l’historique utilise avg.",
+    summary:
+      "Quand moyenner, quand exclure une lecture ratée, et comment l’historique utilise avg.",
   },
   "sensor-warm-up-time": {
     title: "Temps de chauffe du capteur DHT22",
@@ -96,13 +100,15 @@ export default {
     title: "Le flux de données de bout en bout",
     description:
       "Suivez un relevé du fil de la sonde aux flux JSON, au stockage, jusqu’au tableau de bord d’historique connecté.",
-    summary: "Matériel, relais, récupération par le site, stockage dans Neon Postgres et export CSV en une seule chaîne.",
+    summary:
+      "Matériel, relais, récupération par le site, stockage dans Neon Postgres et export CSV en une seule chaîne.",
   },
   "debugging-stale-readings": {
     title: "Déboguer des relevés figés",
     description:
       "Remontez un relevé figé ou absent du firmware au cache du relais puis au mapping du tableau de bord ProbeHarbor, avec une checklist curl et auth.",
-    summary: "Checklist dans l’ordre : curl, cache, authentification et fautes de frappe dans les clés.",
+    summary:
+      "Checklist dans l’ordre : curl, cache, authentification et fautes de frappe dans les clés.",
   },
   "weather-api-parallel-path": {
     title: "API météo : un flux de données parallèle",
@@ -142,7 +148,8 @@ export default {
     title: "Plan d’action vague de froid",
     description:
       "Que faire avant, pendant et après une alerte gel : seuils, heures de silence, accusé de réception et escalade.",
-    summary: "Une checklist concrète pour que les alertes gel débouchent sur des actions, pas sur du bruit.",
+    summary:
+      "Une checklist concrète pour que les alertes gel débouchent sur des actions, pas sur du bruit.",
   },
   "alert-channel-cookbook": {
     title: "Guide pratique des canaux d’alerte",
@@ -160,13 +167,15 @@ export default {
     title: "Plan d’action porte de garage + alerte froid",
     description:
       "Soyez alerté si la porte reste ouverte quand la température baisse : ingestion du contact de porte, règles combinées et étapes pour le foyer.",
-    summary: "Stoppez la perte de chaleur et le risque de gel quand la porte du garage reste ouverte par une nuit froide.",
+    summary:
+      "Stoppez la perte de chaleur et le risque de gel quand la porte du garage reste ouverte par une nuit froide.",
   },
   "personal-weather-stations": {
     title: "Stations météo personnelles (Ambient et WeatherFlow)",
     description:
       "Utilisez une station Ambient Weather ou WeatherFlow Tempest au jardin pour le contexte extérieur, les alertes NWS (États-Unis) et le risque de gel prévu.",
-    summary: "Reliez ProbeHarbor à la station de votre terrain : un contexte de gel plus juste, à l’échelle de votre jardin.",
+    summary:
+      "Reliez ProbeHarbor à la station de votre terrain : un contexte de gel plus juste, à l’échelle de votre jardin.",
   },
   "freeze-thaw-flood-playbook": {
     title: "Plan d’action gel puis dégel : inondations",
@@ -193,19 +202,22 @@ export default {
     title: "Mise en service du kit par QR code",
     description:
       "Collez sur le boîtier un QR code contenant l’URL d’ingestion pour ajouter l’appareil à ProbeHarbor en un scan, sans saisir de longues clés.",
-    summary: "Encodez l’URL d’ingestion sur une étiquette : un nouveau matériel se configure d’un seul scan au téléphone.",
+    summary:
+      "Encodez l’URL d’ingestion sur une étiquette : un nouveau matériel se configure d’un seul scan au téléphone.",
   },
   "esp32-ota-firmware": {
     title: "OTA ESP32 et remontée de batterie",
     description:
       "Mettez à jour le firmware des sondes ESP32 en OTA sur le LAN pendant que l’ingestion push envoie batterie et RSSI à l’API HTTP de ProbeHarbor.",
-    summary: "Gardez le firmware ESP32 à jour sur votre LAN pendant que la télémétrie part vers l’API d’ingestion.",
+    summary:
+      "Gardez le firmware ESP32 à jour sur votre LAN pendant que la télémétrie part vers l’API d’ingestion.",
   },
   "zapier-make-recipes": {
     title: "Recettes Zapier et Make.com",
     description:
       "Reliez les webhooks d’alerte et les actions de mise en pause de ProbeHarbor à Zapier ou Make.com pour automatiser gel, fuite et vacances sans code.",
-    summary: "Envoyez les alertes vers Zapier/Make et suspendez les notifications depuis d’autres scénarios domotiques.",
+    summary:
+      "Envoyez les alertes vers Zapier/Make et suspendez les notifications depuis d’autres scénarios domotiques.",
   },
   "esphome-shelly-recipes": {
     title: "Recettes ESPHome et Shelly",
@@ -267,31 +279,36 @@ export default {
     title: "Ingestion CH32V RISC-V",
     description:
       "Envoyez des relevés DS18B20 depuis un WCH CH32V307 en C avec WCHNET et l’Ethernet intégré. MounRiver Studio et le même relais HTTPS LAN que l’Uno.",
-    summary: "Sonde Ethernet RISC-V : WCHNET en C sur CH32V307, DS18B20 sur PB12, HTTP vers un relais TLS sur le LAN.",
+    summary:
+      "Sonde Ethernet RISC-V : WCHNET en C sur CH32V307, DS18B20 sur PB12, HTTP vers un relais TLS sur le LAN.",
   },
   "avr-asm-ingest": {
     title: "Ingestion en assembleur AVR",
     description:
       "Envoyez des relevés DS18B20 depuis un ATmega328P en assembleur GNU AVR avec un shield W5100. avr-gcc, avrdude et le même relais HTTPS LAN que l’Uno.",
-    summary: "Uno + W5100 en assembleur GNU AVR : DS18B20 sur D7, HTTP vers un relais TLS sur le LAN, sans C Arduino.",
+    summary:
+      "Uno + W5100 en assembleur GNU AVR : DS18B20 sur D7, HTTP vers un relais TLS sur le LAN, sans C Arduino.",
   },
   "cellular-ingest": {
     title: "Ingestion cellulaire (Particle Boron)",
     description:
       "Envoyez des relevés DS18B20 depuis une Particle Boron en LTE via un webhook de la Console. Pour les sites isolés sans Wi-Fi dans le garage.",
-    summary: "Sonde de gel LTE : Particle Boron + DS18B20 sur D2, webhook Particle vers l’ingestion HTTPS.",
+    summary:
+      "Sonde de gel LTE : Particle Boron + DS18B20 sur D2, webhook Particle vers l’ingestion HTTPS.",
   },
   "pic18-ethernet-ingest": {
     title: "Ingestion Ethernet PIC18F67J60",
     description:
       "Envoyez des relevés DS18B20 depuis un PIC18F67J60 avec la pile TCP/IP de Microchip sous MPLAB X et le même relais HTTPS LAN que l’Uno.",
-    summary: "Sonde Ethernet Microchip : MLA en C sur PIC18F67J60, DS18B20 sur RD0, HTTP vers un relais TLS sur le LAN.",
+    summary:
+      "Sonde Ethernet Microchip : MLA en C sur PIC18F67J60, DS18B20 sur RD0, HTTP vers un relais TLS sur le LAN.",
   },
   "teensy41-ingest": {
     title: "Ingestion Ethernet Teensy 4.1",
     description:
       "Envoyez des relevés DS18B20 depuis une Teensy 4.1 avec QNEthernet. Une sonde de garage rapide i.MX RT1062 avec le même relais HTTPS LAN que l’Uno.",
-    summary: "Teensy 4.1 + QNEthernet : DS18B20 sur la broche 4, HTTP vers un relais TLS sur le LAN.",
+    summary:
+      "Teensy 4.1 + QNEthernet : DS18B20 sur la broche 4, HTTP vers un relais TLS sur le LAN.",
   },
   "mqtt-bridge": {
     title: "Recette de pont MQTT",
@@ -304,6 +321,7 @@ export default {
     title: "Installer comme une application (PWA)",
     description:
       "Installez ProbeHarbor en PWA sur ordinateur, Android ou iOS pour accéder plus vite au tableau de bord et recevoir, si vous le voulez, des alertes push.",
-    summary: "Étapes d’installation sur ordinateur, Android et iOS, et limites de Web Push sur les appareils Apple.",
+    summary:
+      "Étapes d’installation sur ordinateur, Android et iOS, et limites de Web Push sur les appareils Apple.",
   },
 } satisfies AboutPageOverlay;

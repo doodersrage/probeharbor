@@ -19,7 +19,10 @@ export function pullDeviceMeta(
   existing: Record<string, unknown>,
   feed: Pick<TempFeedConfig, "url" | "jsonRoot">,
 ): Record<string, unknown> {
-  const meta: Record<string, unknown> = { ...existing, pull_json_root: sanitizeJsonRoot(feed.jsonRoot) };
+  const meta: Record<string, unknown> = {
+    ...existing,
+    pull_json_root: sanitizeJsonRoot(feed.jsonRoot),
+  };
   if (isDemoFeedUrl(feed.url)) meta[DEMO_DEVICE_META_KEY] = true;
   else delete meta[DEMO_DEVICE_META_KEY];
   return meta;
@@ -152,7 +155,13 @@ export function devicesToTempConfig(devices: DeviceWithSensors[]): {
 export async function getHouseholdDevicesAsTempConfig(householdId: string) {
   const listed = await listHouseholdDevices(householdId);
   if (listed.error) {
-    return { householdId, devices: [] as DeviceWithSensors[], feeds: [], probes: [], error: listed.error };
+    return {
+      householdId,
+      devices: [] as DeviceWithSensors[],
+      feeds: [],
+      probes: [],
+      error: listed.error,
+    };
   }
   const { feeds, probes } = devicesToTempConfig(listed.devices);
   return { householdId, devices: listed.devices, feeds, probes, error: null as string | null };
@@ -214,7 +223,13 @@ export async function createPushDevice(
   ingestKeyPrefix: string,
   space?: string | null,
 ): Promise<{ device: Device | null; error: string | null }> {
-  return neonDevices.createPushDevice(householdId, name, ingestKeyHash, ingestKeyPrefix, space?.trim() || null);
+  return neonDevices.createPushDevice(
+    householdId,
+    name,
+    ingestKeyHash,
+    ingestKeyPrefix,
+    space?.trim() || null,
+  );
 }
 
 export async function renamePushDevice(
@@ -238,7 +253,12 @@ export async function updateDeviceSpace(
   locale: Locale = "en",
 ): Promise<{ error: string | null }> {
   const trimmed = space?.trim() || null;
-  return neonDevices.updateDeviceSpace(householdId, deviceId, trimmed, apiDevicesMessages(locale).updateSpaceFailed);
+  return neonDevices.updateDeviceSpace(
+    householdId,
+    deviceId,
+    trimmed,
+    apiDevicesMessages(locale).updateSpaceFailed,
+  );
 }
 
 /**
@@ -355,7 +375,12 @@ export async function transferDeviceToHousehold(
   if (fromHouseholdId === toHouseholdId) {
     return { error: t.sameHousehold };
   }
-  return neonDevices.transferDeviceToHousehold(deviceId, fromHouseholdId, toHouseholdId, t.deviceNotFound);
+  return neonDevices.transferDeviceToHousehold(
+    deviceId,
+    fromHouseholdId,
+    toHouseholdId,
+    t.deviceNotFound,
+  );
 }
 
 export async function getHouseholdIdForUser(userId: string): Promise<string | null> {

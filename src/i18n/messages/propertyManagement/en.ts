@@ -67,11 +67,13 @@ const en = {
   faqs: [
     {
       question: "How is Portfolio different from Pro?",
-      answer: "Portfolio includes everything on the Pro plan -- SMS alerts, official NWS freeze and cold alerts, the claims evidence pack, webhooks, share links -- plus a much higher ceiling on how many properties you can own (Pro already allows up to {pro}; Portfolio raises that to {portfolio}) and it's priced for that scale rather than for a single property.",
+      answer:
+        "Portfolio includes everything on the Pro plan -- SMS alerts, official NWS freeze and cold alerts, the claims evidence pack, webhooks, share links -- plus a much higher ceiling on how many properties you can own (Pro already allows up to {pro}; Portfolio raises that to {portfolio}) and it's priced for that scale rather than for a single property.",
     },
     {
       question: "Do I need Portfolio if I only have 2-3 properties?",
-      answer: "Probably not -- Pro already covers a handful of properties (up to {pro} owned households) with the same cross-property dashboard and alert digest. Portfolio is built for larger operations: a property-management company or a landlord running many units where a single flat individual price doesn't reflect the scale.",
+      answer:
+        "Probably not -- Pro already covers a handful of properties (up to {pro} owned households) with the same cross-property dashboard and alert digest. Portfolio is built for larger operations: a property-management company or a landlord running many units where a single flat individual price doesn't reflect the scale.",
     },
     {
       question: "Can my property managers or on-site staff get their own login?",

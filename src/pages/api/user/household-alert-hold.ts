@@ -63,5 +63,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
   }
 
-  return redirect(withQuery(redirectTo, kind === "snooze" ? { snooze_cleared: "1" } : { vacation_cleared: "1" }));
+  return redirect(
+    withQuery(redirectTo, kind === "snooze" ? { snooze_cleared: "1" } : { vacation_cleared: "1" }),
+  );
 };

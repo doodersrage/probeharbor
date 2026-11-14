@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  CRON_FULL_HOURLY,
-  CRON_POLL_QUARTERS,
-  isFullHourlyCronRun,
-} from "./cronSchedule";
+import { CRON_FULL_HOURLY, CRON_POLL_QUARTERS, isFullHourlyCronRun } from "./cronSchedule";
 
 describe("cronSchedule", () => {
   it("treats only the top-of-hour expression as full maintenance", () => {

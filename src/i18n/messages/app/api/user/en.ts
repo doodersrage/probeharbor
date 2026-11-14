@@ -13,9 +13,15 @@ const en = {
   },
   /** /api/user/alert-snooze ({count} hours/days; English keeps the plural word). */
   snooze: {
-    snoozed: { one: "Alerts snoozed for {count} hours.", other: "Alerts snoozed for {count} hours." },
+    snoozed: {
+      one: "Alerts snoozed for {count} hours.",
+      other: "Alerts snoozed for {count} hours.",
+    },
     vacationUntil: "Vacation until {date}.",
-    vacationDays: { one: "Vacation mode for {count} days.", other: "Vacation mode for {count} days." },
+    vacationDays: {
+      one: "Vacation mode for {count} days.",
+      other: "Vacation mode for {count} days.",
+    },
     snoozeCleared: "Snooze cleared.",
     vacationCleared: "Vacation cleared.",
   },
@@ -43,9 +49,10 @@ const en = {
   /** /api/garage-temps/export.csv */
   csvRequiresPlan: "CSV export requires an active subscription or admin access",
   doorCsvFailed: "Door events export failed. Please try again in a moment.",
-  doorCsvTooMany: "Too many door openings for one CSV (more than 5,000). Pick fewer days and try again.",
+  doorCsvTooMany:
+    "Too many door openings for one CSV (more than 5,000). Pick fewer days and try again.",
   doorEventsInvalidDate: "Use YYYY-MM-DD or a full timestamp for from and to.",
-  doorEventsRangeOrder: "\"from\" must be before \"to\".",
+  doorEventsRangeOrder: '"from" must be before "to".',
   doorEventsFailed: "Door history couldn't be loaded. Please try again in a moment.",
   /** /api/push/* */
   push: {

@@ -7,13 +7,7 @@ import {
 
 type SensorRow = Parameters<typeof pairTempHumidityRows>[0][number];
 
-function tempRow(
-  device: string,
-  key: string,
-  at: string,
-  f: number,
-  h?: number,
-): SensorRow {
+function tempRow(device: string, key: string, at: string, f: number, h?: number): SensorRow {
   return {
     recorded_at: at,
     value_num: f,
@@ -47,7 +41,10 @@ describe("pairTempHumidityRows", () => {
   it("pairs a DHT22's temp1 with its humidity1 instead of leaving humidity on its own", () => {
     const at = "2026-10-12T10:56:27.950Z";
     const paired = pairTempHumidityRows(
-      [tempRow("Workshop probe 2", "temp1", at, 39.92), humidityRow("Workshop probe 2", "humidity1", at, 22.5)],
+      [
+        tempRow("Workshop probe 2", "temp1", at, 39.92),
+        humidityRow("Workshop probe 2", "humidity1", at, 22.5),
+      ],
       "user-1",
     );
     expect(paired).toHaveLength(1);
@@ -58,7 +55,10 @@ describe("pairTempHumidityRows", () => {
   it("pairs suffixed keys (ESPHome guide: garage_temp + garage_rh) so humidity reaches the chart", () => {
     const at = "2026-10-29T10:00:00.000Z";
     const paired = pairTempHumidityRows(
-      [tempRow("Garage ESP", "garage_temp", at, 48.2), humidityRow("Garage ESP", "garage_rh", at, 61)],
+      [
+        tempRow("Garage ESP", "garage_temp", at, 48.2),
+        humidityRow("Garage ESP", "garage_rh", at, 61),
+      ],
       "user-1",
     );
     expect(paired).toHaveLength(1);

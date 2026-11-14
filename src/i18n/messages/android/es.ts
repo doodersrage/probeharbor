@@ -6,8 +6,10 @@ import type { AndroidMessages } from "./en";
 
 const es: AndroidMessages = {
   title: "App para Android",
-  descriptionLive: "App de {brand} para Android en Google Play: sondas en vivo, alertas de congelación e inundación, MFA y herramientas del hogar. El móvil no es un sensor.",
-  descriptionPwa: "Usa {brand} en Android con la app web instalable; la nativa está en revisión en Play. Sondas en vivo, alertas de helada e inundación. El móvil no es sensor.",
+  descriptionLive:
+    "App de {brand} para Android en Google Play: sondas en vivo, alertas de congelación e inundación, MFA y herramientas del hogar. El móvil no es un sensor.",
+  descriptionPwa:
+    "Usa {brand} en Android con la app web instalable; la nativa está en revisión en Play. Sondas en vivo, alertas de helada e inundación. El móvil no es sensor.",
   breadcrumbHome: "Inicio",
   breadcrumbApps: "Apps",
   breadcrumbAndroid: "App para Android",
@@ -24,7 +26,8 @@ const es: AndroidMessages = {
   githubSideload: "GitHub · compilar o instalar manualmente",
   sourceOnGithub: "Código en GitHub",
   requestLaunchNote: "Avísame del lanzamiento en Play",
-  imageAlt: "Foto de ambiente de {brand}: consultando lecturas de sondas en el móvil y el portátil junto a una instalación casera cerca de tuberías de cobre",
+  imageAlt:
+    "Foto de ambiente de {brand}: consultando lecturas de sondas en el móvil y el portátil junto a una instalación casera cerca de tuberías de cobre",
   imageCaption:
     "Ambiente de instalación casera: el móvil y el portátil acompañan a tus propias sondas. Las pantallas de esta ilustración son estilizadas, no una captura del producto.",
   phoneTitle: "Qué hace el móvil (y qué no)",
@@ -60,7 +63,8 @@ const es: AndroidMessages = {
   deepLinksHtml:
     "Los enlaces profundos coinciden con los de la app web (<code>/dashboard</code>, alertas, hogar), así que el cliente nativo y la PWA te resultarán familiares.",
   ossTitle: "Código abierto",
-  ossHtml: 'Repositorio de la app: <a class="text-link" href="{repo}" target="_blank" rel="noreferrer">probeharbor-android</a> · Privacidad: <a class="text-link" href="/privacy">cómo se gestionan los tokens push de Android</a> · API: <a class="text-link" href="/docs/api">referencia HTTP</a>',
+  ossHtml:
+    'Repositorio de la app: <a class="text-link" href="{repo}" target="_blank" rel="noreferrer">probeharbor-android</a> · Privacidad: <a class="text-link" href="/privacy">cómo se gestionan los tokens push de Android</a> · API: <a class="text-link" href="/docs/api">referencia HTTP</a>',
   faqLede: "Respuestas directas para los revisores de Play y para quienes esperan la ficha.",
   backToApps: "← Todas las apps complementarias",
 };

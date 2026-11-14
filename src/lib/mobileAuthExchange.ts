@@ -10,8 +10,7 @@ type ExchangePayload = {
 };
 
 function getSecret(): string | null {
-  const secret =
-    getRuntimeEnv("MOBILE_EXCHANGE_SECRET") || getRuntimeEnv("CRON_SECRET");
+  const secret = getRuntimeEnv("MOBILE_EXCHANGE_SECRET") || getRuntimeEnv("CRON_SECRET");
   return secret || null;
 }
 
@@ -108,13 +107,7 @@ export async function verifyMobileExchangeToken(
     return null;
   }
 
-  if (
-    !payload.a ||
-    !payload.r ||
-    !payload.exp ||
-    !payload.jti ||
-    payload.exp < Date.now()
-  ) {
+  if (!payload.a || !payload.r || !payload.exp || !payload.jti || payload.exp < Date.now()) {
     return null;
   }
 

@@ -1,4 +1,3 @@
-
 /** Body copy for /about/cellular-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -18,8 +17,10 @@ const de: Messages = {
   resistorPart: "4.7kΩ-Widerstand",
   resistorWhy: "Pull-up von der DS18B20-Datenleitung auf 3.3V.",
   planPart: "Mobilfunktarif",
-  planWhy: "Particle Cloud + Datenvolumen des Netzbetreibers. Plane das Budget für abgelegene Standorte, die nur stündlich aufwachen.",
-  planBuy: "Abrechnung über die Particle Console oder deine eigene Nano-SIM, sofern die SKU das erlaubt.",
+  planWhy:
+    "Particle Cloud + Datenvolumen des Netzbetreibers. Plane das Budget für abgelegene Standorte, die nur stündlich aufwachen.",
+  planBuy:
+    "Abrechnung über die Particle Console oder deine eigene Nano-SIM, sofern die SKU das erlaubt.",
   bluesPart: "Optional: Blues Notecard",
   bluesWhy: "Alternativer Mobilfunkweg über eine Notehub-Webhook-Route (gleiche Ingest-URL).",
   wiringTitle: "Verdrahtung",

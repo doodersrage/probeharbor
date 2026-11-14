@@ -60,7 +60,12 @@ describe("createSnoozeToken", () => {
     const token = await createSnoozeToken("user-1", 12);
 
     expect(token).toMatch(/^[0-9a-f]{32}$/);
-    expect(mockInsertSnoozeToken).toHaveBeenCalledWith(await sha256Hex(token), "user-1", 12, expect.any(String));
+    expect(mockInsertSnoozeToken).toHaveBeenCalledWith(
+      await sha256Hex(token),
+      "user-1",
+      12,
+      expect.any(String),
+    );
   });
 
   it("never stores the raw token", async () => {
@@ -144,7 +149,10 @@ describe("applySnoozeToken", () => {
     mockClaimSnoozeToken.mockRejectedValue(new Error("db down"));
     const { applySnoozeToken } = await import("./alertSnoozeTokens");
 
-    expect(await applySnoozeToken("good-token")).toEqual({ ok: false, message: "Invalid or already used snooze link." });
+    expect(await applySnoozeToken("good-token")).toEqual({
+      ok: false,
+      message: "Invalid or already used snooze link.",
+    });
     expect(mockSaveAlertSettingsForUser).not.toHaveBeenCalled();
   });
 
@@ -172,7 +180,10 @@ describe("applySnoozeToken", () => {
     mockGetAlertSettingsForUser.mockResolvedValue({});
     const { applySnoozeToken } = await import("./alertSnoozeTokens");
 
-    expect(await applySnoozeToken("good-token", "de")).toEqual({ ok: true, message: "Alarme für 12 Stunden pausiert." });
+    expect(await applySnoozeToken("good-token", "de")).toEqual({
+      ok: true,
+      message: "Alarme für 12 Stunden pausiert.",
+    });
   });
 });
 

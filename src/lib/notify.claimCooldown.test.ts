@@ -26,7 +26,8 @@ async function fakeRunner(text: string, params: readonly unknown[] = []): Promis
   if (/^\s*update/i.test(text)) {
     // release: set column = $3 where column = $2
     const [, claimedAt, previous] = params;
-    if (row && row[column] != null && sameInstant(row[column], claimedAt)) row[column] = previous as string | null;
+    if (row && row[column] != null && sameInstant(row[column], claimedAt))
+      row[column] = previous as string | null;
     return [];
   }
   if (/^\s*select/i.test(text)) return (row ? [{ current: row[column] ?? null }] : []) as never[];
@@ -56,7 +57,9 @@ describe("claimCooldown", () => {
   it("loses when another evaluation already stamped a newer time", async () => {
     row = { last_flood_alert_at: new Date().toISOString() };
     const { claimCooldown } = await import("./notify");
-    expect(await claimCooldown("user-1", "last_flood_alert_at", "2026-01-01T00:00:00+00:00")).toEqual({
+    expect(
+      await claimCooldown("user-1", "last_flood_alert_at", "2026-01-01T00:00:00+00:00"),
+    ).toEqual({
       claimed: false,
       claimedAt: null,
     });
@@ -74,16 +77,24 @@ describe("claimCooldown", () => {
 
   it("sends when the stored value is the same moment in another format", async () => {
     const { claimCooldown } = await import("./notify");
-    expect((await claimCooldown("user-1", "last_flood_alert_at", "2026-01-01T00:00:00.000Z")).claimed).toBe(true);
+    expect(
+      (await claimCooldown("user-1", "last_flood_alert_at", "2026-01-01T00:00:00.000Z")).claimed,
+    ).toBe(true);
   });
 
   it("fails open with no settings row or a database error", async () => {
     const { claimCooldown } = await import("./notify");
     row = null;
-    expect(await claimCooldown("user-1", "last_flood_alert_at", null)).toEqual({ claimed: true, claimedAt: null });
+    expect(await claimCooldown("user-1", "last_flood_alert_at", null)).toEqual({
+      claimed: true,
+      claimedAt: null,
+    });
     row = { last_flood_alert_at: null };
     failWith = "connection reset";
-    expect(await claimCooldown("user-1", "last_flood_alert_at", null)).toEqual({ claimed: true, claimedAt: null });
+    expect(await claimCooldown("user-1", "last_flood_alert_at", null)).toEqual({
+      claimed: true,
+      claimedAt: null,
+    });
   });
 });
 
@@ -91,7 +102,12 @@ describe("releaseCooldown", () => {
   it("puts back the previous value only if the claim is still there", async () => {
     const { releaseCooldown } = await import("./notify");
     row = { last_flood_alert_at: "2026-01-02T00:00:00.000Z" };
-    await releaseCooldown("user-1", "last_flood_alert_at", "2026-01-02T00:00:00.000Z", "2026-01-01T00:00:00+00:00");
+    await releaseCooldown(
+      "user-1",
+      "last_flood_alert_at",
+      "2026-01-02T00:00:00.000Z",
+      "2026-01-01T00:00:00+00:00",
+    );
     expect(row.last_flood_alert_at).toBe("2026-01-01T00:00:00+00:00");
 
     row = { last_flood_alert_at: "2026-01-03T00:00:00.000Z" }; // someone else re-stamped it

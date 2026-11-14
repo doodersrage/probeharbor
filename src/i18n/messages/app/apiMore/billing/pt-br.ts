@@ -10,7 +10,8 @@ const ptBr: ApiMoreBillingMessages = {
   },
   claims: {
     requiresPro: "O pacote para sinistro exige o plano Pro",
-    pdfUnavailable: "A geração de PDF está temporariamente indisponível. Tente ?format=html ou tente de novo daqui a pouco.",
+    pdfUnavailable:
+      "A geração de PDF está temporariamente indisponível. Tente ?format=html ou tente de novo daqui a pouco.",
   },
   certificate: {
     failed: "Não foi possível gerar o certificado",
@@ -19,9 +20,11 @@ const ptBr: ApiMoreBillingMessages = {
   claimsEmail: {
     eyebrow: "Pacote para sinistro",
     range: "{from} a {to}",
-    preheader: "Um relatório de exposição ao congelamento do ProbeHarbor para {household} está pronto para visualização.",
+    preheader:
+      "Um relatório de exposição ao congelamento do ProbeHarbor para {household} está pronto para visualização.",
     title: "Pacote para sinistro: {household}",
-    intro: "Um membro de uma casa no ProbeHarbor compartilhou um relatório de exposição ao congelamento e histórico de alertas referente ao período de {range}.",
+    intro:
+      "Um membro de uma casa no ProbeHarbor compartilhou um relatório de exposição ao congelamento e histórico de alertas referente ao período de {range}.",
     body: "O relatório inclui estatísticas de exposição ao congelamento, tabelas de dispositivos e sondas e uma linha do tempo dos alertas críticos do período selecionado, com um código de verificação para que esta exportação específica possa ser reconfirmada depois.",
     verificationCode: "Código de verificação: {code}",
     cta: "Ver pacote para sinistro",

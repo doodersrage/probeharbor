@@ -3,11 +3,24 @@ import type { APIContext } from "astro";
 
 const mockAuth = vi.fn();
 vi.mock("../../../lib/auth", () => ({ getAuthFromCookies: (...a: unknown[]) => mockAuth(...a) }));
-vi.mock("../../../lib/households", () => ({ getOrCreateHouseholdForUser: async () => ({ householdId: "hh" }) }));
-vi.mock("../../../lib/devices", () => ({ listHouseholdDevices: async () => ({ devices: [], error: null }) }));
-vi.mock("../../../lib/notify", () => ({ getAlertSettingsForUser: async () => ({ alertRules: [] }) }));
-const mockExplain = vi.fn(async (..._args: unknown[]) => ({ checkedAt: "t", alertsEnabled: true, cooldownUntil: null, rules: [] }));
-vi.mock("../../../lib/alertNotifications", () => ({ explainRulesForUser: (...a: unknown[]) => mockExplain(...a) }));
+vi.mock("../../../lib/households", () => ({
+  getOrCreateHouseholdForUser: async () => ({ householdId: "hh" }),
+}));
+vi.mock("../../../lib/devices", () => ({
+  listHouseholdDevices: async () => ({ devices: [], error: null }),
+}));
+vi.mock("../../../lib/notify", () => ({
+  getAlertSettingsForUser: async () => ({ alertRules: [] }),
+}));
+const mockExplain = vi.fn(async (..._args: unknown[]) => ({
+  checkedAt: "t",
+  alertsEnabled: true,
+  cooldownUntil: null,
+  rules: [],
+}));
+vi.mock("../../../lib/alertNotifications", () => ({
+  explainRulesForUser: (...a: unknown[]) => mockExplain(...a),
+}));
 
 describe("rule-check", () => {
   it("returns the explanation for the signed-in user's property", async () => {
@@ -21,7 +34,10 @@ describe("rule-check", () => {
 
   it("writes the sentences in °C for a viewer who chose °C", async () => {
     mockExplain.mockClear();
-    mockAuth.mockResolvedValue({ session: {}, user: { id: "u1", email: "a@b.c", user_metadata: { use_celsius: true } } });
+    mockAuth.mockResolvedValue({
+      session: {},
+      user: { id: "u1", email: "a@b.c", user_metadata: { use_celsius: true } },
+    });
     const { GET } = await import("./rule-check");
     await GET({ cookies: {} } as unknown as APIContext);
     expect(mockExplain).toHaveBeenCalledWith("u1", { alertRules: [] }, "hh", [], "en", true);

@@ -11,14 +11,16 @@ const fr: AuthSigninMessages = {
       "Compte créé. Consultez vos e-mails pour le confirmer, puis connectez-vous. Étape suivante après la connexion : <strong>Appareils</strong> : connectez votre premier capteur et attendez sa première mesure.",
     confirmedHtml:
       "Adresse e-mail confirmée. Connectez-vous pour terminer la configuration : prochaine étape, <strong>Appareils</strong>, où vous connectez votre premier capteur.",
-    signedOutAll: "Déconnecté sur tous les appareils. Reconnectez-vous ici quand vous le souhaitez.",
+    signedOutAll:
+      "Déconnecté sur tous les appareils. Reconnectez-vous ici quand vous le souhaitez.",
     resendConfirmation: "Renvoyer l’e-mail de confirmation",
     email: "E-mail",
     password: "Mot de passe",
     submit: "Se connecter avec un e-mail",
     forgotPassword: "Mot de passe oublié ?",
     passkeySignIn: "Se connecter avec une passkey",
-    passkeyFailed: "La connexion par passkey n’a pas fonctionné. Réessayez ou connectez-vous avec votre e-mail et votre mot de passe.",
+    passkeyFailed:
+      "La connexion par passkey n’a pas fonctionné. Réessayez ou connectez-vous avec votre e-mail et votre mot de passe.",
     newHere: "Nouveau ici ?",
     createAccount: "Créer un compte gratuit",
     privacy: "Confidentialité",
@@ -32,8 +34,7 @@ const fr: AuthSigninMessages = {
     lede: "Gratuit pour toujours, sans carte bancaire. Après l’inscription, vous arrivez sur Appareils pour connecter votre première sonde ou votre détection de fuite par contact humide.",
     preferLook: "Vous préférez jeter un œil d’abord ?",
     liveDemo: "Démo en direct (sans compte)",
-    referral:
-      "Code de parrainage {code} appliqué. L’essai Pro inclut 7 jours supplémentaires.",
+    referral: "Code de parrainage {code} appliqué. L’essai Pro inclut 7 jours supplémentaires.",
     email: "E-mail",
     password: "Mot de passe",
     passwordHint: "Utilisez au moins 8 caractères.",
@@ -47,8 +48,10 @@ const fr: AuthSigninMessages = {
       verification: "La vérification a échoué. Veuillez réessayer.",
       weak_password: "Le mot de passe doit contenir au moins 8 caractères.",
       generic: "Une erreur s’est produite lors de la création de votre compte. Veuillez réessayer.",
-      signup_failed: "Une erreur s’est produite lors de la création de votre compte. Veuillez réessayer.",
-      email_taken: "Cette adresse e-mail a peut-être déjà un compte. Connectez-vous, ou réinitialisez votre mot de passe si vous l’avez oublié.",
+      signup_failed:
+        "Une erreur s’est produite lors de la création de votre compte. Veuillez réessayer.",
+      email_taken:
+        "Cette adresse e-mail a peut-être déjà un compte. Connectez-vous, ou réinitialisez votre mot de passe si vous l’avez oublié.",
     },
   },
   oauth: {
@@ -93,7 +96,8 @@ const fr: AuthSigninMessages = {
         "Ce code est incorrect ou a expiré. Saisissez un nouveau code de votre application d’authentification.",
       invalid_yubikey:
         "Cet OTP YubiKey n’a pas été accepté. Cliquez dans le champ YubiKey OTP, touchez votre clé (appui long) et attendez le code complet avant de valider.",
-      replayed_otp: "Cet OTP YubiKey a déjà été utilisé. Touchez à nouveau votre clé pour générer un nouveau code.",
+      replayed_otp:
+        "Cet OTP YubiKey a déjà été utilisé. Touchez à nouveau votre clé pour générer un nouveau code.",
       yubikey_not_enrolled:
         "Cette YubiKey n’est pas enregistrée sur ce compte. Ajoutez-la dans Paramètres → Sécurité ou utilisez votre code d’authentification.",
       no_factor:

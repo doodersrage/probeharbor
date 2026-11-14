@@ -42,15 +42,16 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   }
 
   if (!ingestKeyVaultConfigured()) {
-    return new Response(
-      JSON.stringify({ ok: false, error: t.notConfigured }),
-      { status: 503, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ ok: false, error: t.notConfigured }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // Two-factor users (authenticator app or YubiKey) need a verified session.
   const [state, metadata] = await Promise.all([getTotpState(user.id), getUserMetadata(user.id)]);
-  const hasMfa = state.enabled || getYubiKeyPublicIdsFromUser({ user_metadata: metadata }).length > 0;
+  const hasMfa =
+    state.enabled || getYubiKeyPublicIdsFromUser({ user_metadata: metadata }).length > 0;
   if (hasMfa && !(await isElevated(state, request, cookies, user.id))) {
     return new Response(
       JSON.stringify({
@@ -128,14 +129,11 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     detail: `${device.name} (${deviceId})`,
   });
 
-  return new Response(
-    JSON.stringify({ ok: true, ingest_key: ingestKey }),
-    {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-      },
+  return new Response(JSON.stringify({ ok: true, ingest_key: ingestKey }), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
     },
-  );
+  });
 };

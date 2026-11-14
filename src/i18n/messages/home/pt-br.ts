@@ -66,7 +66,8 @@ const ptBr: HomeMessages = {
     title: "1 °C (34 °F). É aí que o alerta importa.",
     copyHtml:
       'Imagine uma garagem anexa onde um canto fica abaixo de 1 °C (34 °F) toda noite de céu limpo. O alerta avisa que algo está errado; o gráfico do histórico mostra onde, apontando para uma vedação de porta com frestas antes que os canos congelem. É exatamente o tipo de linha do tempo que um <a class="text-link" href="/claims-pack">pacote de evidências para sinistros</a> documentaria se um dano por congelamento virasse conversa com a seguradora.',
-    shotCaption: "A mesma linha de congelamento que cada casa define em Alertas, visível nas curvas do Histórico.",
+    shotCaption:
+      "A mesma linha de congelamento que cada casa define em Alertas, visível nas curvas do Histórico.",
     read: "Ler o cenário",
     more: "Mais cenários",
   },

@@ -23,7 +23,8 @@ type FeedGroup = {
 export const DEMO_TEMPS_TEXT_EN = {
   loading: "Loading probe temperatures…",
   title: "Simulated demo shop",
-  subtitle: "Probe temperatures modeled from real local weather — free account (no card) to connect your own sensors.",
+  subtitle:
+    "Probe temperatures modeled from real local weather — free account (no card) to connect your own sensors.",
   loadError: "Unable to load probe temperatures",
   rateLimited: "Too many requests",
   retry: "Retry now",
@@ -56,16 +57,25 @@ function fill(template: string, values: Record<string, string | number>): string
   );
 }
 
-export default function DemoTempsPanel({ intervalMs = 90000, text = DEMO_TEMPS_TEXT_EN, locale }: Props) {
+export default function DemoTempsPanel({
+  intervalMs = 90000,
+  text = DEMO_TEMPS_TEXT_EN,
+  locale,
+}: Props) {
   // Non-English pages read °C first with °F after, with locale decimals.
   const localized = locale != null && !locale.toLowerCase().startsWith("en");
   const decimal = (n: number | null, digits: number) =>
     n != null && Number.isFinite(n)
-      ? new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n)
+      ? new Intl.NumberFormat(locale, {
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits,
+        }).format(n)
       : "—";
   const percent = (n: number | null) =>
     n != null && Number.isFinite(n)
-      ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(n / 100)
+      ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(
+          n / 100,
+        )
       : "—";
   const [groups, setGroups] = useState<FeedGroup[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -73,42 +83,47 @@ export default function DemoTempsPanel({ intervalMs = 90000, text = DEMO_TEMPS_T
   const [countdown, setCountdown] = useState(intervalMs / 1000);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    try {
-      const response = await fetch("/api/home/demo-temps", {
-        credentials: "same-origin",
-        signal,
-      });
-      const payload = (await response.json()) as {
-        error?: string;
-        groups?: FeedGroup[];
-        updatedAt?: string;
-      };
-      if (signal?.aborted) return;
-      if (!response.ok) {
-        throw new Error(
-          response.status === 429
-            ? text.rateLimited
-            : localized
-              ? text.loadError
-              : (payload.error ?? text.loadError),
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await fetch("/api/home/demo-temps", {
+          credentials: "same-origin",
+          signal,
+        });
+        const payload = (await response.json()) as {
+          error?: string;
+          groups?: FeedGroup[];
+          updatedAt?: string;
+        };
+        if (signal?.aborted) return;
+        if (!response.ok) {
+          throw new Error(
+            response.status === 429
+              ? text.rateLimited
+              : localized
+                ? text.loadError
+                : (payload.error ?? text.loadError),
+          );
+        }
+        setGroups(payload.groups ?? []);
+        setUpdatedAt(payload.updatedAt ?? null);
+        setError(null);
+        setCountdown(intervalMs / 1000);
+      } catch (e) {
+        if (signal?.aborted || (e instanceof DOMException && e.name === "AbortError")) {
+          return;
+        }
+        setError(
+          e instanceof Error && (!localized || !(e instanceof TypeError))
+            ? e.message
+            : text.loadError,
         );
+      } finally {
+        if (!signal?.aborted) setLoading(false);
       }
-      setGroups(payload.groups ?? []);
-      setUpdatedAt(payload.updatedAt ?? null);
-      setError(null);
-      setCountdown(intervalMs / 1000);
-    } catch (e) {
-      if (signal?.aborted || (e instanceof DOMException && e.name === "AbortError")) {
-        return;
-      }
-      setError(
-        e instanceof Error && (!localized || !(e instanceof TypeError)) ? e.message : text.loadError,
-      );
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, [intervalMs, localized, text]);
+    },
+    [intervalMs, localized, text],
+  );
 
   useEffect(() => {
     const ac = new AbortController();
@@ -186,7 +201,9 @@ export default function DemoTempsPanel({ intervalMs = 90000, text = DEMO_TEMPS_T
                       {probe.data ? (
                         <>
                           <p class="stat-value">
-                            {localized ? `${decimal(probe.data.c, 1)} °C` : formatLiveTempF(probe.data.f)}
+                            {localized
+                              ? `${decimal(probe.data.c, 1)} °C`
+                              : formatLiveTempF(probe.data.f)}
                           </p>
                           <p class="stat-detail">
                             {localized
@@ -212,8 +229,7 @@ export default function DemoTempsPanel({ intervalMs = 90000, text = DEMO_TEMPS_T
               time: new Date(updatedAt).toLocaleTimeString(localized ? locale : undefined),
               seconds: countdown,
             })
-          : fill(text.nextRefresh, { seconds: countdown })}
-        {" "}
+          : fill(text.nextRefresh, { seconds: countdown })}{" "}
         <a class="text-link" href="/register?next=/dashboard/devices">
           {text.footerCta}
         </a>

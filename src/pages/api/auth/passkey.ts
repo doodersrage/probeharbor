@@ -26,22 +26,37 @@ import { requestLocale } from "./_locale";
  * pass on.
  */
 function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   const { user } = await getAuthFromCookies(cookies);
   if (!user) return json({ error: "Unauthorized" }, 401);
-  const passkeys = await withBetterAuth(request, (auth) => auth.api.listPasskeys({ headers: request.headers }));
+  const passkeys = await withBetterAuth(request, (auth) =>
+    auth.api.listPasskeys({ headers: request.headers }),
+  );
   return json({
-    passkeys: passkeys.map((p) => ({ id: p.id, name: p.name ?? null, createdAt: p.createdAt ?? null })),
+    passkeys: passkeys.map((p) => ({
+      id: p.id,
+      name: p.name ?? null,
+      createdAt: p.createdAt ?? null,
+    })),
   });
 };
 
 export const POST: APIRoute = async (context) => {
   const { request, cookies } = context;
   const t = authApiMessages(requestLocale(context)).mfa;
-  let body: { action?: string; response?: Record<string, unknown>; id?: string; name?: string; next?: string };
+  let body: {
+    action?: string;
+    response?: Record<string, unknown>;
+    id?: string;
+    name?: string;
+    next?: string;
+  };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -50,13 +65,16 @@ export const POST: APIRoute = async (context) => {
   const action = body.action?.trim() ?? "";
 
   if (action === "signin_options") {
-    const res = await withBetterAuth(request, (auth) => auth.api.generatePasskeyAuthenticationOptions({ asResponse: true }));
+    const res = await withBetterAuth(request, (auth) =>
+      auth.api.generatePasskeyAuthenticationOptions({ asResponse: true }),
+    );
     if (!res.ok) return json({ error: "generic" }, 400);
     return jsonWithAuthCookies({ options: await res.clone().json() }, 200, res);
   }
 
   if (action === "signin_verify") {
-    if (!body.response || typeof body.response !== "object") return json({ error: "Missing response" }, 400);
+    if (!body.response || typeof body.response !== "object")
+      return json({ error: "Missing response" }, 400);
     const res = await withBetterAuth(request, (auth) =>
       auth.api.verifyPasskeyAuthentication({
         // Shape checked by Better Auth (and the WebAuthn library) on the server.
@@ -67,7 +85,11 @@ export const POST: APIRoute = async (context) => {
     );
     if (!res.ok) return json({ error: "passkey_failed" }, 401);
     // YubiKey users still get the YubiKey step from middleware on the next page.
-    return jsonWithAuthCookies({ ok: true, redirectTo: sanitizeNextPath(body.next) ?? "/dashboard" }, 200, res);
+    return jsonWithAuthCookies(
+      { ok: true, redirectTo: sanitizeNextPath(body.next) ?? "/dashboard" },
+      200,
+      res,
+    );
   }
 
   const { user } = await getAuthFromCookies(cookies);
@@ -75,23 +97,37 @@ export const POST: APIRoute = async (context) => {
 
   if (action === "register_options") {
     const [state, metadata] = await Promise.all([getTotpState(user.id), getUserMetadata(user.id)]);
-    const hasAnyMfa = state.enabled || getYubiKeyPublicIdsFromUser({ user_metadata: metadata }).length > 0;
-    if (hasAnyMfa && !(await isElevated(state, request, cookies, user.id))) return json({ error: t.verifyBeforeAdding }, 401);
+    const hasAnyMfa =
+      state.enabled || getYubiKeyPublicIdsFromUser({ user_metadata: metadata }).length > 0;
+    if (hasAnyMfa && !(await isElevated(state, request, cookies, user.id)))
+      return json({ error: t.verifyBeforeAdding }, 401);
     const res = await withBetterAuth(request, (auth) =>
-      auth.api.generatePasskeyRegistrationOptions({ headers: request.headers, query: {}, asResponse: true }),
+      auth.api.generatePasskeyRegistrationOptions({
+        headers: request.headers,
+        query: {},
+        asResponse: true,
+      }),
     );
     if (!res.ok) {
       const code = await betterAuthErrorCode(res);
-      return json({ error: code === "SESSION_NOT_FRESH" ? "session_not_fresh" : "generic" }, res.status === 403 ? 403 : 400);
+      return json(
+        { error: code === "SESSION_NOT_FRESH" ? "session_not_fresh" : "generic" },
+        res.status === 403 ? 403 : 400,
+      );
     }
     return jsonWithAuthCookies({ options: await res.clone().json() }, 200, res);
   }
 
   if (action === "register_verify") {
-    if (!body.response || typeof body.response !== "object") return json({ error: "Missing response" }, 400);
+    if (!body.response || typeof body.response !== "object")
+      return json({ error: "Missing response" }, 400);
     const name = body.name?.trim().slice(0, 60) || undefined;
     const res = await withBetterAuth(request, (auth) =>
-      auth.api.verifyPasskeyRegistration({ body: { response: body.response, name }, headers: request.headers, asResponse: true }),
+      auth.api.verifyPasskeyRegistration({
+        body: { response: body.response, name },
+        headers: request.headers,
+        asResponse: true,
+      }),
     );
     if (!res.ok) return json({ error: "passkey_failed" }, 400);
     return jsonWithAuthCookies({ ok: true }, 200, res);

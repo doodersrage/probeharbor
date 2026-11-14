@@ -15,9 +15,30 @@ export const REDACTED = "[redacted]";
 
 /** Key words whose values are credentials or point at a person or place. */
 const SENSITIVE_WORDS = new Set([
-  "key", "apikey", "token", "secret", "password", "pass", "passwd", "auth", "authorization", "cookie",
-  "session", "ssid", "bssid", "email", "phone", "address", "lat", "latitude", "lon", "lng", "longitude",
-  "ip", "mac", "credentials",
+  "key",
+  "apikey",
+  "token",
+  "secret",
+  "password",
+  "pass",
+  "passwd",
+  "auth",
+  "authorization",
+  "cookie",
+  "session",
+  "ssid",
+  "bssid",
+  "email",
+  "phone",
+  "address",
+  "lat",
+  "latitude",
+  "lon",
+  "lng",
+  "longitude",
+  "ip",
+  "mac",
+  "credentials",
 ]);
 
 /** Whole-word match on the key's parts, so "relative_humidity" isn't mistaken for "lat". */

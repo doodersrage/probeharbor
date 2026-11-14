@@ -22,17 +22,13 @@ type StepUpPayload = {
  */
 async function getStepUpSecret(): Promise<string | null> {
   const fromBuild =
-    import.meta.env.MFA_STEPUP_SECRET?.trim() ||
-    import.meta.env.CRON_SECRET?.trim() ||
-    "";
+    import.meta.env.MFA_STEPUP_SECRET?.trim() || import.meta.env.CRON_SECRET?.trim() || "";
   if (fromBuild) return fromBuild;
 
   try {
     const { getRuntimeEnv } = await import("./runtimeEnv");
     return (
-      getRuntimeEnv("MFA_STEPUP_SECRET")?.trim() ||
-      getRuntimeEnv("CRON_SECRET")?.trim() ||
-      null
+      getRuntimeEnv("MFA_STEPUP_SECRET")?.trim() || getRuntimeEnv("CRON_SECRET")?.trim() || null
     );
   } catch {
     return null;
@@ -49,8 +45,7 @@ function base64UrlEncode(data: string): string {
 function base64UrlDecode(data: string): string | null {
   try {
     const padded = data.replace(/-/g, "+").replace(/_/g, "/");
-    const pad =
-      padded.length % 4 === 0 ? padded : padded + "=".repeat(4 - (padded.length % 4));
+    const pad = padded.length % 4 === 0 ? padded : padded + "=".repeat(4 - (padded.length % 4));
     const binary = atob(pad);
     const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
     return new TextDecoder().decode(bytes);

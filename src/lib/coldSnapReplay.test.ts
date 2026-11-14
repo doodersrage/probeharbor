@@ -4,7 +4,12 @@ import { buildColdSnapReplay } from "./coldSnapReplay";
 import type { ChartPoint } from "./garageTempsHistory";
 
 const at = (h: number) => new Date(Date.parse("2026-01-10T00:00:00Z") + h * 3600_000).toISOString();
-const pt = (h: number, tempf: number, probeLabel = "Garage pipe"): ChartPoint => ({ timestamp: at(h), tempf, humidity: 50, probeLabel });
+const pt = (h: number, tempf: number, probeLabel = "Garage pipe"): ChartPoint => ({
+  timestamp: at(h),
+  tempf,
+  humidity: 50,
+  probeLabel,
+});
 
 const event = (partial: Partial<AlertEventRow>): AlertEventRow => ({
   id: 1,
@@ -25,7 +30,15 @@ describe("buildColdSnapReplay", () => {
   });
 
   it("replays the latest stretch with lows, recovery, and alerts in order", () => {
-    const points = [pt(0, 36), pt(1, 33), pt(2, 31.5), pt(3, 30), pt(4, 31), pt(5, 34), pt(3, 35, "Attic")];
+    const points = [
+      pt(0, 36),
+      pt(1, 33),
+      pt(2, 31.5),
+      pt(3, 30),
+      pt(4, 31),
+      pt(5, 34),
+      pt(3, 35, "Attic"),
+    ];
     const replay = buildColdSnapReplay(points, 32, [
       event({ acknowledged_at: at(4.5), meta: { autoResolved: "recovered" } }),
       event({ id: 2, kind: "recovery", title: "Recovered", created_at: at(5.01) }),

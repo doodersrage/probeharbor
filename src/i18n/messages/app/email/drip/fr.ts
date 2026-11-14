@@ -58,7 +58,8 @@ const fr: DripEmailMessages = {
     secondaryCta: "Ouvrir le tableau de bord",
   },
   day3Setup: {
-    subject: "Toujours en cours d’installation ? Trois façons rapides d’obtenir une première mesure",
+    subject:
+      "Toujours en cours d’installation ? Trois façons rapides d’obtenir une première mesure",
     eyebrow: "Premiers pas",
     preheader: "Home Assistant, un ESP32 flashé ou un flux de démo en un clic.",
     title: "Votre tableau de bord attend une première mesure",
@@ -76,7 +77,8 @@ const fr: DripEmailMessages = {
   day7Setup: {
     subject: "Qu’essayez-vous de connecter ?",
     eyebrow: "Aide à l’installation",
-    preheader: "Indiquez-nous votre capteur ou votre hub et nous vous montrerons le chemin le plus court.",
+    preheader:
+      "Indiquez-nous votre capteur ou votre hub et nous vous montrerons le chemin le plus court.",
     title: "Bloqué à l’installation ? Dites-nous ce que vous avez",
     intro:
       "Votre compte n’a toujours aucune mesure. Si un capteur, un hub ou une carte ne correspond à aucun parcours d’installation, écrivez-nous en indiquant ce que vous utilisez et nous vous aiderons à le faire remonter des données.",

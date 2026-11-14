@@ -25,7 +25,8 @@ const ptBr: ContactMessages = {
     "Dúvidas sobre ingestão ou sondas depois de consultar os guias",
   ],
   issuesTitle: "Issues no GitHub",
-  issuesHtml: 'Bugs, patches de firmware e ideias de recursos ficam nas <a class="text-link" href="{url}" target="_blank" rel="noreferrer">issues do GitHub</a>, para que outros makers possam acompanhar. Prefere não usar um formulário web? Esse é o melhor caminho público.',
+  issuesHtml:
+    'Bugs, patches de firmware e ideias de recursos ficam nas <a class="text-link" href="{url}" target="_blank" rel="noreferrer">issues do GitHub</a>, para que outros makers possam acompanhar. Prefere não usar um formulário web? Esse é o melhor caminho público.',
   beforeTitle: "Antes de escrever",
   beforeHtml:
     'Muitas respostas já estão na <a class="text-link" href="/guides">central de guias</a>, na <a class="text-link" href="/about">biblioteca de documentação</a>, na <a class="text-link" href="/about/probe-demo">demo de sondas</a> e nos <a class="text-link" href="/about/arduino-sketches">sketches de Arduino</a>. Detalhes úteis para a resposta: placa, sensores, leituras esperadas e observadas e as URLs dos feeds.',

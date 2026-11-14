@@ -36,7 +36,8 @@ const RISK_KINDS: Record<CoverageRisk, readonly string[]> = {
 };
 
 /** Spaces that usually have plumbing, where a leak sensor earns its place. */
-const WET_SPACE = /basement|crawl|utility|laundry|water heater|kitchen|bath|sump|mechanical|boiler|pump|well/i;
+const WET_SPACE =
+  /basement|crawl|utility|laundry|water heater|kitchen|bath|sump|mechanical|boiler|pump|well/i;
 
 export const UNASSIGNED_SPACE = "No space set";
 
@@ -71,9 +72,11 @@ export function buildProtectionCoverage(
       if (matching.length === 0) risks[risk] = "none";
       else if (
         matching.some(
-          (s) => !isSensorLagging(recordedBySensor.get(s.id), now, intervalByDevice.get(s.device_id)),
+          (s) =>
+            !isSensorLagging(recordedBySensor.get(s.id), now, intervalByDevice.get(s.device_id)),
         )
-      ) risks[risk] = "live";
+      )
+        risks[risk] = "live";
       else risks[risk] = "stale";
     }
 
@@ -100,7 +103,7 @@ export function buildProtectionCoverage(
   // Spaces needing attention first, the unassigned bucket last.
   return result.sort((a, b) => {
     if (a.unassigned !== b.unassigned) return a.unassigned ? 1 : -1;
-    if ((a.gaps.length > 0) !== (b.gaps.length > 0)) return a.gaps.length > 0 ? -1 : 1;
+    if (a.gaps.length > 0 !== b.gaps.length > 0) return a.gaps.length > 0 ? -1 : 1;
     return a.space.localeCompare(b.space);
   });
 }

@@ -24,14 +24,21 @@ import { fromContentModules } from "../collect";
  */
 export type AboutNavigationOverlay = {
   megaGroups?: Record<string, DeepPartial<Pick<AboutMegaGroup, "title" | "description">>>;
-  journeys?: Record<string, DeepPartial<Pick<AboutJourney, "title" | "description" | "ctaLabel" | "steps">>>;
+  journeys?: Record<
+    string,
+    DeepPartial<Pick<AboutJourney, "title" | "description" | "ctaLabel" | "steps">>
+  >;
 };
 
 const loadOverlays = () =>
   fromContentModules("aboutNavigation", undefined, (modules) => {
     const overlays: Partial<Record<TranslatedLocale, AboutNavigationOverlay>> = {};
-    for (const [file, mod] of Object.entries(modules as Record<string, { default: AboutNavigationOverlay }>)) {
-      const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/[^/]+\.ts$/.exec(file)?.[1] as TranslatedLocale | undefined;
+    for (const [file, mod] of Object.entries(
+      modules as Record<string, { default: AboutNavigationOverlay }>,
+    )) {
+      const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/[^/]+\.ts$/.exec(file)?.[1] as
+        | TranslatedLocale
+        | undefined;
       if (!locale) continue;
       const prev = overlays[locale] ?? {};
       overlays[locale] = {
@@ -46,7 +53,10 @@ function pageMap(locale: Locale): Map<string, AboutPage> {
   return new Map(getLocalizedAboutPages(locale).map((p) => [p.slug, p]));
 }
 
-function localizeSection(section: AboutTopicSection, pages: Map<string, AboutPage>): AboutTopicSection {
+function localizeSection(
+  section: AboutTopicSection,
+  pages: Map<string, AboutPage>,
+): AboutTopicSection {
   return {
     core: pages.get(section.core.slug) ?? section.core,
     guides: section.guides.map((g) => pages.get(g.slug) ?? g),

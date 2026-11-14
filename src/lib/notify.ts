@@ -12,10 +12,7 @@ import { recordAlertEvent, updateAlertEventChannels, type AlertEventMeta } from 
 import { buildUserAckUrl } from "./alertAckTokens";
 import { buildSiteUrl } from "./siteUrl";
 import { applyAlertTemplates } from "./alertTemplates";
-import {
-  quietHoursAllowsSmsCritical,
-  shouldSuppressForQuietHours,
-} from "./quietHours";
+import { quietHoursAllowsSmsCritical, shouldSuppressForQuietHours } from "./quietHours";
 import { shouldSuppressForSnoozeOrVacation } from "./alertSnooze";
 import { filterChannelsForSpace } from "./spaceChannelRouting";
 import { deliverWebhookPost } from "./webhookDeliveries";
@@ -52,16 +49,19 @@ async function sendEmail(
     const { brandedEmailParts } = await import("./emailLayout");
     const { resolveSiteUrl } = await import("./schemaMarkup");
     const siteUrl = resolveSiteUrl(null);
-    const parts = brandedEmailParts({
-      eyebrow: alertEmailEyebrow(kind, locale),
-      preheader: body.slice(0, 120),
-      title: subject,
-      intro: body,
-      cta: { label: t.openDashboard, url: `${siteUrl}/dashboard` },
-      secondaryCta: { label: t.alertSettings, url: `${siteUrl}/dashboard/alerts` },
-      tone: "alert",
-      footerNote: t.footerNote,
-    }, locale);
+    const parts = brandedEmailParts(
+      {
+        eyebrow: alertEmailEyebrow(kind, locale),
+        preheader: body.slice(0, 120),
+        title: subject,
+        intro: body,
+        cta: { label: t.openDashboard, url: `${siteUrl}/dashboard` },
+        secondaryCta: { label: t.alertSettings, url: `${siteUrl}/dashboard/alerts` },
+        tone: "alert",
+        footerNote: t.footerNote,
+      },
+      locale,
+    );
     await send(to, subject, parts.text, { html: parts.html });
     return true;
   } catch (error) {
@@ -219,8 +219,7 @@ async function sendPushover(
 export async function sendTwilioWhatsApp(to: string, body: string): Promise<boolean> {
   const sid = getRuntimeEnv("TWILIO_ACCOUNT_SID");
   const token = getRuntimeEnv("TWILIO_AUTH_TOKEN");
-  const from =
-    getRuntimeEnv("TWILIO_WHATSAPP_FROM") || getRuntimeEnv("TWILIO_FROM_NUMBER");
+  const from = getRuntimeEnv("TWILIO_WHATSAPP_FROM") || getRuntimeEnv("TWILIO_FROM_NUMBER");
 
   if (!sid || !token || !from) {
     console.warn("Twilio WhatsApp env vars not configured; skipping");
@@ -288,11 +287,7 @@ async function sendTelegram(
 }
 
 export function isTwilioConfigured(): boolean {
-  return hasRuntimeEnv(
-    "TWILIO_ACCOUNT_SID",
-    "TWILIO_AUTH_TOKEN",
-    "TWILIO_FROM_NUMBER",
-  );
+  return hasRuntimeEnv("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER");
 }
 
 export async function sendTwilioSms(to: string, body: string): Promise<boolean> {
@@ -371,13 +366,7 @@ async function sendOutboundWebhook(
     Object.assign(headers, await timestampedSignatureHeaders(secret, body));
   }
 
-  const response = await deliverWebhookPost(
-    userId,
-    "outbound_alert",
-    url,
-    headers,
-    body,
-  );
+  const response = await deliverWebhookPost(userId, "outbound_alert", url, headers, body);
   if (response && !response.ok) {
     console.error("Outbound webhook failed:", response.status);
   }
@@ -505,7 +494,10 @@ export async function ensureAlertDeliveryEvidence(
   try {
     return { hasDelivery: await neonSettings.recentAlertReachedAChannel(userId), settings };
   } catch (error) {
-    console.error("ensureAlertDeliveryEvidence failed:", error instanceof Error ? error.message : error);
+    console.error(
+      "ensureAlertDeliveryEvidence failed:",
+      error instanceof Error ? error.message : error,
+    );
     return { hasDelivery: false, settings };
   }
 }
@@ -596,12 +588,19 @@ export async function notifyUser(
 
   const kind = payloadResolved.kind;
   const routedChannels = kind
-    ? filterChannelsForSpace(
-        settings,
-        options?.space,
-        kind,
-        ["email", "sms", "discord", "push", "webhook", "telegram", "slack", "teams", "ntfy", "pushover", "whatsapp"],
-      )
+    ? filterChannelsForSpace(settings, options?.space, kind, [
+        "email",
+        "sms",
+        "discord",
+        "push",
+        "webhook",
+        "telegram",
+        "slack",
+        "teams",
+        "ntfy",
+        "pushover",
+        "whatsapp",
+      ])
     : null;
   const routedSet = routedChannels ? new Set(routedChannels) : null;
   const baseUrl = buildSiteUrl();
@@ -615,9 +614,7 @@ export async function notifyUser(
     footerLines.length > 0
       ? `${payloadResolved.body}\n\n${footerLines.join("\n")}`
       : payloadResolved.body;
-  const channelFilterSet = options?.channelFilter?.length
-    ? new Set(options.channelFilter)
-    : null;
+  const channelFilterSet = options?.channelFilter?.length ? new Set(options.channelFilter) : null;
   const allowChannel = (channel: AlertChannelName) => {
     if (channelFilterSet && !channelFilterSet.has(channel)) return false;
     if (routedSet && !routedSet.has(channel)) return false;
@@ -628,7 +625,8 @@ export async function notifyUser(
 
   if (settings.channelEmail && allowChannel("email")) {
     if (email) {
-      if (await sendEmail(email, payloadResolved.title, bodyWithSnooze, kind, locale)) sent.push("email");
+      if (await sendEmail(email, payloadResolved.title, bodyWithSnooze, kind, locale))
+        sent.push("email");
       else skipped.push("email");
     } else {
       skipped.push("email");

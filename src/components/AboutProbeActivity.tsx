@@ -126,9 +126,7 @@ export default function AboutProbeActivity({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    reducedMotionRef.current = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const PROBE_NODES = probeNodes(text);
     let width = 0;
@@ -169,14 +167,7 @@ export default function AboutProbeActivity({
         }
       }
 
-      const topGlow = ctx!.createRadialGradient(
-        width * 0.5,
-        0,
-        0,
-        width * 0.5,
-        0,
-        width * 0.65,
-      );
+      const topGlow = ctx!.createRadialGradient(width * 0.5, 0, 0, width * 0.5, 0, width * 0.65);
       topGlow.addColorStop(0, "rgba(59, 130, 246, 0.14)");
       topGlow.addColorStop(1, "rgba(59, 130, 246, 0)");
       ctx!.fillStyle = topGlow;
@@ -264,7 +255,11 @@ export default function AboutProbeActivity({
       ctx!.fillStyle = COLORS.textMuted;
       ctx!.font = "600 11px system-ui, sans-serif";
       ctx!.textAlign = "center";
-      ctx!.fillText(fill(text.sunLoad, "n", String(Math.round(intensity))), sunX, sunY + radius + 24);
+      ctx!.fillText(
+        fill(text.sunLoad, "n", String(Math.round(intensity))),
+        sunX,
+        sunY + radius + 24,
+      );
     }
 
     function elapsedRayAngle(t0: number) {
@@ -503,8 +498,7 @@ export default function AboutProbeActivity({
 
       const last = history[history.length - 1];
       const lastX = x + padX + innerW;
-      const lastY =
-        y + 20 + padY + innerH - ((last - min) / range) * innerH;
+      const lastY = y + 20 + padY + innerH - ((last - min) / range) * innerH;
       ctx!.fillStyle = COLORS.accentBright;
       ctx!.beginPath();
       ctx!.arc(lastX, lastY, 3, 0, Math.PI * 2);
@@ -570,9 +564,7 @@ export default function AboutProbeActivity({
       drawSun(controls.sunIntensity);
       const garage = drawGarage(doorProgress, controls.outdoorF);
 
-      const pulse = reducedMotionRef.current
-        ? 0
-        : 0.5 + 0.5 * Math.sin(elapsed / 600);
+      const pulse = reducedMotionRef.current ? 0 : 0.5 + 0.5 * Math.sin(elapsed / 600);
 
       PROBE_NODES.forEach((node) => {
         const probe = probes.find((p) => p.key === node.key);
@@ -584,14 +576,7 @@ export default function AboutProbeActivity({
       const sparkX0 = width * 0.12;
       drawProbeLinks(garage, sparkY);
       PROBE_NODES.forEach((node, i) => {
-        drawSparkline(
-          sparkHistory[i],
-          sparkX0 + i * (sparkW + 8),
-          sparkY,
-          sparkW,
-          48,
-          node.label,
-        );
+        drawSparkline(sparkHistory[i], sparkX0 + i * (sparkW + 8), sparkY, sparkW, 48, node.label);
       });
 
       drawDataPulse(elapsed);

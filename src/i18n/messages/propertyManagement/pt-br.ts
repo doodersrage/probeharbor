@@ -67,11 +67,13 @@ const ptBr: PropertyManagementMessages = {
   faqs: [
     {
       question: "Qual a diferença entre o Portfolio e o Pro?",
-      answer: "O Portfolio inclui tudo do plano Pro (alertas por SMS, alertas oficiais de geada e frio do NWS (EUA), o pacote de provas para sinistros, webhooks e links de compartilhamento) e ainda um limite muito maior de imóveis próprios (o Pro já permite até {pro}; o Portfolio aumenta para {portfolio}), com preço pensado para essa escala e não para um único imóvel.",
+      answer:
+        "O Portfolio inclui tudo do plano Pro (alertas por SMS, alertas oficiais de geada e frio do NWS (EUA), o pacote de provas para sinistros, webhooks e links de compartilhamento) e ainda um limite muito maior de imóveis próprios (o Pro já permite até {pro}; o Portfolio aumenta para {portfolio}), com preço pensado para essa escala e não para um único imóvel.",
     },
     {
       question: "Preciso do Portfolio se tenho só 2 ou 3 imóveis?",
-      answer: "Provavelmente não: o Pro já cobre alguns imóveis (até {pro} residências próprias) com o mesmo painel de vários imóveis e o mesmo resumo de alertas. O Portfolio foi feito para operações maiores: uma administradora de imóveis ou um locador com muitas unidades, para quem um preço individual fixo não reflete a escala.",
+      answer:
+        "Provavelmente não: o Pro já cobre alguns imóveis (até {pro} residências próprias) com o mesmo painel de vários imóveis e o mesmo resumo de alertas. O Portfolio foi feito para operações maiores: uma administradora de imóveis ou um locador com muitas unidades, para quem um preço individual fixo não reflete a escala.",
     },
     {
       question: "Meus administradores ou a equipe no local podem ter login próprio?",

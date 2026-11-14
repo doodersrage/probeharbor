@@ -1,4 +1,3 @@
-
 /**
  * /about/ingest-and-webhooks body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Code samples stay in the page.
@@ -42,14 +41,16 @@ const ptBr: IngestAndWebhooksMessages = {
   },
   webhooks: {
     title: "Webhooks de alerta de saída",
-    introHtml: "Contas Pro podem ativar um webhook de saída nas configurações de alerta. Cada alerta envia este JSON via POST:",
+    introHtml:
+      "Contas Pro podem ativar um webhook de saída nas configurações de alerta. Cada alerta envia este JSON via POST:",
     kindsHtml: `<code>kind</code> pode ser ${webhookKinds} ou <code>generic</code>. Quando um segredo de webhook é definido, a requisição inclui <code>X-Signature</code>, um HMAC-SHA256 em hexadecimal do corpo bruto. Use-o no Home Assistant ou no IFTTT Webhooks para verificar a autenticidade.`,
   },
   homeAssistant: {
     title: "Home Assistant",
     bodyHtml:
       'Instale a <a class="text-link" href="/integrations/home-assistant">integração oficial do HACS</a> para ter sensores de links compartilhados e serviços de soneca/férias. Para <strong>receber alertas no HA</strong>, use o webhook HTTPS de saída (Pro) ou importe o blueprint. Para <strong>enviar leituras MQTT ao ProbeHarbor</strong>, veja a <a class="text-link" href="/about/mqtt-bridge">receita da ponte MQTT</a>.',
-    blueprintHtml: '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Baixar o blueprint do HA (YAML)</a>',
+    blueprintHtml:
+      '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Baixar o blueprint do HA (YAML)</a>',
     pointHtml:
       "Aponte a URL do webhook de saída do ProbeHarbor para <code>https://&lt;your-ha-host&gt;/api/webhook/probeharbor_alerts</code> (ou uma URL do Cloudflare Tunnel / Nabu Casa). Verifique <code>X-Signature</code> numa condição de template se tiver definido um segredo.",
     mqttHtml:

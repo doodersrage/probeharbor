@@ -1,11 +1,11 @@
-
 /** /about/arduino-circuit-wiring body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
 const ptBr: Messages = {
   introHtml:
     "Esta montagem gira em torno de um Arduino Uno com um shield Ethernet W5100 encaixado por cima, uma protoboard sem solda para distribuir a alimentação e os componentes de apoio do LCD, um LCD de caracteres 16×2 para mostrar as leituras no local e dois sensores de temperatura e umidade DHT22. Durante o desenvolvimento, o USB alimenta a bancada; em uma instalação permanente, normalmente se passa para uma fonte regulada de 5 V.",
-  diagramAlt: "Diagrama de ligação de um Arduino Uno com shield Ethernet, protoboard, LCD e dois sensores DHT22",
+  diagramAlt:
+    "Diagrama de ligação de um Arduino Uno com shield Ethernet, protoboard, LCD e dois sensores DHT22",
   diagramCaption:
     "Ligação geral: a alimentação entra pelo Uno e os sinais passam pela protoboard até o LCD e os dois sensores DHT22.",
   breadboardTitle: "Protoboard e trilhas de alimentação",

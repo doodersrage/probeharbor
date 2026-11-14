@@ -17,16 +17,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const accessToken = session.access_token;
   const refreshToken = session.refresh_token;
 
-  const { error } = await updateDashboardGrowthTipsDismissed(
-    accessToken,
-    refreshToken,
-    dismissed,
-  );
+  const { error } = await updateDashboardGrowthTipsDismissed(accessToken, refreshToken, dismissed);
 
   if (error) {
     return redirect(withQuery(redirectTo, { tips_error: "1" }));
   }
-
 
   return redirect(
     `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}${

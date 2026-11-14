@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockCounts = vi.fn();
-vi.mock("./db/history", () => ({ temperatureReadingCounts: (...a: unknown[]) => mockCounts(...a) }));
+vi.mock("./db/history", () => ({
+  temperatureReadingCounts: (...a: unknown[]) => mockCounts(...a),
+}));
 
 import { fetchTemperatureReadingCounts, temperatureSensorIdsForFilter } from "./readingCounts";
 import { buildClaimsPackData, buildClaimsPackHtml } from "./claimsPack";
@@ -13,7 +15,11 @@ beforeEach(() => {
 describe("fetchTemperatureReadingCounts", () => {
   it("returns recorded totals from the database", async () => {
     mockCounts.mockResolvedValue({ total_count: 43200, below_count: 7, from_rollups: false });
-    expect(await fetchTemperatureReadingCounts("hh-1", "a", "b", 34, ["t"])).toEqual({ total: 43200, below: 7, approximate: false });
+    expect(await fetchTemperatureReadingCounts("hh-1", "a", "b", 34, ["t"])).toEqual({
+      total: 43200,
+      below: 7,
+      approximate: false,
+    });
     expect(mockCounts).toHaveBeenCalledWith("hh-1", "a", "b", 34, ["t"]);
   });
 
@@ -29,7 +35,13 @@ describe("fetchTemperatureReadingCounts", () => {
 
 describe("temperatureSensorIdsForFilter", () => {
   const devices = [
-    { name: "Garage ESP", sensors: [{ id: "t1", key: "temp1", kind: "temperature" }, { id: "h1", key: "humidity1", kind: "humidity" }] },
+    {
+      name: "Garage ESP",
+      sensors: [
+        { id: "t1", key: "temp1", kind: "temperature" },
+        { id: "h1", key: "humidity1", kind: "humidity" },
+      ],
+    },
     { name: "Attic", sensors: [{ id: "t2", key: "temp1", kind: "temperature" }] },
   ];
   it("is null without a filter, else the matching temperature sensors", () => {
@@ -56,7 +68,10 @@ describe("claims pack counts", () => {
   };
 
   it("states recorded readings, not chart samples", () => {
-    const data = buildClaimsPackData({ ...base, readingCounts: { total: 5760, below: 3, approximate: false } });
+    const data = buildClaimsPackData({
+      ...base,
+      readingCounts: { total: 5760, below: 3, approximate: false },
+    });
     expect(data.freezeHours.totalReadings).toBe(5760);
     expect(data.freezeHours.readingsBelow34).toBe(3);
     expect(data.executiveSummary).toContain("recorded 5760 temperature readings");
@@ -64,7 +79,10 @@ describe("claims pack counts", () => {
 
   it("marks the below-threshold count as a minimum when older hours are summaries", () => {
     const html = buildClaimsPackHtml(
-      buildClaimsPackData({ ...base, readingCounts: { total: 90000, below: 40, approximate: true } }),
+      buildClaimsPackData({
+        ...base,
+        readingCounts: { total: 90000, below: 40, approximate: true },
+      }),
     );
     expect(html).toContain("≥ 40");
     expect(html).toContain("at least: older hours are kept as hourly summaries");

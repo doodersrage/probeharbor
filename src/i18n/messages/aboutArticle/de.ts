@@ -16,7 +16,8 @@ const de: AboutArticleMessages = {
   backToOverview: "Zurück zur Übersicht",
   convertBar: {
     label: "ProbeHarbor ausprobieren",
-    copyHtml: "<strong>Live-Demo</strong>, ohne Konto. Bereit, Fühler anzuschließen? Für immer kostenlos, ohne Karte.",
+    copyHtml:
+      "<strong>Live-Demo</strong>, ohne Konto. Bereit, Fühler anzuschließen? Für immer kostenlos, ohne Karte.",
     demo: "Live-Demo ausprobieren",
     startFree: "Kostenlos starten",
   },

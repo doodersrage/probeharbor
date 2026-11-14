@@ -113,7 +113,9 @@ if (missingCritical.length > 0) {
   process.exit(1);
 }
 
-console.log(`Prepared ${Object.keys(secrets).length} secrets (${missing.length} optional keys empty).`);
+console.log(
+  `Prepared ${Object.keys(secrets).length} secrets (${missing.length} optional keys empty).`,
+);
 
 if (dryRun) {
   console.log("Dry run — would push:", Object.keys(secrets).join(", "));

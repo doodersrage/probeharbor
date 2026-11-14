@@ -29,7 +29,9 @@ vi.mock("../../../lib/doorEventReport", async (importOriginal) => {
 
 function makeContext(query: string, timeZone?: string): APIContext {
   const url = new URL(`https://example.com/api/door-events/export.csv${query}`);
-  const cookies = { get: (name: string) => (name === "ph_tz" && timeZone ? { value: timeZone } : undefined) };
+  const cookies = {
+    get: (name: string) => (name === "ph_tz" && timeZone ? { value: timeZone } : undefined),
+  };
   return { url, cookies, locals: {} } as unknown as APIContext;
 }
 
@@ -47,11 +49,16 @@ const row = {
 };
 
 beforeEach(() => {
-  mockGetAuthFromCookies.mockReset().mockResolvedValue({ session: { access_token: "t" }, user: { id: "user-1", email: "a@example.com" } });
+  mockGetAuthFromCookies.mockReset().mockResolvedValue({
+    session: { access_token: "t" },
+    user: { id: "user-1", email: "a@example.com" },
+  });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ canDownloadCsv: true, historyDays: 365 });
   mockGetOrCreateHouseholdForUser.mockReset().mockResolvedValue({ householdId: "hh-1" });
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [{ id: "esp" }] });
-  mockLoadDoorReport.mockReset().mockResolvedValue({ rows: [row], truncated: false, error: null, readingsError: null });
+  mockLoadDoorReport
+    .mockReset()
+    .mockResolvedValue({ rows: [row], truncated: false, error: null, readingsError: null });
 });
 
 describe("GET /api/door-events/export.csv", () => {
@@ -76,7 +83,9 @@ describe("GET /api/door-events/export.csv", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
-    expect(response.headers.get("Content-Disposition")).toMatch(/probeharbor-door-events-\d{4}-\d{2}-\d{2}\.csv/);
+    expect(response.headers.get("Content-Disposition")).toMatch(
+      /probeharbor-door-events-\d{4}-\d{2}-\d{2}\.csv/,
+    );
     expect(mockLoadDoorReport).toHaveBeenCalledWith(
       "hh-1",
       [{ id: "esp" }],
@@ -92,7 +101,12 @@ describe("GET /api/door-events/export.csv", () => {
   });
 
   it("refuses a partial file when there are more openings than one CSV holds", async () => {
-    mockLoadDoorReport.mockResolvedValue({ rows: [row], truncated: true, error: null, readingsError: null });
+    mockLoadDoorReport.mockResolvedValue({
+      rows: [row],
+      truncated: true,
+      error: null,
+      readingsError: null,
+    });
     const { GET } = await import("./export.csv");
     const response = await GET(makeContext(""));
     expect(response.status).toBe(422);
@@ -111,10 +125,20 @@ describe("GET /api/door-events/export.csv", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { GET } = await import("./export.csv");
 
-    mockLoadDoorReport.mockResolvedValueOnce({ rows: [], truncated: false, error: "db down", readingsError: null });
+    mockLoadDoorReport.mockResolvedValueOnce({
+      rows: [],
+      truncated: false,
+      error: "db down",
+      readingsError: null,
+    });
     expect((await GET(makeContext(""))).status).toBe(500);
 
-    mockLoadDoorReport.mockResolvedValueOnce({ rows: [row], truncated: false, error: null, readingsError: "rpc missing" });
+    mockLoadDoorReport.mockResolvedValueOnce({
+      rows: [row],
+      truncated: false,
+      error: null,
+      readingsError: "rpc missing",
+    });
     expect((await GET(makeContext(""))).status).toBe(500);
 
     errorSpy.mockRestore();

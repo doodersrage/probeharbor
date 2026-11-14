@@ -27,10 +27,7 @@ export function isSafeCompanionLoopback(url: string): boolean {
   }
 }
 
-export function setCompanionClientCookie(
-  cookies: AstroCookies,
-  client: CompanionClient,
-): void {
+export function setCompanionClientCookie(cookies: AstroCookies, client: CompanionClient): void {
   cookies.set(COMPANION_CLIENT_COOKIE, client, {
     path: "/",
     httpOnly: true,
@@ -40,9 +37,7 @@ export function setCompanionClientCookie(
   });
 }
 
-export function getCompanionClientCookie(
-  cookies: AstroCookies,
-): CompanionClient | null {
+export function getCompanionClientCookie(cookies: AstroCookies): CompanionClient | null {
   const value = cookies.get(COMPANION_CLIENT_COOKIE)?.value;
   if (value === "baybuddy" || value === "android" || value === "desktop") {
     return value;
@@ -50,10 +45,7 @@ export function getCompanionClientCookie(
   return null;
 }
 
-export function setCompanionLoopbackCookie(
-  cookies: AstroCookies,
-  loopback: string,
-): boolean {
+export function setCompanionLoopbackCookie(cookies: AstroCookies, loopback: string): boolean {
   if (!isSafeCompanionLoopback(loopback)) return false;
   cookies.set(COMPANION_LOOPBACK_COOKIE, loopback, {
     path: "/",
@@ -65,9 +57,7 @@ export function setCompanionLoopbackCookie(
   return true;
 }
 
-export function consumeCompanionLoopbackCookie(
-  cookies: AstroCookies,
-): string | null {
+export function consumeCompanionLoopbackCookie(cookies: AstroCookies): string | null {
   const value = cookies.get(COMPANION_LOOPBACK_COOKIE)?.value ?? null;
   cookies.delete(COMPANION_LOOPBACK_COOKIE, { path: "/" });
   if (value && isSafeCompanionLoopback(value)) return value;
@@ -88,9 +78,7 @@ export function buildLoopbackOAuthUrl(loopback: string, exchange: string): strin
   return target.toString();
 }
 
-export function parseCompanionClient(
-  value: string | null | undefined,
-): CompanionClient {
+export function parseCompanionClient(value: string | null | undefined): CompanionClient {
   const v = value?.trim().toLowerCase();
   if (v === "android") return "android";
   if (v === "desktop") return "desktop";

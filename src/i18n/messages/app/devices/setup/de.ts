@@ -3,7 +3,8 @@ import type { DevicesSetupMessages } from "./en";
 const de: DevicesSetupMessages = {
   firstRun: {
     title: "Verbinde deinen ersten Sensor",
-    subtitle: "Wähle, was du heute hast. Jeder Weg endet mit einem Live-Messwert; Frost- und Leckalarme folgen direkt danach.",
+    subtitle:
+      "Wähle, was du heute hast. Jeder Weg endet mit einem Live-Messwert; Frost- und Leckalarme folgen direkt danach.",
     viewOnly: "Nur Lesezugriff: Bitte einen Eigentümer, ein Gerät hinzuzufügen.",
     limitReached: "Gerätelimit erreicht.",
     limitUpgrade: "Tarif wechseln für mehr Geräte",

@@ -1,7 +1,5 @@
 import type { APIRoute } from "astro";
-import {
-  getAuthFromRequest,
-} from "../../../lib/auth";
+import { getAuthFromRequest } from "../../../lib/auth";
 import {
   updateUserDisplayPreferences,
   parseDisplayPreferencesInput,
@@ -33,11 +31,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const accessToken = session.access_token;
   const refreshToken = session.refresh_token;
 
-  const { error } = await updateUserDisplayPreferences(
-    accessToken,
-    refreshToken,
-    prefs,
-  );
+  const { error } = await updateUserDisplayPreferences(accessToken, refreshToken, prefs);
 
   if (error) {
     return redirect(withQuery(redirectTo, { prefs_error: "1" }));
@@ -49,7 +43,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 365,
   });
-
 
   return redirect(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}prefs_saved=1`);
 };

@@ -26,19 +26,22 @@ export default {
     title: "Fixation des sondes et boîtiers",
     description:
       "Fixez vos sondes pour des relevés stables dans les espaces non chauffés : hauteur, protection contre le soleil et les courants d’air, boîtiers ventilés.",
-    summary: "À hauteur d’épaule, loin des portes et des sources de chaleur, dans des boîtiers qui respirent.",
+    summary:
+      "À hauteur d’épaule, loin des portes et des sources de chaleur, dans des boîtiers qui respirent.",
   },
   "multi-zone-garage-layout": {
     title: "Garage multizone : l’implantation",
     description:
       "Prévoyez plusieurs zones de sondes pour capter les écarts du sol au plafond, les variations près de la porte et les zones d’établi.",
-    summary: "Découpez le garage en zones pertinentes au lieu de noyer dans une moyenne le signal dont vous avez besoin.",
+    summary:
+      "Découpez le garage en zones pertinentes au lieu de noyer dans une moyenne le signal dont vous avez besoin.",
   },
   "probe-mapping-labels": {
     title: "Correspondance des sondes et libellés du tableau de bord",
     description:
       "Associez les clés JSON des sondes à des noms lisibles dans le tableau de bord pour que les cartes d’accueil correspondent aux emplacements réels.",
-    summary: "Clés JSON stables, libellés parlants et organisation par flux pour les installations multisondes.",
+    summary:
+      "Clés JSON stables, libellés parlants et organisation par flux pour les installations multisondes.",
   },
   "humidity-condensation-basics": {
     title: "Humidité et condensation : les bases",
@@ -72,7 +75,8 @@ export default {
     title: "Porte de garage et variations de température",
     description:
       "Pourquoi l’ouverture de la porte de garage provoque des variations rapides de température et d’humidité, et comment interpréter les pics des sondes.",
-    summary: "Infiltration et stratification thermique quand la plus grande ouverture du mur s’ouvre.",
+    summary:
+      "Infiltration et stratification thermique quand la plus grande ouverture du mur s’ouvre.",
   },
   "sun-load-garage-walls": {
     title: "Apports solaires sur les murs du garage",
@@ -92,7 +96,8 @@ export default {
     title: "Tendances saisonnières du garage",
     description:
       "Lisez des mois d’historique ProbeHarbor : sols d’hiver, pics d’été, intersaisons, pour qu’une seule nuit froide ne fausse pas vos décisions.",
-    summary: "Un recul sur le long terme pour que les pics d’une seule journée n’entraînent pas de mauvaises décisions.",
+    summary:
+      "Un recul sur le long terme pour que les pics d’une seule journée n’entraînent pas de mauvaises décisions.",
   },
   "thermal-mass-concrete-slab": {
     title: "Inertie thermique et dalles béton",
@@ -126,7 +131,8 @@ export default {
     title: "Parcourir l’historique du tableau de bord",
     description:
       "Parcourez l’historique paginé des sondes ProbeHarbor, lisez les colonnes flux et sonde, et repérez les trous avant de vous fier à un export CSV.",
-    summary: "Transformez les instantanés enregistrés en chronologie lisible dans le tableau de bord connecté.",
+    summary:
+      "Transformez les instantanés enregistrés en chronologie lisible dans le tableau de bord connecté.",
   },
   "csv-export-spreadsheet-analysis": {
     title: "Export CSV et analyse dans un tableur",
@@ -138,7 +144,8 @@ export default {
     title: "Seuils de protection contre le gel",
     description:
       "Servez-vous des minimales nocturnes et de la comparaison entre zones pour protéger canalisations et biens stockés avant tout dégât.",
-    summary: "Définissez les températures à risque d’après l’historique plutôt que de les deviner selon les prévisions.",
+    summary:
+      "Définissez les températures à risque d’après l’historique plutôt que de les deviner selon les prévisions.",
   },
   "spotting-data-gaps": {
     title: "Repérer les trous dans l’historique",
@@ -183,7 +190,8 @@ export default {
     title: "Watchdog et reprise du firmware",
     description:
       "Remettez-vous des rares blocages réseau et erreurs de bus capteur sans monter sur une échelle pour redémarrer la carte.",
-    summary: "Timers watchdog, nouvelles tentatives et stratégies de redémarrage pour les installations sans surveillance.",
+    summary:
+      "Timers watchdog, nouvelles tentatives et stratégies de redémarrage pour les installations sans surveillance.",
   },
   "serial-debugging-tips": {
     title: "Conseils de débogage série",
@@ -217,7 +225,8 @@ export default {
     title: "Rails d’alimentation de la breadboard",
     description:
       "Répartissez l’alimentation USB ou jack sur la breadboard pour les capteurs, l’écran LCD et les résistances de pull-up, avec une masse commune.",
-    summary: "Des rails d’alimentation propres réduisent le bruit qui se traduit par de faux pics d’humidité.",
+    summary:
+      "Des rails d’alimentation propres réduisent le bruit qui se traduit par de faux pics d’humidité.",
   },
   "ethernet-shield-stacking": {
     title: "Empiler le shield Ethernet",
@@ -229,7 +238,8 @@ export default {
     title: "Dépannage du câblage",
     description:
       "Diagnostiquez écrans LCD vides, sondes DHT22 absentes et lectures intermittentes : multimètre, logs série et checklist de l’alimentation aux données.",
-    summary: "Des contrôles méthodiques, de l’alimentation aux lignes de données, avant de remplacer des pièces.",
+    summary:
+      "Des contrôles méthodiques, de l’alimentation aux lignes de données, avant de remplacer des pièces.",
   },
   "ground-loop-avoidance": {
     title: "Éviter les boucles de masse",

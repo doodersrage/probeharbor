@@ -31,8 +31,7 @@ export const GET: APIRoute = async ({ cookies, url }) => {
     parseDateParam(url.searchParams.get("from")),
     entitlements.historyDays,
   );
-  const to =
-    parseDateParam(url.searchParams.get("to"), true) ?? new Date().toISOString();
+  const to = parseDateParam(url.searchParams.get("to"), true) ?? new Date().toISOString();
 
   const events = await listAlertEventsInRange(user.id, from, to);
   const csv = buildAlertEventsCsv(events);

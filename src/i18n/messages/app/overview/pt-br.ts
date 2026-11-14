@@ -48,12 +48,18 @@ const ptBr: OverviewMessages = {
   },
   metricsHow: {
     summary: "Como estes números são calculados",
-    freezeHours: "Horas de congelamento: tempo nos últimos 7 dias em que uma sonda marcou seu limite de congelamento de {threshold} {unit} ou menos. {unit}·h (graus-hora) soma quanto abaixo e por quanto tempo: 2 {unit} abaixo por 3 horas são 6 {unit}·h.",
-    coldestMargin: "Margem mais fria: sua sonda ativa mais fria menos o limite de congelamento de {threshold} {unit}. Âmbar a menos de {band}, vermelho no limite ou abaixo.",
-    indoorOutdoor: "Interno − externo: a sonda mais fria (ou o termostato da casa) menos a temperatura externa atual. Abaixo de {band} (âmbar), o espaço acompanha de perto o ar externo e vai esfriar rápido numa noite fria.",
-    probeSpread: "Variação entre sondas: a sonda ativa mais quente menos a mais fria. {band} ou mais (âmbar) pode indicar um ponto frio, ar em camadas ou um sensor com defeito.",
-    condensation: "Condensação: horas nos últimos 7 dias em que o ar ficou a menos de {band} do ponto de orvalho (calculado a partir de temperatura e umidade), quando as superfícies podem ficar úmidas. Âmbar com 6 horas ou mais, ou a menos de {nowBand} agora.",
-    feedHealth: "Saúde dos feeds: quantos dos seus feeds pull responderam agora, não a disponibilidade ao longo do tempo.",
+    freezeHours:
+      "Horas de congelamento: tempo nos últimos 7 dias em que uma sonda marcou seu limite de congelamento de {threshold} {unit} ou menos. {unit}·h (graus-hora) soma quanto abaixo e por quanto tempo: 2 {unit} abaixo por 3 horas são 6 {unit}·h.",
+    coldestMargin:
+      "Margem mais fria: sua sonda ativa mais fria menos o limite de congelamento de {threshold} {unit}. Âmbar a menos de {band}, vermelho no limite ou abaixo.",
+    indoorOutdoor:
+      "Interno − externo: a sonda mais fria (ou o termostato da casa) menos a temperatura externa atual. Abaixo de {band} (âmbar), o espaço acompanha de perto o ar externo e vai esfriar rápido numa noite fria.",
+    probeSpread:
+      "Variação entre sondas: a sonda ativa mais quente menos a mais fria. {band} ou mais (âmbar) pode indicar um ponto frio, ar em camadas ou um sensor com defeito.",
+    condensation:
+      "Condensação: horas nos últimos 7 dias em que o ar ficou a menos de {band} do ponto de orvalho (calculado a partir de temperatura e umidade), quando as superfícies podem ficar úmidas. Âmbar com 6 horas ou mais, ou a menos de {nowBand} agora.",
+    feedHealth:
+      "Saúde dos feeds: quantos dos seus feeds pull responderam agora, não a disponibilidade ao longo do tempo.",
     measured: "Tudo isto vem das suas leituras e de dados meteorológicos; nada é uma previsão.",
   },
   metric: {
@@ -145,7 +151,8 @@ const ptBr: OverviewMessages = {
         detail:
           "Passo 1 de 3: adicione um dispositivo na página Dispositivos (gravador de ESP32 ou Home Assistant). Um feed de demonstração serve para explorar e não conta.",
         waitingTitle: "Aguardando a primeira leitura",
-        waitingDetail: "Passo 1 de 3: seu dispositivo foi adicionado, mas ainda não enviou dados. Abra Dispositivos para conferir a configuração.",
+        waitingDetail:
+          "Passo 1 de 3: seu dispositivo foi adicionado, mas ainda não enviou dados. Abra Dispositivos para conferir a configuração.",
       },
       alerts: {
         title: "Defina o limite de congelamento + e-mail",
@@ -166,11 +173,13 @@ const ptBr: OverviewMessages = {
       },
       rename: {
         title: "Renomeie os sensores importados",
-        detail: "Aceite os nomes sugeridos no cartão do dispositivo para que a visão geral e os alertas fiquem claros.",
+        detail:
+          "Aceite os nomes sugeridos no cartão do dispositivo para que a visão geral e os alertas fiquem claros.",
       },
       qr: {
         title: "Opcional: adesivo QR",
-        detail: "Imprima o QR de ingestão em Dispositivos para configurar o celular com uma só leitura.",
+        detail:
+          "Imprima o QR de ingestão em Dispositivos para configurar o celular com uma só leitura.",
       },
     },
     next: {

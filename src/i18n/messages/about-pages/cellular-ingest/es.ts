@@ -1,4 +1,3 @@
-
 /** Body copy for /about/cellular-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -12,13 +11,15 @@ const es: Messages = {
   colPart: "Componente",
   colWhy: "Para qué",
   colBuy: "Comprar",
-  boronWhy: "LTE-M / NB-IoT (SKU según región). Requiere una nano-SIM o un plan de SIM de Particle.",
+  boronWhy:
+    "LTE-M / NB-IoT (SKU según región). Requiere una nano-SIM o un plan de SIM de Particle.",
   probePart: "DS18B20 resistente al agua",
   probeWhyHtml: "Sonda para tuberías o espacio sanitario. Datos en <strong>D2</strong>.",
   resistorPart: "Resistencia de 4.7kΩ",
   resistorWhy: "Pull-up de la línea de datos del DS18B20 a 3.3V.",
   planPart: "Plan de datos móviles",
-  planWhy: "Nube de Particle + datos del operador. Calcula el presupuesto para sitios remotos que solo se activan cada hora.",
+  planWhy:
+    "Nube de Particle + datos del operador. Calcula el presupuesto para sitios remotos que solo se activan cada hora.",
   planBuy: "Facturación en Particle Console o tu propia nano-SIM si el SKU lo permite.",
   bluesPart: "Opcional: Blues Notecard",
   bluesWhy: "Vía móvil alternativa mediante una ruta webhook de Notehub (la misma URL de ingesta).",

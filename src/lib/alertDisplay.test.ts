@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { ensureLocale } from "../i18n/catalog";
-import { formatThresholdAlertDetail, thresholdAlertTitle, type ThresholdAlertDetail } from "./alerts";
+import {
+  formatThresholdAlertDetail,
+  thresholdAlertTitle,
+  type ThresholdAlertDetail,
+} from "./alerts";
 
 const now = Date.parse("2026-01-15T12:00:00Z");
 const freeze = (minutesOld: number | null): ThresholdAlertDetail => ({
@@ -24,12 +28,18 @@ describe("freeze alert text follows the recipient", () => {
     expect(formatThresholdAlertDetail(freeze(null), "en", { useCelsius: true }, now)).toBe(
       "Garage pipe is -1.0°C (at or below freeze threshold 1.1°C).",
     );
-    expect(thresholdAlertTitle([freeze(null)], "en", { useCelsius: true })).toBe("Freeze: Garage pipe -1.0°C");
+    expect(thresholdAlertTitle([freeze(null)], "en", { useCelsius: true })).toBe(
+      "Freeze: Garage pipe -1.0°C",
+    );
   });
 
   it("says how old the reading is once it's a few minutes old", () => {
-    expect(formatThresholdAlertDetail(freeze(2), "en", undefined, now)).not.toContain("Last reading");
-    expect(formatThresholdAlertDetail(freeze(12), "en", undefined, Date.now() + 0)).toContain("Last reading");
+    expect(formatThresholdAlertDetail(freeze(2), "en", undefined, now)).not.toContain(
+      "Last reading",
+    );
+    expect(formatThresholdAlertDetail(freeze(12), "en", undefined, Date.now() + 0)).toContain(
+      "Last reading",
+    );
   });
 
   it("never leaves a {unit} placeholder in any language", async () => {
@@ -44,8 +54,16 @@ describe("freeze alert text follows the recipient", () => {
 });
 
 describe("forecast and rate alerts follow the recipient's unit", async () => {
-  const { evaluateForecastFreeze, evaluateRateChange, DEFAULT_ALERT_SETTINGS } = await import("./alerts");
-  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, forecastFreezeEnabled: true, freezeThresholdF: 34, rateChangeF: 9 };
+  const { evaluateForecastFreeze, evaluateRateChange, DEFAULT_ALERT_SETTINGS } = await import(
+    "./alerts"
+  );
+  const settings = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    forecastFreezeEnabled: true,
+    freezeThresholdF: 34,
+    rateChangeF: 9,
+  };
 
   it("forecast: °F by default, °C on request", () => {
     expect(evaluateForecastFreeze(settings, 23, 12, "en")).toBe(

@@ -37,7 +37,9 @@ beforeEach(() => {
     user: { id: "user-1", user_metadata: { existing: true } },
   });
   mockFormRedirectPath.mockReset().mockReturnValue("/dashboard");
-  mockUpdateSessionUserMetadata.mockReset().mockResolvedValue({ user: { id: "user-1" }, error: null });
+  mockUpdateSessionUserMetadata
+    .mockReset()
+    .mockResolvedValue({ user: { id: "user-1" }, error: null });
 });
 
 describe("POST /api/user/onboarding", () => {
@@ -81,7 +83,10 @@ describe("POST /api/user/onboarding", () => {
   });
 
   it("redirects with onboarding_error when the write fails (e.g. expired session)", async () => {
-    mockUpdateSessionUserMetadata.mockResolvedValue({ user: null, error: new Error("Invalid session") });
+    mockUpdateSessionUserMetadata.mockResolvedValue({
+      user: null,
+      error: new Error("Invalid session"),
+    });
     const { POST } = await import("./onboarding");
     const context = makeContext();
 

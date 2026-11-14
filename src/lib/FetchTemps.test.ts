@@ -125,9 +125,7 @@ describe("fetchTemps", () => {
   });
 
   it("skips the database/alerts path entirely when there is no userId", async () => {
-    const feeds: TempFeedConfig[] = [
-      { id: "a", name: "A", url: "https://a", enabled: true },
-    ];
+    const feeds: TempFeedConfig[] = [{ id: "a", name: "A", url: "https://a", enabled: true }];
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ temp: {} })));
     const { fetchTemps } = await import("./FetchTemps");
 
@@ -138,9 +136,7 @@ describe("fetchTemps", () => {
   });
 
   it("does not call getUserDevicesAsTempConfig when all config is already supplied", async () => {
-    const feeds: TempFeedConfig[] = [
-      { id: "a", name: "A", url: "https://a", enabled: true },
-    ];
+    const feeds: TempFeedConfig[] = [{ id: "a", name: "A", url: "https://a", enabled: true }];
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ temp: {} })));
     const { fetchTemps } = await import("./FetchTemps");
 
@@ -157,9 +153,7 @@ describe("fetchTemps", () => {
   });
 
   it("fetches user device config when any piece is missing", async () => {
-    const feeds: TempFeedConfig[] = [
-      { id: "a", name: "A", url: "https://a", enabled: true },
-    ];
+    const feeds: TempFeedConfig[] = [{ id: "a", name: "A", url: "https://a", enabled: true }];
     mockGetUserDevicesAsTempConfig.mockResolvedValue({
       householdId: "h1",
       devices: [device("d1")],
@@ -222,16 +216,18 @@ describe("fetchTemps", () => {
   });
 
   it("saves readings, touches devices, and sends alerts by default when config is present", async () => {
-    const feeds: TempFeedConfig[] = [
-      { id: "a", name: "A", url: "https://a", enabled: true },
-    ];
+    const feeds: TempFeedConfig[] = [{ id: "a", name: "A", url: "https://a", enabled: true }];
     const probes: TempProbeConfig[] = [
       { id: "a-0", feedId: "a", key: "0", label: "Probe", visible: true },
     ];
     const devices = [device("d1")];
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(jsonResponse({ temp: { "0": { c: 1, f: 34, h: 40 } }, battery_pct: 90 })),
+      vi
+        .fn()
+        .mockResolvedValue(
+          jsonResponse({ temp: { "0": { c: 1, f: 34, h: 40 } }, battery_pct: 90 }),
+        ),
     );
     const { fetchTemps } = await import("./FetchTemps");
 
@@ -272,9 +268,7 @@ describe("fetchTemps", () => {
   });
 
   it("does not touch devices or update meta for a feed result that errored", async () => {
-    const feeds: TempFeedConfig[] = [
-      { id: "a", name: "A", url: "https://a", enabled: true },
-    ];
+    const feeds: TempFeedConfig[] = [{ id: "a", name: "A", url: "https://a", enabled: true }];
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("boom")));
     const { fetchTemps } = await import("./FetchTemps");
 
@@ -292,9 +286,7 @@ describe("fetchTemps", () => {
   });
 
   it("skips updateDeviceMeta when deviceMeta is empty", async () => {
-    const feeds: TempFeedConfig[] = [
-      { id: "a", name: "A", url: "https://a", enabled: true },
-    ];
+    const feeds: TempFeedConfig[] = [{ id: "a", name: "A", url: "https://a", enabled: true }];
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(jsonResponse({ temp: { "0": { c: 1, f: 34, h: 40 } } })),
@@ -315,9 +307,7 @@ describe("fetchTemps", () => {
   });
 
   it("skips saving to the database when saveToDatabase is false", async () => {
-    const feeds: TempFeedConfig[] = [
-      { id: "a", name: "A", url: "https://a", enabled: true },
-    ];
+    const feeds: TempFeedConfig[] = [{ id: "a", name: "A", url: "https://a", enabled: true }];
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ temp: {} })));
     const { fetchTemps } = await import("./FetchTemps");
 
@@ -336,9 +326,7 @@ describe("fetchTemps", () => {
   });
 
   it("saves readings but skips alerts when sendAlerts is false", async () => {
-    const feeds: TempFeedConfig[] = [
-      { id: "a", name: "A", url: "https://a", enabled: true },
-    ];
+    const feeds: TempFeedConfig[] = [{ id: "a", name: "A", url: "https://a", enabled: true }];
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ temp: {} })));
     const { fetchTemps } = await import("./FetchTemps");
 
@@ -362,9 +350,9 @@ describe("fetchLegacyTempPayload", () => {
       { id: "disabled", name: "Disabled", url: "https://disabled", enabled: false },
       { id: "enabled", name: "Enabled", url: "https://enabled", enabled: true },
     ];
-    const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse({ temp: { "0": { c: 2, f: 36, h: 45 } } }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ temp: { "0": { c: 2, f: 36, h: 45 } } }));
     vi.stubGlobal("fetch", fetchMock);
     const { fetchLegacyTempPayload } = await import("./FetchTemps");
 

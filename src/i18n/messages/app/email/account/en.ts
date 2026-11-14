@@ -17,7 +17,8 @@ const en = {
     eyebrow: "Password reset",
     preheader: "Choose a new password for your ProbeHarbor account.",
     title: "Reset your password",
-    intro: "We received a request to reset your password. Follow the link below to choose a new one. The link expires in 1 hour.",
+    intro:
+      "We received a request to reset your password. Follow the link below to choose a new one. The link expires in 1 hour.",
     cta: "Reset password",
     footerNote: "If you didn't request this, you can safely ignore this email.",
   },

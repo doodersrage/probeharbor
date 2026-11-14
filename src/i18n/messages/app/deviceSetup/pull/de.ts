@@ -5,8 +5,7 @@ const de: DeviceSetupPullMessages = {
   subtitle:
     "HTTPS-JSON, das wir regelmäßig abrufen. Fühlerschlüssel werden beim Speichern automatisch importiert – benenne sie unten bei Bedarf um.",
   exampleSummary: "Noch kein eigener Feed? Probier den Beispiel-Feed",
-  viewOnly:
-    "Nur-Lese-Zugriff: Feed- und Fühlereinstellungen sind ausgeblendet.",
+  viewOnly: "Nur-Lese-Zugriff: Feed- und Fühlereinstellungen sind ausgeblendet.",
   feeds: {
     heading: "Feed-URLs",
     introHtml:
@@ -20,10 +19,8 @@ const de: DeviceSetupPullMessages = {
     namePlaceholder: "Werkstatt",
     url: "HTTPS-URL",
     jsonRoot: "JSON-Wurzelschlüssel",
-    jsonRootTitle:
-      "Buchstabe oder Unterstrich, danach Buchstaben, Ziffern oder Unterstriche",
-    jsonRootHintHtml:
-      "Objekt mit den Fühlerschlüsseln (meist <code>temp</code>).",
+    jsonRootTitle: "Buchstabe oder Unterstrich, danach Buchstaben, Ziffern oder Unterstriche",
+    jsonRootHintHtml: "Objekt mit den Fühlerschlüsseln (meist <code>temp</code>).",
     enabled: "Aktiv",
     delete: "Löschen",
     deleteConfirm: "Diesen Feed löschen?",
@@ -44,8 +41,7 @@ const de: DeviceSetupPullMessages = {
     test: "Feed-URL testen",
   },
   probeMapper: {
-    importedAuto:
-      "Fühlerschlüssel aus deinem Feed importiert – unten umbenennen, dann speichern.",
+    importedAuto: "Fühlerschlüssel aus deinem Feed importiert – unten umbenennen, dann speichern.",
     enterUrl: "Gib zuerst eine Feed-URL ein.",
     noProbes: "Keine Fühler im Feed gefunden.",
     imported: {
@@ -53,14 +49,12 @@ const de: DeviceSetupPullMessages = {
       other: "{count} Fühler importiert. Unten umbenennen, dann speichern.",
     },
     unableRead: "Feed konnte nicht gelesen werden.",
-    appliedSuggested:
-      "Vorgeschlagene Namen übernommen – unten bearbeiten, dann speichern.",
+    appliedSuggested: "Vorgeschlagene Namen übernommen – unten bearbeiten, dann speichern.",
     hiddenAvg:
       "„avg“-Fühler auf Start ausgeblendet – Abruf-Einrichtung speichern, um das zu übernehmen.",
     saveFailed: "Abruf-Einrichtung konnte nicht gespeichert werden.",
     unableSave: "Abruf-Einrichtung konnte nicht gespeichert werden.",
-    saveFeedFirst:
-      "Speichere zuerst eine Feed-URL und erkenne dann hier die Fühlerschlüssel.",
+    saveFeedFirst: "Speichere zuerst eine Feed-URL und erkenne dann hier die Fühlerschlüssel.",
     heading: "Fühlernamen",
     intro:
       "Erkenne die Fühler im JSON deines Feeds und benenne sie für Start um. Die Schlüssel bleiben an den Feed gebunden; du änderst nur die Anzeigenamen.",
@@ -93,8 +87,7 @@ const de: DeviceSetupPullMessages = {
     fetchFailed: "Abruf fehlgeschlagen.",
     errorPrefix: "Fehler: {message}",
     notFetched: "Nicht abgerufen",
-    complete:
-      "Abruf abgeschlossen – lade Start neu, um die neuen Messwerte zu sehen.",
+    complete: "Abruf abgeschlossen – lade Start neu, um die neuen Messwerte zu sehen.",
     couldNotFetch: "Feeds konnten nicht abgerufen werden.",
     rowFailed: "Abruf fehlgeschlagen",
     fetchNow: "Jetzt abrufen",

@@ -12,7 +12,8 @@ export default {
     },
     hardware: {
       title: "Hardware & Firmware",
-      description: "Firmware für Arduino, ESP32, Pico W, STM32, CH32V und AVR-Assembler, Verkabelung und das lokale LCD.",
+      description:
+        "Firmware für Arduino, ESP32, Pico W, STM32, CH32V und AVR-Assembler, Verkabelung und das lokale LCD.",
     },
     software: {
       title: "Backend & Website",
@@ -84,7 +85,8 @@ export default {
     },
     "share-household": {
       title: "Mit meinem Haushalt teilen",
-      description: "Familie einladen, Rollen verstehen und Frost- und Leckalarme an einem Ort bündeln.",
+      description:
+        "Familie einladen, Rollen verstehen und Frost- und Leckalarme an einem Ort bündeln.",
       ctaLabel: "Kostenloses Konto erstellen",
       steps: [
         { label: "Anleitung zum Teilen" },

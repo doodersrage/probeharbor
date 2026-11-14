@@ -85,7 +85,8 @@ class MemDb {
   }
 
   seed(name: string, rows: Row[]): void {
-    for (const row of rows) this.table(name).push({ id: this.nextId++, created_at: new Date().toISOString(), ...row });
+    for (const row of rows)
+      this.table(name).push({ id: this.nextId++, created_at: new Date().toISOString(), ...row });
   }
 
   insert(name: string, row: Row): Row {
@@ -98,13 +99,22 @@ class MemDb {
 let db: MemDb;
 
 const ms = (iso: unknown) => (typeof iso === "string" ? Date.parse(iso) : Number.NaN);
-const newestFirst = (a: Row, b: Row) => ms(b.created_at) - ms(a.created_at) || Number(b.id) - Number(a.id);
+const newestFirst = (a: Row, b: Row) =>
+  ms(b.created_at) - ms(a.created_at) || Number(b.id) - Number(a.id);
 
 /** What the unhandled-alert SQL (db/alertEvents unhandledSql) selects. */
-function isUnhandled(event: Row, informational: readonly string[], safety: readonly string[]): boolean {
+function isUnhandled(
+  event: Row,
+  informational: readonly string[],
+  safety: readonly string[],
+): boolean {
   const sent = (event.channels_sent as string[] | undefined) ?? [];
   const kind = String(event.kind);
-  return event.acknowledged_at == null && !informational.includes(kind) && (sent.length > 0 || safety.includes(kind));
+  return (
+    event.acknowledged_at == null &&
+    !informational.includes(kind) &&
+    (sent.length > 0 || safety.includes(kind))
+  );
 }
 
 function settingsRow(userId: unknown): Row | undefined {
@@ -152,23 +162,36 @@ function installFakes() {
       const now = new Date().toISOString();
       const existing = settingsRow(userId);
       if (existing) Object.assign(existing, { [field]: now, updated_at: now });
-      else db.table("alert_settings").push({ ...defaults, user_id: userId, [field]: now, updated_at: now });
+      else
+        db.table("alert_settings").push({
+          ...defaults,
+          user_id: userId,
+          [field]: now,
+          updated_at: now,
+        });
     },
     // Compare-and-set, as the SQL: wins only when the stored stamp still equals `previous`.
     claimCooldown: async (userId: string, field: string, previous: string | null) => {
       const now = new Date().toISOString();
       const row = settingsRow(userId);
       const current = (row?.[field] as string | null | undefined) ?? null;
-      const same = current === null || previous === null ? current === previous : ms(current) === ms(previous);
+      const same =
+        current === null || previous === null ? current === previous : ms(current) === ms(previous);
       if (row && same) {
         Object.assign(row, { [field]: now, updated_at: now });
         return { claimed: true, claimedAt: now };
       }
       const previousMs = previous ? ms(previous) : Number.NEGATIVE_INFINITY;
-      if (row && Number.isFinite(ms(current)) && ms(current) > previousMs) return { claimed: false, claimedAt: null };
+      if (row && Number.isFinite(ms(current)) && ms(current) > previousMs)
+        return { claimed: false, claimedAt: null };
       return { claimed: true, claimedAt: null };
     },
-    releaseCooldown: async (userId: string, field: string, claimedAt: string, previous: string | null) => {
+    releaseCooldown: async (
+      userId: string,
+      field: string,
+      claimedAt: string,
+      previous: string | null,
+    ) => {
       const row = settingsRow(userId);
       if (row && ms(row[field]) === ms(claimedAt)) row[field] = previous;
     },
@@ -205,8 +228,15 @@ function installFakes() {
         meta: input.meta ?? {},
         acknowledged_at: null,
       }).id,
-    updateAlertEventChannels: async (eventId: number, userId: string, sent: string[], skipped: string[]) => {
-      const event = db.table("alert_events").find((row) => row.id === eventId && row.user_id === userId);
+    updateAlertEventChannels: async (
+      eventId: number,
+      userId: string,
+      sent: string[],
+      skipped: string[],
+    ) => {
+      const event = db
+        .table("alert_events")
+        .find((row) => row.id === eventId && row.user_id === userId);
       if (event) Object.assign(event, { channels_sent: [...sent], channels_skipped: [...skipped] });
     },
     listRecentAlertEvents: async (userId: string, limit: number) =>
@@ -220,7 +250,13 @@ function installFakes() {
       userId: string,
       informational: readonly string[],
       safety: readonly string[],
-      options: { limit: number; offset: number; kind?: string | null; kinds?: readonly string[] | null; unackedOnly?: boolean },
+      options: {
+        limit: number;
+        offset: number;
+        kind?: string | null;
+        kinds?: readonly string[] | null;
+        unackedOnly?: boolean;
+      },
     ) => {
       const kindLike = options.kind?.trim().toLowerCase();
       const rows = db
@@ -243,7 +279,11 @@ function installFakes() {
         .filter((event) => event.user_id === userId)
         .sort(newestFirst)
         .slice(0, limit)
-        .map(({ created_at, channels_sent, channels_skipped }) => ({ created_at, channels_sent, channels_skipped })),
+        .map(({ created_at, channels_sent, channels_skipped }) => ({
+          created_at,
+          channels_sent,
+          channels_skipped,
+        })),
     hasUnhandledAlertOfKinds: async (
       userId: string,
       kinds: readonly string[],
@@ -254,7 +294,9 @@ function installFakes() {
         .table("alert_events")
         .some(
           (event) =>
-            event.user_id === userId && kinds.includes(String(event.kind)) && isUnhandled(event, informational, safety),
+            event.user_id === userId &&
+            kinds.includes(String(event.kind)) &&
+            isUnhandled(event, informational, safety),
         ),
     autoResolveAlerts: async (
       userId: string,
@@ -275,22 +317,46 @@ function installFakes() {
         event.acknowledged_at = new Date().toISOString();
         event.meta = { ...(event.meta as Row), autoResolved: options.reason };
       }
-      return { resolved: resolved.length, channels: [...new Set(resolved.flatMap((e) => e.channels_sent as string[]))] };
+      return {
+        resolved: resolved.length,
+        channels: [...new Set(resolved.flatMap((e) => e.channels_sent as string[]))],
+      };
     },
   } as Record<string, Fn>;
 
   f.readings = {
     getRecentNumericReadings: async (householdId: string, sensorId: string, sinceIso: string) =>
-      readingsOf(householdId, sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null).map((r) => r.value_num),
-    getRecentNumericReadingSamples: async (householdId: string, sensorId: string, sinceIso: string) =>
-      readingsOf(householdId, sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null).map((r) => ({
+      readingsOf(
+        householdId,
+        sensorId,
+        (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null,
+      ).map((r) => r.value_num),
+    getRecentNumericReadingSamples: async (
+      householdId: string,
+      sensorId: string,
+      sinceIso: string,
+    ) =>
+      readingsOf(
+        householdId,
+        sensorId,
+        (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_num != null,
+      ).map((r) => ({
         at: r.recorded_at,
         tempF: r.value_num,
       })),
     // Same as the SQL: average value at the average time per bucket, oldest first.
-    getNumericReadingBuckets: async (householdId: string, sensorId: string, sinceIso: string, bucketSeconds: number) => {
+    getNumericReadingBuckets: async (
+      householdId: string,
+      sensorId: string,
+      sinceIso: string,
+      bucketSeconds: number,
+    ) => {
       const groups = new Map<number, { sumT: number; sumMs: number; n: number }>();
-      for (const r of readingsOf(householdId, sensorId, (row) => ms(row.recorded_at) >= ms(sinceIso) && row.value_num != null)) {
+      for (const r of readingsOf(
+        householdId,
+        sensorId,
+        (row) => ms(row.recorded_at) >= ms(sinceIso) && row.value_num != null,
+      )) {
         const key = Math.floor(ms(r.recorded_at) / 1000 / bucketSeconds);
         const g = groups.get(key) ?? { sumT: 0, sumMs: 0, n: 0 };
         g.sumT += Number(r.value_num);
@@ -302,26 +368,54 @@ function installFakes() {
         .sort((a, b) => a[0] - b[0])
         .map(([, g]) => ({ at: new Date(g.sumMs / g.n).toISOString(), tempF: g.sumT / g.n }));
     },
-    getNumericReadingInWindow: async (householdId: string, sensorId: string, notBeforeIso: string, atOrBeforeIso: string) => {
+    getNumericReadingInWindow: async (
+      householdId: string,
+      sensorId: string,
+      notBeforeIso: string,
+      atOrBeforeIso: string,
+    ) => {
       const row = readingsOf(
         householdId,
         sensorId,
         (r) => ms(r.recorded_at) >= ms(notBeforeIso) && ms(r.recorded_at) <= ms(atOrBeforeIso),
       ).at(-1);
-      return row && typeof row.value_num === "number" ? { value: row.value_num, at: row.recorded_at } : null;
+      return row && typeof row.value_num === "number"
+        ? { value: row.value_num, at: row.recorded_at }
+        : null;
     },
-    hasNumericReadingAboveSince: async (householdId: string, sensorId: string, sinceIso: string, thresholdF: number) =>
-      readingsOf(householdId, sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && Number(r.value_num) > thresholdF).length > 0,
-    getDwellAnchor: async (householdId: string, sensorId: string, anchorSinceIso: string, cutoffIso: string) =>
+    hasNumericReadingAboveSince: async (
+      householdId: string,
+      sensorId: string,
+      sinceIso: string,
+      thresholdF: number,
+    ) =>
       readingsOf(
         householdId,
         sensorId,
-        (r) => ms(r.recorded_at) >= ms(anchorSinceIso) && ms(r.recorded_at) < ms(cutoffIso) && r.value_num != null,
+        (r) => ms(r.recorded_at) >= ms(sinceIso) && Number(r.value_num) > thresholdF,
+      ).length > 0,
+    getDwellAnchor: async (
+      householdId: string,
+      sensorId: string,
+      anchorSinceIso: string,
+      cutoffIso: string,
+    ) =>
+      readingsOf(
+        householdId,
+        sensorId,
+        (r) =>
+          ms(r.recorded_at) >= ms(anchorSinceIso) &&
+          ms(r.recorded_at) < ms(cutoffIso) &&
+          r.value_num != null,
       )
         .slice(-1)
         .map((r) => ({ at: r.recorded_at, tempF: r.value_num })),
     fetchRecentBoolReadings: async (householdId: string, sensorId: string, sinceIso: string) =>
-      readingsOf(householdId, sensorId, (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_bool != null).map((r) => ({
+      readingsOf(
+        householdId,
+        sensorId,
+        (r) => ms(r.recorded_at) >= ms(sinceIso) && r.value_bool != null,
+      ).map((r) => ({
         value: r.value_bool,
         recordedAt: r.recorded_at,
       })),
@@ -331,7 +425,9 @@ function installFakes() {
       const { applySensorOffset } = await import("./sensorCalibration");
       const { reportIntervalMsFromMeta } = await import("./reportInterval");
       const rows = [];
-      for (const device of db.table("devices").filter((d) => d.household_id === householdId && d.enabled)) {
+      for (const device of db
+        .table("devices")
+        .filter((d) => d.household_id === householdId && d.enabled)) {
         for (const sensor of sensorsOf(device.id).filter((s) => s.visible)) {
           const latest = readingsOf(householdId, String(sensor.id), () => true).at(-1);
           if (!latest) continue;
@@ -342,7 +438,9 @@ function installFakes() {
             deviceName: device.name ?? "Device",
             deviceSpace: typeof device.space === "string" ? device.space : null,
             value_num:
-              latest.value_num != null && numeric ? applySensorOffset(Number(latest.value_num), offset) : latest.value_num,
+              latest.value_num != null && numeric
+                ? applySensorOffset(Number(latest.value_num), offset)
+                : latest.value_num,
             value_bool: latest.value_bool,
             value_text: latest.value_text,
             recorded_at: latest.recorded_at,
@@ -388,7 +486,9 @@ function installFakes() {
       return [...seen].map(([householdId, ownerUserId]) => ({ householdId, ownerUserId }));
     },
     listHouseholdMembers: async (householdId: string) => ({
-      members: db.table("household_members").filter((member) => member.household_id === householdId),
+      members: db
+        .table("household_members")
+        .filter((member) => member.household_id === householdId),
       error: null,
     }),
   } as Record<string, Fn>;
@@ -423,9 +523,20 @@ function seedHousehold(options: { dwellMinutes?: number; rules?: unknown[] } = {
   db.users.set(USER, { id: USER, email: "owner@example.com", user_metadata: {} });
   db.seed("households", [{ id: HOUSE, name: "Home" }]);
   db.seed("household_members", [{ household_id: HOUSE, user_id: USER, role: "owner" }]);
-  db.seed("devices", [{ id: "dev-1", household_id: HOUSE, name: "Garage probe", enabled: true, space: null }]);
+  db.seed("devices", [
+    { id: "dev-1", household_id: HOUSE, name: "Garage probe", enabled: true, space: null },
+  ]);
   db.seed("device_sensors", [
-    { id: "sen-1", device_id: "dev-1", key: "t1", label: "Garage", kind: "temperature", unit: "F", visible: true, offset_num: 0 },
+    {
+      id: "sen-1",
+      device_id: "dev-1",
+      key: "t1",
+      label: "Garage",
+      kind: "temperature",
+      unit: "F",
+      visible: true,
+      offset_num: 0,
+    },
   ]);
   db.seed("alert_settings", [
     {
@@ -481,9 +592,13 @@ beforeEach(() => {
   db = new MemDb();
   h.unfaked.clear();
   installFakes();
-  fetchMock.mockReset().mockImplementation(async (url: string) =>
-    url === DISCORD ? new Response(null, { status: 204 }) : new Response("not found", { status: 404 }),
-  );
+  fetchMock
+    .mockReset()
+    .mockImplementation(async (url: string) =>
+      url === DISCORD
+        ? new Response(null, { status: 204 })
+        : new Response("not found", { status: 404 }),
+    );
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -510,7 +625,9 @@ describe("freeze alert pipeline", () => {
   it("still alerts after a test alert and a dashboard visit", async () => {
     seedHousehold();
     seedReadings([[1, 28]]);
-    const { notifyUser, getAlertSettingsForUser, ensureAlertDeliveryEvidence } = await import("./notify");
+    const { notifyUser, getAlertSettingsForUser, ensureAlertDeliveryEvidence } = await import(
+      "./notify"
+    );
 
     // What /api/user/alert-test does, then an Overview load.
     const settings = await getAlertSettingsForUser(USER);
@@ -594,7 +711,14 @@ describe("freeze alert pipeline", () => {
     const { fetchLatestSensorValues } = await import("./sensorReadings");
     const { buildAlertReadingsFromLatestSensors } = await import("./alertNotifications");
     const readings = buildAlertReadingsFromLatestSensors(await fetchLatestSensorValues(HOUSE));
-    await maybeSendRuleAlerts(USER, "owner@example.com", [], await getAlertSettingsForUser(USER), readings, HOUSE);
+    await maybeSendRuleAlerts(
+      USER,
+      "owner@example.com",
+      [],
+      await getAlertSettingsForUser(USER),
+      readings,
+      HOUSE,
+    );
     expect(db.table("alert_events").filter((e) => e.kind === "rule")).toHaveLength(1);
 
     await evaluateNow();
@@ -623,10 +747,26 @@ describe("demo (simulated) feed readings", () => {
       },
     ]);
     db.seed("device_sensors", [
-      { id: "sen-demo", device_id: "dev-demo", key: "0", label: "Probe 0", kind: "temperature", unit: "F", visible: true, offset_num: 0 },
+      {
+        id: "sen-demo",
+        device_id: "dev-demo",
+        key: "0",
+        label: "Probe 0",
+        kind: "temperature",
+        unit: "F",
+        visible: true,
+        offset_num: 0,
+      },
     ]);
     db.seed("sensor_readings", [
-      { sensor_id: "sen-demo", household_id: HOUSE, value_num: tempF, value_bool: null, value_text: null, recorded_at: minutesAgo(1) },
+      {
+        sensor_id: "sen-demo",
+        household_id: HOUSE,
+        value_num: tempF,
+        value_bool: null,
+        value_text: null,
+        recorded_at: minutesAgo(1),
+      },
     ]);
   }
 
@@ -669,8 +809,11 @@ describe("demo (simulated) feed readings", () => {
     seedReadings([[1, 50]]);
     seedDemoFeed(20);
     const { getAlertSettingsForUser } = await import("./notify");
-    const { buildAlertReadingsFromLatestSensors, fetchAlertSensorValues, sendThresholdAlertsIfNeeded } =
-      await import("./alertNotifications");
+    const {
+      buildAlertReadingsFromLatestSensors,
+      fetchAlertSensorValues,
+      sendThresholdAlertsIfNeeded,
+    } = await import("./alertNotifications");
 
     const latest = await fetchAlertSensorValues(HOUSE);
     expect(latest.map((row) => row.sensor.id)).toEqual(["sen-1"]);
@@ -710,7 +853,14 @@ describe("demo (simulated) feed readings", () => {
     const { devices } = await listHouseholdDevices(HOUSE);
 
     const readings = buildAlertReadingsFromLatestSensors(await fetchAlertSensorValues(HOUSE));
-    await maybeSendRuleAlerts(USER, "owner@example.com", devices, await getAlertSettingsForUser(USER), readings, HOUSE);
+    await maybeSendRuleAlerts(
+      USER,
+      "owner@example.com",
+      devices,
+      await getAlertSettingsForUser(USER),
+      readings,
+      HOUSE,
+    );
 
     expect(db.table("alert_events").filter((e) => e.kind === "rule")).toHaveLength(0);
   });

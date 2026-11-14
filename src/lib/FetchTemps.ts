@@ -11,10 +11,7 @@ import {
   parseTempFeedPayload,
 } from "./tempFeedConfig";
 import { maybeSendThresholdAlerts } from "./alertNotifications";
-import {
-  buildReadingRowsFromTempResults,
-  insertSensorReadings,
-} from "./sensorReadings";
+import { buildReadingRowsFromTempResults, insertSensorReadings } from "./sensorReadings";
 import {
   ensureDefaultPullDevice,
   getUserDevicesAsTempConfig,
@@ -71,9 +68,7 @@ export async function fetchTempFeed(feed: TempFeedConfig): Promise<TempFeedResul
   }
 }
 
-export async function fetchTemps(
-  options: FetchTempsOptions = {},
-): Promise<TempFeedResult[]> {
+export async function fetchTemps(options: FetchTempsOptions = {}): Promise<TempFeedResult[]> {
   let feeds = options.feeds;
   let probes = options.probes;
   let devices = options.devices;
@@ -112,12 +107,7 @@ export async function fetchTemps(
     const visibleProbes = probes.filter((probe) => probe.visible);
 
     if (householdId && devices && devices.length > 0) {
-      const rows = buildReadingRowsFromTempResults(
-        householdId,
-        devices,
-        results,
-        visibleProbes,
-      );
+      const rows = buildReadingRowsFromTempResults(householdId, devices, results, visibleProbes);
       const { error } = await insertSensorReadings(rows);
       if (error) {
         console.error("Failed to save sensor readings:", error);

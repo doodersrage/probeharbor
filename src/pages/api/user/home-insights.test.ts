@@ -21,8 +21,7 @@ const mockFetchWeatherSnapshotForConfig = vi.fn();
 const mockGetPersonalWeatherConfig = vi.fn();
 vi.mock("../../../lib/weatherContext", () => ({
   fetchNightsAtRiskForConfig: (...a: unknown[]) => mockFetchNightsAtRiskForConfig(...a),
-  fetchWeatherSnapshotForConfig: (...a: unknown[]) =>
-    mockFetchWeatherSnapshotForConfig(...a),
+  fetchWeatherSnapshotForConfig: (...a: unknown[]) => mockFetchWeatherSnapshotForConfig(...a),
   getPersonalWeatherConfig: (...a: unknown[]) => mockGetPersonalWeatherConfig(...a),
 }));
 
@@ -34,8 +33,7 @@ vi.mock("../../../lib/userPreferences", () => ({
 const mockFetchMobileHousePayloadForUser = vi.fn();
 const mockFetchMobileRegionalBenchmarkForUser = vi.fn();
 vi.mock("../../../lib/mobileHouseContext", () => ({
-  fetchMobileHousePayloadForUser: (...a: unknown[]) =>
-    mockFetchMobileHousePayloadForUser(...a),
+  fetchMobileHousePayloadForUser: (...a: unknown[]) => mockFetchMobileHousePayloadForUser(...a),
   fetchMobileRegionalBenchmarkForUser: (...a: unknown[]) =>
     mockFetchMobileRegionalBenchmarkForUser(...a),
 }));
@@ -68,8 +66,7 @@ const mockFetchOpenMeteoHourlyWindow = vi.fn();
 const mockSplitOpenMeteoPastAndForecast = vi.fn();
 vi.mock("../../../lib/openMeteoHistory", () => ({
   fetchOpenMeteoHourlyWindow: (...a: unknown[]) => mockFetchOpenMeteoHourlyWindow(...a),
-  splitOpenMeteoPastAndForecast: (...a: unknown[]) =>
-    mockSplitOpenMeteoPastAndForecast(...a),
+  splitOpenMeteoPastAndForecast: (...a: unknown[]) => mockSplitOpenMeteoPastAndForecast(...a),
 }));
 
 function makeContext(): APIContext {
@@ -95,9 +92,9 @@ beforeEach(() => {
   });
   mockGetUserHouseholdId.mockReset().mockResolvedValue("house-1");
   mockGetPersonalWeatherConfig.mockReset().mockReturnValue({ lat: 40, lon: -74 });
-  mockFetchNightsAtRiskForConfig.mockReset().mockResolvedValue([
-    { dateLabel: "Tonight", minTempF: 28, atRisk: true },
-  ]);
+  mockFetchNightsAtRiskForConfig
+    .mockReset()
+    .mockResolvedValue([{ dateLabel: "Tonight", minTempF: 28, atRisk: true }]);
   mockFetchWeatherSnapshotForConfig.mockReset().mockResolvedValue({
     source: "nws",
     temp: 30,
@@ -163,9 +160,7 @@ describe("GET /api/user/home-insights", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toBe("private, max-age=120");
     expect(body.freeze_threshold_f).toBe(32);
-    expect(body.nights_at_risk).toEqual([
-      { date_label: "Tonight", min_temp_f: 28, at_risk: true },
-    ]);
+    expect(body.nights_at_risk).toEqual([{ date_label: "Tonight", min_temp_f: 28, at_risk: true }]);
     expect(body.nws_alerts).toEqual([
       {
         event: "Freeze Warning",

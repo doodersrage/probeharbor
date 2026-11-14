@@ -1,11 +1,11 @@
-
 /** /about/arduino-circuit-wiring body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
 const de: Messages = {
   introHtml:
     "Im Mittelpunkt dieses Aufbaus steht ein Arduino Uno mit aufgestecktem W5100-Ethernet-Shield, ein lötfreies Steckbrett für die Stromverteilung und die Zusatzbauteile des LCD, ein 16×2-Zeichen-LCD für die Anzeige vor Ort und zwei DHT22-Temperatur- und Feuchtesensoren. Während der Entwicklung liefert USB den Strom am Arbeitstisch; bei einer festen Installation wechselt man meist auf ein geregeltes 5-V-Netzteil.",
-  diagramAlt: "Schaltplan eines Arduino Uno mit Ethernet-Shield, Steckbrett, LCD und zwei DHT22-Sensoren",
+  diagramAlt:
+    "Schaltplan eines Arduino Uno mit Ethernet-Shield, Steckbrett, LCD und zwei DHT22-Sensoren",
   diagramCaption:
     "Verkabelung im Überblick: Der Strom kommt am Uno an, die Signale laufen über das Steckbrett zum LCD und zu beiden DHT22-Sensoren.",
   breadboardTitle: "Steckbrett und Stromschienen",

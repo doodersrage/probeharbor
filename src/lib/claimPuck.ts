@@ -1,6 +1,5 @@
 /** Claim puck — RP2040-Zero presence key + bay mood light. */
-export const CLAIM_PUCK_REPO_URL =
-  "https://github.com/doodersrage/probeharbor-claim-puck";
+export const CLAIM_PUCK_REPO_URL = "https://github.com/doodersrage/probeharbor-claim-puck";
 
 export const CLAIM_PUCK_NAME = "Claim puck";
 

@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_ALERT_SETTINGS, evaluateAlerts, evaluateAlertDetails, thresholdAlertTitle } from "./alerts";
+import {
+  DEFAULT_ALERT_SETTINGS,
+  evaluateAlerts,
+  evaluateAlertDetails,
+  thresholdAlertTitle,
+} from "./alerts";
 
 const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 32 };
 
 describe("thresholdAlertTitle", () => {
   it("names the probe and its temperature", () => {
-    const details = evaluateAlertDetails(settings, [{ label: "Garage pipe", tempf: 31.24, humidity: 40 }]);
+    const details = evaluateAlertDetails(settings, [
+      { label: "Garage pipe", tempf: 31.24, humidity: 40 },
+    ]);
     expect(thresholdAlertTitle(details)).toBe("Freeze: Garage pipe 31.2°F");
   });
 
@@ -19,7 +26,9 @@ describe("thresholdAlertTitle", () => {
   });
 
   it("covers humidity-only alerts", () => {
-    const details = evaluateAlertDetails({ ...settings, humidityThreshold: 70 }, [{ label: "Basement", tempf: 60, humidity: 82 }]);
+    const details = evaluateAlertDetails({ ...settings, humidityThreshold: 70 }, [
+      { label: "Basement", tempf: 60, humidity: 82 },
+    ]);
     expect(thresholdAlertTitle(details)).toBe("High humidity: Basement 82%");
   });
 

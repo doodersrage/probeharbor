@@ -37,10 +37,9 @@ function fakeRedirect(path: string): Response {
   return new Response(null, { status: 302, headers: { Location: path } });
 }
 
-function makeContext(options: {
-  body?: Record<string, string> | string;
-  json?: boolean;
-} = {}): APIContext {
+function makeContext(
+  options: { body?: Record<string, string> | string; json?: boolean } = {},
+): APIContext {
   const { body, json = false } = options;
   const headers: Record<string, string> = {};
   if (json) headers["content-type"] = "application/json";
@@ -58,7 +57,10 @@ function makeContext(options: {
     if (body && typeof body === "object") {
       for (const [key, value] of Object.entries(body)) formData.set(key, value);
     }
-    request = { formData: async () => formData, headers: new Headers(headers) } as unknown as Request;
+    request = {
+      formData: async () => formData,
+      headers: new Headers(headers),
+    } as unknown as Request;
   }
 
   const redirect = vi.fn(fakeRedirect);
@@ -70,7 +72,9 @@ beforeEach(() => {
     session: { access_token: "tok" },
     user: { id: "user-1", user_metadata: {} },
   });
-  mockGetAlertSettingsForUser.mockReset().mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
+  mockGetAlertSettingsForUser
+    .mockReset()
+    .mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
   mockSaveAlertSettingsForUser.mockReset().mockResolvedValue(undefined);
   mockSnoozeUntilFromHours.mockReset().mockReturnValue("2024-01-02T00:00:00.000Z");
   mockVacationUntilFromDays.mockReset().mockReturnValue("2024-01-08T00:00:00.000Z");

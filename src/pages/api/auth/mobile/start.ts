@@ -21,5 +21,8 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
   cookies.delete(OAUTH_NEXT_COOKIE, { path: "/" });
   cookies.delete(OAUTH_REF_COOKIE, { path: "/" });
 
-  return (await startBetterAuthOAuth(request, provider as OAuthProviderId)) ?? redirect(buildSignInRedirectUrl("oauth_failed"));
+  return (
+    (await startBetterAuthOAuth(request, provider as OAuthProviderId)) ??
+    redirect(buildSignInRedirectUrl("oauth_failed"))
+  );
 };

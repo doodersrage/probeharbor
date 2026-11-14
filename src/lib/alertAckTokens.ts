@@ -11,17 +11,13 @@ import { timingSafeEqualHex } from "./timingSafeEqual";
  */
 async function getAckSecret(): Promise<string | null> {
   const fromBuild =
-    import.meta.env.ALERT_ACK_SECRET?.trim() ||
-    import.meta.env.CRON_SECRET?.trim() ||
-    "";
+    import.meta.env.ALERT_ACK_SECRET?.trim() || import.meta.env.CRON_SECRET?.trim() || "";
   if (fromBuild) return fromBuild;
 
   try {
     const { getRuntimeEnv } = await import("./runtimeEnv");
     return (
-      getRuntimeEnv("ALERT_ACK_SECRET")?.trim() ||
-      getRuntimeEnv("CRON_SECRET")?.trim() ||
-      null
+      getRuntimeEnv("ALERT_ACK_SECRET")?.trim() || getRuntimeEnv("CRON_SECRET")?.trim() || null
     );
   } catch {
     return null;
@@ -63,7 +59,11 @@ function ackPayload(userId: string, expMs: number, eventId?: number | null): str
   return eventId != null ? `${userId}:${eventId}:${expMs}` : `${userId}:${expMs}`;
 }
 
-export async function signAckPayload(userId: string, expMs: number, eventId?: number | null): Promise<string> {
+export async function signAckPayload(
+  userId: string,
+  expMs: number,
+  eventId?: number | null,
+): Promise<string> {
   const secret = await getAckSecret();
   if (!secret) throw new Error("Ack signing secret not configured");
   return hmacSha256Hex(secret, ackPayload(userId, expMs, eventId));

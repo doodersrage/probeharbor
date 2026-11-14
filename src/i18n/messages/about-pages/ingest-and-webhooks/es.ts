@@ -1,4 +1,3 @@
-
 /**
  * /about/ingest-and-webhooks body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Code samples stay in the page.
@@ -42,14 +41,16 @@ const es: IngestAndWebhooksMessages = {
   },
   webhooks: {
     title: "Webhooks de alerta salientes",
-    introHtml: "Las cuentas Pro pueden activar un webhook saliente en los ajustes de alertas. Cada alerta envía este JSON por POST:",
+    introHtml:
+      "Las cuentas Pro pueden activar un webhook saliente en los ajustes de alertas. Cada alerta envía este JSON por POST:",
     kindsHtml: `<code>kind</code> puede ser ${webhookKinds} o <code>generic</code>. Si defines un secreto para el webhook, la petición incluye <code>X-Signature</code>, un HMAC-SHA256 en hexadecimal del cuerpo sin procesar. Úsalo en Home Assistant o en IFTTT Webhooks para verificar la autenticidad.`,
   },
   homeAssistant: {
     title: "Home Assistant",
     bodyHtml:
       'Instala la <a class="text-link" href="/integrations/home-assistant">integración oficial de HACS</a> para tener sensores de enlaces compartidos y servicios de posponer/vacaciones. Para <strong>recibir alertas en HA</strong>, usa el webhook HTTPS saliente (Pro) o importa el blueprint. Para <strong>enviar lecturas MQTT a ProbeHarbor</strong>, consulta la <a class="text-link" href="/about/mqtt-bridge">receta del puente MQTT</a>.',
-    blueprintHtml: '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Descargar el blueprint de HA (YAML)</a>',
+    blueprintHtml:
+      '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>Descargar el blueprint de HA (YAML)</a>',
     pointHtml:
       "Apunta la URL del webhook saliente de ProbeHarbor a <code>https://&lt;your-ha-host&gt;/api/webhook/probeharbor_alerts</code> (o a una URL de Cloudflare Tunnel / Nabu Casa). Si defines un secreto, verifica <code>X-Signature</code> en una condición de plantilla.",
     mqttHtml:
@@ -57,7 +58,8 @@ const es: IngestAndWebhooksMessages = {
   },
   metrics: {
     title: "Métricas de Grafana / Prometheus",
-    introHtml: "Las cuentas Pro pueden crear claves de API del panel (Dashboard → Share) y hacer scraping de:",
+    introHtml:
+      "Las cuentas Pro pueden crear claves de API del panel (Dashboard → Share) y hacer scraping de:",
     shareHtml: "O usar un enlace compartido Pro con el alcance <strong>Metrics</strong>:",
     grafanaHtml:
       "O <code>?format=grafana</code> para un array JSON sencillo de puntos de datos. El alcance de historial de un enlace compartido muestra un gráfico de 7 días en la página pública.",

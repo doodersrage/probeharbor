@@ -1,8 +1,5 @@
 import type { User } from "./appUser";
-import {
-  fetchGarageTempChartData,
-  type ChartPoint,
-} from "./garageTempsHistory";
+import { fetchGarageTempChartData, type ChartPoint } from "./garageTempsHistory";
 import { compareWeekAverages, type WeekCompareResult } from "./weekCompare";
 import { estimateTimeToFreeze, type TempSample } from "./timeToFreeze";
 import { fetchPriorYearCompareBundle } from "./priorYearCompare";
@@ -38,7 +35,9 @@ export async function fetchWeekCompare(
   const base = compareWeekAverages(thisWeekResult.points, priorYearBundle.points);
   const priorYearAvgF = base.priorYearAvgF;
   const outdoorBaseline = priorYearBundle.source === "outdoor_estimate";
-  const thisWeekOutdoorAvgF = outdoorBaseline ? (priorYearBundle.thisWindowOutdoorAvgF ?? null) : undefined;
+  const thisWeekOutdoorAvgF = outdoorBaseline
+    ? (priorYearBundle.thisWindowOutdoorAvgF ?? null)
+    : undefined;
   // Last year's baseline is outdoor air, so compare it with this week's outdoor
   // air; probes vs outdoor mostly measures insulation, not a change.
   const deltaF = outdoorBaseline

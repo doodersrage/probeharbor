@@ -69,7 +69,8 @@ const es: OverviewInsightsMessages = {
     title: "Calidad del aire",
     subtitle: "Últimas lecturas de CO₂, partículas, COV y presión.",
     pressureTitle: "Presión barométrica",
-    pressureSubtitle: "Última lectura y el cambio medido en las últimas 3 horas. No es un pronóstico.",
+    pressureSubtitle:
+      "Última lectura y el cambio medido en las últimas 3 horas. No es un pronóstico.",
     trend: {
       steady: "estable en 3 h",
       rising: "sube {delta} hPa en 3 h",
@@ -91,7 +92,8 @@ const es: OverviewInsightsMessages = {
   },
   battery: {
     title: "Tendencia de batería",
-    subtitle: "Descenso según las muestras recientes de batería de los dispositivos. Los días restantes suponen que sigue el ritmo de descarga de los últimos 7 días.",
+    subtitle:
+      "Descenso según las muestras recientes de batería de los dispositivos. Los días restantes suponen que sigue el ritmo de descarga de los últimos 7 días.",
     daysRemaining: {
       one: "~{count} día restante a este ritmo",
       other: "~{count} días restantes a este ritmo",
@@ -104,7 +106,8 @@ const es: OverviewInsightsMessages = {
   },
   rssi: {
     title: "Intensidad de señal",
-    subtitle: "Señal Wi-Fi que cada dispositivo informó por última vez, en dBm (más cerca de 0 es más fuerte). Los enlaces débiles pierden lecturas primero.",
+    subtitle:
+      "Señal Wi-Fi que cada dispositivo informó por última vez, en dBm (más cerca de 0 es más fuerte). Los enlaces débiles pierden lecturas primero.",
     quality: {
       strong: "fuerte",
       good: "buena",
@@ -195,7 +198,8 @@ const es: OverviewInsightsMessages = {
         "Activa la Smart Device Management API en Google Cloud y luego actualiza: {url}",
       sdmDisabled:
         "Activa la Smart Device Management API en el proyecto de Google Cloud al que pertenece tu cliente OAuth de Nest.",
-      nestAuth: "La autorización de Nest puede haber caducado; prueba Desconectar y luego Conectar de nuevo.",
+      nestAuth:
+        "La autorización de Nest puede haber caducado; prueba Desconectar y luego Conectar de nuevo.",
       nestError: "Nest devolvió un error; inténtalo de nuevo o vuelve a conectar.",
       noToken: "Vuelve a conectar tu termostato para restablecer el acceso.",
       ecobeeNetwork: "No se pudo conectar con Ecobee; inténtalo de nuevo en un minuto.",

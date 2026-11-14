@@ -55,7 +55,12 @@ describe("probeDemo", () => {
   });
 
   it("amplifies sun load in attics vs crawlspaces", () => {
-    const sunny = { outdoorF: 38, sunIntensity: 90, doorOpen: false, freezeThresholdF: 34 } as const;
+    const sunny = {
+      outdoorF: 38,
+      sunIntensity: 90,
+      doorOpen: false,
+      freezeThresholdF: 34,
+    } as const;
     const attic = computeDemoProbes({ ...sunny, space: "attic" });
     const crawl = computeDemoProbes({ ...sunny, space: "crawlspace" });
     const atticWarm = attic.find((p) => p.key === "2")!.reading.f;

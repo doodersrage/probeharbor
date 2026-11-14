@@ -14,13 +14,16 @@ const en = {
   notices: {
     created: "Share link created, copy it below to send to family.",
     revoked: "Share link revoked.",
-    regenerated: "New link created, copy it below. The old link, and any embed or scrape using it, no longer works.",
+    regenerated:
+      "New link created, copy it below. The old link, and any embed or scrape using it, no longer works.",
     apiKeyCreated: "API key created, copy it now; it will not be shown again.",
     apiKeyRevoked: "API key revoked.",
     statusCreated: "Status page created, copy the link below.",
     statusRevoked: "Status page revoked.",
-    statusRegenerated: "New status link created, copy it below. The old link and badge no longer work.",
-    familyLimit: "You already have a family live link. Revoke it first, or upgrade to Pro for more.",
+    statusRegenerated:
+      "New status link created, copy it below. The old link and badge no longer work.",
+    familyLimit:
+      "You already have a family live link. Revoke it first, or upgrade to Pro for more.",
     proRequired: "That option needs Pro. You can still create one family live link on Free.",
     error: "Could not update share links.",
   },
@@ -39,7 +42,8 @@ const en = {
     familyDefaultLabel: "Family live view",
     familyTitle: "Create family link",
     familyBody: "Live sensors, expires in 7 days. Revoke anytime.",
-    familyFreeNote: "Free includes one live family link. Pro adds history, metrics, and never-expire.",
+    familyFreeNote:
+      "Free includes one live family link. Pro adds history, metrics, and never-expire.",
     familySubmit: "Create family live link",
     moreOptions: "More share options (Pro)",
     label: "Label",
@@ -65,9 +69,11 @@ const en = {
     embed: "Embed: {url}",
     scrape: "Scrape: {url}",
     confirmRevoke: "Revoke this share link?",
-    linkHidden: "For security, the full link is only shown when it’s created. Regenerate it if you need it again.",
+    linkHidden:
+      "For security, the full link is only shown when it’s created. Regenerate it if you need it again.",
     regenerate: "Regenerate link",
-    confirmRegenerate: "Make a new link? The current link, and any embed or scrape using it, will stop working.",
+    confirmRegenerate:
+      "Make a new link? The current link, and any embed or scrape using it, will stop working.",
     revoke: "Revoke",
     remove: "Remove",
     statusTitle: "Public status pages",
@@ -77,7 +83,8 @@ const en = {
     statusDefaultLabel: "Household status",
     createStatus: "Create status page",
     noStatusPages: "No status pages yet.",
-    statusUrlHidden: "For security, the link is only shown when it’s created. Regenerate it if you need it again.",
+    statusUrlHidden:
+      "For security, the link is only shown when it’s created. Regenerate it if you need it again.",
     regenerateStatus: "Regenerate link",
     confirmRegenerateStatus: "Make a new link? The current link and badge will stop working.",
     badgeLabel: "Badge:",
@@ -99,7 +106,8 @@ const en = {
     keyDefaultName: "Metrics key",
     scopeLabel: "Access",
     scopeRead: "Read-only: metrics and device list (recommended for Prometheus/Grafana)",
-    scopeWrite: "Read and write: also create devices, rename or hide sensors, replace the pull setup",
+    scopeWrite:
+      "Read and write: also create devices, rename or hide sensors, replace the pull setup",
     scopeReadBadge: "Read-only",
     scopeWriteBadge: "Read & write",
     createKey: "Create API key",
@@ -226,7 +234,8 @@ const en = {
     step1Html:
       'Create a push device under <a class="text-link" href="/dashboard/devices">Devices</a> and copy the ingest key.',
     step2: "In Node-RED: Menu → Import → paste URL or upload JSON.",
-    step3Html: 'Set env <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (or edit the function node).',
+    step3Html:
+      'Set env <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (or edit the function node).',
     step4: "Point the MQTT nodes at your broker; deploy and watch for HTTP 200 on the debug node.",
     downloadFlow: "Download flow JSON",
     devDocs: "Developer docs",

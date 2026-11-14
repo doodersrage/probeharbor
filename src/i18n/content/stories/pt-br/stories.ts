@@ -13,9 +13,17 @@ export default {
       "Resumo semanal para a casa; link ao vivo da família para um vizinho que fica de olho na casa",
     ],
     timeline: [
-      { time: "2h14", detail: "A garagem cai abaixo de 1 °C (34 °F); o ProbeHarbor manda SMS para os dois donos e publica num canal da família no Telegram." },
+      {
+        time: "2h14",
+        detail:
+          "A garagem cai abaixo de 1 °C (34 °F); o ProbeHarbor manda SMS para os dois donos e publica num canal da família no Telegram.",
+      },
       { time: "2h22", detail: "Um dos donos reinicia o aquecedor por uma tomada inteligente." },
-      { time: "3h05", detail: "O gráfico mostra a temperatura se recuperando, bem antes de os canos chegarem a 0 °C (32 °F)." },
+      {
+        time: "3h05",
+        detail:
+          "O gráfico mostra a temperatura se recuperando, bem antes de os canos chegarem a 0 °C (32 °F).",
+      },
     ],
     outcome:
       "Uma falha no aquecedor só vira desastre se ninguém perceber até de manhã. O limite fica alguns graus acima do ponto de congelamento para dar tempo de reagir, e é o SMS que acorda você às 2h da manhã; um e-mail passa fácil enquanto você dorme.",
@@ -44,9 +52,19 @@ export default {
       "Um amigo da região convidado para a casa como contato reserva",
     ],
     timeline: [
-      { time: "Ter., 11h40", detail: "Uma queda rápida de energia reinicia o aquecimento; o porão cai abaixo de 2 °C (36 °F)." },
-      { time: "Ter., 11h41", detail: "O push e o e-mail saem; o dono liga para o amigo da região." },
-      { time: "Ter., 13h10", detail: "O amigo religa o aquecimento e o gráfico sobe antes do frio da noite." },
+      {
+        time: "Ter., 11h40",
+        detail:
+          "Uma queda rápida de energia reinicia o aquecimento; o porão cai abaixo de 2 °C (36 °F).",
+      },
+      {
+        time: "Ter., 11h41",
+        detail: "O push e o e-mail saem; o dono liga para o amigo da região.",
+      },
+      {
+        time: "Ter., 13h10",
+        detail: "O amigo religa o aquecimento e o gráfico sobe antes do frio da noite.",
+      },
     ],
     outcome:
       "Imóveis vazios falham em silêncio. O valor está na antecedência: um alerta na terça em vez de descobrir canos congelados na sexta.",
@@ -75,9 +93,20 @@ export default {
       "Webhook de saída (Pro) para o Home Assistant desligar uma tomada inteligente",
     ],
     timeline: [
-      { time: "Sex., 18h05", detail: "O armário chega a 36 °C (96 °F) depois que um ventilador falha; a regra de calor dispara e o webhook chega ao Home Assistant." },
-      { time: "Sex., 18h06", detail: "Uma automação desliga os equipamentos não críticos; um SMS confirma o alerta." },
-      { time: "Sábado de manhã", detail: "O dono troca o ventilador; o histórico mostra a rapidez com que o armário esquentou." },
+      {
+        time: "Sex., 18h05",
+        detail:
+          "O armário chega a 36 °C (96 °F) depois que um ventilador falha; a regra de calor dispara e o webhook chega ao Home Assistant.",
+      },
+      {
+        time: "Sex., 18h06",
+        detail: "Uma automação desliga os equipamentos não críticos; um SMS confirma o alerta.",
+      },
+      {
+        time: "Sábado de manhã",
+        detail:
+          "O dono troca o ventilador; o histórico mostra a rapidez com que o armário esquentou.",
+      },
     ],
     outcome:
       "Os mesmos sensores e o mesmo caminho de ingest cobrem os dois tipos de falha: congelamento na garagem, calor no armário.",
@@ -106,8 +135,14 @@ export default {
       "Temperatura da garagem comparada com o clima externo no dashboard",
     ],
     timeline: [
-      { time: "Semana 1", detail: "Os alertas disparam em noites limpas e sem vento; parece frio comum." },
-      { time: "Semana 2", detail: "O histórico e o CSV mostram que o sensor do lado da porta sempre cai primeiro." },
+      {
+        time: "Semana 1",
+        detail: "Os alertas disparam em noites limpas e sem vento; parece frio comum.",
+      },
+      {
+        time: "Semana 2",
+        detail: "O histórico e o CSV mostram que o sensor do lado da porta sempre cai primeiro.",
+      },
       { time: "Semana 3", detail: "Depois de vedar a porta, as noites ficam acima do limite." },
     ],
     outcome:
@@ -137,9 +172,19 @@ export default {
       "Link ao vivo da família para um parente que mora perto",
     ],
     timeline: [
-      { time: "Dom., 4h05", detail: "O porão cai abaixo de 2 °C (36 °F) com uma abertura de ventilação da fundação travada aberta." },
-      { time: "Dom., 4h06", detail: "SMS e e-mail saem; o parente que mora perto confere o link ao vivo e vai até lá." },
-      { time: "Dom., 5h20", detail: "A abertura é fechada e o gráfico começa a subir antes da mínima da manhã." },
+      {
+        time: "Dom., 4h05",
+        detail:
+          "O porão cai abaixo de 2 °C (36 °F) com uma abertura de ventilação da fundação travada aberta.",
+      },
+      {
+        time: "Dom., 4h06",
+        detail: "SMS e e-mail saem; o parente que mora perto confere o link ao vivo e vai até lá.",
+      },
+      {
+        time: "Dom., 5h20",
+        detail: "A abertura é fechada e o gráfico começa a subir antes da mínima da manhã.",
+      },
     ],
     outcome:
       "Ninguém confere o porão às 4h da manhã. Um sensor no cano, não na entrada de acesso, é o que transforma uma ventilação travada num conserto rápido.",
@@ -168,9 +213,20 @@ export default {
       "Modo férias desligado antes de uma viagem, para os alertas continuarem chegando",
     ],
     timeline: [
-      { time: "Quarta", detail: "Um aviso de previsão aponta a mínima da madrugada de quinta; o dono confirma que o aquecedor está ligado." },
-      { time: "Qui., 1h50", detail: "O aquecedor desarma o DR; a oficina cai abaixo de 1 °C (34 °F) e o e-mail sai." },
-      { time: "Qui., 2h15", detail: "O dono religa o circuito por uma tomada inteligente antes de o cano do tanque congelar." },
+      {
+        time: "Quarta",
+        detail:
+          "Um aviso de previsão aponta a mínima da madrugada de quinta; o dono confirma que o aquecedor está ligado.",
+      },
+      {
+        time: "Qui., 1h50",
+        detail: "O aquecedor desarma o DR; a oficina cai abaixo de 1 °C (34 °F) e o e-mail sai.",
+      },
+      {
+        time: "Qui., 2h15",
+        detail:
+          "O dono religa o circuito por uma tomada inteligente antes de o cano do tanque congelar.",
+      },
     ],
     outcome:
       "Construções separadas perdem calor rápido. O aviso de previsão cobre a janela de planejamento; o alerta de limite cobre a falha em si.",
@@ -199,9 +255,20 @@ export default {
       "E-mail mais SMS (Pro); o limite de congelamento continua monitorando o mesmo espaço",
     ],
     timeline: [
-      { time: "3h08", detail: "O contato de alagamento detecta água; SMS e e-mail saem mesmo com o modo férias ativado." },
-      { time: "3h20", detail: "Um vizinho com o link ao vivo da família dá uma olhada e encontra um pingo na válvula de dreno." },
-      { time: "De manhã", detail: "Um encanador aperta a válvula enquanto o piso ainda está quase seco." },
+      {
+        time: "3h08",
+        detail:
+          "O contato de alagamento detecta água; SMS e e-mail saem mesmo com o modo férias ativado.",
+      },
+      {
+        time: "3h20",
+        detail:
+          "Um vizinho com o link ao vivo da família dá uma olhada e encontra um pingo na válvula de dreno.",
+      },
+      {
+        time: "De manhã",
+        detail: "Um encanador aperta a válvula enquanto o piso ainda está quase seco.",
+      },
     ],
     outcome:
       "Vazamentos não esperam o congelamento. Os contatos de alagamento usam o mesmo dispositivo e o mesmo caminho de ingest, e os alertas de água chegam mesmo quando o modo férias silencia os de rotina.",

@@ -17,8 +17,15 @@ function makeContext(form: Record<string, string>): APIContext {
   const formData = new FormData();
   for (const [k, v] of Object.entries(form)) formData.set(k, v);
   const request = { formData: async () => formData } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
-  return { request, redirect, clientAddress: "127.0.0.1", locals: { locale: "fr" } } as unknown as APIContext;
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
+  return {
+    request,
+    redirect,
+    clientAddress: "127.0.0.1",
+    locals: { locale: "fr" },
+  } as unknown as APIContext;
 }
 
 async function post(form: Record<string, string>): Promise<string | null> {
@@ -41,7 +48,9 @@ describe("POST /api/auth/resend-confirmation", () => {
   it("resends the signup email in the page's language and confirms without revealing account state", async () => {
     expect(await post({ email: " a@example.com " })).toBe("/resend-confirmation?sent=1");
     expect(mockSendVerificationEmail).toHaveBeenCalledWith({ body: { email: "a@example.com" } });
-    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), { emailLocale: "fr" });
+    expect(mockWithBetterAuth).toHaveBeenCalledWith(expect.anything(), expect.any(Function), {
+      emailLocale: "fr",
+    });
   });
 
   it("reports sent even when sending fails (no account enumeration)", async () => {

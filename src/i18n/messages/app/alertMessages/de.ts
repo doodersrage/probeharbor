@@ -2,12 +2,14 @@ import type { AlertMessages } from "./en";
 
 const de: AlertMessages = {
   threshold: {
-    freezeDetail: "{label} hat {temp} {unit} (auf oder unter dem Frost-Schwellenwert {threshold} {unit}).",
+    freezeDetail:
+      "{label} hat {temp} {unit} (auf oder unter dem Frost-Schwellenwert {threshold} {unit}).",
     freezeDetailDwell:
       "{label} hat {temp} {unit} (seit {minutes}+ Min. auf oder unter dem Frost-Schwellenwert {threshold} {unit}).",
     /** Appended to a freeze line when the reading is a few minutes old or more. */
     readingAge: " Letzte Messung {age}.",
-    humidityDetail: "Luftfeuchte bei {label} liegt bei {humidity} % (über dem Schwellenwert {threshold} %).",
+    humidityDetail:
+      "Luftfeuchte bei {label} liegt bei {humidity} % (über dem Schwellenwert {threshold} %).",
     titleFreeze: "Frost: {label} {temp} {unit}",
     titleMore: " (+{count} weitere)",
     titleHumidityNote: ", hohe Luftfeuchte",
@@ -22,7 +24,8 @@ const de: AlertMessages = {
   power: {
     title: "Strom aus",
     detail: "{label} meldet: Strom ist aus.",
-    footer: "Heizungen, Heizbänder und Sumpfpumpen an diesem Stromkreis sind möglicherweise auch aus.",
+    footer:
+      "Heizungen, Heizbänder und Sumpfpumpen an diesem Stromkreis sind möglicherweise auch aus.",
   },
   forecast: {
     title: "Frostgefahr laut Vorhersage",
@@ -31,7 +34,8 @@ const de: AlertMessages = {
   },
   rate: {
     title: "Schnelle Temperaturänderung",
-    detail: "{label} hat sich in der letzten Stunde um {delta} {unit} verändert (Schwellenwert ±{threshold} {unit}).",
+    detail:
+      "{label} hat sich in der letzten Stunde um {delta} {unit} verändert (Schwellenwert ±{threshold} {unit}).",
   },
   battery: {
     title: "Akku eines Geräts schwach",
@@ -46,7 +50,8 @@ const de: AlertMessages = {
   outage: {
     title: "Alarm: Geräteausfall",
     never: "{device} hat noch nie einen Messwert gemeldet.",
-    silent: "{device} meldet sich seit {hours} Stunden nicht (Ausfall-Schwellenwert {threshold} Std.).",
+    silent:
+      "{device} meldet sich seit {hours} Stunden nicht (Ausfall-Schwellenwert {threshold} Std.).",
     stillOffline: {
       one: "{count} weiteres Gerät ist seit früheren Alarmen noch offline.",
       other: "{count} weitere Geräte sind seit früheren Alarmen noch offline.",
@@ -57,7 +62,8 @@ const de: AlertMessages = {
   },
   nws: {
     title: "NWS-Frost-/Kältewarnung (USA)",
-    fallback: "Eine Frost-/Kältewarnung des US-Wetterdienstes (NWS) gilt in der Nähe deiner Wetterstadt.",
+    fallback:
+      "Eine Frost-/Kältewarnung des US-Wetterdienstes (NWS) gilt in der Nähe deiner Wetterstadt.",
   },
   rule: {
     title: "Alarmregel ausgelöst",
@@ -75,7 +81,8 @@ const de: AlertMessages = {
   recovery: {
     freezeTitle: "Entwarnung: Temperaturen sind wieder normal",
     freezeBodyEmpty: "Wieder normal. Der Alarm ist geschlossen; nichts zu tun.",
-    freezeBody: "Wieder normal: {temps} (Frostgrenze {threshold} {unit}). Der Alarm ist geschlossen; nichts zu tun.",
+    freezeBody:
+      "Wieder normal: {temps} (Frostgrenze {threshold} {unit}). Der Alarm ist geschlossen; nichts zu tun.",
     freezeTemp: "{label} {temp} {unit}",
     floodTitle: "Entwarnung: Leck-Sensoren sind trocken",
     floodBody:
@@ -86,9 +93,11 @@ const de: AlertMessages = {
     outageTitle: "Entwarnung: Geräte melden sich wieder",
     outageBody: "Alle Geräte haben sich wieder gemeldet. Der Ausfall-Alarm ist geschlossen.",
     stuckTitle: "Entwarnung: Fühler-Messwerte ändern sich wieder",
-    stuckBody: "Der Fühler, der eingefroren wirkte, meldet wieder wechselnde Temperaturen. Der Alarm ist geschlossen.",
+    stuckBody:
+      "Der Fühler, der eingefroren wirkte, meldet wieder wechselnde Temperaturen. Der Alarm ist geschlossen.",
     doorTitle: "Erledigt: Tür-Alarm aufgehoben",
-    doorBody: "Die Tür-Regel, die alarmiert hat, trifft nicht mehr zu (zum Beispiel wurde die Tür geschlossen). Der Alarm ist geschlossen.",
+    doorBody:
+      "Die Tür-Regel, die alarmiert hat, trifft nicht mehr zu (zum Beispiel wurde die Tür geschlossen). Der Alarm ist geschlossen.",
   },
   context: {
     doorOpen: "Ein Tür-Sensor ist offen. Rechne mit schnellerem Wärmeverlust, bis die Tür zu ist.",
@@ -167,7 +176,8 @@ const de: AlertMessages = {
   },
   channelErrors: {
     smsNoPhone: "Keine SMS-Nummer in den Alarm-Einstellungen oder im Überschreibungsfeld.",
-    smsSendFailed: "Twilio-SMS konnte nicht gesendet werden. Prüfe die Twilio-Zugangsdaten und die Zielnummer.",
+    smsSendFailed:
+      "Twilio-SMS konnte nicht gesendet werden. Prüfe die Twilio-Zugangsdaten und die Zielnummer.",
     unknownKind: "Unbekannte Art von Kanaltest.",
   },
 };

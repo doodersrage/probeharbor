@@ -18,7 +18,10 @@ export function formatLocalizedAge(iso: string | null | undefined, locale: Local
   if (Number.isNaN(parsed)) return t.age.never;
   const minutes = Math.floor((Date.now() - parsed) / 60000);
   if (minutes < 1) return t.age.justNow;
-  const rtf = new Intl.RelativeTimeFormat(LOCALE_META[locale].intl, { style: "short", numeric: "always" });
+  const rtf = new Intl.RelativeTimeFormat(LOCALE_META[locale].intl, {
+    style: "short",
+    numeric: "always",
+  });
   if (minutes < 60) return rtf.format(-minutes, "minute");
   const hours = Math.floor(minutes / 60);
   return hours < 48 ? rtf.format(-hours, "hour") : rtf.format(-Math.floor(hours / 24), "day");
@@ -29,5 +32,9 @@ export function formatStatusDateTime(value: string | number | Date, locale: Loca
   const date = new Date(value);
   return locale === "en"
     ? date.toLocaleString()
-    : date.toLocaleString(LOCALE_META[locale].intl, { dateStyle: "medium", timeStyle: "long", timeZone: "UTC" });
+    : date.toLocaleString(LOCALE_META[locale].intl, {
+        dateStyle: "medium",
+        timeStyle: "long",
+        timeZone: "UTC",
+      });
 }

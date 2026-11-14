@@ -78,17 +78,19 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "basement-pex-pipes",
     image: basementPexPipes,
     alt: "Blue PEX and copper water lines with valves in a basement ceiling",
-    caption: "Supply lines in basements and crawlspaces are the freeze risk that history charts prove.",
+    caption:
+      "Supply lines in basements and crawlspaces are the freeze risk that history charts prove.",
     credit: "Photo: Tomwsulcer. CC0",
     license: "CC0",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:PEX_pipes_and_valves_in_basement_ceiling_for_exterior_water_spigot.jpg",
   },
-  "crawlspace": {
+  crawlspace: {
     id: "crawlspace",
     image: crawlspace,
     alt: "Low crawlspace under a house with soil floor and foundation walls",
-    caption: "Crawlspaces and underfloor bays swing colder than living space: probe placement matters.",
+    caption:
+      "Crawlspaces and underfloor bays swing colder than living space: probe placement matters.",
     credit: "Photo: Boatbuilder. CC BY-SA 3.0",
     license: "CC BY-SA 3.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Crawle_space1.jpg",
@@ -97,13 +99,14 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "attic-insulation",
     image: atticInsulation,
     alt: "Installer placing fiberglass batt insulation between attic roof rafters",
-    caption: "Attics and roofs swing hard: insulation and probe placement decide what you actually measure.",
+    caption:
+      "Attics and roofs swing hard: insulation and probe placement decide what you actually measure.",
     credit: "Photo: The EnergySmart Academy. CC0",
     license: "CC0",
     sourceUrl:
       "https://commons.wikimedia.org/wiki/File:Installing_installation_in_an_attic_(9337).jpg",
   },
-  "greenhouse": {
+  greenhouse: {
     id: "greenhouse",
     image: greenhouse,
     alt: "Small backyard greenhouse with grapevines growing out through the roof vents",
@@ -117,7 +120,8 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "frozen-thermometer",
     image: frozenThermometer,
     alt: "Outdoor thermometer iced over with frost on the dial and housing",
-    caption: "Outdoor air can look fine while a cold corner of the garage is already below threshold.",
+    caption:
+      "Outdoor air can look fine while a cold corner of the garage is already below threshold.",
     credit: "Photo: August Geyler. CC BY-SA 4.0",
     license: "CC BY-SA 4.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Eingefrorenes_Au%C3%9Fenthermometer.jpg",
@@ -126,7 +130,8 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "network-switch",
     image: networkSwitch,
     alt: "Stack of network switches with ethernet cables plugged into front ports",
-    caption: "Pull feeds, MQTT bridges, and LAN relays often land on a switch before they leave the site.",
+    caption:
+      "Pull feeds, MQTT bridges, and LAN relays often land on a switch before they leave the site.",
     credit: "Photo: ShakataGaNai. CC BY-SA 3.0",
     license: "CC BY-SA 3.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Network_switches.jpg",
@@ -135,7 +140,8 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "cold-weather-road",
     image: coldWeatherRoad,
     alt: "Person in extreme cold holding an outdoor thermometer reading far below zero",
-    caption: "Regional cold snaps can outpace what outdoor weather apps imply for an attached garage, shop, or crawlspace.",
+    caption:
+      "Regional cold snaps can outpace what outdoor weather apps imply for an attached garage, shop, or crawlspace.",
     credit: "Photo: Bureau of Land Management: public domain",
     license: "Public domain",
     sourceUrl:
@@ -154,7 +160,8 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "server-rack",
     image: serverRack,
     alt: "Rows of lit server racks in a dense data-center aisle",
-    caption: "Closets and homelab racks need high-temp watch as much as garages need freeze and leak alerts.",
+    caption:
+      "Closets and homelab racks need high-temp watch as much as garages need freeze and leak alerts.",
     credit: "Photo: Carl Lender / Flickr. CC BY 2.0",
     license: "CC BY 2.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Server_Room_(22397102849).jpg",
@@ -163,7 +170,8 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "dht22-module",
     image: dht22Module,
     alt: "Aosong AM2302 DHT22 temperature and humidity sensor module on a black breakout board",
-    caption: "The DHT22 (AM2302) is the digital humidity–temperature sensor used in many DIY space builds.",
+    caption:
+      "The DHT22 (AM2302) is the digital humidity–temperature sensor used in many DIY space builds.",
     credit: "Photo: Suyash Dwivedi. CC BY-SA 4.0",
     license: "CC BY-SA 4.0",
     sourceUrl:
@@ -201,7 +209,8 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "home-workshop",
     image: homeWorkshop,
     alt: "Cluttered home workshop with workbench, tools, lumber, and packed shelves",
-    caption: "Humidity and temperature swings matter when tools, wood, and paint share the same bay.",
+    caption:
+      "Humidity and temperature swings matter when tools, wood, and paint share the same bay.",
     credit: "Photo: danielmee33 / Flickr. CC BY 2.0",
     license: "CC BY 2.0",
     sourceUrl: "https://www.flickr.com/photos/8432632@N04/28260557796",
@@ -210,7 +219,8 @@ export const aboutPhotos: Record<AboutPhotoId, AboutPhoto> = {
     id: "ethernet-cable",
     image: ethernetCable,
     alt: "Close-up of white Cat-5e Ethernet cables with RJ45 connectors",
-    caption: "Probe JSON usually leaves the LAN over Ethernet or a nearby relay, not the public internet directly.",
+    caption:
+      "Probe JSON usually leaves the LAN over Ethernet or a nearby relay, not the public internet directly.",
     credit: "Photo: DiscDepotDundee.co.uk. CC BY-SA 4.0",
     license: "CC BY-SA 4.0",
     sourceUrl:

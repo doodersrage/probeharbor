@@ -30,7 +30,8 @@ const fr: BayBuddyMessages = {
   ],
   openReleases: "Voir les versions",
   faqTitle: "FAQ Bay Buddy",
-  faqLede: "Questions sur l’application de bureau : téléchargement, connexion et ce qui reste sur le tableau de bord web.",
+  faqLede:
+    "Questions sur l’application de bureau : téléchargement, connexion et ce qui reste sur le tableau de bord web.",
   backToApps: "← Toutes les applications compagnons",
 };
 

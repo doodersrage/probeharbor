@@ -16,11 +16,7 @@ import { getUserEntitlements } from "./entitlements";
 import { hasDeliveredAnyAlert } from "./alertEvents";
 import { getUserPreferences, personalWeatherConfigFromPreferences } from "./userPreferences";
 import { isWeatherLocationConfigured } from "./personalWeatherStations";
-import {
-  isEmailSuppressed,
-  isPlausibleEmailAddress,
-  suppressEmail,
-} from "./emailSuppressions";
+import { isEmailSuppressed, isPlausibleEmailAddress, suppressEmail } from "./emailSuppressions";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 
 /** Sep 1 – Nov 15 (Northern Hemisphere pre-season). */
@@ -43,8 +39,7 @@ export function buildFreezeDrillEmailParts(
 ) {
   const t = freezeDrillEmailMessages(locale);
   const score = formatEmailValue(input.score, locale);
-  const readinessTone =
-    input.score >= 80 ? "success" : input.score >= 50 ? "brand" : "alert";
+  const readinessTone = input.score >= 80 ? "success" : input.score >= 50 ? "brand" : "alert";
   return brandedEmailParts(
     {
       eyebrow: t.eyebrow,
@@ -102,7 +97,10 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
         skipped += 1;
         continue;
       }
-      const settings = await getAlertSettingsForUser(userId, user.user_metadata as Record<string, unknown>);
+      const settings = await getAlertSettingsForUser(
+        userId,
+        user.user_metadata as Record<string, unknown>,
+      );
       const locale = getUserLocale(user);
       const t = freezeDrillEmailMessages(locale);
 
@@ -119,45 +117,51 @@ export async function sendFreezeDrillsForAllUsers(): Promise<{
       const entitlements = await getUserEntitlements(userId);
       const prefs = await getUserPreferences(user);
       const householdId = await neonEmail.firstOwnedHouseholdId(userId);
-      const devicesResult = householdId
-        ? await listHouseholdDevices(householdId)
-        : { devices: [] };
+      const devicesResult = householdId ? await listHouseholdDevices(householdId) : { devices: [] };
       const latest = householdId ? await fetchLatestSensorValues(householdId) : [];
 
-      const readiness = computeFreezeReadiness({
-        alertSettings: settings,
-        devices: devicesResult.devices,
-        latest,
-        weatherLocationConfigured: isWeatherLocationConfigured(
-          personalWeatherConfigFromPreferences(prefs),
-        ),
-        canUseForecast: entitlements.canUseForecastAlerts,
-        canUseNws: entitlements.canUseNwsAlerts,
-        hasSentAnyAlert:
-          Boolean(settings.lastAlertSentAt) || (await hasDeliveredAnyAlert(userId)),
-      }, locale);
+      const readiness = computeFreezeReadiness(
+        {
+          alertSettings: settings,
+          devices: devicesResult.devices,
+          latest,
+          weatherLocationConfigured: isWeatherLocationConfigured(
+            personalWeatherConfigFromPreferences(prefs),
+          ),
+          canUseForecast: entitlements.canUseForecastAlerts,
+          canUseNws: entitlements.canUseNwsAlerts,
+          hasSentAnyAlert:
+            Boolean(settings.lastAlertSentAt) || (await hasDeliveredAnyAlert(userId)),
+        },
+        locale,
+      );
 
       const unsubscribeUrl = await buildUnsubscribeUrl(siteUrl, userId, "freeze_drill", locale);
-      const parts = buildFreezeDrillEmailParts({
-        score: readiness.score,
-        checks: readiness.checks,
-        siteUrl,
-        unsubscribeUrl,
-      }, locale);
+      const parts = buildFreezeDrillEmailParts(
+        {
+          score: readiness.score,
+          checks: readiness.checks,
+          siteUrl,
+          unsubscribeUrl,
+        },
+        locale,
+      );
 
       if (user.email) {
-        if (
-          !isPlausibleEmailAddress(user.email) ||
-          (await isEmailSuppressed(user.email))
-        ) {
+        if (!isPlausibleEmailAddress(user.email) || (await isEmailSuppressed(user.email))) {
           skipped += 1;
           continue;
         }
         try {
-          await sendEmail(user.email, fmt(t.subject, { score: formatEmailValue(readiness.score, locale) }), parts.text, {
-            html: parts.html,
-            headers: unsubscribeHeaders(unsubscribeUrl),
-          });
+          await sendEmail(
+            user.email,
+            fmt(t.subject, { score: formatEmailValue(readiness.score, locale) }),
+            parts.text,
+            {
+              html: parts.html,
+              headers: unsubscribeHeaders(unsubscribeUrl),
+            },
+          );
         } catch (error) {
           if (isMailDeliveryBounceError(error)) {
             await suppressEmail(

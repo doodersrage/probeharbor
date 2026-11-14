@@ -56,7 +56,12 @@ export const SENSOR_KIND_UNITS: Partial<Record<SensorKind, string>> = {
   energy: "W",
 };
 
-export const BOOL_SENSOR_KINDS = ["door", "power", "flood", "motion"] as const satisfies readonly SensorKind[];
+export const BOOL_SENSOR_KINDS = [
+  "door",
+  "power",
+  "flood",
+  "motion",
+] as const satisfies readonly SensorKind[];
 
 export const NUMERIC_SENSOR_KINDS = [
   "temperature",

@@ -28,7 +28,8 @@ const fr: DesktopMessages = {
   ],
   openReleases: "Voir les versions",
   faqTitle: "FAQ Desktop",
-  faqLede: "Questions sur l’application de bureau : téléchargement, connexion et différences avec Bay Buddy.",
+  faqLede:
+    "Questions sur l’application de bureau : téléchargement, connexion et différences avec Bay Buddy.",
   backToApps: "← Toutes les applications compagnons",
 };
 

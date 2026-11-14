@@ -80,10 +80,14 @@ export function evaluateStuckSensor(
   }
 
   if (!input.reportedBeforeWindow || input.samplesInWindow < STUCK_MIN_SAMPLES) return null;
-  const changedMs = input.lastDifferentAt ? Date.parse(input.lastDifferentAt) : Number.NEGATIVE_INFINITY;
+  const changedMs = input.lastDifferentAt
+    ? Date.parse(input.lastDifferentAt)
+    : Number.NEGATIVE_INFINITY;
   if (nowMs - changedMs < STUCK_WINDOW_MS) return null;
 
-  const hours = Number.isFinite(changedMs) ? Math.floor((nowMs - changedMs) / (60 * 60 * 1000)) : null;
+  const hours = Number.isFinite(changedMs)
+    ? Math.floor((nowMs - changedMs) / (60 * 60 * 1000))
+    : null;
   const span = hours != null && hours < 72 ? plural(t.spanHours, hours, locale) : t.spanOverDay;
   return {
     sensorId: input.sensorId,
@@ -111,7 +115,8 @@ export async function findStuckSensors(
     sensors.map(async (sensor): Promise<StuckSensor | null> => {
       try {
         const facts = await stuckSensorFacts(sensor.id, windowStart, lookbackStart);
-        if (typeof facts?.latest_value !== "number" || typeof facts.latest_at !== "string") return null;
+        if (typeof facts?.latest_value !== "number" || typeof facts.latest_at !== "string")
+          return null;
         return evaluateStuckSensor(
           {
             sensorId: sensor.id,

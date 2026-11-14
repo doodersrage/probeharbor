@@ -50,23 +50,65 @@ const en = {
 
   /** What a condition looks at: `name` fills the "No … reporting" notes (translations may use the plural there), `count` is counted. */
   nouns: {
-    temperatureProbe: { name: "temperature probe", count: { one: "{count} temperature probe", other: "{count} temperature probes" } },
-    humidityReading: { name: "humidity reading", count: { one: "{count} humidity reading", other: "{count} humidity readings" } },
-    doorSensor: { name: "door sensor", count: { one: "{count} door sensor", other: "{count} door sensors" } },
-    leakSensor: { name: "leak sensor", count: { one: "{count} leak sensor", other: "{count} leak sensors" } },
-    powerSensor: { name: "power sensor", count: { one: "{count} power sensor", other: "{count} power sensors" } },
-    co2Sensor: { name: "CO₂ sensor", count: { one: "{count} CO₂ sensor", other: "{count} CO₂ sensors" } },
-    pressureSensor: { name: "pressure sensor", count: { one: "{count} pressure sensor", other: "{count} pressure sensors" } },
-    pm25Sensor: { name: "PM2.5 sensor", count: { one: "{count} PM2.5 sensor", other: "{count} PM2.5 sensors" } },
-    vocSensor: { name: "VOC sensor", count: { one: "{count} VOC sensor", other: "{count} VOC sensors" } },
-    levelSensor: { name: "level sensor", count: { one: "{count} level sensor", other: "{count} level sensors" } },
-    energySensor: { name: "energy sensor", count: { one: "{count} energy sensor", other: "{count} energy sensors" } },
-    motionSensor: { name: "motion sensor", count: { one: "{count} motion sensor", other: "{count} motion sensors" } },
+    temperatureProbe: {
+      name: "temperature probe",
+      count: { one: "{count} temperature probe", other: "{count} temperature probes" },
+    },
+    humidityReading: {
+      name: "humidity reading",
+      count: { one: "{count} humidity reading", other: "{count} humidity readings" },
+    },
+    doorSensor: {
+      name: "door sensor",
+      count: { one: "{count} door sensor", other: "{count} door sensors" },
+    },
+    leakSensor: {
+      name: "leak sensor",
+      count: { one: "{count} leak sensor", other: "{count} leak sensors" },
+    },
+    powerSensor: {
+      name: "power sensor",
+      count: { one: "{count} power sensor", other: "{count} power sensors" },
+    },
+    co2Sensor: {
+      name: "CO₂ sensor",
+      count: { one: "{count} CO₂ sensor", other: "{count} CO₂ sensors" },
+    },
+    pressureSensor: {
+      name: "pressure sensor",
+      count: { one: "{count} pressure sensor", other: "{count} pressure sensors" },
+    },
+    pm25Sensor: {
+      name: "PM2.5 sensor",
+      count: { one: "{count} PM2.5 sensor", other: "{count} PM2.5 sensors" },
+    },
+    vocSensor: {
+      name: "VOC sensor",
+      count: { one: "{count} VOC sensor", other: "{count} VOC sensors" },
+    },
+    levelSensor: {
+      name: "level sensor",
+      count: { one: "{count} level sensor", other: "{count} level sensors" },
+    },
+    energySensor: {
+      name: "energy sensor",
+      count: { one: "{count} energy sensor", other: "{count} energy sensors" },
+    },
+    motionSensor: {
+      name: "motion sensor",
+      count: { one: "{count} motion sensor", other: "{count} motion sensors" },
+    },
     coolingProbe: {
       name: "probe cooling in the last hour",
-      count: { one: "{count} probe cooling in the last hour", other: "{count} probes cooling in the last hour" },
+      count: {
+        one: "{count} probe cooling in the last hour",
+        other: "{count} probes cooling in the last hour",
+      },
     },
-    outdoorReading: { name: "outdoor reading", count: { one: "{count} outdoor reading", other: "{count} outdoor readings" } },
+    outdoorReading: {
+      name: "outdoor reading",
+      count: { one: "{count} outdoor reading", other: "{count} outdoor readings" },
+    },
     device: { name: "device", count: { one: "{count} device", other: "{count} devices" } },
   },
   /** States a yes/no sensor can read. */
@@ -87,7 +129,7 @@ const en = {
   boolHit: "{label} reads {state}.",
   boolNone: "None of {sensors} reads {state}.",
   noOpenDoor: "No door is open now.",
-  noOpenDoorFor: "No door matching \"{includes}\" is open now.",
+  noOpenDoorFor: 'No door matching "{includes}" is open now.',
   doorOpenFor: "{label} has been open {minutes} min (≥ {min} min).",
   doorOpenShort: "{label} has been open {minutes} min; needs {min}.",
   rateDropped: "{label} dropped {drop} in the last hour.",

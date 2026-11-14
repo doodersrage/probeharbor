@@ -11,7 +11,12 @@ import { buildHistoryChartUrl, trailingHistoryWindowDays } from "./historyUrls";
 import { buildUnsubscribeUrl, unsubscribeHeaders } from "./emailUnsubscribe";
 import { isActionableAlertKind } from "./alertEvents";
 import { isAlertChannelName } from "./channelDelivery";
-import { formatEmailCount, formatEmailDate, formatEmailNumber, formatEmailValue } from "./emailLayout";
+import {
+  formatEmailCount,
+  formatEmailDate,
+  formatEmailNumber,
+  formatEmailValue,
+} from "./emailLayout";
 import { fmt } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { localeFromMetadata } from "../i18n/userLocale";
@@ -100,38 +105,32 @@ function summarizeDays(points: ChartPoint[], locale: Locale = "en"): DigestDaySu
     byDay.set(key, group);
   }
 
-  return [...byDay.keys()]
-    .sort()
-    .map((key) => {
-      const dayPoints = byDay.get(key) ?? [];
-      const temps = dayPoints.map((point) => point.tempf);
-      const min = Math.min(...temps);
-      const max = Math.max(...temps);
-      const avg = temps.reduce((sum, value) => sum + value, 0) / temps.length;
-      const coldest = dayPoints.reduce((a, b) =>
-        a.tempf <= b.tempf ? a : b,
-      );
-      const dayLabel = formatEmailDate(
-        `${key}T12:00:00.000Z`,
-        {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          timeZone: "UTC",
-        },
-        locale,
-      );
-      const mixedProbes = dayPoints.some(
-        (point) => point.probeLabel !== coldest.probeLabel,
-      );
-      return {
-        dayLabel,
-        minF: min,
-        maxF: max,
-        avgF: avg,
-        coldestProbe: mixedProbes ? coldest.probeLabel : null,
-      };
-    });
+  return [...byDay.keys()].sort().map((key) => {
+    const dayPoints = byDay.get(key) ?? [];
+    const temps = dayPoints.map((point) => point.tempf);
+    const min = Math.min(...temps);
+    const max = Math.max(...temps);
+    const avg = temps.reduce((sum, value) => sum + value, 0) / temps.length;
+    const coldest = dayPoints.reduce((a, b) => (a.tempf <= b.tempf ? a : b));
+    const dayLabel = formatEmailDate(
+      `${key}T12:00:00.000Z`,
+      {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      },
+      locale,
+    );
+    const mixedProbes = dayPoints.some((point) => point.probeLabel !== coldest.probeLabel);
+    return {
+      dayLabel,
+      minF: min,
+      maxF: max,
+      avgF: avg,
+      coldestProbe: mixedProbes ? coldest.probeLabel : null,
+    };
+  });
 }
 
 /** One line per calendar day (UTC): min–max, avg, and coldest probe when mixed. */
@@ -224,7 +223,8 @@ const HELD_BACK_REASONS = new Set(["snooze_or_vacation", "quiet_hours"]);
 function skippedChannel(entry: string): string | null {
   if (isAlertChannelName(entry)) return entry;
   if (entry.startsWith("sms")) return "sms";
-  if (entry.startsWith("push") || entry.startsWith("fcm") || entry.startsWith("web_push")) return "push";
+  if (entry.startsWith("push") || entry.startsWith("fcm") || entry.startsWith("web_push"))
+    return "push";
   return null;
 }
 
@@ -494,7 +494,9 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
       }
 
       const digestEmail = settings.email ?? user.email;
-      const ownerLocale = localeFromMetadata(user.user_metadata as Record<string, unknown> | undefined);
+      const ownerLocale = localeFromMetadata(
+        user.user_metadata as Record<string, unknown> | undefined,
+      );
       const { fetchGarageTempChartData } = await import("./garageTempsHistory");
       const chart = await fetchGarageTempChartData(userId, 7);
 
@@ -517,14 +519,17 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
           (data) => ({ data, error: null }),
           (error: unknown) => ({ data: null, error }),
         );
-      const digest = buildWeeklyDigestParts({
-        points,
-        freezeThresholdF: settings.freezeThresholdF,
-        siteUrl,
-        unsubscribeUrl: ownerUnsubscribeUrl,
-        // Leave the section out rather than claim "no alerts" when the lookup failed.
-        delivery: weekEventsError ? null : summarizeAlertDelivery(weekEvents ?? []),
-      }, ownerLocale);
+      const digest = buildWeeklyDigestParts(
+        {
+          points,
+          freezeThresholdF: settings.freezeThresholdF,
+          siteUrl,
+          unsubscribeUrl: ownerUnsubscribeUrl,
+          // Leave the section out rather than claim "no alerts" when the lookup failed.
+          delivery: weekEventsError ? null : summarizeAlertDelivery(weekEvents ?? []),
+        },
+        ownerLocale,
+      );
 
       const ownerResult = await sendDigestEmail(
         digestEmail,
@@ -537,11 +542,18 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
       else if (ownerResult === "suppressed") skipped += 1;
       else errors.push(`${userId}: digest email failed`);
 
-      await notifyUser(userId, digestEmail, { ...settings, channelEmail: false }, {
-        title: digest.subject,
-        body: digest.notifyBody,
-        kind: "digest",
-      }, undefined, ownerLocale);
+      await notifyUser(
+        userId,
+        digestEmail,
+        { ...settings, channelEmail: false },
+        {
+          title: digest.subject,
+          body: digest.notifyBody,
+          kind: "digest",
+        },
+        undefined,
+        ownerLocale,
+      );
 
       // Fan-out to household members who opted into digests.
       try {
@@ -556,7 +568,12 @@ export async function sendWeeklyDigestsForAllUsers(): Promise<{
             const memberLocale = localeFromMetadata(
               memberData.user?.user_metadata as Record<string, unknown> | undefined,
             );
-            const memberUnsubscribeUrl = await buildUnsubscribeUrl(siteUrl, memberId, "digest", memberLocale);
+            const memberUnsubscribeUrl = await buildUnsubscribeUrl(
+              siteUrl,
+              memberId,
+              "digest",
+              memberLocale,
+            );
             const memberDigest = buildWeeklyDigestParts(
               {
                 points,

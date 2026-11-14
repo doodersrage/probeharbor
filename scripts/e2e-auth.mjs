@@ -12,10 +12,9 @@ if (existsSync(envFile)) {
   process.loadEnvFile?.(envFile);
 }
 
-const result = spawnSync(
-  "pnpm",
-  ["exec", "playwright", "test", "e2e/alert-settings.spec.ts"],
-  { stdio: "inherit", env: process.env },
-);
+const result = spawnSync("pnpm", ["exec", "playwright", "test", "e2e/alert-settings.spec.ts"], {
+  stdio: "inherit",
+  env: process.env,
+});
 
 process.exit(result.status ?? 1);

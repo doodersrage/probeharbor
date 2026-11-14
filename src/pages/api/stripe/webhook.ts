@@ -17,8 +17,7 @@ export const GET: APIRoute = async () => {
   return new Response(
     JSON.stringify({
       ok: true,
-      message:
-        "Stripe webhook endpoint is active. Stripe delivers events here via POST.",
+      message: "Stripe webhook endpoint is active. Stripe delivers events here via POST.",
     }),
     {
       status: 200,
@@ -27,16 +26,12 @@ export const GET: APIRoute = async () => {
   );
 };
 
-function getUserIdFromSubscription(
-  subscription: Stripe.Subscription,
-): string | null {
+function getUserIdFromSubscription(subscription: Stripe.Subscription): string | null {
   // Legacy key name, kept because existing subscriptions carry it.
   return subscription.metadata.supabase_user_id ?? null;
 }
 
-async function handleCheckoutCompleted(
-  session: Stripe.Checkout.Session,
-): Promise<void> {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const userId = session.client_reference_id ?? session.metadata?.supabase_user_id;
 
   if (!userId || !session.subscription || !session.customer) {
@@ -45,17 +40,13 @@ async function handleCheckoutCompleted(
 
   const stripe = createStripeClient();
   const subscriptionId =
-    typeof session.subscription === "string"
-      ? session.subscription
-      : session.subscription.id;
-  const customerId =
-    typeof session.customer === "string" ? session.customer : session.customer.id;
+    typeof session.subscription === "string" ? session.subscription : session.subscription.id;
+  const customerId = typeof session.customer === "string" ? session.customer : session.customer.id;
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
   await upsertUserSubscription(userId, subscription, customerId);
 
-  const planTier =
-    session.metadata?.plan_tier ?? subscription.metadata?.plan_tier;
+  const planTier = session.metadata?.plan_tier ?? subscription.metadata?.plan_tier;
   if (planTier === "pro" || planTier === "portfolio") {
     await grantReferrerRewardOnSubscription(userId);
   }
@@ -84,9 +75,7 @@ async function currentSubscription(fromEvent: Stripe.Subscription): Promise<Stri
   }
 }
 
-async function handleSubscriptionChange(
-  fromEvent: Stripe.Subscription,
-): Promise<void> {
+async function handleSubscriptionChange(fromEvent: Stripe.Subscription): Promise<void> {
   const subscription = await currentSubscription(fromEvent);
   let userId = getUserIdFromSubscription(subscription) ?? getUserIdFromSubscription(fromEvent);
 
@@ -99,16 +88,12 @@ async function handleSubscriptionChange(
   }
 
   const customerId =
-    typeof subscription.customer === "string"
-      ? subscription.customer
-      : subscription.customer.id;
+    typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
 
   await upsertUserSubscription(userId, subscription, customerId);
 }
 
-async function handleSubscriptionDeleted(
-  subscription: Stripe.Subscription,
-): Promise<void> {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
   await handleSubscriptionChange(subscription);
 }
 
@@ -133,8 +118,7 @@ export const POST: APIRoute = async ({ request }) => {
       import.meta.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Invalid webhook signature";
+    const message = error instanceof Error ? error.message : "Invalid webhook signature";
     return new Response(message, { status: 400 });
   }
 
@@ -163,8 +147,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
   } catch (error) {
     await releaseStripeWebhookEvent(event.id);
-    const message =
-      error instanceof Error ? error.message : "Webhook handler failed";
+    const message = error instanceof Error ? error.message : "Webhook handler failed";
     return new Response(message, { status: 500 });
   }
 

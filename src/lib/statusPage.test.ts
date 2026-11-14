@@ -68,7 +68,11 @@ describe("createStatusPageToken", () => {
     expect(result.error).toBeNull();
     expect(result.token).toMatch(/^[0-9a-f]{36}$/);
     // Only the hash is stored; the raw token goes to the manager once.
-    expect(db.insertStatusPage).toHaveBeenCalledWith("house-1", await sha256(result.token!), "Family status");
+    expect(db.insertStatusPage).toHaveBeenCalledWith(
+      "house-1",
+      await sha256(result.token!),
+      "Family status",
+    );
   });
 
   it("defaults an empty label to 'Status page'", async () => {
@@ -156,7 +160,11 @@ describe("regenerateStatusPageToken", () => {
 
     expect(result.token).toMatch(/^[0-9a-f]{36}$/);
     expect(result.error).toBeNull();
-    expect(db.regenerateStatusPage).toHaveBeenCalledWith("house-1", "t1", await sha256(result.token!));
+    expect(db.regenerateStatusPage).toHaveBeenCalledWith(
+      "house-1",
+      "t1",
+      await sha256(result.token!),
+    );
   });
 
   it("returns an error for a revoked or foreign status page", async () => {
@@ -193,7 +201,10 @@ describe("buildStatusPageSnapshot", () => {
   });
 
   it("picks the newest reading and counts stale sensors past the threshold", async () => {
-    mockListHouseholdDevices.mockResolvedValue({ devices: [{ id: "d1" }, { id: "d2" }], error: null });
+    mockListHouseholdDevices.mockResolvedValue({
+      devices: [{ id: "d1" }, { id: "d2" }],
+      error: null,
+    });
     mockFetchLatestSensorValues.mockResolvedValue([
       reading({ recorded_at: "2024-06-15T09:00:00.000Z" }), // 3h old: stale
       reading({ recorded_at: "2024-06-15T11:00:00.000Z" }), // 1h old: fresh
@@ -212,7 +223,12 @@ describe("buildStatusPageSnapshot", () => {
   });
 
   it("is stale when the freshest reading's age is itself flagged stale", async () => {
-    mockFormatRelativeAge.mockReturnValue({ label: "3 hours ago", lagging: true, stale: true, absolute: null });
+    mockFormatRelativeAge.mockReturnValue({
+      label: "3 hours ago",
+      lagging: true,
+      stale: true,
+      absolute: null,
+    });
     mockFetchLatestSensorValues.mockResolvedValue([reading()]);
     const { buildStatusPageSnapshot } = await import("./statusPage");
 

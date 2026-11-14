@@ -7,7 +7,12 @@ const at = (minutes: number) => new Date(Date.UTC(2026, 0, 1, 0, minutes)).toISO
 describe("learning a device's reporting interval", () => {
   it("records gaps and keeps the median", () => {
     let meta: Record<string, unknown> = {};
-    for (const [prev, now] of [[0, 60], [60, 120], [120, 181], [181, 240]]) {
+    for (const [prev, now] of [
+      [0, 60],
+      [60, 120],
+      [120, 181],
+      [181, 240],
+    ]) {
       const next = nextReportInterval(meta, at(prev), at(now));
       meta = { ...meta, ...next };
     }
@@ -17,7 +22,9 @@ describe("learning a device's reporting interval", () => {
   it("ignores retries, outages and a first post", () => {
     const learned = { report_intervals_s: [3600, 3600, 3600], report_interval_s: 3600 };
     expect(nextReportInterval(learned, null, at(60))).toBeNull(); // no previous post
-    expect(nextReportInterval(learned, at(0), new Date(Date.UTC(2026, 0, 1, 0, 0, 5)).toISOString())).toBeNull(); // 5 s retry
+    expect(
+      nextReportInterval(learned, at(0), new Date(Date.UTC(2026, 0, 1, 0, 0, 5)).toISOString()),
+    ).toBeNull(); // 5 s retry
     expect(nextReportInterval(learned, at(0), at(5 * 60))).toBeNull(); // 5 h outage (> 4× hourly)
   });
 

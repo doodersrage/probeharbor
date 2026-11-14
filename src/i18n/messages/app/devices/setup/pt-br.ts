@@ -3,7 +3,8 @@ import type { DevicesSetupMessages } from "./en";
 const ptBr: DevicesSetupMessages = {
   firstRun: {
     title: "Conecte seu primeiro sensor",
-    subtitle: "Escolha o que você tem hoje. Cada caminho termina com uma leitura ao vivo; os alertas de congelamento e vazamento vêm logo depois.",
+    subtitle:
+      "Escolha o que você tem hoje. Cada caminho termina com uma leitura ao vivo; os alertas de congelamento e vazamento vêm logo depois.",
     viewOnly: "Somente leitura: peça a um proprietário para adicionar um dispositivo.",
     limitReached: "Limite de dispositivos atingido.",
     limitUpgrade: "Faça upgrade para ter mais dispositivos",

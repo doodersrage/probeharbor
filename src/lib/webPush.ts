@@ -37,10 +37,16 @@ export async function releasePushSubscriptionFromOtherUsers(
   endpoint: string,
 ): Promise<void> {
   try {
-    await query("delete from public.push_subscriptions where endpoint = $1 and user_id <> $2", [endpoint, userId]);
+    await query("delete from public.push_subscriptions where endpoint = $1 and user_id <> $2", [
+      endpoint,
+      userId,
+    ]);
   } catch (error) {
     // Subscribing continues either way; the failure is logged.
-    console.error("Failed to release push subscription from other users:", error instanceof Error ? error.message : error);
+    console.error(
+      "Failed to release push subscription from other users:",
+      error instanceof Error ? error.message : error,
+    );
   }
 }
 
@@ -60,7 +66,10 @@ export async function sendWebPushToUser(
   try {
     subs = await neonPush.listPushSubscriptions(userId);
   } catch (error) {
-    console.error("Failed to load push subscriptions:", error instanceof Error ? error.message : error);
+    console.error(
+      "Failed to load push subscriptions:",
+      error instanceof Error ? error.message : error,
+    );
     return { delivered: 0, failed: 0, skippedReason: "push_load_failed" };
   }
 
@@ -149,7 +158,10 @@ export async function countPushSubscriptions(userId: string): Promise<number> {
     );
     return rows[0]?.n ?? 0;
   } catch (error) {
-    console.error("Failed to count push subscriptions:", error instanceof Error ? error.message : error);
+    console.error(
+      "Failed to count push subscriptions:",
+      error instanceof Error ? error.message : error,
+    );
     return 0;
   }
 }

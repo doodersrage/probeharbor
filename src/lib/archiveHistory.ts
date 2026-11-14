@@ -18,12 +18,19 @@ export async function archiveOldReadings(options?: {
 }
 
 /** Archive each household's aged readings (queries in src/lib/db/householdTools.ts). */
-async function archiveOldReadingsNeon(cutoff: Date, r2: R2Bucket | undefined): Promise<ArchiveResult> {
+async function archiveOldReadingsNeon(
+  cutoff: Date,
+  r2: R2Bucket | undefined,
+): Promise<ArchiveResult> {
   let households: string[];
   try {
     households = await neonTools.householdIds(500);
   } catch (error) {
-    return { archived: 0, skipped: false, error: error instanceof Error ? error.message : String(error) };
+    return {
+      archived: 0,
+      skipped: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
   if (!r2) return { archived: 0, skipped: true, error: null };
 
@@ -32,7 +39,9 @@ async function archiveOldReadingsNeon(cutoff: Date, r2: R2Bucket | undefined): P
     const readings = await neonTools.oldReadings(householdId, cutoff.toISOString(), 5000);
     if (!readings.length) continue;
     const key = `archives/${householdId}/${cutoff.toISOString().slice(0, 10)}.json`;
-    await r2.put(key, JSON.stringify(readings), { httpMetadata: { contentType: "application/json" } });
+    await r2.put(key, JSON.stringify(readings), {
+      httpMetadata: { contentType: "application/json" },
+    });
     await neonTools.insertArchive({
       household_id: householdId,
       period_start: cutoff.toISOString().slice(0, 10),

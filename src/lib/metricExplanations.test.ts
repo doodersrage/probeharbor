@@ -68,7 +68,10 @@ describe("overview metric explanations match the code", () => {
   });
 
   it("the condensation explanation uses the same dew-point margin as the code", () => {
-    const margin = num(/export function computeCondensationHours\([\s\S]*?marginF = (\d+)/, overviewExtras);
+    const margin = num(
+      /export function computeCondensationHours\([\s\S]*?marginF = (\d+)/,
+      overviewExtras,
+    );
     expect(num(/condensation: \{ band: formatTempBand\((\d+),/, dashboard)).toBe(margin);
   });
 });
@@ -93,18 +96,25 @@ describe("time-to-freeze confidence explanation matches confidenceFor", () => {
 describe("device health and battery explanations match the code", async () => {
   const health = readFileSync("src/lib/deviceHealthScore.ts", "utf8");
   const battery = readFileSync("src/lib/batteryTrend.ts", "utf8");
-  const scores = [...health.matchAll(/score: (?:stale \? (\d+) : )?(\d+),/g)].flatMap((m) => [m[1], m[2]]).filter(Boolean) as string[];
+  const scores = [...health.matchAll(/score: (?:stale \? (\d+) : )?(\d+),/g)]
+    .flatMap((m) => [m[1], m[2]])
+    .filter(Boolean) as string[];
   const lowPct = num(/batteryPct <= (\d+)\)/, health);
   const lowDays = num(/daysRemaining <= (\d+)\)/, health);
   const windowDays = num(/windowDays = (\d+)/, battery);
   const minDrop = num(/dropPerDay <= ([\d.]+)\)/, battery);
 
   const locales = await Promise.all(
-    ["en", "de", "es", "fr", "pt-br"].map(async (l) => [l, (await import(`../i18n/messages/app/deviceDetail/${l}.ts`)).default] as const),
+    ["en", "de", "es", "fr", "pt-br"].map(
+      async (l) =>
+        [l, (await import(`../i18n/messages/app/deviceDetail/${l}.ts`)).default] as const,
+    ),
   );
 
   it("found the scores to check", () => {
-    expect(new Set(scores)).toEqual(new Set(["25", "30", "10", "20", "45", "40", "55", "60", "65", "95"]));
+    expect(new Set(scores)).toEqual(
+      new Set(["25", "30", "10", "20", "45", "40", "55", "60", "65", "95"]),
+    );
   });
 
   it.each(locales)("%s lists every score and the battery cut-offs", (_l, m) => {
@@ -151,7 +161,9 @@ describe("space status explanation matches computeGarageRiskStatus", () => {
 describe("portfolio, anomaly and cold-air explanations match the code", async () => {
   const portfolio = readFileSync("src/lib/portfolioHealth.ts", "utf8");
   const anomaly = readFileSync("src/lib/anomalyDetection.ts", "utf8");
-  const scores = [...portfolio.matchAll(/score: (?:stale \? (\d+) : )?(\d+),/g)].flatMap((m) => [m[1], m[2]]).filter(Boolean) as string[];
+  const scores = [...portfolio.matchAll(/score: (?:stale \? (\d+) : )?(\d+),/g)]
+    .flatMap((m) => [m[1], m[2]])
+    .filter(Boolean) as string[];
   const dropF = num(/ANOMALY_DROP_F = (\d+);/, anomaly);
   const windowMin = num(/windowMs = (\d+) \* 60 \* 1000/, anomaly);
   const doorMin = num(/doorWasOpenNear\([\s\S]*?(\d+) \* 60 \* 1000/, anomaly);
@@ -159,12 +171,20 @@ describe("portfolio, anomaly and cold-air explanations match the code", async ()
 
   const load = (ns: string) =>
     Promise.all(
-      ["en", "de", "es", "fr", "pt-br"].map(async (l) => [l, (await import(`../i18n/messages/app/${ns}/${l}.ts`)).default] as const),
+      ["en", "de", "es", "fr", "pt-br"].map(
+        async (l) => [l, (await import(`../i18n/messages/app/${ns}/${l}.ts`)).default] as const,
+      ),
     );
-  const [portfolioMsgs, historyMsgs, insightMsgs] = await Promise.all([load("portfolio"), load("history"), load("overviewInsights")]);
+  const [portfolioMsgs, historyMsgs, insightMsgs] = await Promise.all([
+    load("portfolio"),
+    load("history"),
+    load("overviewInsights"),
+  ]);
 
   it("found the portfolio scores", () => {
-    expect(new Set(scores)).toEqual(new Set(["20", "30", "10", "15", "25", "45", "50", "70", "95"]));
+    expect(new Set(scores)).toEqual(
+      new Set(["20", "30", "10", "15", "25", "45", "50", "70", "95"]),
+    );
   });
 
   it.each(portfolioMsgs)("%s portfolio copy lists every score", (_l, m) => {

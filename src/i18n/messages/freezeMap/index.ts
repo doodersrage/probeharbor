@@ -10,7 +10,10 @@ export const freezeMapMessages = defineMessages("freezeMap", en);
 /** One decimal: English as `toFixed(1)`, other locales with their decimal mark and a true minus. */
 export function freezeMapNumber(value: number, locale: Locale): string {
   if (locale === "en") return value.toFixed(1);
-  return formatNumber(value, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).replace("-", "−");
+  return formatNumber(value, locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).replace("-", "−");
 }
 
 /** A °F reading: "28.2°F" (en), "−2,1 °C (28,2 °F)" elsewhere. Fills `{temp}`. */

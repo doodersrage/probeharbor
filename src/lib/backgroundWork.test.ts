@@ -4,7 +4,9 @@ import { runAfterResponse } from "./backgroundWork";
 describe("runAfterResponse", () => {
   it("hands the work to waitUntil and returns without waiting for it", async () => {
     let release!: () => void;
-    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     const done = vi.fn();
     const waitUntil = vi.fn();
 
@@ -22,20 +24,32 @@ describe("runAfterResponse", () => {
 
   it("runs inline when there's no Worker context", async () => {
     const done = vi.fn();
-    await runAfterResponse(undefined, "test", async () => { done(); });
+    await runAfterResponse(undefined, "test", async () => {
+      done();
+    });
     expect(done).toHaveBeenCalled();
   });
 
   it("logs a failure instead of throwing", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    await expect(runAfterResponse({}, "alerts", async () => { throw new Error("smtp down"); })).resolves.toBeUndefined();
+    await expect(
+      runAfterResponse({}, "alerts", async () => {
+        throw new Error("smtp down");
+      }),
+    ).resolves.toBeUndefined();
     expect(log).toHaveBeenCalledWith("alerts failed:", expect.any(Error));
   });
 
   it("falls back to inline if reading cfContext throws", async () => {
-    const locals = Object.defineProperty({}, "cfContext", { get() { throw new Error("not in a Worker"); } });
+    const locals = Object.defineProperty({}, "cfContext", {
+      get() {
+        throw new Error("not in a Worker");
+      },
+    });
     const done = vi.fn();
-    await runAfterResponse(locals, "test", async () => { done(); });
+    await runAfterResponse(locals, "test", async () => {
+      done();
+    });
     expect(done).toHaveBeenCalled();
   });
 });

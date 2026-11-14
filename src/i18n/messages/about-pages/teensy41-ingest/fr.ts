@@ -1,4 +1,3 @@
-
 /** Body copy for /about/teensy41-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 

@@ -2,7 +2,8 @@ import type { ShellMessages } from "./en";
 
 const fr: ShellMessages = {
   defaultTitle: "Tableau de bord",
-  unsavedChanges: "Vous avez des modifications non enregistrées. Quitter cette page sans les enregistrer ?",
+  unsavedChanges:
+    "Vous avez des modifications non enregistrées. Quitter cette page sans les enregistrer ?",
   loadError: {
     title: "Impossible de charger vos appareils",
     body: "Une erreur s’est produite en lisant vos appareils et relevés dans notre base de données ; cette page peut donc être incomplète. Rien n’a été modifié.",
@@ -46,7 +47,8 @@ const fr: ShellMessages = {
     switchError: "Impossible de changer de bien. Réessayez.",
   },
   billing: {
-    paymentFailed: "Votre dernier paiement n’a pas abouti. Votre offre reste active pendant que Stripe réessaie la carte ; mettez à jour votre moyen de paiement pour ne pas perdre les fonctions payantes.",
+    paymentFailed:
+      "Votre dernier paiement n’a pas abouti. Votre offre reste active pendant que Stripe réessaie la carte ; mettez à jour votre moyen de paiement pour ne pas perdre les fonctions payantes.",
     updatePayment: "Mettre à jour le moyen de paiement",
   },
   kiosk: {
@@ -180,8 +182,10 @@ const fr: ShellMessages = {
     title: "Installer l’application web (PWA)",
     body: "ProbeHarbor fonctionne dès maintenant : ajoutez-la à votre écran d’accueil depuis Chrome ou Safari. Même compte, mesures en direct et alertes. L’application Android native est en accès anticipé sur GitHub le temps que Google Play termine sa vérification ; inutile d’attendre Play.",
     step1: "Ouvrez probeharbor.dev dans Chrome (Android) ou Safari (iPhone).",
-    step2Html: "Utilisez <strong>Installer l’application</strong> ou Partager → <strong>Sur l’écran d’accueil</strong>.",
-    step3: "Ouvrez l’icône ; activez les notifications push plus tard dans Tableau de bord → Alertes.",
+    step2Html:
+      "Utilisez <strong>Installer l’application</strong> ou Partager → <strong>Sur l’écran d’accueil</strong>.",
+    step3:
+      "Ouvrez l’icône ; activez les notifications push plus tard dans Tableau de bord → Alertes.",
     installApp: "Installer l’application",
     guide: "Étapes d’installation de la PWA",
     android: "Android natif (bientôt)",

@@ -104,10 +104,14 @@ describe("POST /api/household/tenant-notify", () => {
 
     await POST(context);
 
-    expect(mockUpdateTenantNotifySettings).toHaveBeenCalledWith("house-1", {
-      email: "tenant@example.com",
-      name: "Alex",
-    }, "en");
+    expect(mockUpdateTenantNotifySettings).toHaveBeenCalledWith(
+      "house-1",
+      {
+        email: "tenant@example.com",
+        name: "Alex",
+      },
+      "en",
+    );
     expect(context.redirect).toHaveBeenCalledWith("/dashboard/settings?tenant_saved=1");
   });
 
@@ -118,8 +122,6 @@ describe("POST /api/household/tenant-notify", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/settings?tenant_error=invalid+email",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/settings?tenant_error=invalid+email");
   });
 });

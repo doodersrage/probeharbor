@@ -102,7 +102,11 @@ export default function AboutSearch({
       {query.trim() && (
         <ul class="about-search-results">
           {results.length === 0 ? (
-            <li class="about-search-empty">{text.noMatchBefore}{query}{text.noMatchAfter}</li>
+            <li class="about-search-empty">
+              {text.noMatchBefore}
+              {query}
+              {text.noMatchAfter}
+            </li>
           ) : (
             results.map((page) => (
               <li key={page.slug}>

@@ -11,12 +11,16 @@ const es: AppHistoryMessages = {
       openDevices: "Abrir Dispositivos",
       overview: "Resumen",
     },
-    introCsv: "Consulta las lecturas guardadas de temperatura y humedad por feed y sonda. Descarga el CSV desde la pestaña Tabla o desde Exportaciones.",
-    introNoCsv: "Consulta las lecturas guardadas de temperatura y humedad por feed y sonda. Suscríbete para exportar tu historial guardado en CSV.",
+    introCsv:
+      "Consulta las lecturas guardadas de temperatura y humedad por feed y sonda. Descarga el CSV desde la pestaña Tabla o desde Exportaciones.",
+    introNoCsv:
+      "Consulta las lecturas guardadas de temperatura y humedad por feed y sonda. Suscríbete para exportar tu historial guardado en CSV.",
     tabsAria: "Vistas del historial",
     tabs: { chart: "Gráfico", table: "Tabla", exports: "Exportaciones", doors: "Puertas" },
-    retentionTitle: "Las lecturas de más de 90 días se agrupan en promedios por hora para los periodos largos.",
-    retention: "Tu plan {plan} conserva {retention}{plus} de historial; las lecturas de más de 90 días se guardan como promedios por hora.",
+    retentionTitle:
+      "Las lecturas de más de 90 días se agrupan en promedios por hora para los periodos largos.",
+    retention:
+      "Tu plan {plan} conserva {retention}{plus} de historial; las lecturas de más de 90 días se guardan como promedios por hora.",
     adminPlan: "Admin",
     retentionYears: { one: "{count} año", other: "{count} años" },
     retentionDays: { one: "{count} día", other: "{count} días" },
@@ -25,7 +29,8 @@ const es: AppHistoryMessages = {
     coldestOutdoorEstimated: "Gris = día exterior más frío del año pasado ({day}, estimado)",
     coldestDayLow: "Gris = día más frío del año pasado ({day}, mínima {temp} {unit})",
     coldestDay: "Gris = día más frío del año pasado ({day})",
-    noPriorProbeData: "Gris = no hay datos de sondas del año anterior (el historial empieza el {date})",
+    noPriorProbeData:
+      "Gris = no hay datos de sondas del año anterior (el historial empieza el {date})",
     coldestNoData: "Gris = día más frío del año pasado (sin datos del año anterior)",
     compareWindow: "Gris = periodo de comparación {from} → {to}",
     outdoorEstimate: "Gris = estimación exterior del año pasado",
@@ -38,22 +43,26 @@ const es: AppHistoryMessages = {
   compare: {
     summary: "Comparar",
     outdoorTitle: "Interior frente a exterior",
-    outdoorSubtitle: "Promedio de las sondas en el periodo del gráfico comparado con el tiempo exterior actual.",
-    outdoorSubtitleCity: "Promedio de las sondas en el periodo del gráfico comparado con el tiempo exterior actual en {city}.",
+    outdoorSubtitle:
+      "Promedio de las sondas en el periodo del gráfico comparado con el tiempo exterior actual.",
+    outdoorSubtitleCity:
+      "Promedio de las sondas en el periodo del gráfico comparado con el tiempo exterior actual en {city}.",
     indoorAvg: "Promedio interior",
     outdoorNow: "Exterior ahora",
     delta: "Diferencia",
     spreadTitle: "Dispersión entre sondas",
     spreadSubtitle: "Diferencia por hora entre la sonda más cálida y la más fría en este periodo.",
     freezeTitle: "Exposición a congelación en la temporada",
-    freezeSubtitle: "Tiempo estimado a {temp} {unit} o menos en el periodo seleccionado del gráfico.",
+    freezeSubtitle:
+      "Tiempo estimado a {temp} {unit} o menos en el periodo seleccionado del gráfico.",
     hoursAtOrBelow: "Horas ≤ {temp} {unit}",
     readingsAtOrBelow: "Lecturas ≤ {temp} {unit}",
     coldest: "Mínima",
   },
   exports: {
     summaryTitle: "Resumen del periodo",
-    summarySubtitle: "Resumen de {from} → {to} (el mismo periodo que el paquete para reclamaciones de abajo). Abre la pestaña Gráfico para explorarlo o descarga las pruebas desde Exportaciones.",
+    summarySubtitle:
+      "Resumen de {from} → {to} (el mismo periodo que el paquete para reclamaciones de abajo). Abre la pestaña Gráfico para explorarlo o descarga las pruebas desde Exportaciones.",
     notEnough: "Todavía no hay suficientes lecturas en este periodo para un resumen.",
     coldest: "Mínima",
     hoursAtOrBelow: "Horas estimadas ≤ {temp} {unit}",
@@ -71,18 +80,24 @@ const es: AppHistoryMessages = {
       invalid_email: "Introduce un correo válido del perito.",
       no_household: "No se encontró ningún hogar para generar el paquete para reclamaciones.",
       recipient_not_allowed: "No se pudo entregar a esa dirección de correo.",
-      send_failed: "No se pudo enviar el correo con el paquete para reclamaciones. Inténtalo de nuevo.",
+      send_failed:
+        "No se pudo enviar el correo con el paquete para reclamaciones. Inténtalo de nuevo.",
     },
-    claimsUsesFilters: "Usa los filtros del historial de arriba si están definidos ({from} → {to}). Descarga un resumen en PDF; los CSV complementarios cubren el mismo periodo.",
+    claimsUsesFilters:
+      "Usa los filtros del historial de arriba si están definidos ({from} → {to}). Descarga un resumen en PDF; los CSV complementarios cubren el mismo periodo.",
     htmlVersion: "Versión HTML",
     adjusterEmail: "Correo del perito",
     adjusterPlaceholder: "perito@aseguradora.com",
     sendClaims: "Enviar paquete para reclamaciones",
     claimsUpgrade: "Pasa a Pro para descargar el paquete para reclamaciones desde esta pestaña.",
     certificateTitle: "Certificado de monitorización",
-    certificateSubtitle: "Resumen en PDF de una página con tu configuración de alertas y los dispositivos monitorizados: útil para aseguradoras, propietarios o administradores de fincas.",
+    certificateSubtitle:
+      "Resumen en PDF de una página con tu configuración de alertas y los dispositivos monitorizados: útil para aseguradoras, propietarios o administradores de fincas.",
     certificateDownload: "Descargar certificado de monitorización (PDF)",
-    seasonalTitle: { one: "Datos de temporada ({count} día)", other: "Datos de temporada ({count} días)" },
+    seasonalTitle: {
+      one: "Datos de temporada ({count} día)",
+      other: "Datos de temporada ({count} días)",
+    },
     icalLink: "Suscribirse a la previsión de heladas (iCal)",
   },
   table: {
@@ -92,9 +107,13 @@ const es: AppHistoryMessages = {
     downloadCsv: "Descargar CSV",
     csvTimesUtc: "Las horas del CSV están en UTC (ISO 8601, terminan en Z).",
     chartTitleDates: "Tendencia de temperatura (fechas seleccionadas)",
-    chartTitleDays: { one: "Tendencia de temperatura (último {count} día)", other: "Tendencia de temperatura (últimos {count} días)" },
+    chartTitleDays: {
+      one: "Tendencia de temperatura (último {count} día)",
+      other: "Tendencia de temperatura (últimos {count} días)",
+    },
     anomaliesTitle: "Patrones inusuales detectados en el periodo del gráfico",
-    anomaliesHow: "Se marca cuando una sonda baja {band} o más entre dos lecturas separadas hasta 60 minutos; se menciona si hubo una puerta abierta en los 30 minutos cercanos.",
+    anomaliesHow:
+      "Se marca cuando una sonda baja {band} o más entre dos lecturas separadas hasta 60 minutos; se menciona si hubo una puerta abierta en los 30 minutos cercanos.",
     feed: "Feed",
     allFeeds: "Todos los feeds",
     probe: "Sonda",
@@ -125,11 +144,14 @@ const es: AppHistoryMessages = {
     viewNamePlaceholder: "Ponle nombre a esta vista",
     saveView: "Guardar vista",
     loadError: "No se pudo cargar el historial de lecturas: {error}",
-    noMatch: "Ninguna lectura coincide con estos filtros. Prueba con un rango de fechas más amplio o quita los filtros.",
-    noHistory: "Todavía no hay historial. Las lecturas se guardan cuando los dispositivos están conectados y cuando abres Resumen con la sesión iniciada.",
+    noMatch:
+      "Ninguna lectura coincide con estos filtros. Prueba con un rango de fechas más amplio o quita los filtros.",
+    noHistory:
+      "Todavía no hay historial. Las lecturas se guardan cuando los dispositivos están conectados y cuando abres Resumen con la sesión iniciada.",
     stepAddDevice: "Añade un dispositivo o feed",
     stepVerify: "Comprueba la ingesta en la página Dispositivos",
-    stepLiveHtml: '<a class="text-link" href="/dashboard/live">Abre En vivo</a> para confirmar las lecturas en vivo',
+    stepLiveHtml:
+      '<a class="text-link" href="/dashboard/live">Abre En vivo</a> para confirmar las lecturas en vivo',
     goDevices: "Ir a Dispositivos",
     humidityRh: "{value} % HR",
     colRecorded: "Registrada",
@@ -187,15 +209,21 @@ const es: AppHistoryMessages = {
     matchDevice: "mismo dispositivo",
     matchSpace: "mismo espacio",
     howTitle: "Cómo se calculan estos números",
-    howBody: "Cada puerta se compara con un sensor de temperatura y uno de humedad: el primero del propio dispositivo de la puerta o, si no hay, uno de otro dispositivo del mismo espacio (los espacios se configuran en Dispositivos). Los valores de \"apertura\" y \"cierre\" son la última lectura de ese sensor en ese momento o antes, si no tiene más de 30 minutos; si no, la celda lo indica. El cambio es cierre menos apertura. Muestra cómo cambió el espacio mientras la puerta estaba abierta, no qué lo causó.",
+    howBody:
+      'Cada puerta se compara con un sensor de temperatura y uno de humedad: el primero del propio dispositivo de la puerta o, si no hay, uno de otro dispositivo del mismo espacio (los espacios se configuran en Dispositivos). Los valores de "apertura" y "cierre" son la última lectura de ese sensor en ese momento o antes, si no tiene más de 30 minutos; si no, la celda lo indica. El cambio es cierre menos apertura. Muestra cómo cambió el espacio mientras la puerta estaba abierta, no qué lo causó.',
     empty: "No hay aperturas de puertas guardadas en este periodo.",
-    emptyHint: "Una apertura se guarda cuando el sensor de la puerta vuelve a indicar que está cerrada. Las puertas abiertas más de 24 horas aún no se guardan.",
-    noDoorSensors: "Todavía no hay sensores de puerta. Añade uno en Dispositivos para ver aquí las aperturas.",
-    truncated: "Se muestran las {count} aperturas más recientes de este periodo. Acorta las fechas para ver las anteriores.",
+    emptyHint:
+      "Una apertura se guarda cuando el sensor de la puerta vuelve a indicar que está cerrada. Las puertas abiertas más de 24 horas aún no se guardan.",
+    noDoorSensors:
+      "Todavía no hay sensores de puerta. Añade uno en Dispositivos para ver aquí las aperturas.",
+    truncated:
+      "Se muestran las {count} aperturas más recientes de este periodo. Acorta las fechas para ver las anteriores.",
     loadError: "No se pudo cargar el historial de puertas. Inténtalo de nuevo en un momento.",
-    readingsError: "No se pudieron cargar la temperatura y la humedad de cada apertura, así que esas columnas están vacías.",
+    readingsError:
+      "No se pudieron cargar la temperatura y la humedad de cada apertura, así que esas columnas están vacías.",
     downloadCsv: "Descargar CSV",
-    csvNote: "Las horas del CSV están en UTC (ISO 8601). Temperaturas en °F, humedad en %. Una celda vacía significa que no hay lectura.",
+    csvNote:
+      "Las horas del CSV están en UTC (ISO 8601). Temperaturas en °F, humedad en %. Una celda vacía significa que no hay lectura.",
     csvUpgrade: "La exportación CSV de aperturas de puertas se incluye con una suscripción.",
   },
 };

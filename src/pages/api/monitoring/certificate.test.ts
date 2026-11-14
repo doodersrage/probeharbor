@@ -13,7 +13,8 @@ vi.mock("../../../lib/stripe", () => ({
 
 const mockGenerateMonitoringCertificateForUser = vi.fn();
 vi.mock("../../../lib/monitoringCertificateGenerate", () => ({
-  generateMonitoringCertificateForUser: (...a: unknown[]) => mockGenerateMonitoringCertificateForUser(...a),
+  generateMonitoringCertificateForUser: (...a: unknown[]) =>
+    mockGenerateMonitoringCertificateForUser(...a),
 }));
 
 const mockRenderDocumentPdf = vi.fn();

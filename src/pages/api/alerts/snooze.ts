@@ -13,7 +13,8 @@ async function tokenOwnerLocale(token: string, fallback: Locale | undefined): Pr
     const row = await findSnoozeToken(token);
     if (row?.user_id) {
       const data = { user: await getUserRecord(row.user_id) };
-      if (data.user) locale = localeFromMetadata(data.user.user_metadata as Record<string, unknown> | undefined);
+      if (data.user)
+        locale = localeFromMetadata(data.user.user_metadata as Record<string, unknown> | undefined);
     }
   } catch {
     // Keep the request language.
@@ -23,13 +24,19 @@ async function tokenOwnerLocale(token: string, fallback: Locale | undefined): Pr
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 async function handleSnooze(url: URL, requestLocale: Locale | undefined): Promise<Response> {
   const token = url.searchParams.get("token")?.trim();
   if (!token) {
-    return new Response(alertJobsMessages(requestLocale ?? "en").snoozePage.missingToken, { status: 400 });
+    return new Response(alertJobsMessages(requestLocale ?? "en").snoozePage.missingToken, {
+      status: 400,
+    });
   }
 
   // Read the owner before the token is marked used.
@@ -40,10 +47,7 @@ async function handleSnooze(url: URL, requestLocale: Locale | undefined): Promis
     snooze: result.ok ? "1" : "0",
     snooze_msg: result.message,
   });
-  return Response.redirect(
-    new URL(`/dashboard/alerts?${params.toString()}`, url.origin),
-    302,
-  );
+  return Response.redirect(new URL(`/dashboard/alerts?${params.toString()}`, url.origin), 302);
 }
 
 /** Prefer POST so link prefetchers cannot snooze. */
@@ -53,7 +57,9 @@ export const POST: APIRoute = async ({ url, locals }) => handleSnooze(url, local
 export const GET: APIRoute = async ({ url, locals }) => {
   const token = url.searchParams.get("token")?.trim() ?? "";
   if (!token) {
-    return new Response(alertJobsMessages(locals?.locale ?? "en").snoozePage.missingToken, { status: 400 });
+    return new Response(alertJobsMessages(locals?.locale ?? "en").snoozePage.missingToken, {
+      status: 400,
+    });
   }
 
   const locale = await tokenOwnerLocale(token, locals?.locale);

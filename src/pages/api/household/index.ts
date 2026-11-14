@@ -50,8 +50,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     });
   }
 
-  const [members, households, invites, freezeMap, indoorReferenceSensorId] =
-    await Promise.all([
+  const [members, households, invites, freezeMap, indoorReferenceSensorId] = await Promise.all([
     listHouseholdMembers(household.householdId),
     listUserHouseholds(user.id),
     listPendingInvites(household.householdId),
@@ -116,7 +115,12 @@ export const POST: APIRoute = async (context) => {
     const result = await leaveHousehold(user.id, householdId);
     if (result.error) {
       return redirect(
-        withQuery(redirectTo, { error: result.error === "Cannot remove the household owner" ? "cannot_leave_owner" : result.error }),
+        withQuery(redirectTo, {
+          error:
+            result.error === "Cannot remove the household owner"
+              ? "cannot_leave_owner"
+              : result.error,
+        }),
       );
     }
     return redirect(withQuery(redirectTo, { left: "1" }));
@@ -128,7 +132,9 @@ export const POST: APIRoute = async (context) => {
     if (ownedCount >= entitlements.maxOwnedHouseholds) {
       return redirect(withQuery(redirectTo, { error: "property_limit" }));
     }
-    const name = formData.get("name")?.toString() ?? apiMoreCommonMessages(apiLocale(context)).defaults.myProperty;
+    const name =
+      formData.get("name")?.toString() ??
+      apiMoreCommonMessages(apiLocale(context)).defaults.myProperty;
     const result = await createAdditionalHouseholdForUser(user.id, name);
     if (result.error) {
       return redirect(withQuery(redirectTo, { error: "1" }));
@@ -159,7 +165,10 @@ export const POST: APIRoute = async (context) => {
 
   // Renaming the household, removing members and changing roles: owner only
   // (same rule as the page and the renameHousehold action).
-  if ((action === "rename" || action === "remove" || action === "change_role") && !access.canManageMembers) {
+  if (
+    (action === "rename" || action === "remove" || action === "change_role") &&
+    !access.canManageMembers
+  ) {
     return redirect(withQuery(redirectTo, { error: "owner_required" }));
   }
   // Every other action below is about invites (send, resend, cancel; any
@@ -230,7 +239,9 @@ export const POST: APIRoute = async (context) => {
     const result = await changeHouseholdMemberRole(manageId, memberUserId, role);
     if (result.error) {
       const code =
-        result.error === "cannot_change_owner" || result.error === "not_a_member" ? result.error : "1";
+        result.error === "cannot_change_owner" || result.error === "not_a_member"
+          ? result.error
+          : "1";
       return redirect(withQuery(redirectTo, { error: code }));
     }
     return redirect(withQuery(redirectTo, { role_changed: "1" }));
@@ -257,7 +268,13 @@ export const POST: APIRoute = async (context) => {
     if (reissued.error || !reissued.invite || !reissued.token) {
       return redirect(withQuery(redirectTo, { error: "1" }));
     }
-    await emailInviteLink(context, manageId, reissued.invite.email, reissued.token, user.email ?? null);
+    await emailInviteLink(
+      context,
+      manageId,
+      reissued.invite.email,
+      reissued.token,
+      user.email ?? null,
+    );
     return redirect(withQuery(redirectTo, { invite_resent: "1" }));
   }
 
@@ -294,7 +311,9 @@ async function emailInviteLink(
   token: string,
   inviterEmail: string | null,
 ): Promise<void> {
-  const { data: householdRow } = (await getHouseholdFields(householdId, ["name"])) as { data: { name: string } | null };
+  const { data: householdRow } = (await getHouseholdFields(householdId, ["name"])) as {
+    data: { name: string } | null;
+  };
 
   const acceptUrl = buildSiteUrl(context.request, `/invite/${token}`);
   setSecretFlash(context.cookies, FLASH_INVITE_LINK, acceptUrl);

@@ -26,9 +26,11 @@ beforeEach(() => {
     user: { id: "user-1", email: "user@example.com", user_metadata: {} },
   });
   mockRequireHouseholdEditor.mockReset().mockResolvedValue({ ok: true, householdId: "house-1" });
-  mockFetchTemps.mockReset().mockResolvedValue([
-    { id: "feed-1", name: "Garage feed", probes: { a: 1, b: 2 }, error: null },
-  ]);
+  mockFetchTemps
+    .mockReset()
+    .mockResolvedValue([
+      { id: "feed-1", name: "Garage feed", probes: { a: 1, b: 2 }, error: null },
+    ]);
 });
 
 describe("POST /api/devices/pull-fetch", () => {

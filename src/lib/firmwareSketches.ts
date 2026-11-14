@@ -12,10 +12,7 @@ import teensyIno from "../../sketches/teensy/teensy41_ds18b20_ingest/teensy41_ds
 import particleIno from "../../sketches/particle/boron_ds18b20_ingest/boron_ds18b20_ingest.ino?raw";
 import particleWebhookJson from "../../sketches/particle/boron_ds18b20_ingest/webhook.json?raw";
 
-import {
-  buildWaitingIngestPayload,
-  type WaitingSensorHint,
-} from "./waitingIngest";
+import { buildWaitingIngestPayload, type WaitingSensorHint } from "./waitingIngest";
 
 export function parseIngestUrlParts(ingestUrl: string): {
   host: string;

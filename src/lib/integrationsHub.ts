@@ -1,7 +1,4 @@
-import {
-  HA_DEV_DOCS_INTEGRATIONS,
-  HA_INTEGRATION_PAGE,
-} from "./homeAssistantIntegration";
+import { HA_DEV_DOCS_INTEGRATIONS, HA_INTEGRATION_PAGE } from "./homeAssistantIntegration";
 import { MATTER_INTEGRATION_PAGE, MATTER_REPO_URL } from "./matterIntegration";
 import { NODERED_FLOW_URL, NODERED_INTEGRATION_PAGE } from "./nodeRedIntegration";
 import { AUTOMATION_INTEGRATION_PAGE, N8N_ALERT_SHEETS_FLOW_URL } from "./automationIntegration";
@@ -154,8 +151,7 @@ export const INTEGRATION_CARDS: IntegrationCard[] = [
   {
     id: "zapier",
     title: "Zapier & Make",
-    summary:
-      "Catch outbound alert hooks or POST inbound snooze actions from no-code automations.",
+    summary: "Catch outbound alert hooks or POST inbound snooze actions from no-code automations.",
     href: "/about/zapier-make-recipes",
     cta: "Recipes",
   },

@@ -19,7 +19,8 @@ const de: HardwareMessages = {
   setupLabel: "Einrichtung: ",
   watchesLabel: "Überwacht: ",
   labelsTitle: "Was die Kennzeichnungen bedeuten",
-  verifiedExplain: "Wir haben diese Kombination auf einem echten Board laufen lassen und eintreffende Messwerte gesehen.",
+  verifiedExplain:
+    "Wir haben diese Kombination auf einem echten Board laufen lassen und eintreffende Messwerte gesehen.",
   builtInExplain:
     "Die Flasher-Firmware unterstützt es, aber wir haben es selbst noch nicht verkabelt. Sag uns, ob es bei dir funktioniert.",
   guideExplain:

@@ -9,9 +9,15 @@ const es: ApiUserMessages = {
     failed: "La alerta de prueba falló",
   },
   snooze: {
-    snoozed: { one: "Alertas pospuestas durante {count} hora.", other: "Alertas pospuestas durante {count} horas." },
+    snoozed: {
+      one: "Alertas pospuestas durante {count} hora.",
+      other: "Alertas pospuestas durante {count} horas.",
+    },
     vacationUntil: "Vacaciones hasta el {date}.",
-    vacationDays: { one: "Modo vacaciones durante {count} día.", other: "Modo vacaciones durante {count} días." },
+    vacationDays: {
+      one: "Modo vacaciones durante {count} día.",
+      other: "Modo vacaciones durante {count} días.",
+    },
     snoozeCleared: "Se quitó la pausa.",
     vacationCleared: "Se desactivó el modo vacaciones.",
   },
@@ -34,7 +40,8 @@ const es: ApiUserMessages = {
   feedIdRequired: "Falta el id del feed",
   csvRequiresPlan: "Para exportar CSV necesitas una suscripción activa o acceso de administrador",
   doorCsvFailed: "No se pudo exportar el historial de puertas. Inténtalo de nuevo en un momento.",
-  doorCsvTooMany: "Hay demasiadas aperturas de puertas para un solo CSV (más de 5000). Elige menos días e inténtalo de nuevo.",
+  doorCsvTooMany:
+    "Hay demasiadas aperturas de puertas para un solo CSV (más de 5000). Elige menos días e inténtalo de nuevo.",
   doorEventsInvalidDate: "Usa AAAA-MM-DD o una marca de tiempo completa en from y to.",
   doorEventsRangeOrder: "«from» debe ser anterior a «to».",
   doorEventsFailed: "No se pudo cargar el historial de puertas. Inténtalo de nuevo en un momento.",

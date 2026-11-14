@@ -8,7 +8,8 @@ export default {
         "Jeder Sensor, der Temperatur (und optional Luftfeuchtigkeit) als JSON senden kann: meist DHT22, DS18B20 oder Ähnliches an Arduino/ESP32. Die Fühler-Indizes ordnest du nach dem ersten Ingest im Dashboard zu.",
     },
     {
-      question: "Wie viele Fühler brauche ich in einer Garage, Werkstatt oder einem ähnlichen Raum?",
+      question:
+        "Wie viele Fühler brauche ich in einer Garage, Werkstatt oder einem ähnlichen Raum?",
       answer:
         "Ein Fühler ist ein Anfang; zwei oder drei Zonen (Torbereich, Nordwand, Werkbank) erfassen Frostrisiken, die ein einzelner Mittelwert übersieht.",
     },
@@ -84,7 +85,8 @@ export default {
         "Viele unbeheizte Räume (Garagen, Werkstätten, Kriechkeller) starten bei etwa 2–3 °C (35–38 °F), damit du gewarnt wirst, bevor die Rohre richtig durchfrieren. Passe den Wert an, sobald du die nächtlichen Tiefstwerte in deiner kältesten Zone kennst.",
     },
     {
-      question: "Sollte ich mich nach der Außenvorhersage oder nach den Innenfühlern warnen lassen?",
+      question:
+        "Sollte ich mich nach der Außenvorhersage oder nach den Innenfühlern warnen lassen?",
       answer:
         "Am besten nach beidem: Die Fühler erfassen deinen Raum; Vorhersage- und NWS-Warnungen (USA) erfassen regionale Kälteeinbrüche, bevor die Raumluft abgekühlt ist.",
     },
@@ -223,7 +225,8 @@ export default {
   ],
   "esp32-ota-firmware": [
     {
-      question: "Können ESP32-Geräte ihre Firmware aktualisieren, während sie an ProbeHarbor senden?",
+      question:
+        "Können ESP32-Geräte ihre Firmware aktualisieren, während sie an ProbeHarbor senden?",
       answer:
         "Ja: Führe OTA-Updates der Firmware in deinem LAN aus und lass den Push-Ingest weiter Messwerte an die Cloud-API senden. Akku- und RSSI-Felder sind in der Payload optional. Für das erste Flashen per USB lädst du unter Dashboard → Devices einen vorausgefüllten Sketch herunter.",
     },
@@ -338,8 +341,7 @@ export default {
     },
     {
       question: "Ist das Arduino oder XC8?",
-      answer:
-        "XC8 / MPLAB X auf Basis der MLA-Ethernet-Demo. Keine Arduino-.ino.",
+      answer: "XC8 / MPLAB X auf Basis der MLA-Ethernet-Demo. Keine Arduino-.ino.",
     },
   ],
   "teensy41-ingest": [

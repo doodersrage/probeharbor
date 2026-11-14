@@ -25,8 +25,14 @@ function check(ok, msg) {
   if (!ok) failed = true;
 }
 
-check(Boolean(monthly?.startsWith("price_")), `STRIPE_PRICE_ID_PORTFOLIO=${monthly || "(missing)"}`);
-check(Boolean(annual?.startsWith("price_")), `STRIPE_PRICE_ID_PORTFOLIO_ANNUAL=${annual || "(missing)"}`);
+check(
+  Boolean(monthly?.startsWith("price_")),
+  `STRIPE_PRICE_ID_PORTFOLIO=${monthly || "(missing)"}`,
+);
+check(
+  Boolean(annual?.startsWith("price_")),
+  `STRIPE_PRICE_ID_PORTFOLIO_ANNUAL=${annual || "(missing)"}`,
+);
 check(Boolean(displayM), `STRIPE_DISPLAY_PORTFOLIO_MONTHLY=${displayM || "(missing)"}`);
 check(Boolean(displayA), `STRIPE_DISPLAY_PORTFOLIO_ANNUAL=${displayA || "(missing)"}`);
 
@@ -40,7 +46,10 @@ for (const [label, priceId, expectedInterval, expectedUsd] of [
     const product = typeof price.product === "string" ? null : price.product;
     const usd = typeof price.unit_amount === "number" ? price.unit_amount / 100 : null;
     check(price.active, `${label} price active`);
-    check(price.recurring?.interval === expectedInterval, `${label} interval=${price.recurring?.interval}`);
+    check(
+      price.recurring?.interval === expectedInterval,
+      `${label} interval=${price.recurring?.interval}`,
+    );
     check(
       usd != null && Number.isFinite(expectedUsd) && Math.abs(usd - expectedUsd) < 0.01,
       `${label} amount $${usd} matches display $${expectedUsd}`,
@@ -82,15 +91,16 @@ for (const [label, priceId] of [
 const portals = await stripe.billingPortal.configurations.list({ limit: 5 });
 const portalId = portals.data.find((c) => c.active)?.id ?? portals.data[0]?.id;
 if (!portalId) {
-  check(false, "No Customer Portal configuration — run: node --env-file=.env scripts/configure-stripe-portal.mjs");
+  check(
+    false,
+    "No Customer Portal configuration — run: node --env-file=.env scripts/configure-stripe-portal.mjs",
+  );
 } else {
   const portal = await stripe.billingPortal.configurations.retrieve(portalId, {
     expand: ["features.subscription_update.products"],
   });
   const products = portal.features.subscription_update?.products ?? [];
-  const priceIds = new Set(
-    products.flatMap((p) => (Array.isArray(p.prices) ? p.prices : [])),
-  );
+  const priceIds = new Set(products.flatMap((p) => (Array.isArray(p.prices) ? p.prices : [])));
   check(
     portal.features.subscription_update?.enabled === true,
     `Portal subscription_update enabled (config ${portal.id})`,

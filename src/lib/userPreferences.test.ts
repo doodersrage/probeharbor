@@ -38,7 +38,9 @@ vi.mock("./sessionMetadata", () => ({
 }));
 
 beforeEach(() => {
-  mockUpdateSessionUserMetadata.mockReset().mockResolvedValue({ user: { id: "user-1" }, error: null });
+  mockUpdateSessionUserMetadata
+    .mockReset()
+    .mockResolvedValue({ user: { id: "user-1" }, error: null });
 });
 
 afterEach(() => {
@@ -48,18 +50,37 @@ afterEach(() => {
 describe("updateUserDisplayPreferences", () => {
   it("writes the display settings for the session's user", async () => {
     const { updateUserDisplayPreferences } = await import("./userPreferences");
-    const result = await updateUserDisplayPreferences("at-1", "rt-1", displayPrefs({ showWeather: false, weatherCityId: "123" }));
+    const result = await updateUserDisplayPreferences(
+      "at-1",
+      "rt-1",
+      displayPrefs({ showWeather: false, weatherCityId: "123" }),
+    );
 
     expect(mockUpdateSessionUserMetadata).toHaveBeenCalledTimes(1);
-    const [token, , patch] = mockUpdateSessionUserMetadata.mock.calls[0] as [string, string, Record<string, unknown>];
+    const [token, , patch] = mockUpdateSessionUserMetadata.mock.calls[0] as [
+      string,
+      string,
+      Record<string, unknown>,
+    ];
     expect(token).toBe("at-1");
     expect(patch).toMatchObject({ show_weather: false, weather_city_id: "123" });
-    expect(Object.keys(patch)).toEqual(expect.arrayContaining(["show_garage_temps", "show_weather", "weather_city_id", "use_celsius", "theme"]));
+    expect(Object.keys(patch)).toEqual(
+      expect.arrayContaining([
+        "show_garage_temps",
+        "show_weather",
+        "weather_city_id",
+        "use_celsius",
+        "theme",
+      ]),
+    );
     expect(result).toEqual({ user: { id: "user-1" }, error: null });
   });
 
   it("passes the helper's error back (e.g. an expired session)", async () => {
-    mockUpdateSessionUserMetadata.mockResolvedValue({ user: null, error: new Error("Invalid session") });
+    mockUpdateSessionUserMetadata.mockResolvedValue({
+      user: null,
+      error: new Error("Invalid session"),
+    });
     const { updateUserDisplayPreferences } = await import("./userPreferences");
     const result = await updateUserDisplayPreferences("at-1", "rt-1", displayPrefs());
     expect(result.user).toBeNull();

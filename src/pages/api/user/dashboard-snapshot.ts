@@ -5,7 +5,11 @@ import { getAlertSettingsForUser } from "../../../lib/notify";
 import { listHouseholdDevices } from "../../../lib/devices";
 import { fetchLatestSensorValuesResult } from "../../../lib/sensorReadings";
 import { formatRelativeAge } from "../../../lib/relativeTime";
-import { newestRowFreshness, rowFreshness, summarizeStaleSensors } from "../../../lib/sensorFreshness";
+import {
+  newestRowFreshness,
+  rowFreshness,
+  summarizeStaleSensors,
+} from "../../../lib/sensorFreshness";
 import { computeGarageRiskStatus } from "../../../lib/garageRiskStatus";
 import { statusReadingScope } from "../../../lib/demoFeed";
 import { getDisplayPreferencesFromMetadata } from "../../../lib/userPreferences";
@@ -36,22 +40,21 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
 
   const household = await getOrCreateHouseholdForUser(user.id, user.email);
   const householdId = household.householdId;
-  const [devicesResult, latestResult, alertSettings, unacked, role, weather] =
-    await Promise.all([
-      householdId
-        ? listHouseholdDevices(householdId)
-        : Promise.resolve({
-            devices: [] as Awaited<ReturnType<typeof listHouseholdDevices>>["devices"],
-            error: null,
-          }),
-      householdId
-        ? fetchLatestSensorValuesResult(householdId)
-        : Promise.resolve({ rows: [], error: null }),
-      getAlertSettingsForUser(user.id, user.user_metadata as Record<string, unknown>),
-      countUnacknowledgedAlerts(user.id),
-      householdId ? getUserHouseholdRole(user.id, householdId) : Promise.resolve(null),
-      fetchWeatherForUser(user).catch(() => null),
-    ]);
+  const [devicesResult, latestResult, alertSettings, unacked, role, weather] = await Promise.all([
+    householdId
+      ? listHouseholdDevices(householdId)
+      : Promise.resolve({
+          devices: [] as Awaited<ReturnType<typeof listHouseholdDevices>>["devices"],
+          error: null,
+        }),
+    householdId
+      ? fetchLatestSensorValuesResult(householdId)
+      : Promise.resolve({ rows: [], error: null }),
+    getAlertSettingsForUser(user.id, user.user_metadata as Record<string, unknown>),
+    countUnacknowledgedAlerts(user.id),
+    householdId ? getUserHouseholdRole(user.id, householdId) : Promise.resolve(null),
+    fetchWeatherForUser(user).catch(() => null),
+  ]);
 
   // Don't let a failed query refresh the card into "add your first probe":
   // the page keeps what it rendered and shows its offline banner.
@@ -73,7 +76,12 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
   // Match Overview: the status and coldest-probe figures judge real probes only
   // when there are any; demo-only households get the labelled demo state.
   const statusScope = statusReadingScope(latest, devices);
-  const statusStaleCount = summarizeStaleSensors(statusScope.rows, statusScope.devices, undefined, locale).total;
+  const statusStaleCount = summarizeStaleSensors(
+    statusScope.rows,
+    statusScope.devices,
+    undefined,
+    locale,
+  ).total;
   const coldestProbeTempF = (() => {
     // Match Overview: skip probes whose last reading is stale.
     const temps = statusScope.rows
@@ -94,40 +102,40 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     (row) => row.recorded_at && !rowFreshness(row, devices).stale,
   ).length;
   const coldestMarginF =
-    coldestProbeTempF != null
-      ? coldestProbeTempF - alertSettings.freezeThresholdF
-      : null;
+    coldestProbeTempF != null ? coldestProbeTempF - alertSettings.freezeThresholdF : null;
   const outdoorTempF =
-    typeof weather?.temp === "number" && Number.isFinite(weather.temp)
-      ? weather.temp
-      : null;
+    typeof weather?.temp === "number" && Number.isFinite(weather.temp) ? weather.temp : null;
   const showColdSnapChecklist =
     alertSettings.forecastFreezeEnabled &&
     outdoorTempF != null &&
     outdoorTempF <= alertSettings.freezeThresholdF + 10;
 
-  const risk = computeGarageRiskStatus({
-    // Same rule as the Overview page (push/pull devices or any reading).
-    hasDevices:
-      statusScope.devices.some((d) => d.source === "push" || d.source === "pull_url") ||
-      statusScope.rows.length > 0,
-    hasLiveReading: statusScope.rows.length > 0,
-    coldestProbeTempF,
-    freezeThresholdF: alertSettings.freezeThresholdF,
-    staleSensorCount: statusStaleCount,
-    nightsRiskCount: 0,
-    alertsEnabled: alertSettings.enabled,
-    hasEmailAlerts: alertSettings.channelEmail,
-    outdoorTempF,
-    showColdSnapChecklist,
-    hoursUntilFreeze: null,
-    hitsAtLabel: null,
-    wetFloodCount,
-    demoOnly: statusScope.demoOnly,
-    // riskDetail is display text for the Overview, so it follows the °C preference;
-    // the numeric fields below stay °F.
-    useCelsius: getDisplayPreferencesFromMetadata(user).useCelsius,
-  }, locale, overviewCardsMessages(locale).garageRisk);
+  const risk = computeGarageRiskStatus(
+    {
+      // Same rule as the Overview page (push/pull devices or any reading).
+      hasDevices:
+        statusScope.devices.some((d) => d.source === "push" || d.source === "pull_url") ||
+        statusScope.rows.length > 0,
+      hasLiveReading: statusScope.rows.length > 0,
+      coldestProbeTempF,
+      freezeThresholdF: alertSettings.freezeThresholdF,
+      staleSensorCount: statusStaleCount,
+      nightsRiskCount: 0,
+      alertsEnabled: alertSettings.enabled,
+      hasEmailAlerts: alertSettings.channelEmail,
+      outdoorTempF,
+      showColdSnapChecklist,
+      hoursUntilFreeze: null,
+      hitsAtLabel: null,
+      wetFloodCount,
+      demoOnly: statusScope.demoOnly,
+      // riskDetail is display text for the Overview, so it follows the °C preference;
+      // the numeric fields below stay °F.
+      useCelsius: getDisplayPreferencesFromMetadata(user).useCelsius,
+    },
+    locale,
+    overviewCardsMessages(locale).garageRisk,
+  );
 
   // This household's own hold (inbound webhook), shown next to the member's own pause.
   const householdHold = householdId ? await loadHouseholdAlertHold(householdId) : null;
@@ -165,7 +173,9 @@ export const GET: APIRoute = async ({ cookies, locals }) => {
     vacationUntil: alertSettings.vacationUntil,
     /** This household's snooze / vacation set by its inbound webhook (for all members). */
     householdSnoozeActive: isSnoozeActive({ snoozeUntil: householdHold?.snoozeUntil ?? null }),
-    householdVacationActive: isVacationActive({ vacationUntil: householdHold?.vacationUntil ?? null }),
+    householdVacationActive: isVacationActive({
+      vacationUntil: householdHold?.vacationUntil ?? null,
+    }),
     /** When routine alerts resume (own or household snooze/vacation, whichever is later), formatted; null when not paused. */
     alertsPausedUntilLabel: alertPause
       ? formatAlertPauseUntil(alertPause.until, locale, alertSettings.quietHoursTimezone)

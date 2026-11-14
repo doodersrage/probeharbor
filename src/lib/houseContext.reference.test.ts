@@ -30,12 +30,26 @@ describe("fetchReferenceSensorChartPoints", () => {
       { bucket_start: "2026-10-28T23:30:00+00:00", avg_num: null },
     ]);
 
-    const points = await fetchReferenceSensorChartPoints("hh-1", "s", 30, { from: "2026-09-29T00:00:00Z", to: "2026-10-29T00:00:00Z" });
+    const points = await fetchReferenceSensorChartPoints("hh-1", "s", 30, {
+      from: "2026-09-29T00:00:00Z",
+      to: "2026-10-29T00:00:00Z",
+    });
 
     expect(mockHouseholdSensor).toHaveBeenCalledWith("hh-1", "s");
-    expect(mockSensorBucketAverages).toHaveBeenCalledWith("hh-1", "s", "2026-09-29T00:00:00Z", "2026-10-29T00:00:00Z", 2880);
+    expect(mockSensorBucketAverages).toHaveBeenCalledWith(
+      "hh-1",
+      "s",
+      "2026-09-29T00:00:00Z",
+      "2026-10-29T00:00:00Z",
+      2880,
+    );
     expect(points).toEqual([
-      { timestamp: "2026-09-29T00:00:00+00:00", tempf: 68.2, humidity: null, probeLabel: "Hallway" },
+      {
+        timestamp: "2026-09-29T00:00:00+00:00",
+        tempf: 68.2,
+        humidity: null,
+        probeLabel: "Hallway",
+      },
       { timestamp: "2026-10-28T23:12:00+00:00", tempf: 69, humidity: null, probeLabel: "Hallway" },
     ]);
   });

@@ -32,7 +32,8 @@ const ptBr: AccessoriesMessages = {
   },
   hub: {
     title: "Acessórios de hardware",
-    description: "Dispositivos complementares e peças de kit para o ProbeHarbor: luzes de humor, contatos de porta e vazamento, etiquetas e suportes.",
+    description:
+      "Dispositivos complementares e peças de kit para o ProbeHarbor: luzes de humor, contatos de porta e vazamento, etiquetas e suportes.",
     kicker: "Hardware",
     lede: "Dispositivos complementares e peças de kit para o ProbeHarbor. As sondas de temperatura continuam no caminho do kit de congelamento — estes acessórios comprovam presença, mostram humores, enviam contatos por POST ou finalizam uma instalação na garagem.",
     freezeKitBom: "Lista de peças do kit de congelamento",
@@ -72,7 +73,8 @@ const ptBr: AccessoriesMessages = {
   },
   claimPuckCase: {
     title: "Case do Claim puck",
-    description: "Gabinete, botão de claim e difusor de LED opcional para o claim puck RP2040-Zero do ProbeHarbor — finalize a montagem da placa nua.",
+    description:
+      "Gabinete, botão de claim e difusor de LED opcional para o claim puck RP2040-Zero do ProbeHarbor — finalize a montagem da placa nua.",
     firmware: "Firmware ↗",
     doesHtml:
       "Transforma o Waveshare RP2040-Zero + botão no GP4 em uma chave de presença segura para a mesa, com um brilho de humor mais suave.",
@@ -81,7 +83,8 @@ const ptBr: AccessoriesMessages = {
     caption: "Peças do case do Claim puck",
     zeroWhy: "MCU do Claim puck.",
     casePart: "Case impresso em 3D ou cortado a laser",
-    caseWhy: "Recorte para USB, furo para o botão, janela para o LED. Publique seu STL ao lado do repositório do firmware se for compartilhá-lo.",
+    caseWhy:
+      "Recorte para USB, furo para o botão, janela para o LED. Publique seu STL ao lado do repositório do firmware se for compartilhá-lo.",
     caseBuy: "Faça você mesmo / gráfica local de impressão 3D.",
     diffuserPart: "Difusor de LED (opcional)",
     diffuserWhy: "Cor de humor mais suave para o RGB da placa.",
@@ -95,9 +98,11 @@ const ptBr: AccessoriesMessages = {
   },
   alertBeacon: {
     title: "Alert beacon",
-    description: "Luz de humor para mesa ou corredor que reflete os humores de congelamento e inundação do ProbeHarbor. Mesma API de humor do Bay Buddy — não é sonda.",
+    description:
+      "Luz de humor para mesa ou corredor que reflete os humores de congelamento e inundação do ProbeHarbor. Mesma API de humor do Bay Buddy — não é sonda.",
     moodApi: "API de humor",
-    doesHtml: "Mostra ao vivo o humor do espaço (cozy, drafty, shiver, panic, offline, hero) em uma barra ou anel NeoPixel mais brilhante, controlado por <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
+    doesHtml:
+      "Mostra ao vivo o humor do espaço (cozy, drafty, shiver, panic, offline, hero) em uma barra ou anel NeoPixel mais brilhante, controlado por <code>GET /api/bays/&lt;bay&gt;/mood</code> via Bay Buddy.",
     doesNotHtml:
       'Medir temperatura, substituir SMS/e-mail de Alerts nem fazer claim de um espaço sozinho. Combine com uma sonda de congelamento e, se quiser, um <a class="text-link" href="/claim-puck">claim puck</a> para presença.',
     caption: "Peças do Alert beacon",
@@ -119,7 +124,8 @@ const ptBr: AccessoriesMessages = {
   },
   doorPuck: {
     title: "Door puck (contato de porta)",
-    description: "Contato magnético reed ou botão que envia porta aberta/fechada por POST ao ProbeHarbor. Alimenta o humor drafty e alertas personalizados — não é sonda.",
+    description:
+      "Contato magnético reed ou botão que envia porta aberta/fechada por POST ao ProbeHarbor. Alimenta o humor drafty e alertas personalizados — não é sonda.",
     addingDevices: "Adicionar dispositivos",
     doesHtml:
       'Envia por POST <code>{ "door1": true }</code> (aberta) / <code>false</code> (fechada) para sua URL de ingestão push cerca de uma vez por minuto ou a cada mudança.',
@@ -139,7 +145,8 @@ const ptBr: AccessoriesMessages = {
   },
   leakPuck: {
     title: "Leak puck (contato de vazamento)",
-    description: "Placas de contato com água que enviam por POST sensores de inundação molhado/seco ao ProbeHarbor. Alertam sozinhos quando molhados — não é sonda.",
+    description:
+      "Placas de contato com água que enviam por POST sensores de inundação molhado/seco ao ProbeHarbor. Alertam sozinhos quando molhados — não é sonda.",
     doesHtml:
       'Envia por POST <code>{ "leak1": true }</code> quando molhado (ou <code>flood1</code>). Chaves que contêm leak/flood são importadas como sensores de inundação.',
     doesNotHtml:
@@ -158,7 +165,8 @@ const ptBr: AccessoriesMessages = {
   },
   powerNudge: {
     title: "Power nudge (falta de energia)",
-    description: "Contato de detecção de rede via USB ou nobreak que envia energia perdida/restaurada por POST ao ProbeHarbor. Saiba quando o espaço ficou sem luz.",
+    description:
+      "Contato de detecção de rede via USB ou nobreak que envia energia perdida/restaurada por POST ao ProbeHarbor. Saiba quando o espaço ficou sem luz.",
     staleReadings: "Leituras paradas",
     doesHtml:
       'Envia por POST <code>{ "power1": true }</code> enquanto há energia de rede/USB, e <code>false</code> quando ela cai (chaves com power/relay são importadas como sensores de energia).',
@@ -168,7 +176,8 @@ const ptBr: AccessoriesMessages = {
     esp32Part: "ESP32 em nobreak / sempre ligado",
     esp32Why: "Precisa continuar ligado para informar a queda de energia em outro circuito.",
     sensePart: "Entrada de detecção USB / rede",
-    senseWhy: "Optoacoplador ou módulo relé: GPIO4 em nível baixo = energia presente (ativo em baixo no exemplo).",
+    senseWhy:
+      "Optoacoplador ou módulo relé: GPIO4 em nível baixo = energia presente (ativo em baixo no exemplo).",
     senseBuy: "Loja de eletrônicos; módulo isolado de detecção USB ou de rede.",
     stepsHtml: [
       "Grave <code>sketches/arduino/power_sense_ingest/</code> com o Wi‑Fi + URL de ingestão.",
@@ -178,7 +187,8 @@ const ptBr: AccessoriesMessages = {
   },
   kitLabels: {
     title: "Etiquetas QR e NFC do kit",
-    description: "Adesivos QR imprimíveis e tags NFC opcionais com sua URL de ingestão push do ProbeHarbor — configure o firmware sem digitar a chave.",
+    description:
+      "Adesivos QR imprimíveis e tags NFC opcionais com sua URL de ingestão push do ProbeHarbor — configure o firmware sem digitar a chave.",
     kitQrGuide: "Guia do QR do kit",
     claimsPack: "Pacote para sinistros",
     doesHtml:
@@ -201,7 +211,8 @@ const ptBr: AccessoriesMessages = {
   },
   probeMountKit: {
     title: "Kit de fixação da sonda",
-    description: "Abraçadeiras, presilhas para cano, fitas adesivas, pull-up de 4,7k e dicas de fixação do DS18B20 à prova d’água para uma sonda confiável do ProbeHarbor.",
+    description:
+      "Abraçadeiras, presilhas para cano, fitas adesivas, pull-up de 4,7k e dicas de fixação do DS18B20 à prova d’água para uma sonda confiável do ProbeHarbor.",
     mountingGuide: "Guia de fixação",
     picoIngest: "Ingestão com Pico W",
     doesHtml:

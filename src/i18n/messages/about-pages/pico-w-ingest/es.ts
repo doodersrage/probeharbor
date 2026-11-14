@@ -1,4 +1,3 @@
-
 /**
  * /about/pico-w-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Pin names, part numbers,
@@ -24,12 +23,15 @@ const es: PicoWIngestMessages = {
     colWhy: "Por qué",
     colBuy: "Comprar",
     boardPart: "Pico W o Pico 2 W",
-    boardWhy: "Wi‑Fi CYW43439 y TLS integrados. La Pico 2 W (RP2350) es la mejora directa y compatible.",
+    boardWhy:
+      "Wi‑Fi CYW43439 y TLS integrados. La Pico 2 W (RP2350) es la mejora directa y compatible.",
     probePart: "DS18B20 impermeable",
-    probeWhyHtml: "Sonda para tuberías o sótano ventilado; funciona bajo cero. Datos en <strong>GP4</strong>.",
+    probeWhyHtml:
+      "Sonda para tuberías o sótano ventilado; funciona bajo cero. Datos en <strong>GP4</strong>.",
     amazon: "Amazon",
     resistorPart: "Resistencia de 4,7 kΩ",
-    resistorWhy: "Pull-up desde los datos del DS18B20 a 3,3 V. En una Pico, no alimentes la sonda con 5 V.",
+    resistorWhy:
+      "Pull-up desde los datos del DS18B20 a 3,3 V. En una Pico, no alimentes la sonda con 5 V.",
     amazonResistor: "4,7k en Amazon",
   },
   wiringTitle: "Cableado",

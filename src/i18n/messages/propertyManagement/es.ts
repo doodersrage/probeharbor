@@ -20,7 +20,8 @@ const es: PropertyManagementMessages = {
   portfolioPrice: "Portfolio: {price}",
   seePortfolioPricing: "Ver precios de Portfolio",
   priceAnnual: "{annual}/año para hasta {max} propiedades",
-  priceAnnualWithMonthly: "{annual}/año para hasta {max} propiedades ({monthly}/mes con facturación mensual)",
+  priceAnnualWithMonthly:
+    "{annual}/año para hasta {max} propiedades ({monthly}/mes con facturación mensual)",
   priceMonthly: "{monthly}/mes para hasta {max} propiedades",
   priceCustom: "Precio personalizado para hasta {max} propiedades",
   screenshotCaption:
@@ -67,11 +68,13 @@ const es: PropertyManagementMessages = {
   faqs: [
     {
       question: "¿En qué se diferencia Portfolio de Pro?",
-      answer: "Portfolio incluye todo lo del plan Pro (alertas por SMS, alertas oficiales de helada y frío del NWS (EE. UU.), el paquete de pruebas para reclamaciones, webhooks y enlaces para compartir) y además un límite mucho mayor de propiedades propias (Pro ya permite hasta {pro}; Portfolio lo eleva a {portfolio}), con un precio pensado para esa escala y no para una sola propiedad.",
+      answer:
+        "Portfolio incluye todo lo del plan Pro (alertas por SMS, alertas oficiales de helada y frío del NWS (EE. UU.), el paquete de pruebas para reclamaciones, webhooks y enlaces para compartir) y además un límite mucho mayor de propiedades propias (Pro ya permite hasta {pro}; Portfolio lo eleva a {portfolio}), con un precio pensado para esa escala y no para una sola propiedad.",
     },
     {
       question: "¿Necesito Portfolio si solo tengo 2 o 3 propiedades?",
-      answer: "Probablemente no: Pro ya cubre un puñado de propiedades (hasta {pro} hogares propios) con el mismo panel multipropiedad y el mismo resumen de alertas. Portfolio está pensado para operaciones más grandes: una empresa de administración de propiedades o un arrendador con muchas unidades, donde un precio individual fijo no refleja la escala.",
+      answer:
+        "Probablemente no: Pro ya cubre un puñado de propiedades (hasta {pro} hogares propios) con el mismo panel multipropiedad y el mismo resumen de alertas. Portfolio está pensado para operaciones más grandes: una empresa de administración de propiedades o un arrendador con muchas unidades, donde un precio individual fijo no refleja la escala.",
     },
     {
       question: "¿Pueden mis administradores o el personal en sitio tener su propio acceso?",

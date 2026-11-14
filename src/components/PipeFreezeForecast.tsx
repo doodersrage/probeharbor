@@ -6,7 +6,13 @@ import {
   type FreezeNight,
   type FreezeRisk,
 } from "../lib/pipeFreezeForecast";
-import { formatTemp, formatWind, loadTempUnit, saveTempUnit, type TempUnit } from "../lib/tempUnits";
+import {
+  formatTemp,
+  formatWind,
+  loadTempUnit,
+  saveTempUnit,
+  type TempUnit,
+} from "../lib/tempUnits";
 
 type Place = { label: string; lat: number; lon: number };
 type Forecast = {
@@ -74,7 +80,9 @@ export const PIPE_FREEZE_FORECAST_TEXT = {
 export type PipeFreezeForecastText = typeof PIPE_FREEZE_FORECAST_TEXT;
 
 function fill(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
 }
 
 function riskLabel(risk: FreezeRisk, text: PipeFreezeForecastText): string {
@@ -110,7 +118,12 @@ function errorMessage(code: string | undefined, text: PipeFreezeForecastText): s
   return text.errorService;
 }
 
-function nightLabel(date: string, index: number, text: PipeFreezeForecastText, locale?: string): string {
+function nightLabel(
+  date: string,
+  index: number,
+  text: PipeFreezeForecastText,
+  locale?: string,
+): string {
   if (index === 0) return text.tonight;
   const d = new Date(`${date}T12:00:00`);
   return fill(text.weekdayNight, { weekday: d.toLocaleDateString(locale, { weekday: "long" }) });
@@ -154,7 +167,9 @@ function FreezeAlertSignup({
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("signup") !== "1") return;
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    formRef.current?.querySelector<HTMLInputElement>('input[name="email"]')?.focus({ preventScroll: true });
+    formRef.current
+      ?.querySelector<HTMLInputElement>('input[name="email"]')
+      ?.focus({ preventScroll: true });
   }, []);
 
   // The Turnstile script only auto-renders widgets present at page load, so render this one explicitly.
@@ -168,7 +183,8 @@ function FreezeAlertSignup({
         window.setTimeout(tryRender, 300);
         return;
       }
-      if (widgetId.current == null) widgetId.current = api.render(widgetRef.current, { sitekey: siteKey });
+      if (widgetId.current == null)
+        widgetId.current = api.render(widgetRef.current, { sitekey: siteKey });
     };
     tryRender();
     return () => {
@@ -211,14 +227,28 @@ function FreezeAlertSignup({
       <div class="pipe-freeze-search">
         <label class="block grow">
           <span class="form-label">{text.emailLabel}</span>
-          <input class="form-input" type="email" name="email" required autoComplete="email" placeholder={text.emailPlaceholder} />
+          <input
+            class="form-input"
+            type="email"
+            name="email"
+            required
+            autoComplete="email"
+            placeholder={text.emailPlaceholder}
+          />
         </label>
         <button class="btn-primary self-end" type="submit" disabled={submitting}>
           {submitting ? text.sending : text.submit}
         </button>
       </div>
       {/* Honeypot: hidden from people, filled by bots. */}
-      <input type="text" name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" class="hidden" />
+      <input
+        type="text"
+        name="company"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        class="hidden"
+      />
       <div ref={widgetRef} class="mt-3"></div>
       {status && (
         <p class={`${status.ok ? "alert-success" : "alert-warning"} mt-3 mb-0`} role="status">
@@ -318,7 +348,11 @@ export default function PipeFreezeForecast({
           results?: Array<{ label: string; lat: number; lon: number; country?: string }>;
         };
         const found = body.results ?? [];
-        setResults(found.filter((r) => !r.country || r.country === "US").map(({ label, lat, lon }) => ({ label, lat, lon })));
+        setResults(
+          found
+            .filter((r) => !r.country || r.country === "US")
+            .map(({ label, lat, lon }) => ({ label, lat, lon })),
+        );
       } catch {
         setResults([]);
       }
@@ -331,7 +365,8 @@ export default function PipeFreezeForecast({
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => void load({ label: text.myLocation, lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      (pos) =>
+        void load({ label: text.myLocation, lat: pos.coords.latitude, lon: pos.coords.longitude }),
       () => setError(text.errorGeoDeclined),
       { timeout: 10_000, maximumAge: 600_000 },
     );
@@ -340,7 +375,9 @@ export default function PipeFreezeForecast({
   return (
     <section class="card" aria-labelledby="pipe-freeze-tool-heading">
       <div class="flex items-center justify-between gap-3">
-        <h2 id="pipe-freeze-tool-heading" class="card-title">{text.heading}</h2>
+        <h2 id="pipe-freeze-tool-heading" class="card-title">
+          {text.heading}
+        </h2>
         <fieldset class="temp-unit-toggle">
           <legend class="sr-only">{text.unitLegend}</legend>
           {(["F", "C"] as const).map((option) => (
@@ -392,14 +429,17 @@ export default function PipeFreezeForecast({
 
       <div aria-live="polite">
         {loading && (
-          <p class="mt-4 mb-0 text-[var(--color-text-muted)]">{fill(text.loading, { place: place?.label ?? "" })}</p>
+          <p class="mt-4 mb-0 text-[var(--color-text-muted)]">
+            {fill(text.loading, { place: place?.label ?? "" })}
+          </p>
         )}
         {error && <p class="alert-warning mt-4 mb-0">{error}</p>}
         {forecast && (
           <div class="mt-5">
             <p class="pipe-freeze-headline">{headline(forecast, unit, text)}</p>
             <p class="mt-1 mb-4 text-sm text-[var(--color-text-muted)]">
-              {[forecast.location.city, forecast.location.state].filter(Boolean).join(", ") || place?.label}
+              {[forecast.location.city, forecast.location.state].filter(Boolean).join(", ") ||
+                place?.label}
               {text.source}
               {forecast.updatedAt
                 ? fill(text.updated, { time: new Date(forecast.updatedAt).toLocaleString(locale) })
@@ -409,21 +449,31 @@ export default function PipeFreezeForecast({
               {forecast.nights.map((night, index) => (
                 <article class={`pipe-freeze-night ${RISK_CLASS[night.risk]}`} key={night.date}>
                   <header class="flex items-baseline justify-between gap-2">
-                    <h3 class="m-0 text-base font-semibold">{nightLabel(night.date, index, text, locale)}</h3>
+                    <h3 class="m-0 text-base font-semibold">
+                      {nightLabel(night.date, index, text, locale)}
+                    </h3>
                     <span class="pipe-freeze-risk">{riskLabel(night.risk, text)}</span>
                   </header>
                   <p class="stat-value m-0 mt-2">{formatTemp(night.lowF, unit)}</p>
                   <p class="m-0 text-xs text-[var(--color-text-muted)]">
-                    {fill(text.nightLow, { hours: night.hoursAtOrBelow32, temp: formatTemp(32, unit) })}
+                    {fill(text.nightLow, {
+                      hours: night.hoursAtOrBelow32,
+                      temp: formatTemp(32, unit),
+                    })}
                     {night.hoursAtOrBelow20 > 0
-                      ? fill(text.nightBelow20, { hours: night.hoursAtOrBelow20, temp: formatTemp(20, unit) })
+                      ? fill(text.nightBelow20, {
+                          hours: night.hoursAtOrBelow20,
+                          temp: formatTemp(20, unit),
+                        })
                       : ""}
                   </p>
                   <p class="m-0 mt-2 text-sm">{describeNight(night, unit, text)}</p>
                 </article>
               ))}
             </div>
-            {place && <FreezeAlertSignup place={place} siteKey={turnstileSiteKey} unit={unit} text={text} />}
+            {place && (
+              <FreezeAlertSignup place={place} siteKey={turnstileSiteKey} unit={unit} text={text} />
+            )}
             {place && (
               <details class="mt-4">
                 <summary class="cursor-pointer text-sm text-link">{text.embedSummary}</summary>
@@ -436,7 +486,9 @@ export default function PipeFreezeForecast({
                   class="btn-secondary btn-sm mt-2"
                   onClick={async () => {
                     try {
-                      await navigator.clipboard.writeText(embedSnippet(window.location.origin, place, unit));
+                      await navigator.clipboard.writeText(
+                        embedSnippet(window.location.origin, place, unit),
+                      );
                       setCopied(true);
                       window.setTimeout(() => setCopied(false), 2000);
                     } catch {

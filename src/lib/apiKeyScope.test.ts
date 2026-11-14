@@ -1,7 +1,12 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { API_KEY_ROUTE_SCOPES, apiKeyScopeDenied, parseApiKeyScope, scopeAllows } from "./apiKeyScope";
+import {
+  API_KEY_ROUTE_SCOPES,
+  apiKeyScopeDenied,
+  parseApiKeyScope,
+  scopeAllows,
+} from "./apiKeyScope";
 
 const PAGES = path.resolve(__dirname, "../pages");
 
@@ -15,7 +20,10 @@ function routeFiles(dir: string): string[] {
 
 /** "src/pages/api/v1/devices/index.ts" → "/api/v1/devices". */
 function routePath(file: string): string {
-  const rel = path.relative(PAGES, file).replace(/\\/g, "/").replace(/\.(ts|js)$/, "");
+  const rel = path
+    .relative(PAGES, file)
+    .replace(/\\/g, "/")
+    .replace(/\.(ts|js)$/, "");
   return `/${rel.replace(/\/index$/, "")}`;
 }
 
@@ -42,9 +50,13 @@ describe("API key route classification", () => {
   });
 
   it("covers every handler that accepts an API key, and each handler checks its own route", () => {
-    expect(apiKeyHandlers.map((h) => h.route).sort()).toEqual(Object.keys(API_KEY_ROUTE_SCOPES).sort());
+    expect(apiKeyHandlers.map((h) => h.route).sort()).toEqual(
+      Object.keys(API_KEY_ROUTE_SCOPES).sort(),
+    );
     for (const { route, source } of apiKeyHandlers) {
-      expect(source, `${route} must call apiKeyScopeDenied`).toContain(`apiKeyScopeDenied(resolved, "${route}"`);
+      expect(source, `${route} must call apiKeyScopeDenied`).toContain(
+        `apiKeyScopeDenied(resolved, "${route}"`,
+      );
     }
   });
 
@@ -68,9 +80,11 @@ describe("parseApiKeyScope", () => {
 
 describe("scopeAllows / apiKeyScopeDenied", () => {
   it("read routes accept read, write and legacy/unknown scopes; write routes only write", () => {
-    for (const scope of ["read", "write", undefined, "bogus"]) expect(scopeAllows(scope, "read")).toBe(true);
+    for (const scope of ["read", "write", undefined, "bogus"])
+      expect(scopeAllows(scope, "read")).toBe(true);
     expect(scopeAllows("write", "write")).toBe(true);
-    for (const scope of ["read", undefined, "bogus", "WRITE"]) expect(scopeAllows(scope, "write")).toBe(false);
+    for (const scope of ["read", undefined, "bogus", "WRITE"])
+      expect(scopeAllows(scope, "write")).toBe(false);
   });
 
   it("returns null when allowed", () => {
@@ -82,13 +96,17 @@ describe("scopeAllows / apiKeyScopeDenied", () => {
     const res = apiKeyScopeDenied({ scope: "read" }, "POST /api/v1/devices");
     expect(res?.status).toBe(403);
     expect(res?.headers.get("Content-Type")).toBe("application/json");
-    expect(res?.headers.get("WWW-Authenticate")).toBe('Bearer error="insufficient_scope", scope="write"');
+    expect(res?.headers.get("WWW-Authenticate")).toBe(
+      'Bearer error="insufficient_scope", scope="write"',
+    );
     const body = (await res!.json()) as { error: string };
     expect(body).toMatchObject({ code: "insufficient_scope", required_scope: "write" });
     expect(body.error).toMatch(/read-only/);
     expect(body).not.toHaveProperty("ok");
 
-    const withOk = await apiKeyScopeDenied({ scope: "read" }, "POST /api/v1/pull-setup", { okField: true })!.json();
+    const withOk = await apiKeyScopeDenied({ scope: "read" }, "POST /api/v1/pull-setup", {
+      okField: true,
+    })!.json();
     expect(withOk).toMatchObject({ ok: false, code: "insufficient_scope" });
   });
 });

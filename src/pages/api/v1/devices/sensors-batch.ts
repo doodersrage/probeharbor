@@ -21,7 +21,9 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
   // Scope: see API_KEY_ROUTE_SCOPES (read keys get 403 on write routes).
-  const denied = apiKeyScopeDenied(resolved, "POST /api/v1/devices/sensors-batch", { okField: true });
+  const denied = apiKeyScopeDenied(resolved, "POST /api/v1/devices/sensors-batch", {
+    okField: true,
+  });
   if (denied) return denied;
 
   const plan = await checkApiPlan(resolved.householdId);

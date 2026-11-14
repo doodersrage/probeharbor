@@ -1,9 +1,5 @@
 import { interpretIngestPayload, type InterpretedReading } from "./ingestInterpret";
-import {
-  MAX_BATCH_READINGS,
-  splitIngestBody,
-  type RejectedEntry,
-} from "./ingestTime";
+import { MAX_BATCH_READINGS, splitIngestBody, type RejectedEntry } from "./ingestTime";
 
 export type IngestCheckResult = {
   /** What the real endpoint would answer: 200 with readings, or 400 "No sensor values found". */
@@ -17,8 +13,18 @@ export type IngestCheckResult = {
 };
 
 /** Keys the endpoint reads that aren't sensor values. */
-const DEVICE_KEYS = new Set(["battery", "battery_pct", "rssi", "fw", "meta", "name", "device", "labels", "recorded_at", "tls"]);
-
+const DEVICE_KEYS = new Set([
+  "battery",
+  "battery_pct",
+  "rssi",
+  "fw",
+  "meta",
+  "name",
+  "device",
+  "labels",
+  "recorded_at",
+  "tls",
+]);
 
 const NO_VALUES =
   'No sensor values found; the endpoint would answer 400. Send numbers or true/false, e.g. {"temp1": 42.5, "door1": false}.';
@@ -53,8 +59,8 @@ export function checkIngestPayload(payload: unknown, nowMs = Date.now()): Ingest
       device: empty,
       warnings: [
         Array.isArray(payload)
-          ? "Send one JSON object, not an array. Wrap several sensors as {\"sensors\": [...]}."
-          : "Send a JSON object, like {\"temp1\": 42.5}.",
+          ? 'Send one JSON object, not an array. Wrap several sensors as {"sensors": [...]}.'
+          : 'Send a JSON object, like {"temp1": 42.5}.',
       ],
       ignoredKeys: [],
     };
@@ -116,7 +122,9 @@ function checkOne(body: Record<string, unknown>): IngestCheckResult {
   for (const key of ignoredKeys) {
     const value = body[key];
     if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) {
-      warnings.push(`"${key}" is the string "${value}". Send it as a number (${Number(value)}) or it's skipped.`);
+      warnings.push(
+        `"${key}" is the string "${value}". Send it as a number (${Number(value)}) or it's skipped.`,
+      );
     }
   }
 

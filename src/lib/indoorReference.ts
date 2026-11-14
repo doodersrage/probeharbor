@@ -7,13 +7,14 @@ export type IndoorReferenceOption = {
   deviceName: string;
 };
 
-export async function getIndoorReferenceSensorId(
-  householdId: string,
-): Promise<string | null> {
+export async function getIndoorReferenceSensorId(householdId: string): Promise<string | null> {
   try {
     return await neonPlaces.getIndoorReference(householdId);
   } catch (error) {
-    console.error("getIndoorReferenceSensorId failed:", error instanceof Error ? error.message : error);
+    console.error(
+      "getIndoorReferenceSensorId failed:",
+      error instanceof Error ? error.message : error,
+    );
     return null;
   }
 }
@@ -29,14 +30,13 @@ export async function updateIndoorReferenceSensor(
     } catch (error) {
       return { error: error instanceof Error ? error.message : String(error) };
     }
-    if (kind !== "temperature") return { error: "Choose a temperature sensor from this household." };
+    if (kind !== "temperature")
+      return { error: "Choose a temperature sensor from this household." };
   }
   return neonPlaces.setIndoorReference(householdId, sensorId);
 }
 
-export function listIndoorReferenceOptions(
-  devices: DeviceWithSensors[],
-): IndoorReferenceOption[] {
+export function listIndoorReferenceOptions(devices: DeviceWithSensors[]): IndoorReferenceOption[] {
   const options: IndoorReferenceOption[] = [];
   for (const device of devices) {
     for (const sensor of device.sensors) {

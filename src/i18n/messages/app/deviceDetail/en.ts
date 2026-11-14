@@ -25,15 +25,18 @@ const en = {
     title: "Status",
     health: "Health",
     healthHowSummary: "How the score works",
-    healthHow: "The score shows the most serious issue found, checked in this order: disabled (25) or never seen (30); a wet leak sensor (10–20); no upload for a day (20) or for 2 hours (45); readings stuck (40); battery at 15% or less (55) or expected to last 14 days or less (60); Wi‑Fi at or below your signal threshold (65). With none of these it's healthy (95).",
-    batteryHow: "Days left assume the battery keeps dropping at its rate over the last 7 days. They appear only when it fell more than 0.5% a day over at least half a day.",
+    healthHow:
+      "The score shows the most serious issue found, checked in this order: disabled (25) or never seen (30); a wet leak sensor (10–20); no upload for a day (20) or for 2 hours (45); readings stuck (40); battery at 15% or less (55) or expected to last 14 days or less (60); Wi‑Fi at or below your signal threshold (65). With none of these it's healthy (95).",
+    batteryHow:
+      "Days left assume the battery keeps dropping at its rate over the last 7 days. They appear only when it fell more than 0.5% a day over at least half a day.",
     lastSeen: "Last seen",
     never: "Never",
     battery: "Battery",
     wifiSignal: "Wi-Fi signal",
     firmware: "Firmware",
     updateTo: "Update to {version}",
-    tlsUnverified: "This probe can't verify ProbeHarbor's certificate, so its connection isn't protected against tampering. Readings still arrive. Usually the site's certificate authority changed; a firmware update fixes it.",
+    tlsUnverified:
+      "This probe can't verify ProbeHarbor's certificate, so its connection isn't protected against tampering. Readings still arrive. Usually the site's certificate authority changed; a firmware update fixes it.",
     state: "State",
     disabled: "Disabled: readings are ignored",
     noReadingsYet:
@@ -85,7 +88,8 @@ const en = {
     deleteSensor: "Delete sensor",
     saveSensors: "Save sensors",
     addByHand: "Add a sensor by hand",
-    addHint: "Only needed to set a name before the first upload; keys are added automatically otherwise.",
+    addHint:
+      "Only needed to set a name before the first upload; keys are added automatically otherwise.",
     addLabelPlaceholder: "Garage pipe",
     addSensor: "Add sensor",
   },
@@ -143,14 +147,16 @@ const en = {
     title: "Maintenance",
     downloadDiagnostics: "Download diagnostics",
     historyChart: "History chart",
-    diagnosticsHint: "Diagnostics is a redacted JSON file you can attach to a bug report or support email.",
+    diagnosticsHint:
+      "Diagnostics is a redacted JSON file you can attach to a bug report or support email.",
     moveTo: "Move to another property",
     moveDevice: "Move device",
   },
   danger: {
     title: "Key and removal",
     rotateTitle: "Rotate ingest key",
-    rotateBody: "Issues a new key. The old one stops working at once; reflash or update the device.",
+    rotateBody:
+      "Issues a new key. The old one stops working at once; reflash or update the device.",
     rotateConfirm: "Rotate this ingest key? The old key stops working immediately.",
     rotateButton: "Rotate key",
     deleteTitle: "Delete device",

@@ -52,10 +52,13 @@ export const GET: APIRoute = async ({ url, clientAddress, locals }) => {
       });
     }
     if (!response.ok) {
-      return new Response(JSON.stringify({ error: apiUserMessages(locale).weather.geocodeFailed }), {
-        status: 502,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: apiUserMessages(locale).weather.geocodeFailed }),
+        {
+          status: 502,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
     const raw = await response.json();
     // The ZIP geocoder returns one object with no state; label it "Name ZIP, US".
@@ -69,9 +72,12 @@ export const GET: APIRoute = async ({ url, clientAddress, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch {
-    return new Response(JSON.stringify({ error: apiUserMessages(locale).weather.geocodeRequestFailed }), {
-      status: 502,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: apiUserMessages(locale).weather.geocodeRequestFailed }),
+      {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 };

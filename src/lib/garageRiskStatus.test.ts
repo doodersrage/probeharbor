@@ -173,9 +173,9 @@ describe("computeGarageRiskStatus", () => {
       expect(computeGarageRiskStatus({ ...base, coldestProbeTempF: 31.5 }).detail).toBe(
         "Coldest probe is 31.5°F (threshold 34°F).",
       );
-      expect(computeGarageRiskStatus({ ...base, coldestProbeTempF: 31.5, useCelsius: true }).detail).toBe(
-        "Coldest probe is -0.3°C (threshold 1.1°C).",
-      );
+      expect(
+        computeGarageRiskStatus({ ...base, coldestProbeTempF: 31.5, useCelsius: true }).detail,
+      ).toBe("Coldest probe is -0.3°C (threshold 1.1°C).");
     });
 
     it("converts the near-freeze band as a difference (5 °F = 2.8 °C)", () => {
@@ -206,16 +206,26 @@ describe("computeGarageRiskStatus with demo-only readings", () => {
   });
 
   it("does not report a demo flood contact as wet or a demo probe as stale", () => {
-    expect(computeGarageRiskStatus({ ...base, demoOnly: true, wetFloodCount: 1 }).level).toBe("demo");
-    expect(computeGarageRiskStatus({ ...base, demoOnly: true, staleSensorCount: 2 }).level).toBe("demo");
+    expect(computeGarageRiskStatus({ ...base, demoOnly: true, wetFloodCount: 1 }).level).toBe(
+      "demo",
+    );
+    expect(computeGarageRiskStatus({ ...base, demoOnly: true, staleSensorCount: 2 }).level).toBe(
+      "demo",
+    );
   });
 
   it("still asks for a device or a first reading before the demo state", () => {
-    expect(computeGarageRiskStatus({ ...base, demoOnly: true, hasDevices: false }).level).toBe("watch");
-    expect(computeGarageRiskStatus({ ...base, demoOnly: true, hasLiveReading: false }).level).toBe("offline");
+    expect(computeGarageRiskStatus({ ...base, demoOnly: true, hasDevices: false }).level).toBe(
+      "watch",
+    );
+    expect(computeGarageRiskStatus({ ...base, demoOnly: true, hasLiveReading: false }).level).toBe(
+      "offline",
+    );
   });
 
   it("judges readings normally when they are not demo-only", () => {
-    expect(computeGarageRiskStatus({ ...base, demoOnly: false, coldestProbeTempF: 20 }).level).toBe("risk");
+    expect(computeGarageRiskStatus({ ...base, demoOnly: false, coldestProbeTempF: 20 }).level).toBe(
+      "risk",
+    );
   });
 });

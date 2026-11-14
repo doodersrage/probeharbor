@@ -72,19 +72,31 @@ describe("scorePropertyHealth (localized)", () => {
     expect(health.detail).toBe("10 von 11 Geräten still, Stromversorgung/WLAN prüfen");
     const cold = scorePropertyHealth({ ...base, atRisk: true, minTempF: 30.25 }, Date.now(), "de");
     expect(cold.detail).toBe("30,3 °F ≤ 34 °F");
-    const coldC = scorePropertyHealth({ ...base, atRisk: true, minTempF: 30.2 }, Date.now(), "de", true);
+    const coldC = scorePropertyHealth(
+      { ...base, atRisk: true, minTempF: 30.2 },
+      Date.now(),
+      "de",
+      true,
+    );
     expect(coldC.detail).toBe("-1,0 °C ≤ 1,1 °C");
   });
 });
 
 describe("scorePropertyHealth (display unit)", () => {
   it("keeps °F details unchanged by default (the API uses this)", () => {
-    expect(scorePropertyHealth({ ...base, atRisk: true, minTempF: 30.25 }).detail).toBe("30.3°F ≤ 34°F");
+    expect(scorePropertyHealth({ ...base, atRisk: true, minTempF: 30.25 }).detail).toBe(
+      "30.3°F ≤ 34°F",
+    );
     expect(scorePropertyHealth({ ...base, minTempF: 37 }).detail).toBe("Within 5°F of 34°F");
   });
 
   it("reads in °C for °C users: temperatures offset, the 5 °F band ×5/9", () => {
-    const cold = scorePropertyHealth({ ...base, atRisk: true, minTempF: 30.2 }, Date.now(), "en", true);
+    const cold = scorePropertyHealth(
+      { ...base, atRisk: true, minTempF: 30.2 },
+      Date.now(),
+      "en",
+      true,
+    );
     expect(cold.score).toBe(25);
     expect(cold.detail).toBe("-1.0°C ≤ 1.1°C");
     const near = scorePropertyHealth({ ...base, minTempF: 37 }, Date.now(), "en", true);

@@ -31,7 +31,8 @@ const en = {
     timelineTitle: "How it plays out",
     timeLabel: "{time}:",
     whyTitle: "Why it matters",
-    outcomeCaveat: "Real outcomes depend on sensor placement, thresholds, and how quickly someone can respond.",
+    outcomeCaveat:
+      "Real outcomes depend on sensor placement, thresholds, and how quickly someone can respond.",
     faqTitle: "FAQ",
     relatedTitle: "Related answers",
     tryTitle: "Try it on your space",

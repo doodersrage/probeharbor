@@ -1,4 +1,3 @@
-
 /** Body copy for /about/temperature-probe-case-study. Hrefs stay English; middleware localizes them. */
 const FIRMWARE_LINK =
   '<a class="text-link" target="_blank" rel="noreferrer" href="https://github.com/doodersrage/arduino-network-json-temperature-sever">arduino-network-json-temperature-sever</a>';
@@ -7,7 +6,8 @@ import type { Messages } from "./en";
 const de: Messages = {
   heroAlt:
     "Garagen-Temperatursonden-Controller, zweite Revision, mit Ethernet-Anbindung und mehreren Sensoreingängen",
-  heroCaption: "Zweite Revision der ProbeHarbor-Sondenplatine. Ethernet, LCD und zwei DHT22-Eingänge.",
+  heroCaption:
+    "Zweite Revision der ProbeHarbor-Sondenplatine. Ethernet, LCD und zwei DHT22-Eingänge.",
   intro:
     "Diese Fallstudie zeichnet den Bau der Temperatursonde nach, auf der ProbeHarbor beruht: warum ein einzelnes Außenthermometer nicht reichte, wie die Wahl auf zwei DHT22-Zonen plus einen gemittelten Übersichtswert fiel und was sich zwischen dem ersten Steckbrett-Einsatz und der vernetzten Revision geändert hat, die heute Live-JSON an diese Website liefert.",
   challengeTitle: "Die Herausforderung",
@@ -31,7 +31,8 @@ const de: Messages = {
     'Die Platzierung folgte den Regeln der <a class="text-link" href="/about/temperature-probes">Anleitung zu Temperatursonden</a>: weg von direkter Sonne und Abluftventilatoren, etwa auf Schulterhöhe, belüftet montiert, damit Luft am Sensorkopf vorbeistreichen kann. Beschriftungen im Dashboard ordnen die JSON-Schlüssel <code>0</code> und <code>1</code> lesbaren Zonennamen zu.',
   ],
   rev1Alt: "Sondenplatine der ersten Revision auf einem Steckbrett mit DHT22-Sensoren und LCD",
-  rev1Caption: "Die erste Revision hat Verdrahtung, Leseintervalle und JSON-Aufbau auf der Werkbank geprüft, bevor sie in die Garage kam.",
+  rev1Caption:
+    "Die erste Revision hat Verdrahtung, Leseintervalle und JSON-Aufbau auf der Werkbank geprüft, bevor sie in die Garage kam.",
   timelineTitle: "Ablauf des Baus",
   timelineHtml: [
     "<strong>Inbetriebnahme auf der Werkbank:</strong> Die serielle Ausgabe bestätigte DHT22-Messwerte, LCD-Formatierung und stabile <code>temp</code>-JSON-Schlüssel, bevor die Platine den Schreibtisch verließ.",
@@ -41,7 +42,8 @@ const de: Messages = {
     "<strong>Website-Integration:</strong> Astro-Seiten ordnen Feeds Karten zu; der Verlauf für angemeldete Nutzer speichert Momentaufnahmen für Trendanalysen und CSV-Export.",
   ],
   dataTitle: "Was die Daten zeigten",
-  dataLede: "Nach einem vollen Winter- und Sommerzyklus haben sich die Sonden auf eine Weise ausgezahlt, die ein einzelner Messwert verpasst hätte:",
+  dataLede:
+    "Nach einem vollen Winter- und Sommerzyklus haben sich die Sonden auf eine Weise ausgezahlt, die ein einzelner Messwert verpasst hätte:",
   data: [
     "Die Temperatur am Tor konnte innerhalb weniger Minuten nach dem Öffnen um 4–7 °C (8–12 °F) schwanken, während sich die Rückwand kaum bewegte.",
     "Die nächtlichen Tiefstwerte an der Nordwand zeigten das Frostrisiko zuverlässiger an als Außenvorhersagen allein.",

@@ -8,12 +8,18 @@ import type { NotifyKind } from "./alerts";
 
 describe("resolveAlertActivityFilter", () => {
   it("maps the freeze filter to the stored threshold kind", () => {
-    expect(resolveAlertActivityFilter("threshold")).toEqual({ id: "threshold", kinds: ["threshold", "freeze"] });
+    expect(resolveAlertActivityFilter("threshold")).toEqual({
+      id: "threshold",
+      kinds: ["threshold", "freeze"],
+    });
   });
 
   it("keeps old ?activity_kind=freeze and =test links working", () => {
     expect(resolveAlertActivityFilter("freeze")?.kinds).toContain("threshold");
-    expect(resolveAlertActivityFilter("test")).toEqual({ id: "generic", kinds: ["generic", "test"] });
+    expect(resolveAlertActivityFilter("test")).toEqual({
+      id: "generic",
+      kinds: ["generic", "test"],
+    });
   });
 
   it("maps single-kind options exactly", () => {

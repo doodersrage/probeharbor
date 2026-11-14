@@ -21,14 +21,23 @@ export type AlertDeliveryLabel = {
 };
 
 /** Plain words for an Activity row's delivery state. Never says "delivered": providers only accept. */
-export function formatAlertDeliveryState(state: AlertDeliveryState, locale: Locale = "en"): AlertDeliveryLabel {
+export function formatAlertDeliveryState(
+  state: AlertDeliveryState,
+  locale: Locale = "en",
+): AlertDeliveryLabel {
   const messages = alertsMessages(locale);
   const t = messages.deliveryState;
   const list = (channels: string[]) => formatAlertChannelList(channels, locale);
   const fixChannels = { href: ALERT_CHANNEL_SETTINGS_HREF, label: t.fixChannels };
   switch (state.state) {
     case "sent":
-      return { label: fmt(messages.list.sent, { channels: list(state.sent) }), extra: null, title: null, tone: "ok", fix: null };
+      return {
+        label: fmt(messages.list.sent, { channels: list(state.sent) }),
+        extra: null,
+        title: null,
+        tone: "ok",
+        fix: null,
+      };
     case "partial":
       return {
         label: fmt(t.partial, { sent: list(state.sent), failed: list(state.failed) }),
@@ -54,6 +63,12 @@ export function formatAlertDeliveryState(state: AlertDeliveryState, locale: Loca
         fix: fixChannels,
       };
     case "not_set_up":
-      return { label: t.notSetUp, extra: null, title: t.notSetUpTitle, tone: "warn", fix: fixChannels };
+      return {
+        label: t.notSetUp,
+        extra: null,
+        title: t.notSetUpTitle,
+        tone: "warn",
+        fix: fixChannels,
+      };
   }
 }

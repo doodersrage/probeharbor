@@ -24,13 +24,20 @@ vi.mock("./notify", () => ({
 const recentEvents = vi.fn();
 vi.mock("./alertEvents", () => ({
   listRecentAlertEvents: vi.fn().mockResolvedValue([]),
-  listRecentAlertEventsFiltered: async (_userId: string, options: { kind?: string | null } = {}) => ({
-    events: ((await recentEvents()) as Array<{ kind: string }>).filter((e) => !options.kind || e.kind === options.kind),
+  listRecentAlertEventsFiltered: async (
+    _userId: string,
+    options: { kind?: string | null } = {},
+  ) => ({
+    events: ((await recentEvents()) as Array<{ kind: string }>).filter(
+      (e) => !options.kind || e.kind === options.kind,
+    ),
     hasMore: false,
   }),
   autoResolveAlerts: vi.fn().mockResolvedValue({ resolved: 0, channels: [] }),
 }));
-const entitlements = vi.hoisted(() => ({ value: { canUseForecastAlerts: true, canUseNwsAlerts: true } }));
+const entitlements = vi.hoisted(() => ({
+  value: { canUseForecastAlerts: true, canUseNwsAlerts: true },
+}));
 vi.mock("./entitlements", () => ({ getUserEntitlements: vi.fn(async () => entitlements.value) }));
 vi.mock("./userRecords", () => ({
   getUserRecord: vi.fn().mockResolvedValue({ user_metadata: { weather_city_id: "4887398" } }),
@@ -55,7 +62,9 @@ vi.mock("./siteUrl", () => ({ buildSiteUrl: () => "https://probeharbor.test" }))
 
 beforeEach(() => {
   notifyUser.mockReset().mockResolvedValue({ sent: ["email"], skipped: [] });
-  claimCooldown.mockReset().mockResolvedValue({ claimed: true, claimedAt: "2026-11-13T00:00:00.000Z" });
+  claimCooldown
+    .mockReset()
+    .mockResolvedValue({ claimed: true, claimedAt: "2026-11-13T00:00:00.000Z" });
   releaseCooldown.mockReset().mockResolvedValue(undefined);
   markCooldown.mockReset().mockResolvedValue(undefined);
   recentEvents.mockReset().mockResolvedValue([]);
@@ -122,7 +131,12 @@ describe("forecast freeze alert", () => {
     forecastMin.mockResolvedValue({ minTempF: 20, cityName: null, hoursAhead: 24 });
     notifyUser.mockResolvedValue({ sent: [], skipped: ["email"] });
     await run();
-    expect(releaseCooldown).toHaveBeenCalledWith("user-1", "last_forecast_alert_at", "2026-11-13T00:00:00.000Z", null);
+    expect(releaseCooldown).toHaveBeenCalledWith(
+      "user-1",
+      "last_forecast_alert_at",
+      "2026-11-13T00:00:00.000Z",
+      null,
+    );
   });
 
   it("sends once when another evaluation already claimed it", async () => {
@@ -134,7 +148,11 @@ describe("forecast freeze alert", () => {
 });
 
 describe("NWS freeze-warning alert", () => {
-  const on: AlertSettings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, nwsFreezeAlertsEnabled: true };
+  const on: AlertSettings = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    nwsFreezeAlertsEnabled: true,
+  };
   const here = { lat: 41.88, lon: -87.63, name: "Chicago" };
   const run = async (settings: AlertSettings = on) => {
     const { maybeSendNwsFreezeAlert } = await import("./alertNotifications");
@@ -188,8 +206,20 @@ describe("NWS freeze-warning alert", () => {
 });
 
 describe("device health alerts", () => {
-  const device = (name: string, meta: Record<string, unknown>, extra: Partial<DeviceWithSensors> = {}) =>
-    ({ id: name, name, source: "push", enabled: true, meta, sensors: [], ...extra }) as unknown as DeviceWithSensors;
+  const device = (
+    name: string,
+    meta: Record<string, unknown>,
+    extra: Partial<DeviceWithSensors> = {},
+  ) =>
+    ({
+      id: name,
+      name,
+      source: "push",
+      enabled: true,
+      meta,
+      sensors: [],
+      ...extra,
+    }) as unknown as DeviceWithSensors;
   const on: AlertSettings = {
     ...DEFAULT_ALERT_SETTINGS,
     enabled: true,
@@ -200,16 +230,28 @@ describe("device health alerts", () => {
   };
   const run = async (devices: DeviceWithSensors[], settings: AlertSettings = on) => {
     const { maybeSendDeviceHealthAlerts } = await import("./alertNotifications");
-    await maybeSendDeviceHealthAlerts("user-1", "a@example.com", devices, settings, "https://probeharbor.test");
+    await maybeSendDeviceHealthAlerts(
+      "user-1",
+      "a@example.com",
+      devices,
+      settings,
+      "https://probeharbor.test",
+    );
   };
 
   it("sends one battery alert naming every low device, with a snooze link", async () => {
-    await run([device("Garage", { battery_pct: 12 }), device("Attic", { battery_pct: 18 }), device("Shed", { battery_pct: 80 })]);
+    await run([
+      device("Garage", { battery_pct: 12 }),
+      device("Attic", { battery_pct: 18 }),
+      device("Shed", { battery_pct: 80 }),
+    ]);
     expect(sentKinds()).toEqual(["battery"]);
     expect(sentBody()).toContain("Garage");
     expect(sentBody()).toContain("Attic");
     expect(sentBody()).not.toContain("Shed");
-    expect(notifyUser.mock.calls[0]![4]).toEqual({ snoozeUrl: "https://probeharbor.test/snooze/x" });
+    expect(notifyUser.mock.calls[0]![4]).toEqual({
+      snoozeUrl: "https://probeharbor.test/snooze/x",
+    });
     expect(claimCooldown).toHaveBeenCalledWith("user-1", "last_battery_alert_at", null);
   });
 
@@ -226,12 +268,20 @@ describe("device health alerts", () => {
   });
 
   it("doesn't repeat a battery alert inside its cooldown, but still checks signal", async () => {
-    await run([device("Garage", { battery_pct: 10, rssi: -90 })], { ...on, lastBatteryAlertAt: hoursAgo(1) });
+    await run([device("Garage", { battery_pct: 10, rssi: -90 })], {
+      ...on,
+      lastBatteryAlertAt: hoursAgo(1),
+    });
     expect(sentKinds()).toEqual(["rssi"]);
   });
 
   it("ignores the demo feed", async () => {
-    await run([device("Example feed", { battery_pct: 5, rssi: -95, demo: true }, { source: "pull_url", feed_url: "https://probeharbor.dev/api/feeds/example" } as Partial<DeviceWithSensors>)]);
+    await run([
+      device("Example feed", { battery_pct: 5, rssi: -95, demo: true }, {
+        source: "pull_url",
+        feed_url: "https://probeharbor.dev/api/feeds/example",
+      } as Partial<DeviceWithSensors>),
+    ]);
     expect(notifyUser).not.toHaveBeenCalled();
   });
 

@@ -25,7 +25,8 @@ const es: CompareMessages = {
   },
   guides: {
     title: "Comparativas detalladas",
-    subtitle: "Guías lado a lado de las alternativas más comunes: carga de mantenimiento, alertas y cuándo conviene cada opción.",
+    subtitle:
+      "Guías lado a lado de las alternativas más comunes: carga de mantenimiento, alertas y cuándo conviene cada opción.",
     smartThingsHtml:
       '<strong class="text-[var(--color-text)]">SmartThings</strong> puede añadir sensores de ProbeHarbor mediante la <a class="text-link" href="/integrations/smartthings">ruta del puente Matter</a> (sin app Cloud-to-Cloud). Los sensores de consumo siguen agrupados con Govee más abajo: <a class="text-link" href="/compare/govee">guía de Govee</a>.',
     haTitle: "Home Assistant (HACS)",
@@ -40,17 +41,60 @@ const es: CompareMessages = {
     diy: "Script casero + cron",
     consumer: "Govee / SmartThings",
     rows: [
-      { capabilityHtml: "Tiempo hasta la helada (en este espacio)", probeharborHtml: "Reloj basado en el pronóstico + alerta de horas restantes", diyHtml: "Tú escribes el modelo", consumerHtml: "Solo umbral" },
-      { capabilityHtml: "Alertas de helada (correo/SMS/push)", probeharborHtml: "Integradas, por hogar", diyHtml: "Tú conectas Twilio + cron", consumerHtml: "Push de la app; SMS aparte o inexistente" },
-      { capabilityHtml: "Envío de datos desde ESP/Arduino", probeharborHtml: "Clave de dispositivo única", diyHtml: "Endpoint propio", consumerHtml: "Sensores Govee / dispositivos SmartThings" },
-      { capabilityHtml: "Historial y exportación CSV", probeharborHtml: "En planes de pago", diyHtml: "Base de datos autoalojada", consumerHtml: "Niveles de suscripción" },
-      { capabilityHtml: "Enlaces compartidos y Grafana", probeharborHtml: "1 enlace en vivo para la familia; Pro añade historial y métricas", diyHtml: "Configuración manual", consumerHtml: "Poco común en apps de consumo" },
-      { capabilityHtml: "Home Assistant (HACS)", probeharborHtml: '<a class="text-link" href="/integrations/home-assistant">Integración oficial</a> (enlace compartido)', diyHtml: "Sensores REST + webhooks", consumerHtml: "Depende del fabricante" },
-      { capabilityHtml: "Varios usuarios por hogar", probeharborHtml: "Gratis", diyHtml: "No aplica", consumerHtml: "Compartir en familia es incómodo" },
-      { capabilityHtml: "Alojamiento y disponibilidad", probeharborHtml: 'Red de Cloudflare; <a class="text-link" href="/system-status">estado público</a>', diyHtml: "Tú mantienes el VPS / cron", consumerHtml: "Nube del fabricante (opaca)" },
+      {
+        capabilityHtml: "Tiempo hasta la helada (en este espacio)",
+        probeharborHtml: "Reloj basado en el pronóstico + alerta de horas restantes",
+        diyHtml: "Tú escribes el modelo",
+        consumerHtml: "Solo umbral",
+      },
+      {
+        capabilityHtml: "Alertas de helada (correo/SMS/push)",
+        probeharborHtml: "Integradas, por hogar",
+        diyHtml: "Tú conectas Twilio + cron",
+        consumerHtml: "Push de la app; SMS aparte o inexistente",
+      },
+      {
+        capabilityHtml: "Envío de datos desde ESP/Arduino",
+        probeharborHtml: "Clave de dispositivo única",
+        diyHtml: "Endpoint propio",
+        consumerHtml: "Sensores Govee / dispositivos SmartThings",
+      },
+      {
+        capabilityHtml: "Historial y exportación CSV",
+        probeharborHtml: "En planes de pago",
+        diyHtml: "Base de datos autoalojada",
+        consumerHtml: "Niveles de suscripción",
+      },
+      {
+        capabilityHtml: "Enlaces compartidos y Grafana",
+        probeharborHtml: "1 enlace en vivo para la familia; Pro añade historial y métricas",
+        diyHtml: "Configuración manual",
+        consumerHtml: "Poco común en apps de consumo",
+      },
+      {
+        capabilityHtml: "Home Assistant (HACS)",
+        probeharborHtml:
+          '<a class="text-link" href="/integrations/home-assistant">Integración oficial</a> (enlace compartido)',
+        diyHtml: "Sensores REST + webhooks",
+        consumerHtml: "Depende del fabricante",
+      },
+      {
+        capabilityHtml: "Varios usuarios por hogar",
+        probeharborHtml: "Gratis",
+        diyHtml: "No aplica",
+        consumerHtml: "Compartir en familia es incómodo",
+      },
+      {
+        capabilityHtml: "Alojamiento y disponibilidad",
+        probeharborHtml:
+          'Red de Cloudflare; <a class="text-link" href="/system-status">estado público</a>',
+        diyHtml: "Tú mantienes el VPS / cron",
+        consumerHtml: "Nube del fabricante (opaca)",
+      },
     ],
   },
-  screenshotCaption: "Lo que obtienes sin mantener tu propia infraestructura: curvas de las sondas frente a tu umbral de helada.",
+  screenshotCaption:
+    "Lo que obtienes sin mantener tu propia infraestructura: curvas de las sondas frente a tu umbral de helada.",
   audience: {
     title: "Para quién es",
     itemsHtml: [

@@ -40,7 +40,14 @@ async function event(
     `insert into public.alert_events (user_id, kind, title, body, channels_sent, created_at, acknowledged_at, meta)
      values ($1, $2, 't', 'b', $3::text[], now() - ($4 || ' minutes')::interval,
              case when $5 then now() end, $6::jsonb) returning id`,
-    [userId, kind, sent, options.minutesAgo ?? 0, options.acked ?? false, JSON.stringify(options.meta ?? {})],
+    [
+      userId,
+      kind,
+      sent,
+      options.minutesAgo ?? 0,
+      options.acked ?? false,
+      JSON.stringify(options.meta ?? {}),
+    ],
   );
   return row!.id;
 }
@@ -63,7 +70,12 @@ describe("the unhandled rule matches isUnhandledAlertEvent exactly (Neon)", () =
   it("count, unhandled list and kind check agree with the app's rule on every combination", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await everyCombination(userId);
-    const all = await sql<{ id: number; kind: string; channels_sent: string[]; acknowledged_at: string | null }>(
+    const all = await sql<{
+      id: number;
+      kind: string;
+      channels_sent: string[];
+      acknowledged_at: string | null;
+    }>(
       "select id, kind, channels_sent, acknowledged_at from public.alert_events where user_id = $1",
       [userId],
     );
@@ -74,7 +86,9 @@ describe("the unhandled rule matches isUnhandledAlertEvent exactly (Neon)", () =
     const listed = await listRecentAlertEventsFiltered(userId, { unackedOnly: true, limit: 50 });
     expect(listed.events.map((e) => e.id).sort()).toEqual(expected.map((e) => e.id).sort());
     for (const kind of ["freeze", "rule", "digest"]) {
-      await expect(hasUnhandledAlertOfKinds(userId, [kind])).resolves.toBe(expected.some((e) => e.kind === kind));
+      await expect(hasUnhandledAlertOfKinds(userId, [kind])).resolves.toBe(
+        expected.some((e) => e.kind === kind),
+      );
     }
   });
 
@@ -103,8 +117,14 @@ describe("acknowledging (Neon)", () => {
     const newer = await event(userId, "rule", ["email"], { minutesAgo: 10 });
     await event(userId, "digest", ["email"], { minutesAgo: 1 }); // informational: skipped
 
-    await expect(acknowledgeLatestUnackedAlert(userId)).resolves.toEqual({ ok: true, eventId: newer });
-    await expect(acknowledgeLatestUnackedAlert(userId)).resolves.toEqual({ ok: true, eventId: older });
+    await expect(acknowledgeLatestUnackedAlert(userId)).resolves.toEqual({
+      ok: true,
+      eventId: newer,
+    });
+    await expect(acknowledgeLatestUnackedAlert(userId)).resolves.toEqual({
+      ok: true,
+      eventId: older,
+    });
     const none = await acknowledgeLatestUnackedAlert(userId);
     expect(none.ok).toBe(false);
     expect(none.error).toBeTruthy();
@@ -113,7 +133,8 @@ describe("acknowledging (Neon)", () => {
   it("acknowledge-all respects the cap, newest first", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     const ids = [];
-    for (let i = 5; i >= 1; i -= 1) ids.push(await event(userId, "rule", ["email"], { minutesAgo: i }));
+    for (let i = 5; i >= 1; i -= 1)
+      ids.push(await event(userId, "rule", ["email"], { minutesAgo: i }));
     await expect(acknowledgeAllUnackedAlerts(userId, 2)).resolves.toEqual({ ok: true, count: 2 });
     const open = await sql<{ id: number }>(
       "select id from public.alert_events where user_id = $1 and acknowledged_at is null order by id",
@@ -149,7 +170,10 @@ describe("auto-resolve (Neon)", () => {
     const result = await autoResolveAlerts(userId, { kinds: ["freeze"] });
     expect(result.resolved).toBe(2);
     expect(result.channels).toEqual(["email"]);
-    expect((await getAlertEventForUser(userId, freeze))?.meta).toEqual({ probeLabel: "Pipe", autoResolved: "recovered" });
+    expect((await getAlertEventForUser(userId, freeze))?.meta).toEqual({
+      probeLabel: "Pipe",
+      autoResolved: "recovered",
+    });
     expect((await getAlertEventForUser(userId, held))?.acknowledged_at).not.toBeNull();
     expect((await getAlertEventForUser(userId, flood))?.acknowledged_at).toBeNull();
   });
@@ -158,7 +182,9 @@ describe("auto-resolve (Neon)", () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     const old = await event(userId, "rule", ["email"], { minutesAgo: 3 * 24 * 60 });
     const recent = await event(userId, "rule", ["email"], { minutesAgo: 5 });
-    await expect(autoResolveAlerts(userId, { olderThanMs: 24 * 3600_000, reason: "expired" })).resolves.toMatchObject({
+    await expect(
+      autoResolveAlerts(userId, { olderThanMs: 24 * 3600_000, reason: "expired" }),
+    ).resolves.toMatchObject({
       resolved: 1,
     });
     expect((await getAlertEventForUser(userId, old))?.meta?.autoResolved).toBe("expired");
@@ -193,24 +219,34 @@ describe("recording and listing (Neon)", () => {
     await expect(hasDeliveredAnyAlert(userId)).resolves.toBe(true);
 
     await updateAlertEventMeta(userId, id!, { feedback: "false_alarm" });
-    expect((await getAlertEventForUser(userId, id!))?.meta).toMatchObject({ probeLabel: "Pipe", feedback: "false_alarm" });
+    expect((await getAlertEventForUser(userId, id!))?.meta).toMatchObject({
+      probeLabel: "Pipe",
+      feedback: "false_alarm",
+    });
   });
 
   it("pages the log newest first and says whether there's more; range export is oldest first", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
-    for (let i = 1; i <= 5; i += 1) await event(userId, i % 2 ? "rule" : "freeze", ["email"], { minutesAgo: i * 10 });
+    for (let i = 1; i <= 5; i += 1)
+      await event(userId, i % 2 ? "rule" : "freeze", ["email"], { minutesAgo: i * 10 });
 
     const page1 = await listRecentAlertEventsFiltered(userId, { limit: 2 });
     expect(page1.hasMore).toBe(true);
     const page3 = await listRecentAlertEventsFiltered(userId, { limit: 2, offset: 4 });
     expect(page3).toMatchObject({ hasMore: false });
     expect(page3.events).toHaveLength(1);
-    expect((await listRecentAlertEventsFiltered(userId, { kinds: ["freeze"] })).events).toHaveLength(2);
+    expect(
+      (await listRecentAlertEventsFiltered(userId, { kinds: ["freeze"] })).events,
+    ).toHaveLength(2);
     expect((await listRecentAlertEventsFiltered(userId, { kind: "ree" })).events).toHaveLength(2);
     expect((await listRecentAlertEvents(userId, 3)).map((e) => e.created_at)).toEqual(
       [...(await listRecentAlertEvents(userId, 3)).map((e) => e.created_at)].sort().reverse(),
     );
-    const range = await listAlertEventsInRange(userId, new Date(Date.now() - 3600_000).toISOString(), new Date().toISOString());
+    const range = await listAlertEventsInRange(
+      userId,
+      new Date(Date.now() - 3600_000).toISOString(),
+      new Date().toISOString(),
+    );
     expect(range.map((e) => e.created_at)).toEqual([...range.map((e) => e.created_at)].sort());
     expect(range).toHaveLength(5);
   });

@@ -26,7 +26,10 @@ const ptBr: ApiDevicesMessages = {
     tooMany: "Muitos testes de feed. Tente de novo daqui a pouco.",
     invalidUrl: "Digite uma URL de feed HTTPS válida.",
     requestFailed: "A solicitação ao feed falhou ({status}).",
-    found: { one: "{count} sonda encontrada (JSON {format}).", other: "{count} sondas encontradas (JSON {format})." },
+    found: {
+      one: "{count} sonda encontrada (JSON {format}).",
+      other: "{count} sondas encontradas (JSON {format}).",
+    },
     foundWithAverage: {
       one: "{count} sonda encontrada (JSON {format}), média de {average} °F.",
       other: "{count} sondas encontradas (JSON {format}), média de {average} °F.",

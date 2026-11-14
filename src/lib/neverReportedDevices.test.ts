@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { findNeverReportedPushDevices, shouldOfferNeverReportedCleanup } from "./neverReportedDevices";
+import {
+  findNeverReportedPushDevices,
+  shouldOfferNeverReportedCleanup,
+} from "./neverReportedDevices";
 
 const device = (id: string, source: string, lastSeen: string | null) => ({
   id,
@@ -32,9 +35,17 @@ describe("shouldOfferNeverReportedCleanup", () => {
   const one = [{ id: "a", name: "A" }];
 
   it("offers cleanup only at the limit, to an editor, with a never-reported device", () => {
-    expect(shouldOfferNeverReportedCleanup({ atDeviceLimit: true, canEdit: true, neverReported: one })).toBe(true);
-    expect(shouldOfferNeverReportedCleanup({ atDeviceLimit: false, canEdit: true, neverReported: one })).toBe(false);
-    expect(shouldOfferNeverReportedCleanup({ atDeviceLimit: true, canEdit: false, neverReported: one })).toBe(false);
-    expect(shouldOfferNeverReportedCleanup({ atDeviceLimit: true, canEdit: true, neverReported: [] })).toBe(false);
+    expect(
+      shouldOfferNeverReportedCleanup({ atDeviceLimit: true, canEdit: true, neverReported: one }),
+    ).toBe(true);
+    expect(
+      shouldOfferNeverReportedCleanup({ atDeviceLimit: false, canEdit: true, neverReported: one }),
+    ).toBe(false);
+    expect(
+      shouldOfferNeverReportedCleanup({ atDeviceLimit: true, canEdit: false, neverReported: one }),
+    ).toBe(false);
+    expect(
+      shouldOfferNeverReportedCleanup({ atDeviceLimit: true, canEdit: true, neverReported: [] }),
+    ).toBe(false);
   });
 });

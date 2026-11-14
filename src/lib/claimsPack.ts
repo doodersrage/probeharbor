@@ -1,10 +1,7 @@
 import type { AlertEventRow } from "./alertEvents";
 import type { ChartPoint } from "./garageTempsHistory";
 import { computeFreezeHours, type FreezeHoursSummary } from "./freezeHours";
-import {
-  summarizeProbesForReport,
-  type MonthlyProbeSummary,
-} from "./monthlyReportHtml";
+import { summarizeProbesForReport, type MonthlyProbeSummary } from "./monthlyReportHtml";
 import { escapeHtml } from "./htmlEscape";
 
 export const CLAIMS_CRITICAL_KINDS = new Set([
@@ -99,12 +96,13 @@ function formatRangeDate(iso: string): string {
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC");
+  return d
+    .toISOString()
+    .replace("T", " ")
+    .replace(/\.\d{3}Z$/, " UTC");
 }
 
-export function filterCriticalAlertEvents(
-  events: AlertEventRow[],
-): AlertEventRow[] {
+export function filterCriticalAlertEvents(events: AlertEventRow[]): AlertEventRow[] {
   return events.filter((e) => CLAIMS_CRITICAL_KINDS.has(e.kind));
 }
 
@@ -127,7 +125,11 @@ export function buildClaimsPackData(input: {
   const fromPoints = computeFreezeHours(input.points, input.freezeThresholdF);
   // Chart points are samples, so take the counts of recorded readings when available.
   const freezeHours = input.readingCounts
-    ? { ...fromPoints, totalReadings: input.readingCounts.total, readingsBelow34: input.readingCounts.below }
+    ? {
+        ...fromPoints,
+        totalReadings: input.readingCounts.total,
+        readingsBelow34: input.readingCounts.below,
+      }
     : fromPoints;
   const probes = summarizeProbesForReport(input.points);
   const criticalEvents = filterCriticalAlertEvents(input.events);
@@ -184,9 +186,7 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
       ? `<tr><td colspan="3">No devices recorded for this household.</td></tr>`
       : data.devices
           .map((device) => {
-            const sensors = device.sensors
-              .map((s) => `${s.label} (${s.kind})`)
-              .join(", ");
+            const sensors = device.sensors.map((s) => `${s.label} (${s.kind})`).join(", ");
             return `<tr>
               <td>${escapeHtml(device.name)}</td>
               <td>${escapeHtml(device.space ?? "—")}</td>
@@ -317,8 +317,12 @@ export function buildClaimsPackHtml(data: ClaimsPackData): string {
         ${statBlock("Hours ≤ threshold", `${data.freezeHours.hoursBelow34.toFixed(1)} h`, `≤ ${data.freezeThresholdF}°F`)}
         ${statBlock(
           "Readings ≤ threshold",
-          data.readingCountsApproximate ? `≥ ${data.freezeHours.readingsBelow34}` : String(data.freezeHours.readingsBelow34),
-          data.readingCountsApproximate ? "at least: older hours are kept as hourly summaries" : undefined,
+          data.readingCountsApproximate
+            ? `≥ ${data.freezeHours.readingsBelow34}`
+            : String(data.freezeHours.readingsBelow34),
+          data.readingCountsApproximate
+            ? "at least: older hours are kept as hourly summaries"
+            : undefined,
         )}
         ${statBlock("Total readings", String(data.freezeHours.totalReadings))}
         ${statBlock("Freeze threshold", `${data.freezeThresholdF}°F`)}

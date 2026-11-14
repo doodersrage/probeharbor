@@ -12,8 +12,10 @@ const es: PipeForecastMessages = {
   lede: "Consulta las próximas cinco noches en tu zona: la mínima, cuántas horas se queda bajo cero, el viento y si las tuberías de un garaje, sótano o ático sin calefacción están en riesgo.",
   getAlerts: "Recibe alertas de helada gratis por correo",
   whenGaragePipes: "Cuándo se congelan las tuberías del garaje",
-  alertsConfirmed: "Las alertas de helada están activadas. Te escribiremos la tarde antes de una noche de helada.",
-  alertsInvalid: "Ese enlace de confirmación ya no es válido. Busca tu zona abajo y vuelve a suscribirte.",
+  alertsConfirmed:
+    "Las alertas de helada están activadas. Te escribiremos la tarde antes de una noche de helada.",
+  alertsInvalid:
+    "Ese enlace de confirmación ya no es válido. Busca tu zona abajo y vuelve a suscribirte.",
   levelsTitle: "Cómo leer los niveles de riesgo",
   levelsHtml: [
     "<strong>Riesgo alto:</strong> la mínima exterior es de −7 °C (20 °F) o menos, el punto más citado a partir del cual se congelan las tuberías en espacios sin calefacción.",
@@ -28,7 +30,8 @@ const es: PipeForecastMessages = {
   startFree: "Empieza gratis",
   kitParts: "Piezas del kit de helada ESP32",
   sourcesTitle: "Fuentes",
-  sourceKxan: "At what temperature do pipes freeze? (KXAN, en inglés, cita una investigación de la Universidad de Illinois)",
+  sourceKxan:
+    "At what temperature do pipes freeze? (KXAN, en inglés, cita una investigación de la Universidad de Illinois)",
   sourceFarmBureau: "How pipes freeze and burst (Farm Bureau Insurance, en inglés)",
   sourceNws: "API del National Weather Service",
   sourceNwsNote: ": datos de pronóstico por hora",
@@ -63,10 +66,12 @@ const es: PipeForecastMessages = {
     riskHigh: "Riesgo alto",
     riskWatch: "Vigilar",
     riskLow: "Riesgo bajo",
-    errorUsOnly: "Este pronóstico usa el National Weather Service, así que solo cubre ubicaciones de EE. UU.",
+    errorUsOnly:
+      "Este pronóstico usa el National Weather Service, así que solo cubre ubicaciones de EE. UU.",
     errorRateLimited: "Demasiadas búsquedas en un minuto. Vuelve a intentarlo en un momento.",
     errorService: "El servicio de pronóstico no respondió. Vuelve a intentarlo en un minuto.",
-    errorNoGeolocation: "Este navegador no puede compartir tu ubicación. Busca una ciudad o un código ZIP.",
+    errorNoGeolocation:
+      "Este navegador no puede compartir tu ubicación. Busca una ciudad o un código ZIP.",
     errorGeoDeclined: "Se denegó el permiso de ubicación. Busca una ciudad o un código ZIP.",
     tonight: "Esta noche",
     weekdayNight: "Noche del {weekday}",
@@ -82,8 +87,10 @@ const es: PipeForecastMessages = {
     describeWatchMany:
       "Bajo cero durante aproximadamente {hours} horas, mínima {low}. Las tuberías expuestas en paredes exteriores, cerca de la puerta del garaje o en sótanos ventilados aún pueden congelarse en una noche larga o con viento.",
     describeAbove: "Se mantiene sobre cero (mínima {low}).",
-    describeWind: "Un viento de hasta {wind} mientras hiela le quita calor más rápido a las tuberías expuestas.",
-    describeNextDay: "El día siguiente también se queda bajo cero, así que los espacios sin calefacción no volverán a calentarse.",
+    describeWind:
+      "Un viento de hasta {wind} mientras hiela le quita calor más rápido a las tuberías expuestas.",
+    describeNextDay:
+      "El día siguiente también se queda bajo cero, así que los espacios sin calefacción no volverán a calentarse.",
     signupTitle: "Avísame por correo antes de las noches de helada en {place}",
     signupLede:
       "Gratis y sin hardware. Un correo la tarde antes de la primera noche de helada de una ola de frío, y antes de cada noche a {temp} o menos. Date de baja con un clic.",

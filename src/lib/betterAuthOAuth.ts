@@ -37,20 +37,35 @@ export function oauthTwoFactorPlugin(challengeUrl: string): BetterAuthPlugin {
           matcher: (ctx) => isOAuthCallbackPath(ctx.path),
           handler: createAuthMiddleware(async (ctx) => {
             const created = ctx.context.newSession;
-            if (!created?.user || !(created.user as { twoFactorEnabled?: boolean }).twoFactorEnabled) return;
+            if (
+              !created?.user ||
+              !(created.user as { twoFactorEnabled?: boolean }).twoFactorEnabled
+            )
+              return;
             deleteSessionCookie(ctx, true);
             await ctx.context.internalAdapter.deleteSession(created.session.token);
             ctx.context.setNewSession(null);
             const identifier = `2fa-${generateRandomString(20)}`;
             const expiresAt = new Date(Date.now() + CHALLENGE_SECONDS * 1000);
-            await ctx.context.internalAdapter.createVerificationValue({ value: created.user.id, identifier, expiresAt });
+            await ctx.context.internalAdapter.createVerificationValue({
+              value: created.user.id,
+              identifier,
+              expiresAt,
+            });
             await ctx.context.internalAdapter.createVerificationValue({
               value: "0",
               identifier: `2fa-attempts-${identifier}`,
               expiresAt,
             });
-            const cookie = ctx.context.createAuthCookie("two_factor", { maxAge: CHALLENGE_SECONDS });
-            await ctx.setSignedCookie(cookie.name, identifier, ctx.context.secret, cookie.attributes);
+            const cookie = ctx.context.createAuthCookie("two_factor", {
+              maxAge: CHALLENGE_SECONDS,
+            });
+            await ctx.setSignedCookie(
+              cookie.name,
+              identifier,
+              ctx.context.secret,
+              cookie.attributes,
+            );
             throw ctx.redirect(challengeUrl);
           }),
         },

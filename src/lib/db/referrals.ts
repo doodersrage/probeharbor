@@ -13,7 +13,10 @@
 import { query } from "./client";
 
 export async function findReferralCode(userId: string): Promise<string | null> {
-  const [row] = await query<{ code: string }>("select code from public.referral_codes where user_id = $1", [userId]);
+  const [row] = await query<{ code: string }>(
+    "select code from public.referral_codes where user_id = $1",
+    [userId],
+  );
   return row?.code ?? null;
 }
 
@@ -28,7 +31,10 @@ export async function insertReferralCode(userId: string, code: string): Promise<
 
 export async function referrerForCode(code: string): Promise<string | null> {
   try {
-    const [row] = await query<{ user_id: string }>("select user_id from public.referral_codes where code = $1", [code]);
+    const [row] = await query<{ user_id: string }>(
+      "select user_id from public.referral_codes where code = $1",
+      [code],
+    );
     return row?.user_id ?? null;
   } catch {
     return null;
@@ -104,7 +110,11 @@ export async function addReferralRewardDays(referrerUserId: string): Promise<voi
   );
 }
 
-export async function adminStats(): Promise<{ total: number; rewarded: number; top: Array<{ userId: string; count: number }> }> {
+export async function adminStats(): Promise<{
+  total: number;
+  rewarded: number;
+  top: Array<{ userId: string; count: number }>;
+}> {
   const [totals] = await query<{ total: number; rewarded: number }>(
     `select count(*) as total, count(referrer_rewarded_at) as rewarded from public.referral_signups`,
   );

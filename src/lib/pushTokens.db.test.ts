@@ -26,7 +26,11 @@ const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
   (await db.client().query(text, params)).rows as T[];
 
-function call(handler: (ctx: APIContext) => Promise<Response> | Response, method: string, body: unknown) {
+function call(
+  handler: (ctx: APIContext) => Promise<Response> | Response,
+  method: string,
+  body: unknown,
+) {
   return handler({
     request: new Request("https://example.com/api/push", {
       method,
@@ -53,12 +57,20 @@ describe("browser push subscriptions (Neon)", () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     signedIn.userId = a;
 
-    expect((await call(subscribeRoute.POST, "POST", sub("https://push.example/1"))).status).toBe(200);
-    expect((await call(subscribeRoute.POST, "POST", sub("https://push.example/1", "k2"))).status).toBe(200);
-    expect(await sql("select p256dh from public.push_subscriptions where user_id = $1", [a])).toEqual([{ p256dh: "k2" }]);
+    expect((await call(subscribeRoute.POST, "POST", sub("https://push.example/1"))).status).toBe(
+      200,
+    );
+    expect(
+      (await call(subscribeRoute.POST, "POST", sub("https://push.example/1", "k2"))).status,
+    ).toBe(200);
+    expect(
+      await sql("select p256dh from public.push_subscriptions where user_id = $1", [a]),
+    ).toEqual([{ p256dh: "k2" }]);
     await expect(countPushSubscriptions(a)).resolves.toBe(1);
 
-    expect((await call(subscribeRoute.DELETE, "DELETE", { endpoint: "https://push.example/1" })).status).toBe(200);
+    expect(
+      (await call(subscribeRoute.DELETE, "DELETE", { endpoint: "https://push.example/1" })).status,
+    ).toBe(200);
     await expect(countPushSubscriptions(a)).resolves.toBe(0);
   });
 
@@ -89,11 +101,17 @@ describe("app tokens (Neon)", () => {
   it("register saves platform and app, re-register updates, delete removes", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     signedIn.userId = a;
-    expect((await call(fcmRoute.POST, "POST", { token: TOKEN_1, platform: "android", appId: "app.one" })).status).toBe(200);
-    expect((await call(fcmRoute.POST, "POST", { token: TOKEN_1, platform: "ios", appId: "app.two" })).status).toBe(200);
-    expect(await sql("select platform, app_id from public.fcm_device_tokens where user_id = $1", [a])).toEqual([
-      { platform: "ios", app_id: "app.two" },
-    ]);
+    expect(
+      (await call(fcmRoute.POST, "POST", { token: TOKEN_1, platform: "android", appId: "app.one" }))
+        .status,
+    ).toBe(200);
+    expect(
+      (await call(fcmRoute.POST, "POST", { token: TOKEN_1, platform: "ios", appId: "app.two" }))
+        .status,
+    ).toBe(200);
+    expect(
+      await sql("select platform, app_id from public.fcm_device_tokens where user_id = $1", [a]),
+    ).toEqual([{ platform: "ios", app_id: "app.two" }]);
     await expect(countFcmTokens(a)).resolves.toBe(1);
 
     expect((await call(fcmRoute.DELETE, "DELETE", { token: TOKEN_1 })).status).toBe(200);
@@ -122,8 +140,14 @@ describe("hand-off on its own keeps the current user's registration (Neon)", () 
     const a = await insertTestUser(db.client(), "a@example.com");
     const b = await insertTestUser(db.client(), "b@example.com");
     for (const u of [a, b]) {
-      await sql("insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values ($1, 'https://push.example/x', 'k', 'a')", [u]);
-      await sql("insert into public.fcm_device_tokens (user_id, token) values ($1, $2)", [u, PHONE]);
+      await sql(
+        "insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values ($1, 'https://push.example/x', 'k', 'a')",
+        [u],
+      );
+      await sql("insert into public.fcm_device_tokens (user_id, token) values ($1, $2)", [
+        u,
+        PHONE,
+      ]);
     }
     await releasePushSubscriptionFromOtherUsers(null, b, "https://push.example/x");
     await releaseFcmTokenFromOtherUsers(null, b, PHONE);

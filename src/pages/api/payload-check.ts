@@ -10,11 +10,18 @@ import { checkIngestRateLimit, readJsonBodyWithLimit } from "../../lib/ingestLim
  */
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
-    new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...headers } });
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { "Content-Type": "application/json", ...headers },
+    });
 
   const rate = checkIngestRateLimit(`payload-check:${clientAddress ?? "unknown"}`);
   if (!rate.ok) {
-    return json({ error: rate.error }, 429, rate.retryAfterSec ? { "Retry-After": String(rate.retryAfterSec) } : {});
+    return json(
+      { error: rate.error },
+      429,
+      rate.retryAfterSec ? { "Retry-After": String(rate.retryAfterSec) } : {},
+    );
   }
 
   const body = await readJsonBodyWithLimit(request);

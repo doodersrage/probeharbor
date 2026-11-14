@@ -22,9 +22,7 @@ export type MobileRegionalBenchmarkPayload = {
   message: string;
 };
 
-export function houseContextToMobilePayload(
-  context: HouseContext,
-): MobileHousePayload {
+export function houseContextToMobilePayload(context: HouseContext): MobileHousePayload {
   return {
     source: context.source,
     ambient_temp_f: context.ambientTempF,
@@ -68,9 +66,12 @@ export async function fetchMobileRegionalBenchmarkForUser(
     .map((row) => row.value_num as number);
   if (coldest.length === 0) return null;
 
-  const benchmark = await fetchRegionalBenchmark({
-    householdId,
-    yourTempF: Math.min(...coldest),
-  }, locale);
+  const benchmark = await fetchRegionalBenchmark(
+    {
+      householdId,
+      yourTempF: Math.min(...coldest),
+    },
+    locale,
+  );
   return benchmark ? regionalBenchmarkToMobilePayload(benchmark) : null;
 }

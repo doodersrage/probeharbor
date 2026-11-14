@@ -13,7 +13,10 @@ export type WarmSensorHint = { deviceName: string; label: string; gapF: number }
  * humidity on the same device (DHT/I2C style) are flagged, since a DS18B20 that
  * reads warm is usually just in a warm spot.
  */
-export function findWarmBoardSensors(latest: LatestSensorRow[], now = Date.now()): WarmSensorHint[] {
+export function findWarmBoardSensors(
+  latest: LatestSensorRow[],
+  now = Date.now(),
+): WarmSensorHint[] {
   const fresh = latest.filter(
     (row) => row.value_num != null && now - Date.parse(row.recorded_at) < FRESH_MS,
   );

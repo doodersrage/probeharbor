@@ -32,13 +32,7 @@ describe("dashboardComfort", () => {
       "probe_spread",
       "bogus",
     ]);
-    expect(parsed).toEqual([
-      "last_reading",
-      "sensors",
-      "feeds",
-      "alerts",
-      "coldest_margin",
-    ]);
+    expect(parsed).toEqual(["last_reading", "sensors", "feeds", "alerts", "coldest_margin"]);
   });
 
   it("reads quiet until from metadata", () => {
@@ -87,7 +81,9 @@ describe("dashboardComfort", () => {
 
 describe("countPinnedOverviewMetricsInput", () => {
   it("counts distinct valid ids so a sixth pick can be refused instead of dropped", async () => {
-    const { countPinnedOverviewMetricsInput, PINNED_METRICS_MAX } = await import("./dashboardComfort");
+    const { countPinnedOverviewMetricsInput, PINNED_METRICS_MAX } = await import(
+      "./dashboardComfort"
+    );
     const six = ["last_reading", "sensors", "feeds", "alerts", "coldest_margin", "freeze_hours"];
     expect(countPinnedOverviewMetricsInput(six)).toBe(6);
     expect(countPinnedOverviewMetricsInput(six)).toBeGreaterThan(PINNED_METRICS_MAX);

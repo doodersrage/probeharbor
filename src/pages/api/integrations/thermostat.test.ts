@@ -63,9 +63,9 @@ beforeEach(() => {
   mockBuildSiteUrl.mockReset().mockReturnValue("https://example.com");
   mockIsNestOAuthConfigured.mockReset().mockReturnValue(true);
   mockIsEcobeeOAuthConfigured.mockReset().mockReturnValue(true);
-  mockListConnectionsForHousehold.mockReset().mockResolvedValue([
-    { provider: "nest", createdAt: "2024-01-01T00:00:00.000Z" },
-  ]);
+  mockListConnectionsForHousehold
+    .mockReset()
+    .mockResolvedValue([{ provider: "nest", createdAt: "2024-01-01T00:00:00.000Z" }]);
   mockFetchThermostatContext.mockReset().mockResolvedValue({
     ambientTempF: 70,
     heatSetpointF: 68,

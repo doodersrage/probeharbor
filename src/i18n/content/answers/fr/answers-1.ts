@@ -55,7 +55,10 @@ export default {
       { label: "Scénario : panne du chauffage du garage" },
     ],
     sources: [
-      { label: "At what temperature do pipes freeze? (KXAN, citant des recherches de l’Université de l’Illinois)" },
+      {
+        label:
+          "At what temperature do pipes freeze? (KXAN, citant des recherches de l’Université de l’Illinois)",
+      },
       { label: "How pipes freeze and burst (Farm Bureau Insurance)" },
     ],
   },
@@ -287,7 +290,10 @@ export default {
       { label: "Faut-il laisser goutter les robinets pour éviter le gel des tuyaux ?" },
     ],
     sources: [
-      { label: "How pipes freeze and burst (Farm Bureau Insurance, citant des recherches de l’Université de l’Illinois)" },
+      {
+        label:
+          "How pipes freeze and burst (Farm Bureau Insurance, citant des recherches de l’Université de l’Illinois)",
+      },
     ],
   },
   "vacant-house-winter-thermostat-setting": {
@@ -335,9 +341,7 @@ export default {
       { label: "À quelle température régler une alarme antigel ?" },
       { label: "Check-list de la saison du gel" },
     ],
-    sources: [
-      { label: "Frozen pipes: prevention and thawing (Croix-Rouge américaine)" },
-    ],
+    sources: [{ label: "Frozen pipes: prevention and thawing (Croix-Rouge américaine)" }],
   },
   "drip-faucets-to-prevent-frozen-pipes": {
     question: "Faut-il laisser goutter les robinets pour éviter le gel des tuyaux ?",

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { compareProbeAverages, compareSpaceAverages, compareYearOverYear, summarizeSeasonal } from "./seasonalInsights";
+import {
+  compareProbeAverages,
+  compareSpaceAverages,
+  compareYearOverYear,
+  summarizeSeasonal,
+} from "./seasonalInsights";
 
 describe("space averages", () => {
   it("compares two spaces", () => {
@@ -26,7 +31,9 @@ describe("space averages", () => {
       { timestamp: "t", tempf: 40, humidity: 50, probeLabel: "Probe A" },
       { timestamp: "t", tempf: 58, humidity: 50, probeLabel: "Probe B" },
     ];
-    expect(compareSpaceAverages(points, map)[0]).toBe("attic averages 18.0°F warmer than garage in this window.");
+    expect(compareSpaceAverages(points, map)[0]).toBe(
+      "attic averages 18.0°F warmer than garage in this window.",
+    );
     expect(compareSpaceAverages(points, map, "en", true)[0]).toBe(
       "attic averages 10.0°C warmer than garage in this window.",
     );

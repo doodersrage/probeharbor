@@ -35,7 +35,9 @@ vi.mock("./mailer", () => ({
   },
 }));
 const health = vi.hoisted(() => ({ healthy: true }));
-vi.mock("./appStatus", () => ({ fetchAppStatusSummary: async () => ({ healthy: health.healthy }) }));
+vi.mock("./appStatus", () => ({
+  fetchAppStatusSummary: async () => ({ healthy: health.healthy }),
+}));
 
 import { POST as telegramWebhook } from "../pages/api/telegram/webhook";
 import { buildAlertSettingsFromFormData, isWeakTelegramSecret } from "./alertSettingsForm";
@@ -98,7 +100,9 @@ describe("status subscription tokens are stored hashed", () => {
   });
 
   it("legacy plaintext rows still confirm and unsubscribe before 0004", async () => {
-    await sql("insert into public.status_subscriptions (email, token) values ('old@example.com', 'legacy-token-1')");
+    await sql(
+      "insert into public.status_subscriptions (email, token) values ('old@example.com', 'legacy-token-1')",
+    );
     expect((await confirmStatusSubscription("legacy-token-1")).ok).toBe(true);
     expect((await unsubscribeStatusSubscription("legacy-token-1")).ok).toBe(true);
     expect(await sql("select id from public.status_subscriptions")).toEqual([]);
@@ -127,7 +131,9 @@ describe("status subscription tokens are stored hashed", () => {
 
       await run0004();
       expect((await unsubscribeStatusSubscription(freshLink)).ok).toBe(true);
-      expect(await sql("select email from public.status_subscriptions")).toEqual([{ email: "legacy@example.com" }]);
+      expect(await sql("select email from public.status_subscriptions")).toEqual([
+        { email: "legacy@example.com" },
+      ]);
       // The token emailed before the change still works after 0004, by its hash.
       expect((await unsubscribeStatusSubscription("legacy-tok")).ok).toBe(true);
       expect(await sql("select email from public.status_subscriptions")).toEqual([]);
@@ -140,7 +146,9 @@ describe("status subscription tokens are stored hashed", () => {
 
   it("without a signing secret the notifier still sends a working link (fresh token, hash stored)", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    await sql("insert into public.status_subscriptions (email, token, confirmed_at) values ('a@example.com', 'tok-a', now())");
+    await sql(
+      "insert into public.status_subscriptions (email, token, confirmed_at) values ('a@example.com', 'tok-a', now())",
+    );
     await writeLastKnownHealthy(true);
     health.healthy = false;
     sent.length = 0;
@@ -151,7 +159,9 @@ describe("status subscription tokens are stored hashed", () => {
     }
     const link = lastLink("unsubscribe");
     expect(link).toMatch(/^[0-9a-f]{48}$/);
-    const [row] = await sql<{ token: string | null; token_hash: string }>("select token, token_hash from public.status_subscriptions");
+    const [row] = await sql<{ token: string | null; token_hash: string }>(
+      "select token, token_hash from public.status_subscriptions",
+    );
     expect(row).toEqual({ token: "tok-a", token_hash: sha(link) }); // raw legacy token left for 0004
     await run0004();
     expect(await sql("select token from public.status_subscriptions")).toEqual([{ token: null }]);
@@ -181,7 +191,9 @@ describe("Telegram command secret is stored hashed", () => {
     await saveAlertSettingsForUser(id, settings);
     await recordAlertSettingsChange(id, before, settings);
 
-    const [row] = await sql<{ telegram_command_secret: string }>("select telegram_command_secret from public.alert_settings");
+    const [row] = await sql<{ telegram_command_secret: string }>(
+      "select telegram_command_secret from public.alert_settings",
+    );
     expect(row?.telegram_command_secret).toBe(`sha256:${sha(SECRET)}`);
     expect(await webhook(SECRET)).toBe(200);
     expect(await webhook("wrong-secret-0123456789")).toBe(401);
@@ -224,7 +236,9 @@ describe("Telegram command secret is stored hashed", () => {
       { telegram_command_secret: `sha256:${sha(SECRET)}` },
     ]);
     expect(await webhook(SECRET)).toBe(200);
-    expect(JSON.stringify(await sql("select settings from public.alert_settings_history"))).not.toContain("second-secret-abcdefgh");
+    expect(
+      JSON.stringify(await sql("select settings from public.alert_settings_history")),
+    ).not.toContain("second-secret-abcdefgh");
   });
 
   it("the remove checkbox clears the secret: row null, webhook matches nothing, history has no plaintext", async () => {
@@ -263,11 +277,17 @@ describe("Telegram command secret is stored hashed", () => {
 
   it("legacy plaintext rows still match before 0004, and two users sharing a secret match nobody", async () => {
     const a = await userWithBot("c@example.com");
-    await sql("update public.alert_settings set telegram_command_secret = $2 where user_id = $1", [a, SECRET]);
+    await sql("update public.alert_settings set telegram_command_secret = $2 where user_id = $1", [
+      a,
+      SECRET,
+    ]);
     expect(await webhook(SECRET)).toBe(200);
 
     const b = await userWithBot("d@example.com");
-    await sql("update public.alert_settings set telegram_command_secret = $2 where user_id = $1", [b, `sha256:${sha(SECRET)}`]);
+    await sql("update public.alert_settings set telegram_command_secret = $2 where user_id = $1", [
+      b,
+      `sha256:${sha(SECRET)}`,
+    ]);
     expect(await webhook(SECRET)).toBe(401); // ambiguous: one legacy, one hashed
   });
 });
@@ -299,14 +319,20 @@ describe("migration 0004 on plaintext data", () => {
 
     await run0004();
     const snapshot = async () => ({
-      settings: await sql("select user_id, telegram_command_secret from public.alert_settings order by user_id"),
+      settings: await sql(
+        "select user_id, telegram_command_secret from public.alert_settings order by user_id",
+      ),
       history: await sql("select settings from public.alert_settings_history order by id"),
-      subs: await sql("select email, token, token_hash from public.status_subscriptions order by email"),
+      subs: await sql(
+        "select email, token, token_hash from public.status_subscriptions order by email",
+      ),
     });
     const first = await snapshot();
 
     const byUser = Object.fromEntries(
-      (first.settings as Array<{ user_id: string; telegram_command_secret: string | null }>).map((r) => [r.user_id, r.telegram_command_secret]),
+      (first.settings as Array<{ user_id: string; telegram_command_secret: string | null }>).map(
+        (r) => [r.user_id, r.telegram_command_secret],
+      ),
     );
     expect(byUser).toEqual({
       [u1]: `sha256:${sha("plain-secret-ascii-123")}`,
@@ -316,7 +342,12 @@ describe("migration 0004 on plaintext data", () => {
     });
     expect(first.history).toEqual([
       // Postgres sha256 over UTF-8 = the app's hash, non-ASCII included.
-      { settings: { telegram_command_secret: `sha256:${sha("plain-in-history-ünïcode")}`, enabled: true } },
+      {
+        settings: {
+          telegram_command_secret: `sha256:${sha("plain-in-history-ünïcode")}`,
+          enabled: true,
+        },
+      },
       { settings: { telegram_command_secret: already } },
       { settings: { telegram_command_secret: null } },
       { settings: { enabled: false } },
@@ -332,7 +363,10 @@ describe("migration 0004 on plaintext data", () => {
     // Links and secrets from before the migration keep working.
     expect((await confirmStatusSubscription("raw-two")).ok).toBe(true);
     expect((await unsubscribeStatusSubscription("raw-one")).ok).toBe(true);
-    await sql("update public.alert_settings set telegram_bot_token = '123:abc' where user_id = $1", [u1]);
+    await sql(
+      "update public.alert_settings set telegram_bot_token = '123:abc' where user_id = $1",
+      [u1],
+    );
     expect(await webhook("plain-secret-ascii-123")).toBe(200);
   });
 });

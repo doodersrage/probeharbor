@@ -36,10 +36,7 @@ function emptyProbe(): TempReading {
   return { c: null, f: null, h: null };
 }
 
-function ensureProbe(
-  probes: Record<string, TempReading>,
-  key: string,
-): TempReading {
+function ensureProbe(probes: Record<string, TempReading>, key: string): TempReading {
   if (!probes[key]) probes[key] = emptyProbe();
   return probes[key]!;
 }
@@ -74,10 +71,7 @@ export function isSenMLPayload(payload: unknown): boolean {
   const records = senmlRecordsFromPayload(payload);
   if (!records || records.length === 0) return false;
   return records.some(
-    (row) =>
-      typeof row.n === "string" ||
-      typeof row.v === "number" ||
-      typeof row.vb === "boolean",
+    (row) => typeof row.n === "string" || typeof row.v === "number" || typeof row.vb === "boolean",
   );
 }
 
@@ -107,11 +101,7 @@ export function parseSenMLPayload(payload: unknown): StandardFeedParseResult {
 
     if (typeof row.v !== "number" || !Number.isFinite(row.v)) continue;
 
-    if (
-      SENML_RH_UNITS.has(unit) ||
-      nameLower.includes("humid") ||
-      nameLower.endsWith("/rh")
-    ) {
+    if (SENML_RH_UNITS.has(unit) || nameLower.includes("humid") || nameLower.endsWith("/rh")) {
       ensureProbe(tempProbes, key).h = round1(row.v);
       continue;
     }
@@ -132,8 +122,7 @@ export function parseSenMLPayload(payload: unknown): StandardFeedParseResult {
     }
   }
 
-  const hasData =
-    Object.values(tempProbes).some((p) => p.f !== 0 || p.h !== 0) || typed.length > 0;
+  const hasData = Object.values(tempProbes).some((p) => p.f !== 0 || p.h !== 0) || typed.length > 0;
 
   return {
     tempProbes,
@@ -228,20 +217,13 @@ function parseHomeAssistantEntity(
       ? (entity.attributes as Record<string, unknown>)
       : {};
   const unit =
-    typeof attributes.unit_of_measurement === "string"
-      ? attributes.unit_of_measurement
-      : null;
-  const label =
-    typeof attributes.friendly_name === "string"
-      ? attributes.friendly_name
-      : entityKey;
+    typeof attributes.unit_of_measurement === "string" ? attributes.unit_of_measurement : null;
+  const label = typeof attributes.friendly_name === "string" ? attributes.friendly_name : entityKey;
 
   const parsed = parseHaStateValue(entity.state, unit);
   if (!parsed) return;
 
-  const key = entityKey.includes(".")
-    ? entityKey.split(".").slice(1).join("_")
-    : parsed.key;
+  const key = entityKey.includes(".") ? entityKey.split(".").slice(1).join("_") : parsed.key;
 
   if (parsed.temp) {
     const probe = ensureProbe(tempProbes, key);
@@ -286,9 +268,7 @@ export function parseHomeAssistantPayload(payload: unknown): StandardFeedParseRe
         ? (body.attributes as Record<string, unknown>)
         : {};
     const unit =
-      typeof attributes.unit_of_measurement === "string"
-        ? attributes.unit_of_measurement
-        : null;
+      typeof attributes.unit_of_measurement === "string" ? attributes.unit_of_measurement : null;
     const parsed = parseHaStateValue(body.state, unit);
     if (parsed?.temp) {
       tempProbes[parsed.key] = parsed.temp;
@@ -306,8 +286,7 @@ export function parseHomeAssistantPayload(payload: unknown): StandardFeedParseRe
     }
   }
 
-  const hasData =
-    Object.values(tempProbes).some((p) => p.f !== 0 || p.h !== 0) || typed.length > 0;
+  const hasData = Object.values(tempProbes).some((p) => p.f !== 0 || p.h !== 0) || typed.length > 0;
 
   return {
     tempProbes,

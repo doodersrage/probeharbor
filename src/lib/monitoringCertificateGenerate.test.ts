@@ -84,7 +84,9 @@ beforeEach(() => {
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue(alertSettings());
   mockListHouseholdDevices.mockReset().mockResolvedValue({ devices: [], error: null });
   mockGetUserEntitlements.mockReset().mockResolvedValue({ tier: "free", historyDays: 7 });
-  mockGetHouseholdFields.mockReset().mockResolvedValue({ data: { name: "The Smiths" }, error: null });
+  mockGetHouseholdFields
+    .mockReset()
+    .mockResolvedValue({ data: { name: "The Smiths" }, error: null });
   mockBuildMonitoringCertificateHtml.mockReset().mockReturnValue("<html>cert</html>");
   mockFormatCertificateDate.mockReset().mockReturnValue("June 15, 2024");
   mockFormatPlanLabel.mockReset().mockReturnValue("Free");
@@ -94,7 +96,9 @@ beforeEach(() => {
 describe("generateMonitoringCertificateForUser", () => {
   it("returns a 'No household' error without fetching anything else", async () => {
     mockGetUserHouseholdId.mockResolvedValue(null);
-    const { generateMonitoringCertificateForUser } = await import("./monitoringCertificateGenerate");
+    const { generateMonitoringCertificateForUser } = await import(
+      "./monitoringCertificateGenerate"
+    );
 
     const result = await generateMonitoringCertificateForUser(user(), "https://example.com");
 
@@ -127,12 +131,18 @@ describe("generateMonitoringCertificateForUser", () => {
       ],
       error: null,
     });
-    const { generateMonitoringCertificateForUser } = await import("./monitoringCertificateGenerate");
+    const { generateMonitoringCertificateForUser } = await import(
+      "./monitoringCertificateGenerate"
+    );
 
     const result = await generateMonitoringCertificateForUser(user(), "https://example.com");
 
     expect(result.data?.devices).toEqual([
-      { name: "Garage", space: "Outbuilding", sensors: [{ label: "Probe 1", kind: "temperature" }] },
+      {
+        name: "Garage",
+        space: "Outbuilding",
+        sensors: [{ label: "Probe 1", kind: "temperature" }],
+      },
       { name: "Attic", space: null, sensors: [{ label: "Probe 2", kind: "temperature" }] },
     ]);
     expect(result.data?.deviceCount).toBe(2);
@@ -140,7 +150,9 @@ describe("generateMonitoringCertificateForUser", () => {
   });
 
   it("falls back from the household row name to the user's email, then 'Household'", async () => {
-    const { generateMonitoringCertificateForUser } = await import("./monitoringCertificateGenerate");
+    const { generateMonitoringCertificateForUser } = await import(
+      "./monitoringCertificateGenerate"
+    );
 
     const withName = await generateMonitoringCertificateForUser(user(), "https://example.com");
     expect(withName.data?.householdLabel).toBe("The Smiths");
@@ -159,8 +171,13 @@ describe("generateMonitoringCertificateForUser", () => {
   });
 
   it("slugifies the household label for the filename, falling back to 'certificate'", async () => {
-    mockGetHouseholdFields.mockResolvedValue({ data: { name: "The Smiths' Garage!!" }, error: null });
-    const { generateMonitoringCertificateForUser } = await import("./monitoringCertificateGenerate");
+    mockGetHouseholdFields.mockResolvedValue({
+      data: { name: "The Smiths' Garage!!" },
+      error: null,
+    });
+    const { generateMonitoringCertificateForUser } = await import(
+      "./monitoringCertificateGenerate"
+    );
 
     const result = await generateMonitoringCertificateForUser(user(), "https://example.com");
 
@@ -186,7 +203,9 @@ describe("generateMonitoringCertificateForUser", () => {
         outboundWebhookUrl: "https://hooks.example.com/x",
       }),
     );
-    const { generateMonitoringCertificateForUser } = await import("./monitoringCertificateGenerate");
+    const { generateMonitoringCertificateForUser } = await import(
+      "./monitoringCertificateGenerate"
+    );
 
     const result = await generateMonitoringCertificateForUser(user(), "https://example.com");
 
@@ -197,7 +216,9 @@ describe("generateMonitoringCertificateForUser", () => {
     mockGetUserEntitlements.mockResolvedValue({ tier: "pro", historyDays: 90 });
     mockFormatPlanLabel.mockReturnValue("Pro");
     mockResolveMonitoringRetentionLabel.mockReturnValue("90 days");
-    const { generateMonitoringCertificateForUser } = await import("./monitoringCertificateGenerate");
+    const { generateMonitoringCertificateForUser } = await import(
+      "./monitoringCertificateGenerate"
+    );
 
     const result = await generateMonitoringCertificateForUser(user(), "https://example.com");
 
@@ -208,7 +229,9 @@ describe("generateMonitoringCertificateForUser", () => {
   });
 
   it("builds the html from the assembled data and returns no error", async () => {
-    const { generateMonitoringCertificateForUser } = await import("./monitoringCertificateGenerate");
+    const { generateMonitoringCertificateForUser } = await import(
+      "./monitoringCertificateGenerate"
+    );
 
     const result = await generateMonitoringCertificateForUser(user(), "https://mysite.example");
 

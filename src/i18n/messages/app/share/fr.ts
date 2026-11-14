@@ -10,21 +10,27 @@ const fr: ShareMessages = {
   notices: {
     created: "Lien de partage créé. Copiez-le ci-dessous pour l’envoyer à vos proches.",
     revoked: "Lien de partage révoqué.",
-    regenerated: "Nouveau lien créé, copiez-le ci-dessous. L’ancien lien, et toute intégration ou collecte qui l’utilise, ne fonctionne plus.",
+    regenerated:
+      "Nouveau lien créé, copiez-le ci-dessous. L’ancien lien, et toute intégration ou collecte qui l’utilise, ne fonctionne plus.",
     apiKeyCreated: "Clé d’API créée. Copiez-la maintenant : elle ne sera plus affichée.",
     apiKeyRevoked: "Clé d’API révoquée.",
     statusCreated: "Page de statut créée. Copiez le lien ci-dessous.",
     statusRevoked: "Page de statut révoquée.",
-    statusRegenerated: "Nouveau lien de statut créé, copiez-le ci-dessous. L’ancien lien et le badge ne fonctionnent plus.",
-    familyLimit: "Vous avez déjà un lien familial en direct. Révoquez-le d’abord, ou passez à Pro pour en avoir plus.",
-    proRequired: "Cette option nécessite Pro. Avec Free, vous pouvez toujours créer un lien familial en direct.",
+    statusRegenerated:
+      "Nouveau lien de statut créé, copiez-le ci-dessous. L’ancien lien et le badge ne fonctionnent plus.",
+    familyLimit:
+      "Vous avez déjà un lien familial en direct. Révoquez-le d’abord, ou passez à Pro pour en avoir plus.",
+    proRequired:
+      "Cette option nécessite Pro. Avec Free, vous pouvez toujours créer un lien familial en direct.",
     error: "Impossible de mettre à jour les liens de partage.",
   },
   links: {
-    subtitle: "Vue en direct en un clic. Toute personne disposant du lien voit les capteurs en direct.",
+    subtitle:
+      "Vue en direct en un clic. Toute personne disposant du lien voit les capteurs en direct.",
     viewOnly: "Lecture seule : vous ne pouvez pas créer ni révoquer de liens de partage.",
     newTitle: "Nouveau lien de partage",
-    newSubtitle: "Copiez et envoyez ce lien. Toute personne qui l’a peut voir les capteurs en direct.",
+    newSubtitle:
+      "Copiez et envoyez ce lien. Toute personne qui l’a peut voir les capteurs en direct.",
     copyLink: "Copier le lien",
     haTitle: "Utiliser ce lien dans Home Assistant ou Apple Home",
     haBodyHtml:
@@ -35,7 +41,8 @@ const fr: ShareMessages = {
     familyDefaultLabel: "Vue familiale en direct",
     familyTitle: "Créer un lien familial",
     familyBody: "Capteurs en direct, expire dans 7 jours. Révocable à tout moment.",
-    familyFreeNote: "Free inclut un lien familial en direct. Pro ajoute l’historique, les métriques et les liens sans expiration.",
+    familyFreeNote:
+      "Free inclut un lien familial en direct. Pro ajoute l’historique, les métriques et les liens sans expiration.",
     familySubmit: "Créer un lien familial en direct",
     moreOptions: "Plus d’options de partage (Pro)",
     label: "Libellé",
@@ -61,9 +68,11 @@ const fr: ShareMessages = {
     embed: "Intégration : {url}",
     scrape: "Scrape : {url}",
     confirmRevoke: "Révoquer ce lien de partage ?",
-    linkHidden: "Par sécurité, le lien complet n’est affiché qu’à sa création. Régénérez-le si vous en avez de nouveau besoin.",
+    linkHidden:
+      "Par sécurité, le lien complet n’est affiché qu’à sa création. Régénérez-le si vous en avez de nouveau besoin.",
     regenerate: "Régénérer le lien",
-    confirmRegenerate: "Créer un nouveau lien ? Le lien actuel, et toute intégration ou collecte qui l’utilise, ne fonctionnera plus.",
+    confirmRegenerate:
+      "Créer un nouveau lien ? Le lien actuel, et toute intégration ou collecte qui l’utilise, ne fonctionnera plus.",
     revoke: "Révoquer",
     remove: "Supprimer",
     statusTitle: "Pages de statut publiques",
@@ -73,9 +82,11 @@ const fr: ShareMessages = {
     statusDefaultLabel: "Statut du foyer",
     createStatus: "Créer une page de statut",
     noStatusPages: "Aucune page de statut pour l’instant.",
-    statusUrlHidden: "Par sécurité, le lien n’est affiché qu’à sa création. Régénérez-le si vous en avez de nouveau besoin.",
+    statusUrlHidden:
+      "Par sécurité, le lien n’est affiché qu’à sa création. Régénérez-le si vous en avez de nouveau besoin.",
     regenerateStatus: "Régénérer le lien",
-    confirmRegenerateStatus: "Créer un nouveau lien ? Le lien et le badge actuels ne fonctionneront plus.",
+    confirmRegenerateStatus:
+      "Créer un nouveau lien ? Le lien et le badge actuels ne fonctionneront plus.",
     badgeLabel: "Badge :",
     preview: "aperçu",
   },
@@ -94,8 +105,10 @@ const fr: ShareMessages = {
     name: "Nom",
     keyDefaultName: "Clé de métriques",
     scopeLabel: "Accès",
-    scopeRead: "Lecture seule : métriques et liste des appareils (recommandé pour Prometheus/Grafana)",
-    scopeWrite: "Lecture et écriture : aussi créer des appareils, renommer ou masquer des capteurs, remplacer la configuration pull",
+    scopeRead:
+      "Lecture seule : métriques et liste des appareils (recommandé pour Prometheus/Grafana)",
+    scopeWrite:
+      "Lecture et écriture : aussi créer des appareils, renommer ou masquer des capteurs, remplacer la configuration pull",
     scopeReadBadge: "Lecture seule",
     scopeWriteBadge: "Lecture et écriture",
     createKey: "Créer une clé d’API",
@@ -114,7 +127,8 @@ const fr: ShareMessages = {
     noInbound: "Aucun webhook entrant pour l’instant.",
     statsTitle: "Statistiques d’ingestion (7 jours)",
     statsBody: "Nombre quotidien de POST réussis et en erreur par appareil push.",
-    statsEmpty: "Aucune activité d’ingestion enregistrée. Envoyez un POST depuis un appareil push pour la voir ici.",
+    statsEmpty:
+      "Aucune activité d’ingestion enregistrée. Envoyez un POST depuis un appareil push pour la voir ici.",
     colDevice: "Appareil",
     colDay: "Jour",
     colOk: "OK",
@@ -126,7 +140,8 @@ const fr: ShareMessages = {
     activityEmpty:
       "Les actions du foyer (liens de partage, réglages d’alertes enregistrés, transferts d’appareils, clés d’ingestion affichées) apparaîtront ici.",
     exportTitle: "Exporter vos données",
-    exportBody: "Téléchargez en JSON vos préférences, vos réglages d’alertes, un extrait de l’historique et vos appareils.",
+    exportBody:
+      "Téléchargez en JSON vos préférences, vos réglages d’alertes, un extrait de l’historique et vos appareils.",
     exportButton: "Télécharger export.json",
   },
   grafana: {
@@ -139,7 +154,8 @@ const fr: ShareMessages = {
     step2TailHtml: "et ajoutez l’en-tête <code>Authorization: Bearer &lt;your-api-key&gt;</code>.",
     step3Lead: "Téléchargez",
     step3Tail: "et importez-le via Dashboards → New → Import.",
-    step4: "Facultatif : dupliquez les panneaux par libellé de sonde ou par nom d’appareil du foyer.",
+    step4:
+      "Facultatif : dupliquez les panneaux par libellé de sonde ou par nom d’appareil du foyer.",
     snippetLabel: "Extrait de configuration de scrape",
     jsonUrlLabel: "URL du JSON du tableau de bord pour l’automatisation :",
   },
@@ -164,7 +180,8 @@ const fr: ShareMessages = {
       'Installez l’<a class="text-link" href="{integrationHref}">intégration HACS officielle</a> pour des capteurs automatiques, ou importez les blueprints YAML et les recettes de webhooks ci-dessous.',
     recommended: "Recommandé :",
     hacsCustom: "Intégration personnalisée HACS",
-    hacsCustomTail: "collez un jeton de lien de partage ; webhook entrant et clé d’ingestion facultatifs pour les services",
+    hacsCustomTail:
+      "collez un jeton de lien de partage ; webhook entrant et clé d’ingestion facultatifs pour les services",
     guide: "Guide de l’intégration Home Assistant",
     devDocs: "Documentation développeurs",
     downloadEntities: "Télécharger le YAML de nommage des entités",
@@ -173,7 +190,8 @@ const fr: ShareMessages = {
     blueprintTail: "dans HA → Paramètres → Automatisations → Créer → Importer depuis YAML.",
     inboundHtml:
       'Créez un webhook entrant dans Partager, puis envoyez <code>{"action":"status"}</code> en POST depuis un rest_command.',
-    scrapeHtml: "Récupérez les métriques Prometheus sur <code>/api/v1/metrics</code> avec une clé d’API Pro.",
+    scrapeHtml:
+      "Récupérez les métriques Prometheus sur <code>/api/v1/metrics</code> avec une clé d’API Pro.",
     prefillRest: "Modèle : rest_command",
     prefillPrometheus: "Modèle : scrape Prometheus",
     seeAlsoHtml:
@@ -183,7 +201,8 @@ const fr: ShareMessages = {
     title: "Diagnostic Home Assistant",
     emptyHtml:
       'Aucun appareil n’a encore reçu de mesures de Home Assistant. Après avoir installé l’<a class="text-link" href="{hacsHref}" target="_blank" rel="noreferrer">intégration HACS</a>, ajoutez la clé d’ingestion d’un appareil dans les options de l’intégration et appelez le service <code>thermaltrace.push</code> depuis une automatisation ; l’appareil apparaît ici après son premier envoi. (La lecture de données dans Home Assistant via un lien de partage n’est pas suivie ici.)',
-    subtitle: "Appareils alimentés par Home Assistant, du plus récent au plus ancien. « Inactif » signifie aucun envoi depuis plus de 2 heures.",
+    subtitle:
+      "Appareils alimentés par Home Assistant, du plus récent au plus ancien. « Inactif » signifie aucun envoi depuis plus de 2 heures.",
     caption: "Appareils recevant des mesures de Home Assistant",
     colDevice: "Appareil",
     colSensors: "Capteurs",
@@ -222,8 +241,10 @@ const fr: ShareMessages = {
     step1Html:
       'Créez un appareil push dans <a class="text-link" href="/dashboard/devices">Appareils</a> et copiez la clé d’ingestion.',
     step2: "Dans Node-RED : Menu → Import → collez l’URL ou chargez le JSON.",
-    step3Html: 'Définissez la variable d’environnement <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (ou modifiez le nœud de fonction).',
-    step4: "Pointez les nœuds MQTT vers votre broker, déployez et vérifiez que le nœud debug affiche HTTP 200.",
+    step3Html:
+      'Définissez la variable d’environnement <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (ou modifiez le nœud de fonction).',
+    step4:
+      "Pointez les nœuds MQTT vers votre broker, déployez et vérifiez que le nœud debug affiche HTTP 200.",
     downloadFlow: "Télécharger le JSON du flux",
     devDocs: "Documentation développeurs",
     fullGuide: "Guide complet Node-RED",

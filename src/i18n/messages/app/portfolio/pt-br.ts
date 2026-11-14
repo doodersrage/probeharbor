@@ -5,7 +5,8 @@ const ptBr: PortfolioMessages = {
   subtitle: "Risco de congelamento e alagamento de todos os imóveis, num relance.",
   allProperties: "Todos os imóveis",
   upgradeToPro: "Mude para o Pro para liberar a visão de portfolio e os alertas.",
-  portfolioUpsell: "O Portfolio aumenta o limite de imóveis e adiciona acessos para administradores de imóveis.",
+  portfolioUpsell:
+    "O Portfolio aumenta o limite de imóveis e adiciona acessos para administradores de imóveis.",
   vacationSet: {
     one: "Modo férias ativado por {days} dias em {count} imóvel editável.",
     other: "Modo férias ativado por {days} dias em {count} imóveis editáveis.",
@@ -20,7 +21,8 @@ const ptBr: PortfolioMessages = {
   viewHeatmap: "Mapa de calor",
   healthTitle: "Saúde do portfolio",
   healthHowSummary: "Como a pontuação é calculada",
-  healthHow: "A pontuação de cada imóvel mostra seu problema mais grave: sem dispositivos (20) ou ainda sem leituras (30); um sensor de vazamento molhado (10–20); no limite de congelamento ou abaixo (15–25); leituras com mais de 2 horas (45); alguns dispositivos sem enviar (50); a menos de {band} do limite (70); caso contrário, saudável (95). O número menor de uma faixa vale quando as leituras também estão desatualizadas. A média é calculada entre todos os imóveis.",
+  healthHow:
+    "A pontuação de cada imóvel mostra seu problema mais grave: sem dispositivos (20) ou ainda sem leituras (30); um sensor de vazamento molhado (10–20); no limite de congelamento ou abaixo (15–25); leituras com mais de 2 horas (45); alguns dispositivos sem enviar (50); a menos de {band} do limite (70); caso contrário, saudável (95). O número menor de uma faixa vale quando as leituras também estão desatualizadas. A média é calculada entre todos os imóveis.",
   healthSummary:
     "Pontuação média {score}% · {atRisk} com risco de congelamento/alagamento{wet} · os mais frios estão abaixo",
   healthSummaryWet: " · molhados: {count}",
@@ -67,7 +69,8 @@ const ptBr: PortfolioMessages = {
   },
   apply: "Aplicar",
   clear: "Limpar",
-  filterHint: "O resumo de saúde acima vale para todo o portfolio. Esta tabela filtra e ordena a lista de imóveis.",
+  filterHint:
+    "O resumo de saúde acima vale para todo o portfolio. Esta tabela filtra e ordena a lista de imóveis.",
   noMatches: "Nenhum imóvel corresponde a estes filtros.",
   noProperties: "Ainda não há imóveis neste portfolio.",
   heatmapTitle: "{name}: {score}% · {detail}",
@@ -98,7 +101,8 @@ const ptBr: PortfolioMessages = {
   previous: "Anterior",
   next: "Próxima",
   pageOf: "Página {page} de {pages}",
-  notAvailable: "A visão de portfolio mostra o risco de congelamento de todos os seus imóveis. Disponível no Pro.",
+  notAvailable:
+    "A visão de portfolio mostra o risco de congelamento de todos os seus imóveis. Disponível no Pro.",
   health: {
     noDevices: "Nenhum dispositivo: adicione uma sonda",
     waitingFirstReading: "Aguardando a primeira leitura",

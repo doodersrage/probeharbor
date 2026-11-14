@@ -13,9 +13,20 @@ export default {
       "Wochenübersicht für den Haushalt; Familien-Live-Link für einen Nachbarn, der nach dem Haus sieht",
     ],
     timeline: [
-      { time: "2:14 Uhr", detail: "Die Garage fällt unter 1 °C (34 °F); ProbeHarbor schickt beiden Eigentümern eine SMS und postet in einen Telegram-Familienkanal." },
-      { time: "2:22 Uhr", detail: "Einer der Eigentümer startet die Heizung per smarter Steckdose neu." },
-      { time: "3:05 Uhr", detail: "Das Diagramm zeigt, wie sich die Temperatur erholt, lange bevor die Leitungen 0 °C (32 °F) erreichen." },
+      {
+        time: "2:14 Uhr",
+        detail:
+          "Die Garage fällt unter 1 °C (34 °F); ProbeHarbor schickt beiden Eigentümern eine SMS und postet in einen Telegram-Familienkanal.",
+      },
+      {
+        time: "2:22 Uhr",
+        detail: "Einer der Eigentümer startet die Heizung per smarter Steckdose neu.",
+      },
+      {
+        time: "3:05 Uhr",
+        detail:
+          "Das Diagramm zeigt, wie sich die Temperatur erholt, lange bevor die Leitungen 0 °C (32 °F) erreichen.",
+      },
     ],
     outcome:
       "Ein Heizungsausfall wird nur dann zur Katastrophe, wenn es bis zum Morgen niemand merkt. Der Schwellenwert liegt ein paar Grad über dem Gefrierpunkt, damit Zeit zum Reagieren bleibt, und die SMS weckt dich um 2 Uhr nachts; eine E-Mail verschläft man leicht.",
@@ -44,9 +55,20 @@ export default {
       "Ein Bekannter vor Ort ist als Ersatzkontakt in den Haushalt eingeladen",
     ],
     timeline: [
-      { time: "Di., 11:40 Uhr", detail: "Ein kurzer Stromausfall setzt die Heizung zurück; der Kriechkeller sinkt unter 2 °C (36 °F)." },
-      { time: "Di., 11:41 Uhr", detail: "Push und E-Mail gehen raus; der Eigentümer ruft den Bekannten vor Ort an." },
-      { time: "Di., 13:10 Uhr", detail: "Der Bekannte startet die Heizung neu, und die Kurve steigt noch vor der abendlichen Kälte." },
+      {
+        time: "Di., 11:40 Uhr",
+        detail:
+          "Ein kurzer Stromausfall setzt die Heizung zurück; der Kriechkeller sinkt unter 2 °C (36 °F).",
+      },
+      {
+        time: "Di., 11:41 Uhr",
+        detail: "Push und E-Mail gehen raus; der Eigentümer ruft den Bekannten vor Ort an.",
+      },
+      {
+        time: "Di., 13:10 Uhr",
+        detail:
+          "Der Bekannte startet die Heizung neu, und die Kurve steigt noch vor der abendlichen Kälte.",
+      },
     ],
     outcome:
       "Leere Gebäude fallen still aus. Der Gewinn ist die Vorwarnzeit: ein Alarm am Dienstag, statt am Freitag eingefrorene Leitungen zu entdecken.",
@@ -75,9 +97,20 @@ export default {
       "Ausgehender Webhook (Pro) an Home Assistant, um eine smarte Steckdose abzuschalten",
     ],
     timeline: [
-      { time: "Fr., 18:05 Uhr", detail: "Nach einem Lüfterausfall erreicht die Kammer 36 °C (96 °F); die Hitzeregel löst aus, und der Webhook erreicht Home Assistant." },
-      { time: "Fr., 18:06 Uhr", detail: "Eine Automation schaltet nicht kritische Geräte ab; eine SMS bestätigt den Alarm." },
-      { time: "Samstagmorgen", detail: "Der Eigentümer tauscht den Lüfter; der Verlauf zeigt, wie schnell sich die Kammer aufgeheizt hat." },
+      {
+        time: "Fr., 18:05 Uhr",
+        detail:
+          "Nach einem Lüfterausfall erreicht die Kammer 36 °C (96 °F); die Hitzeregel löst aus, und der Webhook erreicht Home Assistant.",
+      },
+      {
+        time: "Fr., 18:06 Uhr",
+        detail: "Eine Automation schaltet nicht kritische Geräte ab; eine SMS bestätigt den Alarm.",
+      },
+      {
+        time: "Samstagmorgen",
+        detail:
+          "Der Eigentümer tauscht den Lüfter; der Verlauf zeigt, wie schnell sich die Kammer aufgeheizt hat.",
+      },
     ],
     outcome:
       "Dieselben Fühler und derselbe Ingest-Weg decken beide Ausfallarten ab: Frost auf der Garagenseite, Hitze in der Kammer.",
@@ -106,9 +139,19 @@ export default {
       "Garagentemperatur im Dashboard mit dem Außenwetter verglichen",
     ],
     timeline: [
-      { time: "Woche 1", detail: "Die Alarme kommen in klaren, windstillen Nächten; es sieht nach ganz normaler Kälte aus." },
-      { time: "Woche 2", detail: "Verlauf und CSV zeigen: Der Fühler an der Torseite fällt jedes Mal zuerst ab." },
-      { time: "Woche 3", detail: "Nach dem Abdichten des Tors bleiben die Nächte über dem Schwellenwert." },
+      {
+        time: "Woche 1",
+        detail:
+          "Die Alarme kommen in klaren, windstillen Nächten; es sieht nach ganz normaler Kälte aus.",
+      },
+      {
+        time: "Woche 2",
+        detail: "Verlauf und CSV zeigen: Der Fühler an der Torseite fällt jedes Mal zuerst ab.",
+      },
+      {
+        time: "Woche 3",
+        detail: "Nach dem Abdichten des Tors bleiben die Nächte über dem Schwellenwert.",
+      },
     ],
     outcome:
       "Ein Alarm sagt dir, dass etwas nicht stimmt; der Verlauf sagt dir, wo. Eine günstige Dichtung ist besser, als auf die Nacht zu warten, die kalt genug ist, um ein Rohr platzen zu lassen.",
@@ -120,8 +163,7 @@ export default {
       },
       {
         question: "Frieren angebaute Garagen ein?",
-        answer:
-          "Ja, vor allem an Außenwänden und undichten Toren. Angebaut heißt nicht beheizt.",
+        answer: "Ja, vor allem an Außenwänden und undichten Toren. Angebaut heißt nicht beheizt.",
       },
     ],
   },
@@ -137,9 +179,19 @@ export default {
       "Familien-Live-Link für einen Verwandten, der in der Nähe wohnt",
     ],
     timeline: [
-      { time: "So., 4:05 Uhr", detail: "Bei offen klemmender Lüftungsklappe fällt der Kriechkeller unter 2 °C (36 °F)." },
-      { time: "So., 4:06 Uhr", detail: "SMS und E-Mail gehen raus; der Verwandte schaut auf den Live-Link und macht sich auf den Weg." },
-      { time: "So., 5:20 Uhr", detail: "Die Klappe ist zu, und die Kurve steigt noch vor dem morgendlichen Tiefstwert." },
+      {
+        time: "So., 4:05 Uhr",
+        detail: "Bei offen klemmender Lüftungsklappe fällt der Kriechkeller unter 2 °C (36 °F).",
+      },
+      {
+        time: "So., 4:06 Uhr",
+        detail:
+          "SMS und E-Mail gehen raus; der Verwandte schaut auf den Live-Link und macht sich auf den Weg.",
+      },
+      {
+        time: "So., 5:20 Uhr",
+        detail: "Die Klappe ist zu, und die Kurve steigt noch vor dem morgendlichen Tiefstwert.",
+      },
     ],
     outcome:
       "Um 4 Uhr nachts schaut niemand in den Kriechkeller. Ein Fühler an der Leitung, nicht an der Einstiegsluke, macht aus einer klemmenden Klappe eine schnelle Reparatur.",
@@ -168,9 +220,21 @@ export default {
       "Urlaubsmodus vor einer Reise ausgeschaltet, damit weiter Alarme kommen",
     ],
     timeline: [
-      { time: "Mittwoch", detail: "Eine Prognosewarnung meldet den nächtlichen Tiefstwert für Donnerstag; der Eigentümer prüft, ob die Heizung läuft." },
-      { time: "Do., 1:50 Uhr", detail: "Die Heizung löst den FI-Schalter aus; die Werkstatt fällt unter 1 °C (34 °F), und die E-Mail geht raus." },
-      { time: "Do., 2:15 Uhr", detail: "Der Eigentümer schaltet den Stromkreis per smarter Steckdose wieder ein, bevor die Leitung zum Becken einfriert." },
+      {
+        time: "Mittwoch",
+        detail:
+          "Eine Prognosewarnung meldet den nächtlichen Tiefstwert für Donnerstag; der Eigentümer prüft, ob die Heizung läuft.",
+      },
+      {
+        time: "Do., 1:50 Uhr",
+        detail:
+          "Die Heizung löst den FI-Schalter aus; die Werkstatt fällt unter 1 °C (34 °F), und die E-Mail geht raus.",
+      },
+      {
+        time: "Do., 2:15 Uhr",
+        detail:
+          "Der Eigentümer schaltet den Stromkreis per smarter Steckdose wieder ein, bevor die Leitung zum Becken einfriert.",
+      },
     ],
     outcome:
       "Freistehende Gebäude verlieren schnell Wärme. Die Prognosewarnung deckt die Planungszeit ab, der Schwellenalarm den Ausfall selbst.",
@@ -199,9 +263,21 @@ export default {
       "E-Mail plus SMS (Pro); die Frostschwelle überwacht weiterhin denselben Raum",
     ],
     timeline: [
-      { time: "3:08 Uhr", detail: "Der Wasserkontakt meldet Nässe; SMS und E-Mail gehen raus, obwohl der Urlaubsmodus an ist." },
-      { time: "3:20 Uhr", detail: "Ein Nachbar mit dem Familien-Live-Link schaut nach und findet einen tropfenden Entleerungshahn." },
-      { time: "Morgens", detail: "Ein Installateur zieht das Ventil nach, solange der Boden noch weitgehend trocken ist." },
+      {
+        time: "3:08 Uhr",
+        detail:
+          "Der Wasserkontakt meldet Nässe; SMS und E-Mail gehen raus, obwohl der Urlaubsmodus an ist.",
+      },
+      {
+        time: "3:20 Uhr",
+        detail:
+          "Ein Nachbar mit dem Familien-Live-Link schaut nach und findet einen tropfenden Entleerungshahn.",
+      },
+      {
+        time: "Morgens",
+        detail:
+          "Ein Installateur zieht das Ventil nach, solange der Boden noch weitgehend trocken ist.",
+      },
     ],
     outcome:
       "Lecks warten nicht auf Frost. Wasserkontakte nutzen dasselbe Gerät und denselben Ingest-Weg, und Nässealarme kommen auch dann durch, wenn der Urlaubsmodus die Routinealarme stummschaltet.",

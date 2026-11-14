@@ -14,7 +14,8 @@ const en = {
   chooseOther: "Choose {competitor} when",
   faqLede: "Straight answers for people comparing ProbeHarbor to {competitor}.",
   sourcesTitle: "Sources",
-  sourcesNote: "{competitor} details come from their own pages, checked {checkedOn}. Prices change; check before you buy.",
+  sourcesNote:
+    "{competitor} details come from their own pages, checked {checkedOn}. Prices change; check before you buy.",
   relatedTitle: "Related answers",
   forecastLink: "Will my pipes freeze tonight? (forecast)",
   calculatorLink: "Pipe freeze time calculator",

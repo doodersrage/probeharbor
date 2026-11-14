@@ -40,7 +40,9 @@ export function isMarketingPath(path: string): boolean {
 
 /** Sign-in, register, password reset and invite pages. */
 export function isAuthPagePath(path: string): boolean {
-  return AUTH_PATHS.has(path) || AUTH_PREFIXES.some((p) => path.startsWith(p) && path.length > p.length);
+  return (
+    AUTH_PATHS.has(path) || AUTH_PREFIXES.some((p) => path.startsWith(p) && path.length > p.length)
+  );
 }
 
 function getLocalizableSet(): Set<string> {

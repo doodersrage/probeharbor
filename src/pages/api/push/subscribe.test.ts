@@ -150,7 +150,10 @@ describe("DELETE /api/push/subscribe", () => {
 
     const response = await DELETE(makeContext({ endpoint: "https://push.example.com/abc" }));
 
-    expect(mockDeletePushSubscription).toHaveBeenCalledWith("user-1", "https://push.example.com/abc");
+    expect(mockDeletePushSubscription).toHaveBeenCalledWith(
+      "user-1",
+      "https://push.example.com/abc",
+    );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
   });

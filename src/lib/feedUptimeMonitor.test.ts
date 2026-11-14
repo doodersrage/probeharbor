@@ -202,7 +202,9 @@ describe("runFeedUptimeForAllUsers", () => {
   it("records but never alerts on the demo (example) feed being down", async () => {
     mockListAllHouseholdOwnerUserIds.mockResolvedValue(["u1"]);
     mockCheckFeedHealth.mockResolvedValue({
-      statuses: [status({ ok: false, url: "https://probeharbor.com/api/feeds/example", feedName: "Demo" })],
+      statuses: [
+        status({ ok: false, url: "https://probeharbor.com/api/feeds/example", feedName: "Demo" }),
+      ],
       error: null,
     });
     const { runFeedUptimeForAllUsers } = await import("./feedUptimeMonitor");
@@ -220,7 +222,9 @@ describe("runFeedUptimeForAllUsers", () => {
       error: null,
     });
     // Last reachable 3 days ago; already reported by the alert 5 hours ago.
-    jobs.lastOkFeedCheckAt.mockResolvedValue(new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString());
+    jobs.lastOkFeedCheckAt.mockResolvedValue(
+      new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
+    );
     mockGetAlertSettingsForUser.mockResolvedValue({
       feedUptimeAlertsEnabled: true,
       lastFeedUptimeAlertAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),

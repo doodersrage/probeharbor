@@ -10,7 +10,9 @@ import { parseTempFeedPayload, type TempFeedResult, type TempProbeConfig } from 
 // alerts. It must never become a real-looking 0°F or 0% reading.
 
 const stored = (payload: unknown) =>
-  interpretIngestPayload(payload, "Garage").readings.map((r) => `${r.key}/${r.kind}=${r.value_num}`);
+  interpretIngestPayload(payload, "Garage").readings.map(
+    (r) => `${r.key}/${r.kind}=${r.value_num}`,
+  );
 
 describe("push ingest stores only reported values", () => {
   it("humidity-only SenML stores humidity and no temperature", () => {
@@ -18,16 +20,25 @@ describe("push ingest stores only reported values", () => {
   });
 
   it("humidity-only Home Assistant state stores humidity and no temperature", () => {
-    expect(stored({ state: "55", attributes: { unit_of_measurement: "%" } })).toEqual(["state/humidity=55"]);
+    expect(stored({ state: "55", attributes: { unit_of_measurement: "%" } })).toEqual([
+      "state/humidity=55",
+    ]);
   });
 
   it("temperature-only probe stores no humidity row", () => {
-    expect(stored({ temp: { p1: { c: 5, f: 41 } } })).toEqual(["p1/temperature=41", "avg/temperature=41"]);
+    expect(stored({ temp: { p1: { c: 5, f: 41 } } })).toEqual([
+      "p1/temperature=41",
+      "avg/temperature=41",
+    ]);
   });
 
   it("keeps a real 0°F and a real 0% from Home Assistant", () => {
-    expect(stored({ state: "0", attributes: { unit_of_measurement: "°F" } })).toContain("state/temperature=0");
-    expect(stored({ state: "0", attributes: { unit_of_measurement: "%" } })).toContain("state/humidity=0");
+    expect(stored({ state: "0", attributes: { unit_of_measurement: "°F" } })).toContain(
+      "state/temperature=0",
+    );
+    expect(stored({ state: "0", attributes: { unit_of_measurement: "%" } })).toContain(
+      "state/humidity=0",
+    );
   });
 
   it("leaves ProbeHarbor firmware payloads unchanged", () => {
@@ -42,7 +53,11 @@ describe("push ingest stores only reported values", () => {
 
 describe("pull feed parsing", () => {
   it("derives °F from a Celsius-only probe instead of using 0", () => {
-    expect(parseTempFeedPayload({ temp: { a: { c: 5, h: 50 } } }).a).toEqual({ c: 5, f: 41, h: 50 });
+    expect(parseTempFeedPayload({ temp: { a: { c: 5, h: 50 } } }).a).toEqual({
+      c: 5,
+      f: 41,
+      h: 50,
+    });
   });
 
   it("marks unreported values null and averages only what was reported", () => {
@@ -58,7 +73,13 @@ describe("pull feed parsing", () => {
 });
 
 describe("pull results into storage and alerts", () => {
-  const probe: TempProbeConfig = { id: "p", feedId: "feed-1", key: "a", label: "Garage", visible: true };
+  const probe: TempProbeConfig = {
+    id: "p",
+    feedId: "feed-1",
+    key: "a",
+    label: "Garage",
+    visible: true,
+  };
   const result = (reading: TempFeedResult["probes"][string]): TempFeedResult => ({
     id: "feed-1",
     name: "Feed",
@@ -74,7 +95,12 @@ describe("pull results into storage and alerts", () => {
   } as never;
 
   it("writes no row for a missing value", () => {
-    const rows = buildReadingRowsFromTempResults("house", [device], [result({ c: null, f: null, h: 55 })], [probe]);
+    const rows = buildReadingRowsFromTempResults(
+      "house",
+      [device],
+      [result({ c: null, f: null, h: 55 })],
+      [probe],
+    );
     expect(rows.map((r) => [r.sensor_id, r.value_num])).toEqual([["h", 55]]);
   });
 
@@ -85,7 +111,10 @@ describe("pull results into storage and alerts", () => {
   it("never raises a humidity alert for a probe without humidity", () => {
     const readings = buildReadingsFromResults([result({ c: 20, f: 68, h: null })], [probe]);
     expect(readings).toEqual([expect.objectContaining({ tempf: 68, humidity: null })]);
-    const details = evaluateAlertDetails({ ...DEFAULT_ALERT_SETTINGS, enabled: true, humidityThreshold: 0 }, readings);
+    const details = evaluateAlertDetails(
+      { ...DEFAULT_ALERT_SETTINGS, enabled: true, humidityThreshold: 0 },
+      readings,
+    );
     expect(details.filter((d) => d.kind === "humidity")).toEqual([]);
   });
 
@@ -94,6 +123,8 @@ describe("pull results into storage and alerts", () => {
       readings: [{ label: "Garage", tempf: 68, humidity: null }],
       humidityThreshold: 0,
     } as unknown as RuleEvalContext;
-    expect(explainCondition({ type: "humidity_above", value: 0 } as never, ctx).matched).toBe(false);
+    expect(explainCondition({ type: "humidity_above", value: 0 } as never, ctx).matched).toBe(
+      false,
+    );
   });
 });

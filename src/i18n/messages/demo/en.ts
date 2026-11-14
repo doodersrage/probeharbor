@@ -70,7 +70,8 @@ const en = {
     startFree: "Start free: open Devices",
     story: "Flood/leak story",
     cookbook: "Channel cookbook",
-    imageAlt: "ProbeHarbor temperature trend with humidity, dew point, and freeze threshold at 34°F",
+    imageAlt:
+      "ProbeHarbor temperature trend with humidity, dew point, and freeze threshold at 34°F",
   },
   steps: {
     title: "Your kit next",
@@ -110,7 +111,10 @@ const en = {
     title: "Keep exploring",
     lede: "Already triggered a simulated cold snap? Watch the weather-driven demo shop, then try a flood/leak story, map a city, or set up kit QR.",
     items: [
-      { label: "Interactive probe simulator", hint: "Primary hands-on demo: door, sun, outdoor, freeze threshold" },
+      {
+        label: "Interactive probe simulator",
+        hint: "Primary hands-on demo: door, sun, outdoor, freeze threshold",
+      },
       { label: "Community freeze map", hint: "Opt-in city aggregates, no account required" },
       { label: "Kit QR onboarding", hint: "Create device → scan ingest QR → first POST" },
       { label: "Freeze scenario", hint: "What a 2 a.m. heater failure looks like, alert by alert" },

@@ -28,7 +28,8 @@ const fr: AboutMediaMessages = {
     },
     "overview-status": {
       alt: "Bandeau d’état de l’Overview de ProbeHarbor avec le dernier relevé, les capteurs à jour, les flux en ligne, les alertes et la marge la plus froide au-dessus de l’alerte de gel",
-      caption: "État de la vue d’ensemble : dernier relevé, capteurs, flux, alertes et marge avant le gel.",
+      caption:
+        "État de la vue d’ensemble : dernier relevé, capteurs, flux, alertes et marge avant le gel.",
     },
     portfolio: {
       alt: "Tableau de bord Portfolio illustratif de ProbeHarbor listant plusieurs biens d’exemple avec bannière de risque de gel, températures minimales, nombre d’appareils et rôles de gestionnaire",
@@ -44,7 +45,8 @@ const fr: AboutMediaMessages = {
     },
     "monitoring-certificate": {
       alt: "Certificat de surveillance ProbeHarbor indiquant les alertes activées, le seuil de gel, la durée de conservation et les appareils couverts",
-      caption: "Certificat de surveillance : preuve de configuration pour les assureurs et les bailleurs.",
+      caption:
+        "Certificat de surveillance : preuve de configuration pour les assureurs et les bailleurs.",
     },
   },
 };

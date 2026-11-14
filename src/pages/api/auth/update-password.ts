@@ -30,14 +30,23 @@ async function updatePasswordBetterAuth(
       const userId = await resetTokenUserId(auth, token);
       const user = userId ? await getUserRecord(userId) : null;
       if (!userId || !user?.email) return "/reset-password?error=session";
-      const reset = await auth.api.resetPassword({ body: { newPassword: password, token }, asResponse: true });
+      const reset = await auth.api.resetPassword({
+        body: { newPassword: password, token },
+        asResponse: true,
+      });
       if (!reset.ok) return "/reset-password?error=session";
       clearResetTokenCookie(cookies);
       await markEmailVerified(auth, userId);
-      const signedIn = await auth.api.signInEmail({ body: { email: user.email, password }, asResponse: true });
+      const signedIn = await auth.api.signInEmail({
+        body: { email: user.email, password },
+        asResponse: true,
+      });
       if (!signedIn.ok) return "/signin";
       const body = (await signedIn.clone().json()) as { twoFactorRedirect?: boolean };
-      return redirectWithAuthCookies(body.twoFactorRedirect ? buildMfaChallengeUrl(UPDATED) : UPDATED, signedIn);
+      return redirectWithAuthCookies(
+        body.twoFactorRedirect ? buildMfaChallengeUrl(UPDATED) : UPDATED,
+        signedIn,
+      );
     });
   }
   const { user } = await getAuthFromCookies(cookies);

@@ -1,8 +1,4 @@
-import {
-  isUserAdmin,
-  isUserInGroup,
-  MEMBER_GROUP_NAME,
-} from "./adminAccess";
+import { isUserAdmin, isUserInGroup, MEMBER_GROUP_NAME } from "./adminAccess";
 
 export { resolvePlanTierFromPriceId } from "./planTier";
 

@@ -147,18 +147,62 @@ describe("mergeAlertReadings", () => {
 describe("DHT22 and same-named probes", () => {
   it("pairs a push device's temp1 with humidity1 so humidity alerts can fire", () => {
     const readings = buildAlertReadingsFromLatestSensors([
-      { sensor: sensor({ id: "t", device_id: "dht", key: "temp1", kind: "temperature", label: "Temp1" }), deviceName: "Workshop probe 2", value_num: 39.9 },
-      { sensor: sensor({ id: "h", device_id: "dht", key: "humidity1", kind: "humidity", label: "Humidity1" }), deviceName: "Workshop probe 2", value_num: 82 },
+      {
+        sensor: sensor({
+          id: "t",
+          device_id: "dht",
+          key: "temp1",
+          kind: "temperature",
+          label: "Temp1",
+        }),
+        deviceName: "Workshop probe 2",
+        value_num: 39.9,
+      },
+      {
+        sensor: sensor({
+          id: "h",
+          device_id: "dht",
+          key: "humidity1",
+          kind: "humidity",
+          label: "Humidity1",
+        }),
+        deviceName: "Workshop probe 2",
+        value_num: 82,
+      },
     ]);
-    expect(readings).toEqual([{ label: "Temp1", tempf: 39.9, humidity: 82, space: null, sensorId: "t", recordedAt: null }]);
+    expect(readings).toEqual([
+      { label: "Temp1", tempf: 39.9, humidity: 82, space: null, sensorId: "t", recordedAt: null },
+    ]);
   });
 
   it("pairs suffixed keys (garage_temp + garage_rh) so humidity alerts can fire", () => {
     const readings = buildAlertReadingsFromLatestSensors([
-      { sensor: sensor({ id: "t", device_id: "esp", key: "garage_temp", kind: "temperature", label: "Garage" }), deviceName: "Garage ESP", value_num: 48.2 },
-      { sensor: sensor({ id: "h", device_id: "esp", key: "garage_rh", kind: "humidity", label: "Garage humidity" }), deviceName: "Garage ESP", value_num: 61 },
+      {
+        sensor: sensor({
+          id: "t",
+          device_id: "esp",
+          key: "garage_temp",
+          kind: "temperature",
+          label: "Garage",
+        }),
+        deviceName: "Garage ESP",
+        value_num: 48.2,
+      },
+      {
+        sensor: sensor({
+          id: "h",
+          device_id: "esp",
+          key: "garage_rh",
+          kind: "humidity",
+          label: "Garage humidity",
+        }),
+        deviceName: "Garage ESP",
+        value_num: 61,
+      },
     ]);
-    expect(readings).toEqual([{ label: "Garage", tempf: 48.2, humidity: 61, space: null, sensorId: "t", recordedAt: null }]);
+    expect(readings).toEqual([
+      { label: "Garage", tempf: 48.2, humidity: 61, space: null, sensorId: "t", recordedAt: null },
+    ]);
   });
 
   it("keeps both devices' 'Temp1' probes when merging feed and stored readings", () => {
@@ -183,7 +227,15 @@ describe("buildPowerOffReadingsFromLatestSensors", () => {
   it("returns power sensors that read off, with their space", async () => {
     const { buildPowerOffReadingsFromLatestSensors } = await import("./alertReadings");
     const sensor = (id: string, kind: "power" | "flood") => ({
-      id, device_id: "d", key: id, label: id, kind, unit: null, visible: true, sort_order: 0, offset_num: 0,
+      id,
+      device_id: "d",
+      key: id,
+      label: id,
+      kind,
+      unit: null,
+      visible: true,
+      sort_order: 0,
+      offset_num: 0,
     });
     expect(
       buildPowerOffReadingsFromLatestSensors([
@@ -197,12 +249,29 @@ describe("buildPowerOffReadingsFromLatestSensors", () => {
 
 describe("stale readings don't drive freeze alerts or recovery", () => {
   const hoursAgo = (h: number) => new Date(Date.now() - h * 3600_000).toISOString();
-  const settings = { ...DEFAULT_ALERT_SETTINGS, enabled: true, freezeThresholdF: 34, freezeDwellMinutes: 0, outageHours: 2 };
+  const settings = {
+    ...DEFAULT_ALERT_SETTINGS,
+    enabled: true,
+    freezeThresholdF: 34,
+    freezeDwellMinutes: 0,
+    outageHours: 2,
+  };
 
   it("carries each reading's time", () => {
     const at = hoursAgo(3);
     const [reading] = buildAlertReadingsFromLatestSensors([
-      { sensor: sensor({ id: "t", device_id: "d", key: "temp1", kind: "temperature", label: "Pipe" }), deviceName: "Pi", value_num: 20, recorded_at: at },
+      {
+        sensor: sensor({
+          id: "t",
+          device_id: "d",
+          key: "temp1",
+          kind: "temperature",
+          label: "Pipe",
+        }),
+        deviceName: "Pi",
+        value_num: 20,
+        recorded_at: at,
+      },
     ]);
     expect(reading?.recordedAt).toBe(at);
   });
@@ -216,7 +285,9 @@ describe("stale readings don't drive freeze alerts or recovery", () => {
 
   it("keeps the old behavior when outage alerts are off (nothing else would cover a dead probe)", () => {
     const stale = { label: "Pipe", tempf: 20, humidity: null, recordedAt: hoursAgo(30) };
-    expect(evaluateAlertDetails({ ...settings, outageHours: 0 }, [stale]).map((d) => d.kind)).toEqual(["freeze"]);
+    expect(
+      evaluateAlertDetails({ ...settings, outageHours: 0 }, [stale]).map((d) => d.kind),
+    ).toEqual(["freeze"]);
   });
 
   it("treats live pull readings (no time) as current", () => {

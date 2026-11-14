@@ -9,9 +9,7 @@ import {
 
 describe("registerUrl", () => {
   it("defaults next to Devices", () => {
-    expect(buildRegisterHref()).toBe(
-      `/register?next=${encodeURIComponent(REGISTER_NEXT_DEVICES)}`,
-    );
+    expect(buildRegisterHref()).toBe(`/register?next=${encodeURIComponent(REGISTER_NEXT_DEVICES)}`);
   });
 
   it("keeps a safe custom next and ref", () => {
@@ -52,14 +50,23 @@ describe("buildRegisterErrorHref", () => {
   });
 
   it("falls back to Devices for a missing or off-site next", () => {
-    for (const next of [undefined, "", "//evil.example", "https://evil.example", "/\\evil.example"]) {
+    for (const next of [
+      undefined,
+      "",
+      "//evil.example",
+      "https://evil.example",
+      "/\\evil.example",
+    ]) {
       const url = new URL(buildRegisterErrorHref("verification", { next }), "https://example.com");
       expect(url.searchParams.get("next")).toBe(REGISTER_NEXT_DEVICES);
     }
   });
 
   it("leaves out an empty ref", () => {
-    const empty = new URL(buildRegisterErrorHref("missing_fields", { ref: "" }), "https://example.com");
+    const empty = new URL(
+      buildRegisterErrorHref("missing_fields", { ref: "" }),
+      "https://example.com",
+    );
     expect(empty.searchParams.has("ref")).toBe(false);
   });
 });

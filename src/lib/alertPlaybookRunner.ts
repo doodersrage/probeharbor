@@ -35,9 +35,7 @@ export async function runPlaybooksForUser(
   if (!settings.enabled || settings.alertPlaybooks.length === 0) return 0;
 
   const events = await listRecentAlertEvents(userId, 30);
-  const candidates = events.filter(
-    (e) => e.channels_sent.length > 0 && e.kind !== "playbook",
-  );
+  const candidates = events.filter((e) => e.channels_sent.length > 0 && e.kind !== "playbook");
 
   const fired = { ...(settings.playbookFired ?? {}) } as PlaybookFiredMap;
   const now = Date.now();
@@ -57,7 +55,9 @@ export async function runPlaybooksForUser(
         email,
         settings,
         {
-          title: step.name || fmt(alertJobsMessages(locale).playbook.titleFallback, { title: event.title }),
+          title:
+            step.name ||
+            fmt(alertJobsMessages(locale).playbook.titleFallback, { title: event.title }),
           body: event.body,
           kind: "generic",
         },
@@ -95,12 +95,12 @@ export async function runPlaybooksForAllUsers(): Promise<{
         userId,
         data.user?.user_metadata as Record<string, unknown>,
       );
-      const locale = localeFromMetadata(data.user?.user_metadata as Record<string, unknown> | undefined);
+      const locale = localeFromMetadata(
+        data.user?.user_metadata as Record<string, unknown> | undefined,
+      );
       stepsExecuted += await runPlaybooksForUser(userId, email, settings, locale);
     } catch (err) {
-      errors.push(
-        `${userId}: ${err instanceof Error ? err.message : "Unknown error"}`,
-      );
+      errors.push(`${userId}: ${err instanceof Error ? err.message : "Unknown error"}`);
     }
   }
 

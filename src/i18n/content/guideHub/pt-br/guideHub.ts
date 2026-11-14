@@ -8,11 +8,13 @@ export default {
     },
     alerts: {
       title: "Alertas",
-      description: "Limites de congelamento, alertas de vazamento, guias para ondas de frio e canais de notificação.",
+      description:
+        "Limites de congelamento, alertas de vazamento, guias para ondas de frio e canais de notificação.",
     },
     sharing: {
       title: "Compartilhamento",
-      description: "Acesso da residência, o app para celular que você pode instalar hoje e páginas de status públicas.",
+      description:
+        "Acesso da residência, o app para celular que você pode instalar hoje e páginas de status públicas.",
     },
     integrations: {
       title: "Integrações",
@@ -28,9 +30,13 @@ export default {
   links: {
     "/accessories": {
       label: "Acessórios de hardware",
-      summary: "Claim puck, sinalizador de alerta, contatos de porta/vazamento/energia, etiquetas do kit e suportes.",
+      summary:
+        "Claim puck, sinalizador de alerta, contatos de porta/vazamento/energia, etiquetas do kit e suportes.",
     },
-    "/claim-puck": { label: "Claim puck", summary: "Chave de presença RP2040-Zero e LED de status da vaga." },
+    "/claim-puck": {
+      label: "Claim puck",
+      summary: "Chave de presença RP2040-Zero e LED de status da vaga.",
+    },
     "/leak-puck": {
       label: "Leak Puck (contato de vazamento)",
       summary: "Pads de água que enviam por POST sensores de inundação molhado/seco.",
@@ -41,16 +47,22 @@ export default {
     },
     "/stories/water-heater-pad-leak": {
       label: "Cenário de vazamento",
-      summary: "Como um contato de umidade embaixo do aquecedor de água da garagem detecta um gotejamento antes de encharcar o piso.",
+      summary:
+        "Como um contato de umidade embaixo do aquecedor de água da garagem detecta um gotejamento antes de encharcar o piso.",
     },
-    "/apps": { label: "Apps complementares", summary: "Clientes Android, Desktop, Bay Buddy e PWA para a sua conta." },
+    "/apps": {
+      label: "Apps complementares",
+      summary: "Clientes Android, Desktop, Bay Buddy e PWA para a sua conta.",
+    },
     "/android": {
       label: "App Android (acesso antecipado)",
-      summary: "Build no GitHub para instalar manualmente enquanto a revisão da Play termina; a PWA já funciona hoje.",
+      summary:
+        "Build no GitHub para instalar manualmente enquanto a revisão da Play termina; a PWA já funciona hoje.",
     },
     "/integrations": {
       label: "Central de integrações",
-      summary: "Home Assistant HACS, Matter, Node-RED, Influx, MQTT, Grafana, webhooks, Nest/Ecobee, Zapier, IFTTT/n8n.",
+      summary:
+        "Home Assistant HACS, Matter, Node-RED, Influx, MQTT, Grafana, webhooks, Nest/Ecobee, Zapier, IFTTT/n8n.",
     },
     "/integrations/home-assistant": {
       label: "Home Assistant (HACS)",
@@ -62,7 +74,10 @@ export default {
       summary:
         "Plugin Matterbridge: sensores por link compartilhado no Apple Home, Google Home e Alexa (sem certificação CSA).",
     },
-    "/integrations/node-red": { label: "Node-RED", summary: "Importe o fluxo MQTT→HTTPS; mantenha o Mosquitto local." },
+    "/integrations/node-red": {
+      label: "Node-RED",
+      summary: "Importe o fluxo MQTT→HTTPS; mantenha o Mosquitto local.",
+    },
     "/integrations/influx": {
       label: "InfluxDB e Telegraf",
       summary: "Colete as métricas Prometheus do Pro no Influx ou no VictoriaMetrics.",
@@ -73,7 +88,8 @@ export default {
     },
     "/compare/diy-mqtt": {
       label: "Comparado ao MQTT caseiro",
-      summary: "Quando alertas hospedados de congelamento e vazamento são melhores que manter seu próprio Mosquitto com cron.",
+      summary:
+        "Quando alertas hospedados de congelamento e vazamento são melhores que manter seu próprio Mosquitto com cron.",
     },
     "/docs/api": {
       label: "Documentação da API HTTP",

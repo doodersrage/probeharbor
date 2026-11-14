@@ -1,10 +1,6 @@
 import type { BatterySample } from "./batteryTrend";
 
-export function batterySparklinePath(
-  history: BatterySample[],
-  width = 64,
-  height = 20,
-): string {
+export function batterySparklinePath(history: BatterySample[], width = 64, height = 20): string {
   if (history.length < 2) return "";
   const sorted = [...history].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
   const min = Math.min(...sorted.map((s) => s.pct));

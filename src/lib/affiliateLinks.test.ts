@@ -67,8 +67,6 @@ describe("affiliateLinks", () => {
 
   it("picks sponsored rel only for Amazon hosts", () => {
     expect(commerceLinkRel("https://www.amazon.com/s?k=x")).toBe(COMMERCE_LINK_REL);
-    expect(commerceLinkRel("https://www.adafruit.com/product/381")).toBe(
-      EXTERNAL_SHOP_LINK_REL,
-    );
+    expect(commerceLinkRel("https://www.adafruit.com/product/381")).toBe(EXTERNAL_SHOP_LINK_REL);
   });
 });

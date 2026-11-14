@@ -25,7 +25,8 @@ const de: CompareMessages = {
   },
   guides: {
     title: "Ausführliche Vergleiche",
-    subtitle: "Direkte Gegenüberstellungen gängiger Alternativen: Wartungsaufwand, Alarme und wann welche Lösung passt.",
+    subtitle:
+      "Direkte Gegenüberstellungen gängiger Alternativen: Wartungsaufwand, Alarme und wann welche Lösung passt.",
     smartThingsHtml:
       '<strong class="text-[var(--color-text)]">SmartThings</strong> kann ProbeHarbor-Sensoren über die <a class="text-link" href="/integrations/smartthings">Matter-Bridge</a> einbinden (ohne Cloud-to-Cloud-App). Fertige Consumer-Sensoren behandeln wir weiterhin zusammen mit Govee: <a class="text-link" href="/compare/govee">Govee-Vergleich</a>.',
     haTitle: "Home Assistant (HACS)",
@@ -40,17 +41,60 @@ const de: CompareMessages = {
     diy: "Eigenes Skript + Cron",
     consumer: "Govee / SmartThings",
     rows: [
-      { capabilityHtml: "Zeit bis zum Frost (in diesem Raum)", probeharborHtml: "Prognosebasierter Countdown + Alarm mit Reststunden", diyHtml: "Modell schreibst du selbst", consumerHtml: "Nur Schwellenwert" },
-      { capabilityHtml: "Frostalarme (E-Mail/SMS/Push)", probeharborHtml: "Integriert, pro Haushalt", diyHtml: "Twilio + Cron verdrahtest du selbst", consumerHtml: "App-Push; SMS extra oder gar nicht" },
-      { capabilityHtml: "Datenversand von ESP/Arduino", probeharborHtml: "Einmaliger Geräteschlüssel", diyHtml: "Eigener Endpunkt", consumerHtml: "Govee-Sensoren / SmartThings-Geräte" },
-      { capabilityHtml: "Verlauf &amp; CSV-Export", probeharborHtml: "In den Bezahlplänen", diyHtml: "Selbst gehostete Datenbank", consumerHtml: "Abostufen" },
-      { capabilityHtml: "Freigabelinks &amp; Grafana", probeharborHtml: "1 Live-Link für die Familie; Pro ergänzt Verlauf/Metriken", diyHtml: "Manuelle Einrichtung", consumerHtml: "Selten bei Consumer-Apps" },
-      { capabilityHtml: "Home Assistant (HACS)", probeharborHtml: '<a class="text-link" href="/integrations/home-assistant">Offizielle Integration</a> (Freigabelink)', diyHtml: "REST-Sensoren + Webhooks", consumerHtml: "Je nach Hersteller" },
-      { capabilityHtml: "Mehrere Nutzer pro Haushalt", probeharborHtml: "Kostenlos", diyHtml: "Entfällt", consumerHtml: "Teilen in der Familie ist umständlich" },
-      { capabilityHtml: "Hosting &amp; Verfügbarkeit", probeharborHtml: 'Cloudflare-Edge; <a class="text-link" href="/system-status">öffentliche Statusseite</a>', diyHtml: "VPS / Cron betreibst du selbst", consumerHtml: "Hersteller-Cloud (undurchsichtig)" },
+      {
+        capabilityHtml: "Zeit bis zum Frost (in diesem Raum)",
+        probeharborHtml: "Prognosebasierter Countdown + Alarm mit Reststunden",
+        diyHtml: "Modell schreibst du selbst",
+        consumerHtml: "Nur Schwellenwert",
+      },
+      {
+        capabilityHtml: "Frostalarme (E-Mail/SMS/Push)",
+        probeharborHtml: "Integriert, pro Haushalt",
+        diyHtml: "Twilio + Cron verdrahtest du selbst",
+        consumerHtml: "App-Push; SMS extra oder gar nicht",
+      },
+      {
+        capabilityHtml: "Datenversand von ESP/Arduino",
+        probeharborHtml: "Einmaliger Geräteschlüssel",
+        diyHtml: "Eigener Endpunkt",
+        consumerHtml: "Govee-Sensoren / SmartThings-Geräte",
+      },
+      {
+        capabilityHtml: "Verlauf &amp; CSV-Export",
+        probeharborHtml: "In den Bezahlplänen",
+        diyHtml: "Selbst gehostete Datenbank",
+        consumerHtml: "Abostufen",
+      },
+      {
+        capabilityHtml: "Freigabelinks &amp; Grafana",
+        probeharborHtml: "1 Live-Link für die Familie; Pro ergänzt Verlauf/Metriken",
+        diyHtml: "Manuelle Einrichtung",
+        consumerHtml: "Selten bei Consumer-Apps",
+      },
+      {
+        capabilityHtml: "Home Assistant (HACS)",
+        probeharborHtml:
+          '<a class="text-link" href="/integrations/home-assistant">Offizielle Integration</a> (Freigabelink)',
+        diyHtml: "REST-Sensoren + Webhooks",
+        consumerHtml: "Je nach Hersteller",
+      },
+      {
+        capabilityHtml: "Mehrere Nutzer pro Haushalt",
+        probeharborHtml: "Kostenlos",
+        diyHtml: "Entfällt",
+        consumerHtml: "Teilen in der Familie ist umständlich",
+      },
+      {
+        capabilityHtml: "Hosting &amp; Verfügbarkeit",
+        probeharborHtml:
+          'Cloudflare-Edge; <a class="text-link" href="/system-status">öffentliche Statusseite</a>',
+        diyHtml: "VPS / Cron betreibst du selbst",
+        consumerHtml: "Hersteller-Cloud (undurchsichtig)",
+      },
     ],
   },
-  screenshotCaption: "Das bekommst du, ohne einen eigenen Stack zu betreiben: Fühlerkurven gegen deine Frostschwelle.",
+  screenshotCaption:
+    "Das bekommst du, ohne einen eigenen Stack zu betreiben: Fühlerkurven gegen deine Frostschwelle.",
   audience: {
     title: "Für wen es gedacht ist",
     itemsHtml: [

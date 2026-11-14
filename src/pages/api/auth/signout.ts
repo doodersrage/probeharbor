@@ -7,9 +7,11 @@ import { withBetterAuth } from "../../../lib/betterAuthRuntime";
 
 /** End this session in the database, then expire its cookie. */
 async function signOutBetterAuth(request: Request, location: string): Promise<Response> {
-  await withBetterAuth(request, (auth) => auth.api.signOut({ headers: request.headers })).catch(() => {
-    // No session, or already gone: the cookie is cleared below either way.
-  });
+  await withBetterAuth(request, (auth) => auth.api.signOut({ headers: request.headers })).catch(
+    () => {
+      // No session, or already gone: the cookie is cleared below either way.
+    },
+  );
   const headers = new Headers({ Location: location });
   for (const cookie of expiredBetterAuthCookies()) headers.append("Set-Cookie", cookie);
   return new Response(null, { status: 302, headers });

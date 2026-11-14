@@ -57,11 +57,7 @@ export function detectTemperatureAnomalies(
       const drop = prev.tempf - current.tempf;
 
       if (elapsed > 0 && elapsed <= windowMs && drop >= dropThresholdF) {
-        const doorOpen = doorWasOpenNear(
-          doorEvents,
-          Date.parse(current.timestamp),
-          30 * 60 * 1000,
-        );
+        const doorOpen = doorWasOpenNear(doorEvents, Date.parse(current.timestamp), 30 * 60 * 1000);
         notices.push({
           probeLabel,
           severity: "warning",
@@ -81,11 +77,7 @@ export function detectTemperatureAnomalies(
   return notices;
 }
 
-function doorWasOpenNear(
-  events: DoorStateAtTime[],
-  atMs: number,
-  windowMs: number,
-): boolean {
+function doorWasOpenNear(events: DoorStateAtTime[], atMs: number, windowMs: number): boolean {
   return events.some((event) => {
     if (!event.open) return false;
     const t = Date.parse(event.recordedAt);

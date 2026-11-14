@@ -1,21 +1,23 @@
-
 /** Body copy for /about/avr-asm-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
 const es: Messages = {
   introHtml:
     'Casi ninguna sonda antiheladas con Ethernet <strong>requiere</strong> ensamblador. PADAUK, PIC10F y ATtiny10 se programan sobre todo (o en la práctica solo) en ensamblador, pero no tienen pila TCP ni RAM suficiente para enviar JSON por POST. La opción que sí podemos soportar es <strong>ensamblador GNU AVR</strong> en un Arduino <strong>Uno / ATmega328P</strong> con un shield Ethernet <strong>W5100</strong>: el mismo hardware de garaje que <a class="text-link" href="/about/arduino-sketches">Uno con Ethernet</a>, sin Arduino C.',
-  relay: "El W5100 no admite TLS. Este ejemplo usa el mismo relay HTTP→HTTPS en la LAN que Uno en C, STM32 Zephyr y CH32V WCHNET.",
+  relay:
+    "El W5100 no admite TLS. Este ejemplo usa el mismo relay HTTP→HTTPS en la LAN que Uno en C, STM32 Zephyr y CH32V WCHNET.",
   partsTitle: "Componentes",
   partsCaption: "Componentes para una sonda antiheladas en ensamblador AVR",
   colPart: "Componente",
   colWhy: "Para qué",
   colBuy: "Comprar",
-  unoWhyHtml: "AVR a 16 MHz. Se programa con <code>avr-gcc</code> / <code>avrdude</code>, no con el Arduino IDE.",
+  unoWhyHtml:
+    "AVR a 16 MHz. Se programa con <code>avr-gcc</code> / <code>avrdude</code>, no con el Arduino IDE.",
   shieldPart: "Shield Ethernet W5100",
   shieldWhy: "Chip de sockets por SPI. El mismo shield que el ejemplo Arduino Ethernet DHT22.",
   probePart: "DS18B20 resistente al agua",
-  probeWhyHtml: "Datos en <strong>D7</strong>. No uses D4: el shield usa D4 como chip-select de la SD.",
+  probeWhyHtml:
+    "Datos en <strong>D7</strong>. No uses D4: el shield usa D4 como chip-select de la SD.",
   resistorPart: "Resistencia de 4.7kΩ",
   resistorWhy: "Pull-up de la línea de datos del DS18B20 a 5V (el Uno es una placa de 5V).",
   wiringTitle: "Cableado",

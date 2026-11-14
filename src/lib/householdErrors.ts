@@ -2,7 +2,10 @@ import type { Locale } from "../i18n/locales";
 import { householdMessages } from "../i18n/messages/app/household";
 
 /** User-facing text for a household `?error=` code (codes stay English). */
-export function getHouseholdErrorMessage(code: string | null, locale: Locale = "en"): string | null {
+export function getHouseholdErrorMessage(
+  code: string | null,
+  locale: Locale = "en",
+): string | null {
   if (!code) {
     return null;
   }

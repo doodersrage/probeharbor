@@ -112,10 +112,19 @@ const de: DemoMessages = {
     title: "Weiter entdecken",
     lede: "Schon eine simulierte Kältewelle ausgelöst? Sieh dir die wettergesteuerte Demo-Werkstatt an, dann lies eine Wasserschaden-Geschichte, schau dir eine Stadt auf der Karte an oder richte den Kit-QR ein.",
     items: [
-      { label: "Interaktiver Fühlersimulator", hint: "Die wichtigste Demo zum Selbermachen: Tor, Sonne, außen, Frostschwelle" },
-      { label: "Frostkarte der Community", hint: "Freiwillig geteilte Werte pro Stadt, ohne Konto" },
+      {
+        label: "Interaktiver Fühlersimulator",
+        hint: "Die wichtigste Demo zum Selbermachen: Tor, Sonne, außen, Frostschwelle",
+      },
+      {
+        label: "Frostkarte der Community",
+        hint: "Freiwillig geteilte Werte pro Stadt, ohne Konto",
+      },
       { label: "Kit-Einrichtung per QR", hint: "Gerät anlegen → Ingest-QR scannen → erster POST" },
-      { label: "Frost-Szenario", hint: "Wie ein Heizungsausfall um 2 Uhr nachts aussieht, Alarm für Alarm" },
+      {
+        label: "Frost-Szenario",
+        hint: "Wie ein Heizungsausfall um 2 Uhr nachts aussieht, Alarm für Alarm",
+      },
     ],
   },
   faqLede:

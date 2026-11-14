@@ -59,7 +59,10 @@ export default {
       { label: "Cenário: aquecedor da garagem falhou" },
     ],
     sources: [
-      { label: "Com que temperatura os canos congelam? (KXAN, citando pesquisa da University of Illinois)" },
+      {
+        label:
+          "Com que temperatura os canos congelam? (KXAN, citando pesquisa da University of Illinois)",
+      },
       { label: farmBureau },
     ],
   },
@@ -288,7 +291,10 @@ export default {
       { label: "Devo deixar as torneiras pingando para evitar canos congelados?" },
     ],
     sources: [
-      { label: "Como os canos congelam e estouram (Farm Bureau Insurance, citando pesquisa da University of Illinois)" },
+      {
+        label:
+          "Como os canos congelam e estouram (Farm Bureau Insurance, citando pesquisa da University of Illinois)",
+      },
     ],
   },
   "vacant-house-winter-thermostat-setting": {
@@ -575,7 +581,10 @@ export default {
       { label: "Como montar um alerta de congelamento com ESPHome?" },
     ],
     sources: [
-      { label: "Sensor digital de temperatura DS18B20 à prova d'água: especificações técnicas (Adafruit)" },
+      {
+        label:
+          "Sensor digital de temperatura DS18B20 à prova d'água: especificações técnicas (Adafruit)",
+      },
       { label: "Datasheet do AM2302 / DHT22 (Aosong, hospedado pela Adafruit)" },
     ],
   },
@@ -673,7 +682,8 @@ export default {
     ],
   },
   "landlord-vacant-rental-freeze-monitoring": {
-    question: "Como um proprietário pode monitorar um imóvel de aluguel vazio contra canos congelados?",
+    question:
+      "Como um proprietário pode monitorar um imóvel de aluguel vazio contra canos congelados?",
     description:
       "Mantenha o aquecimento em 13 °C (55 °F) ou mais, um sensor de temperatura perto do encanamento de cada unidade e alertas para quem chega primeiro.",
     shortAnswer:

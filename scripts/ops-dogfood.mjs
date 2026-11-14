@@ -119,13 +119,9 @@ function note(pass, label, detail = "") {
 {
   const ops = await get("/dashboard/ops");
   const redirectedAway =
-    ops.res.status === 302 &&
-    Boolean(ops.location) &&
-    !ops.location.includes("/dashboard/ops");
+    ops.res.status === 302 && Boolean(ops.location) && !ops.location.includes("/dashboard/ops");
   const isAdmin =
-    ops.res.status === 200 &&
-    /Ops/i.test(ops.text) &&
-    /email-test|Email smoke/i.test(ops.text);
+    ops.res.status === 200 && /Ops/i.test(ops.text) && /email-test|Email smoke/i.test(ops.text);
 
   if (redirectedAway) {
     console.log(
@@ -142,8 +138,7 @@ function note(pass, label, detail = "") {
 
     for (const kind of ["drip_day1", "drip_day3", "trial_3d"]) {
       const result = await postForm("/api/admin/email-test", { kind });
-      const pass =
-        result.res.status === 302 && result.location.includes("email_test=1");
+      const pass = result.res.status === 302 && result.location.includes("email_test=1");
       note(
         pass,
         `Ops email smoke (${kind})`,
@@ -170,9 +165,7 @@ function note(pass, label, detail = "") {
     } else if (sms.res.status === 302 && sms.location.includes("channel_test=1")) {
       note(true, "Ops SMS channel smoke", "sent");
     } else {
-      console.log(
-        `○ Ops SMS channel smoke — HTTP ${sms.res.status} ${sms.text.slice(0, 100)}`,
-      );
+      console.log(`○ Ops SMS channel smoke — HTTP ${sms.res.status} ${sms.text.slice(0, 100)}`);
     }
   }
 }

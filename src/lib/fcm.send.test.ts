@@ -41,7 +41,12 @@ function b64urlDecode(s: string): Uint8Array<ArrayBuffer> {
 
 beforeAll(async () => {
   const pair = (await crypto.subtle.generateKey(
-    { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    },
     true,
     ["sign", "verify"],
   )) as CryptoKeyPair;
@@ -78,7 +83,11 @@ async function loadFcm() {
 function configure() {
   runtimeEnvStore.set(
     "FCM_SERVICE_ACCOUNT_JSON",
-    JSON.stringify({ project_id: "demo-proj", client_email: "svc@demo-proj.iam.gserviceaccount.com", private_key: privatePem }),
+    JSON.stringify({
+      project_id: "demo-proj",
+      client_email: "svc@demo-proj.iam.gserviceaccount.com",
+      private_key: privatePem,
+    }),
   );
 }
 
@@ -97,7 +106,11 @@ describe("sendFcmToUser: before anything is sent", () => {
   it("skips without touching the database or network when FCM isn't configured", async () => {
     const calls = fakeFetch([], []);
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 0, failed: 0, skippedReason: "fcm_not_configured" });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 0,
+      failed: 0,
+      skippedReason: "fcm_not_configured",
+    });
     expect(push.listFcmTokens).not.toHaveBeenCalled();
     expect(calls).toHaveLength(0);
   });
@@ -107,7 +120,11 @@ describe("sendFcmToUser: before anything is sent", () => {
     push.listFcmTokens.mockRejectedValueOnce(new Error("db down"));
     const calls = fakeFetch([], []);
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 0, failed: 0, skippedReason: "fcm_load_failed" });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 0,
+      failed: 0,
+      skippedReason: "fcm_load_failed",
+    });
     expect(calls).toHaveLength(0);
   });
 
@@ -116,7 +133,11 @@ describe("sendFcmToUser: before anything is sent", () => {
     push.listFcmTokens.mockResolvedValueOnce([]);
     const calls = fakeFetch([], []);
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 0, failed: 0, skippedReason: "fcm_no_token" });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 0,
+      failed: 0,
+      skippedReason: "fcm_no_token",
+    });
     expect(calls).toHaveLength(0);
   });
 
@@ -125,7 +146,11 @@ describe("sendFcmToUser: before anything is sent", () => {
     push.listFcmTokens.mockResolvedValueOnce([{ token: "a" }, { token: "b" }]);
     const calls = fakeFetch([{ status: 401, body: { error: "invalid_grant" } }], []);
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 0, failed: 2, skippedReason: "fcm_auth_failed" });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 0,
+      failed: 2,
+      skippedReason: "fcm_auth_failed",
+    });
     expect(calls.map((c) => c.url)).toEqual([OAUTH_URL]);
     expect(push.deleteFcmToken).not.toHaveBeenCalled();
   });
@@ -150,7 +175,10 @@ describe("sendFcmToUser: OAuth assertion", () => {
     const form = new URLSearchParams(String(calls[0]!.init.body));
     expect(form.get("grant_type")).toBe("urn:ietf:params:oauth:grant-type:jwt-bearer");
     const [h, c, sig] = form.get("assertion")!.split(".");
-    expect(JSON.parse(new TextDecoder().decode(b64urlDecode(h!)))).toEqual({ alg: "RS256", typ: "JWT" });
+    expect(JSON.parse(new TextDecoder().decode(b64urlDecode(h!)))).toEqual({
+      alg: "RS256",
+      typ: "JWT",
+    });
     const claim = JSON.parse(new TextDecoder().decode(b64urlDecode(c!)));
     expect(claim).toMatchObject({
       iss: "svc@demo-proj.iam.gserviceaccount.com",
@@ -188,7 +216,9 @@ describe("sendFcmToUser: OAuth assertion", () => {
     await sendFcmToUser("u1", PAYLOAD);
     await sendFcmToUser("u1", PAYLOAD);
     expect(calls.filter((c) => c.url === OAUTH_URL)).toHaveLength(2);
-    expect((calls.at(-1)!.init.headers as Record<string, string>).Authorization).toBe("Bearer ya29.test");
+    expect((calls.at(-1)!.init.headers as Record<string, string>).Authorization).toBe(
+      "Bearer ya29.test",
+    );
   });
 });
 
@@ -198,11 +228,17 @@ describe("sendFcmToUser: per-device delivery", () => {
     push.listFcmTokens.mockResolvedValueOnce([{ token: "phone" }, { token: "tablet" }]);
     const calls = fakeFetch([okToken], [{ status: 200 }, { status: 200 }]);
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 2, failed: 0, skippedReason: null });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 2,
+      failed: 0,
+      skippedReason: null,
+    });
 
     const sends = calls.filter((c) => c.url === SEND_URL);
     expect(sends).toHaveLength(2);
-    expect((sends[0]!.init.headers as Record<string, string>).Authorization).toBe("Bearer ya29.test");
+    expect((sends[0]!.init.headers as Record<string, string>).Authorization).toBe(
+      "Bearer ya29.test",
+    );
     const bodies = sends.map((s) => JSON.parse(String(s.init.body)).message);
     expect(bodies.map((m) => m.token)).toEqual(["phone", "tablet"]);
     expect(bodies[0].data.event_id).toBe("7");
@@ -213,10 +249,20 @@ describe("sendFcmToUser: per-device delivery", () => {
     push.listFcmTokens.mockResolvedValueOnce([{ token: "old" }, { token: "new" }]);
     fakeFetch(
       [okToken],
-      [{ status: 404, body: { error: { status: "NOT_FOUND", details: [{ errorCode: "UNREGISTERED" }] } } }, { status: 200 }],
+      [
+        {
+          status: 404,
+          body: { error: { status: "NOT_FOUND", details: [{ errorCode: "UNREGISTERED" }] } },
+        },
+        { status: 200 },
+      ],
     );
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 1, failed: 1, skippedReason: null });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 1,
+      failed: 1,
+      skippedReason: null,
+    });
     expect(push.deleteFcmToken).toHaveBeenCalledTimes(1);
     expect(push.deleteFcmToken).toHaveBeenCalledWith("u1", "old");
   });
@@ -224,9 +270,21 @@ describe("sendFcmToUser: per-device delivery", () => {
   it("reads the error code from the details even when the HTTP status isn't 404", async () => {
     configure();
     push.listFcmTokens.mockResolvedValueOnce([{ token: "old" }]);
-    fakeFetch([okToken], [{ status: 400, body: { error: { details: [{ "@type": "x" }, { errorCode: "UNREGISTERED" }] } } }]);
+    fakeFetch(
+      [okToken],
+      [
+        {
+          status: 400,
+          body: { error: { details: [{ "@type": "x" }, { errorCode: "UNREGISTERED" }] } },
+        },
+      ],
+    );
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 0, failed: 1, skippedReason: "fcm_delivery_failed" });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 0,
+      failed: 1,
+      skippedReason: "fcm_delivery_failed",
+    });
     expect(push.deleteFcmToken).toHaveBeenCalledWith("u1", "old");
   });
 
@@ -242,7 +300,11 @@ describe("sendFcmToUser: per-device delivery", () => {
       ],
     );
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 0, failed: 3, skippedReason: "fcm_delivery_failed" });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 0,
+      failed: 3,
+      skippedReason: "fcm_delivery_failed",
+    });
     expect(push.deleteFcmToken).not.toHaveBeenCalled();
   });
 
@@ -251,7 +313,11 @@ describe("sendFcmToUser: per-device delivery", () => {
     push.listFcmTokens.mockResolvedValueOnce([{ token: "a" }, { token: "b" }]);
     fakeFetch([okToken], [new Error("The operation was aborted due to timeout"), { status: 200 }]);
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 1, failed: 1, skippedReason: null });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 1,
+      failed: 1,
+      skippedReason: null,
+    });
     expect(push.deleteFcmToken).not.toHaveBeenCalled();
   });
 
@@ -261,7 +327,11 @@ describe("sendFcmToUser: per-device delivery", () => {
     push.deleteFcmToken.mockRejectedValueOnce(new Error("db down"));
     fakeFetch([okToken], [{ status: 404 }, { status: 200 }]);
     const { sendFcmToUser } = await loadFcm();
-    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({ delivered: 1, failed: 1, skippedReason: null });
+    expect(await sendFcmToUser("u1", PAYLOAD)).toEqual({
+      delivered: 1,
+      failed: 1,
+      skippedReason: null,
+    });
   });
 });
 

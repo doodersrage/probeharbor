@@ -5,7 +5,8 @@ const fr: DevicesMessages = {
   subtitle: {
     ops: "Tous les appareils, du plus critique au moins critique. Ouvrez-en un pour le gérer.",
     pull: "Flux JSON HTTPS que nous récupérons selon un calendrier.",
-    thermostat: "Le thermostat de votre logement et la référence intérieure, pour mettre vos sondes en contexte.",
+    thermostat:
+      "Le thermostat de votre logement et la référence intérieure, pour mettre vos sondes en contexte.",
     push: "Connectez un nouvel appareil ou terminez la configuration d’un appareil.",
   },
   indoorRefError: {
@@ -18,7 +19,8 @@ const fr: DevicesMessages = {
     deviceNotFound: "Cet appareil ne fait plus partie de ce bien.",
     sensorReplaced: {
       one: "Capteur remplacé : {count} mesure d’historique a été transférée vers le nouveau capteur.",
-      other: "Capteur remplacé : {count} mesures d’historique ont été transférées vers le nouveau capteur.",
+      other:
+        "Capteur remplacé : {count} mesures d’historique ont été transférées vers le nouveau capteur.",
     },
     deviceDeleted: "Appareil supprimé.",
     bulkDeleted: { one: "{count} élément supprimé.", other: "{count} éléments supprimés." },
@@ -36,15 +38,18 @@ const fr: DevicesMessages = {
     feedDeleted: "Flux supprimé.",
     probeDeleted: "Sonde supprimée.",
     saveFailed: "Impossible d’enregistrer les modifications. Veuillez réessayer.",
-    deviceLimit: "Limite d’appareils push atteinte ({max} par bien). Changez d’offre pour en ajouter.",
+    deviceLimit:
+      "Limite d’appareils push atteinte ({max} par bien). Changez d’offre pour en ajouter.",
     viewer: "Accès en lecture seule : vous ne pouvez pas modifier les appareils ni les flux.",
-    deviceActionFailed: "Impossible de terminer cette action sur l’appareil. Vérifiez le formulaire et réessayez.",
+    deviceActionFailed:
+      "Impossible de terminer cette action sur l’appareil. Vérifiez le formulaire et réessayez.",
     actionFailed: "Impossible de terminer cette action ({code}). Veuillez réessayer.",
     viewPlans: "Voir les offres",
     /** At the device limit with push devices that never reported; device links follow. */
     neverReported: {
       one: "{count} de vos appareils n’a jamais envoyé de mesure. Supprimez-le si vous n’en avez pas besoin, ou réutilisez-le pour le matériel que vous installez (Renouveler la clé sur sa page vous donne une nouvelle clé) :",
-      other: "{count} de vos appareils n’ont jamais envoyé de mesure. Supprimez-en un dont vous n’avez pas besoin, ou réutilisez-en un pour le matériel que vous installez (Renouveler la clé sur sa page vous donne une nouvelle clé) :",
+      other:
+        "{count} de vos appareils n’ont jamais envoyé de mesure. Supprimez-en un dont vous n’avez pas besoin, ou réutilisez-en un pour le matériel que vous installez (Renouveler la clé sur sa page vous donne une nouvelle clé) :",
     },
   },
   tabs: {
@@ -105,13 +110,15 @@ const fr: DevicesMessages = {
     kitGuide: "Guide QR du kit matériel",
     checkNow: "Vérifier maintenant",
     metaAuto: "Vérification automatique toutes les 5 secondes tant que cette page est ouverte.",
-    metaManual: "Dès que votre appareil envoie une mesure, cliquez sur Vérifier maintenant ou actualisez.",
+    metaManual:
+      "Dès que votre appareil envoie une mesure, cliquez sur Vérifier maintenant ou actualisez.",
     help: {
       title: "Rien ne s’affiche ?",
       lede: "La plupart des premières mesures arrivent moins d’une minute après la connexion de l’appareil au Wi-Fi. Si rien n’est encore arrivé, vérifiez ceci :",
       wifi: "Wi-Fi : la plupart des cartes (ESP32, Pico W) ne se connectent qu’aux réseaux 2,4 GHz, pas 5 GHz. Vérifiez le nom du réseau et le mot de passe donnés à l’appareil.",
       key: "Clé : si vous avez saisi ou collé la clé vous-même, elle doit correspondre exactement à votre clé, sans espace en trop. Perdue ? Utilisez Renouveler la clé sur la fiche de l’appareil et mettez l’appareil à jour.",
-      network: "Réseau : l’appareil doit pouvoir joindre Internet en HTTPS (port 443). Les réseaux invités et les Wi-Fi qui demandent une page de connexion le bloquent souvent.",
+      network:
+        "Réseau : l’appareil doit pouvoir joindre Internet en HTTPS (port 443). Les réseaux invités et les Wi-Fi qui demandent une page de connexion le bloquent souvent.",
       payloadChecker: "Vérifier un payload",
       staleGuide: "Déboguer des mesures manquantes",
       troubleshooting: "Guide de dépannage",
@@ -122,11 +129,13 @@ const fr: DevicesMessages = {
     title: "Configuration de l’appareil",
     step: "Étape {step} sur 2 : ajoutez un appareil, puis attendez sa première mesure (les capteurs apparaissent d’eux-mêmes).",
     createStep: "Ajouter un appareil",
-    postStep: "Première mesure : les capteurs apparaissent d’eux-mêmes ; renommez-les ensuite si besoin",
+    postStep:
+      "Première mesure : les capteurs apparaissent d’eux-mêmes ; renommez-les ensuite si besoin",
     showAll: "Afficher tous les paramètres de l’appareil",
   },
   client: {
-    stillWaiting: "Toujours en attente : dernière vérification à {time}. Vérification automatique toutes les 5 secondes.",
+    stillWaiting:
+      "Toujours en attente : dernière vérification à {time}. Vérification automatique toutes les 5 secondes.",
     lastCheck: "Dernière vérification à {time}.",
     received: " : reçu !",
     listening: " : en écoute…",

@@ -16,10 +16,7 @@ async function forwarded(): Promise<{ params: unknown; request: Request; body: u
   return { params: ctx.params, request: ctx.request, body: await ctx.request.json() };
 }
 
-function makeContext(options: {
-  key?: string | null;
-  body?: unknown;
-} = {}): APIContext {
+function makeContext(options: { key?: string | null; body?: unknown } = {}): APIContext {
   const headers = new Headers({ "Content-Type": "application/json" });
   if (options.key !== null) {
     headers.set("X-Ingest-Key", options.key ?? "device-key");

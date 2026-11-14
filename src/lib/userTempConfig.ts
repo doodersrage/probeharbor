@@ -55,7 +55,6 @@ async function getCurrentTempConfig(userId: string): Promise<TempConfigRow> {
     return { feeds: fromDevices.feeds, probes: fromDevices.probes };
   }
 
-
   return { feeds: [], probes: [] };
 }
 
@@ -70,13 +69,14 @@ export async function saveUserPullSetup(
   const sanitizedFeeds = sanitizeTempFeeds(feeds);
   const baseProbes =
     probes ??
-    current.probes.filter((probe) =>
-      sanitizedFeeds.some((feed) => feed.id === probe.feedId),
-    );
+    current.probes.filter((probe) => sanitizedFeeds.some((feed) => feed.id === probe.feedId));
   const sanitizedProbes = sanitizeTempProbes(baseProbes, sanitizedFeeds);
 
-  const { feeds: mergedFeeds, probes: mergedProbes, discovered } =
-    await discoverAndMergeFeedProbes(sanitizedFeeds, sanitizedProbes);
+  const {
+    feeds: mergedFeeds,
+    probes: mergedProbes,
+    discovered,
+  } = await discoverAndMergeFeedProbes(sanitizedFeeds, sanitizedProbes);
 
   const result = await saveUserTempConfig(userId, mergedFeeds, mergedProbes);
   if (result.error) {
@@ -97,12 +97,19 @@ export async function saveHouseholdPullSetup(
 ): Promise<{ error: Error | null; discoveredProbes?: number }> {
   const sanitizedFeeds = sanitizeTempFeeds(feeds);
   const sanitizedProbes = sanitizeTempProbes(probes, sanitizedFeeds);
-  const { feeds: mergedFeeds, probes: mergedProbes, discovered } =
-    await discoverAndMergeFeedProbes(sanitizedFeeds, sanitizedProbes);
+  const {
+    feeds: mergedFeeds,
+    probes: mergedProbes,
+    discovered,
+  } = await discoverAndMergeFeedProbes(sanitizedFeeds, sanitizedProbes);
   try {
     const { savePullDevicesForHousehold } = await import("./devices");
     const finalFeeds = sanitizeTempFeeds(mergedFeeds);
-    const sync = await savePullDevicesForHousehold(householdId, finalFeeds, sanitizeTempProbes(mergedProbes, finalFeeds));
+    const sync = await savePullDevicesForHousehold(
+      householdId,
+      finalFeeds,
+      sanitizeTempProbes(mergedProbes, finalFeeds),
+    );
     if (sync.error) return { error: new Error(sync.error) };
   } catch (error) {
     return { error: error instanceof Error ? error : new Error("Failed to save pull devices") };
@@ -137,7 +144,9 @@ export async function migrateLegacyTempConfigFromMetadata(
   return { feeds: tempFeeds, probes: tempProbes };
 }
 
-export async function getUserTempConfig(user: Pick<User, "id" | "email" | "user_metadata">): Promise<{
+export async function getUserTempConfig(
+  user: Pick<User, "id" | "email" | "user_metadata">,
+): Promise<{
   feeds: TempFeedConfig[];
   probes: TempProbeConfig[];
   error: string | null;

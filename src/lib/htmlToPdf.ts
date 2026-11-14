@@ -37,7 +37,11 @@ export async function renderHtmlToPdf(
     });
 
     if (!response.ok) {
-      console.error("Browser Run PDF failed:", response.status, await response.text().catch(() => ""));
+      console.error(
+        "Browser Run PDF failed:",
+        response.status,
+        await response.text().catch(() => ""),
+      );
       return null;
     }
 

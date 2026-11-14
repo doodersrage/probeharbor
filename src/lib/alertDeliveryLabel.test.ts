@@ -10,7 +10,10 @@ import {
 } from "./alertDeliveryLabel";
 
 const label = (sent: string[], skipped: string[]) =>
-  formatAlertDeliveryState(alertDeliveryState({ channels_sent: sent, channels_skipped: skipped }), "en");
+  formatAlertDeliveryState(
+    alertDeliveryState({ channels_sent: sent, channels_skipped: skipped }),
+    "en",
+  );
 
 describe("formatAlertDeliveryState", () => {
   it("keeps the honest 'Accepted by' wording for sent alerts, with no fix link", () => {
@@ -58,6 +61,8 @@ describe("formatAlertDeliveryState", () => {
         expect(placeholders(t[key]), `${locale}.${key}`).toEqual(placeholders(en[key]));
       }
     }
-    expect(formatAlertDeliveryState({ state: "failed", failed: ["email"] }, "de").label).toMatch(/^Fehlgeschlagen: /);
+    expect(formatAlertDeliveryState({ state: "failed", failed: ["email"] }, "de").label).toMatch(
+      /^Fehlgeschlagen: /,
+    );
   });
 });

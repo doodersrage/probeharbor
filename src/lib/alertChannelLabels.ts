@@ -6,18 +6,22 @@ export const ALERT_CHANNEL_LABELS: Record<string, string> = alertMessages.en.cha
 
 export function formatAlertChannelList(channels: string[], locale: Locale = "en"): string {
   const labels = alertMessages(locale).channelLabels;
-  return channels
-    .map((key) => labels[key] ?? key.replaceAll("_", " "))
-    .join(", ");
+  return channels.map((key) => labels[key] ?? key.replaceAll("_", " ")).join(", ");
 }
 
-export function formatAlertChannelsCsv(raw: string | null | undefined, locale: Locale = "en"): string {
+export function formatAlertChannelsCsv(
+  raw: string | null | undefined,
+  locale: Locale = "en",
+): string {
   if (!raw) return "";
   return formatAlertChannelList(raw.split(",").filter(Boolean), locale);
 }
 
 /** Ops / Alerts smoke-test flash copy for skip and failure codes. */
-export function channelTestErrorMessage(code: string | null | undefined, locale: Locale = "en"): string | null {
+export function channelTestErrorMessage(
+  code: string | null | undefined,
+  locale: Locale = "en",
+): string | null {
   if (!code) return null;
   const t = alertMessages(locale);
   if (code === "sms_no_phone") return t.channelErrors.smsNoPhone;

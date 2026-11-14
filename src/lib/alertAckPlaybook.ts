@@ -51,8 +51,7 @@ export async function executeAlertAckPlaybook(input: {
     input.action === "false_alarm" ||
     input.action === "raise_threshold"
   ) {
-    const hours =
-      input.action === "snooze_1h" ? 1 : input.action === "snooze_4h" ? 4 : 24;
+    const hours = input.action === "snooze_1h" ? 1 : input.action === "snooze_4h" ? 4 : 24;
     await snoozeAlertsForUser(input.userId, hours);
   }
 
@@ -89,7 +88,9 @@ export async function executeAlertAckPlaybook(input: {
     if (!householdId) {
       return { ok: false, message: t.noHousehold };
     }
-    const { data: household } = (await getHouseholdFields(householdId, ["name"])) as { data: { name: string } | null };
+    const { data: household } = (await getHouseholdFields(householdId, ["name"])) as {
+      data: { name: string } | null;
+    };
     const relay = await sendTenantFreezeRelay({
       householdId,
       managerUserId: input.userId,
@@ -152,7 +153,9 @@ export async function executeAlertAckPlaybook(input: {
   if (input.action === "raise_threshold" && raisedTo != null) {
     return {
       ok: true,
-      message: fmt(t.raised, { value: locale === "en" ? String(raisedTo) : formatNumber(raisedTo, locale) }),
+      message: fmt(t.raised, {
+        value: locale === "en" ? String(raisedTo) : formatNumber(raisedTo, locale),
+      }),
     };
   }
 

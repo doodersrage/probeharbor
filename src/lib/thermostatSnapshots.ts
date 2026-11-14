@@ -14,10 +14,7 @@ import { libTextMessages } from "../i18n/messages/app/libText";
  */
 export function isTransientThermostatCollectError(error: string | null): boolean {
   return (
-    error === "network" ||
-    error === "api_auth" ||
-    error === "no_token" ||
-    error === "api_error"
+    error === "network" || error === "api_auth" || error === "no_token" || error === "api_error"
   );
 }
 
@@ -53,10 +50,7 @@ export async function collectThermostatSnapshotsForHousehold(
     return { saved: false, error: null };
   }
 
-  const result = await fetchThermostatContextWithStatus(
-    householdId,
-    connection.provider,
-  );
+  const result = await fetchThermostatContextWithStatus(householdId, connection.provider);
 
   const snapshot = result.snapshot;
   if (!snapshot) {
@@ -92,10 +86,7 @@ export async function collectThermostatSnapshotsForAllHouseholds(): Promise<{
   const households = await listHouseholdIdsForCron();
   for (const { householdId, ownerUserId } of households) {
     try {
-      const result = await collectThermostatSnapshotsForHousehold(
-        householdId,
-        ownerUserId,
-      );
+      const result = await collectThermostatSnapshotsForHousehold(householdId, ownerUserId);
       if (result.error && result.error !== "snapshot_unavailable") {
         if (isTransientThermostatCollectError(result.error)) {
           const message = `${householdId}: ${result.error}`;
@@ -108,9 +99,7 @@ export async function collectThermostatSnapshotsForAllHouseholds(): Promise<{
       if (result.saved) snapshotsSaved += 1;
       householdsProcessed += 1;
     } catch (e) {
-      errors.push(
-        `${householdId}: ${e instanceof Error ? e.message : "Unknown error"}`,
-      );
+      errors.push(`${householdId}: ${e instanceof Error ? e.message : "Unknown error"}`);
     }
   }
 
@@ -141,12 +130,18 @@ export async function fetchThermostatSnapshotChartPoints(
   const from = filters.from ?? defaultFrom;
   try {
     const series = await neonThermostats.snapshotSeries(householdId, from, filters.to);
-    if (series.capped) console.warn(`Thermostat chart for household ${householdId}: row cap hit; oldest snapshots not shown`);
+    if (series.capped)
+      console.warn(
+        `Thermostat chart for household ${householdId}: row cap hit; oldest snapshots not shown`,
+      );
     return series.rows
       .map((row) => chartPointFromSnapshot(row.recorded_at, row.ambient_temp_f, locale))
       .filter((point): point is ChartPoint => point != null);
   } catch (error) {
-    console.error("fetchThermostatSnapshotChartPoints failed:", error instanceof Error ? error.message : error);
+    console.error(
+      "fetchThermostatSnapshotChartPoints failed:",
+      error instanceof Error ? error.message : error,
+    );
     return [];
   }
 }

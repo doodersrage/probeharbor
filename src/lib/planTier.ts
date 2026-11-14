@@ -20,10 +20,7 @@ export function resolvePlanTierFromPriceId(
 
   const proMonthly = cleanPriceId(getRuntimeEnv("STRIPE_PRICE_ID_PRO"));
   const proAnnual = cleanPriceId(getRuntimeEnv("STRIPE_PRICE_ID_PRO_ANNUAL"));
-  if (
-    priceId &&
-    ((proMonthly && priceId === proMonthly) || (proAnnual && priceId === proAnnual))
-  ) {
+  if (priceId && ((proMonthly && priceId === proMonthly) || (proAnnual && priceId === proAnnual))) {
     return "pro";
   }
   return "member";

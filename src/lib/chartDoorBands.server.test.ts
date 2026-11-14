@@ -25,8 +25,16 @@ describe("fetchChartDoorBands", () => {
 
   it("asks for saved sessions overlapping the window, oldest first in the result", async () => {
     mockDoorBandsOverlapping.mockResolvedValue([
-      { label: "Garage door", opened_at: "2026-10-29T09:00:00Z", closed_at: "2026-10-29T09:10:00Z" },
-      { label: "Garage door", opened_at: "2026-10-28T09:00:00Z", closed_at: "2026-10-28T09:10:00Z" },
+      {
+        label: "Garage door",
+        opened_at: "2026-10-29T09:00:00Z",
+        closed_at: "2026-10-29T09:10:00Z",
+      },
+      {
+        label: "Garage door",
+        opened_at: "2026-10-28T09:00:00Z",
+        closed_at: "2026-10-28T09:10:00Z",
+      },
     ]);
 
     const result = await fetchChartDoorBands(
@@ -44,19 +52,46 @@ describe("fetchChartDoorBands", () => {
       1000,
     );
     expect(result.error).toBeNull();
-    expect(result.bands.map((b) => b.openedAt)).toEqual(["2026-10-28T09:00:00Z", "2026-10-29T09:00:00Z"]);
+    expect(result.bands.map((b) => b.openedAt)).toEqual([
+      "2026-10-28T09:00:00Z",
+      "2026-10-29T09:00:00Z",
+    ]);
   });
 
   it("adds a door that is open now (with its true start) from recent readings", async () => {
     mockReadDoorSessions.mockResolvedValue([
-      { label: "Garage door", openedAt: "2026-10-29T08:00:00Z", closedAt: "2026-10-29T08:05:00Z", durationMs: 300000, stillOpen: false },
-      { label: "Garage door", openedAt: "2026-10-26T11:30:00Z", closedAt: null, durationMs: null, stillOpen: true },
+      {
+        label: "Garage door",
+        openedAt: "2026-10-29T08:00:00Z",
+        closedAt: "2026-10-29T08:05:00Z",
+        durationMs: 300000,
+        stillOpen: false,
+      },
+      {
+        label: "Garage door",
+        openedAt: "2026-10-26T11:30:00Z",
+        closedAt: null,
+        durationMs: null,
+        stillOpen: true,
+      },
     ]);
 
-    const result = await fetchChartDoorBands("hh-1", "2026-10-22T12:00:00Z", "2026-10-29T12:00:00Z", sensors, NOW);
+    const result = await fetchChartDoorBands(
+      "hh-1",
+      "2026-10-22T12:00:00Z",
+      "2026-10-29T12:00:00Z",
+      sensors,
+      NOW,
+    );
 
-    expect(mockReadDoorSessions).toHaveBeenCalledWith("hh-1", sensors[0], "2026-10-28T12:00:00.000Z");
-    expect(result.bands).toEqual([{ label: "Garage door", openedAt: "2026-10-26T11:30:00Z", closedAt: null }]);
+    expect(mockReadDoorSessions).toHaveBeenCalledWith(
+      "hh-1",
+      sensors[0],
+      "2026-10-28T12:00:00.000Z",
+    );
+    expect(result.bands).toEqual([
+      { label: "Garage door", openedAt: "2026-10-26T11:30:00Z", closedAt: null },
+    ]);
   });
 
   it("skips the open-now lookup for a window that ended more than a day ago", async () => {
@@ -67,7 +102,13 @@ describe("fetchChartDoorBands", () => {
   it("returns the error instead of an empty-looking success when the query fails", async () => {
     mockDoorBandsOverlapping.mockRejectedValue(new Error("db down"));
 
-    const result = await fetchChartDoorBands("hh-1", "2026-10-22T12:00:00Z", "2026-10-29T12:00:00Z", sensors, NOW);
+    const result = await fetchChartDoorBands(
+      "hh-1",
+      "2026-10-22T12:00:00Z",
+      "2026-10-29T12:00:00Z",
+      sensors,
+      NOW,
+    );
 
     expect(result).toEqual({ bands: [], error: "db down" });
     expect(mockReadDoorSessions).not.toHaveBeenCalled();

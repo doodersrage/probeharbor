@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  isMailerRecipientNotAllowed,
-  partitionMailErrors,
-} from "./mailer";
+import { isMailerRecipientNotAllowed, partitionMailErrors } from "./mailer";
 import { dripJobShouldFail } from "./dripEmails";
 
 describe("mailer recipient errors", () => {
@@ -14,11 +11,7 @@ describe("mailer recipient errors", () => {
   });
 
   it("does not fail drip job for recipient-not-allowed only", () => {
-    expect(
-      dripJobShouldFail([
-        "user-1: email to rob@studiocenter.com not allowed",
-      ]),
-    ).toBe(false);
+    expect(dripJobShouldFail(["user-1: email to rob@studiocenter.com not allowed"])).toBe(false);
     expect(dripJobShouldFail(["user-1: MAILER unavailable"])).toBe(true);
   });
 

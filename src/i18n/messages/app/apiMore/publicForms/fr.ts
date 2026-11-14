@@ -2,7 +2,8 @@ import type { ApiMorePublicFormsMessages } from "./en";
 
 const fr: ApiMorePublicFormsMessages = {
   contact: {
-    success: "Merci, nous avons bien reçu votre message. Nous répondons généralement sous 1 à 2 jours ouvrés.",
+    success:
+      "Merci, nous avons bien reçu votre message. Nous répondons généralement sous 1 à 2 jours ouvrés.",
     verificationFailed: "La vérification a échoué.",
     missingFields: "Des champs obligatoires sont manquants.",
     tooLong: "Le message est trop long.",
@@ -10,16 +11,19 @@ const fr: ApiMorePublicFormsMessages = {
     sendFailed: "Impossible d’envoyer le message. Veuillez réessayer.",
   },
   freezeAlerts: {
-    success: "Consultez vos e-mails pour confirmer. Les alertes commencent la première nuit de gel qui suit votre confirmation.",
+    success:
+      "Consultez vos e-mails pour confirmer. Les alertes commencent la première nuit de gel qui suit votre confirmation.",
     tooMany: "Trop de tentatives. Réessayez dans quelques minutes.",
     verificationFailed: "La vérification a échoué. Veuillez réessayer.",
     genericError: "Une erreur s’est produite. Veuillez réessayer.",
     move: {
       confirmTitle: "Changer les alertes gel ?",
-      confirmBody: "Les e-mails d’alerte gel de cette adresse concerneront {place} au lieu du lieu actuel.",
+      confirmBody:
+        "Les e-mails d’alerte gel de cette adresse concerneront {place} au lieu du lieu actuel.",
       button: "Changer les alertes",
       invalidTitle: "Lien non valide",
-      invalidBodyHtml: "<p>Ce lien a expiré, a été modifié, ou les alertes ont été désactivées. Vos alertes gel actuelles ne changent pas.</p>",
+      invalidBodyHtml:
+        "<p>Ce lien a expiré, a été modifié, ou les alertes ont été désactivées. Vos alertes gel actuelles ne changent pas.</p>",
     },
     unsubscribe: {
       forecastLink: "Prévisions de gel des canalisations",

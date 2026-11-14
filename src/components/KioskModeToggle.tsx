@@ -55,8 +55,7 @@ export default function KioskModeToggle({ text = shellEn.kiosk }: { text?: Kiosk
     setActive(readStoredFlag());
     const nav = navigator as WakeLockNavigator;
     setSupported(
-      typeof document !== "undefined" &&
-        (Boolean(nav.wakeLock) || "fullscreenEnabled" in document),
+      typeof document !== "undefined" && (Boolean(nav.wakeLock) || "fullscreenEnabled" in document),
     );
   }, []);
 

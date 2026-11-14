@@ -78,9 +78,7 @@ describe("renderHtmlToPdf", () => {
   it("returns null and logs when the content type isn't a pdf", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     env.BROWSER = {
-      quickAction: vi.fn().mockResolvedValue(
-        fakeResponse({ headers: { get: () => "text/html" } }),
-      ),
+      quickAction: vi.fn().mockResolvedValue(fakeResponse({ headers: { get: () => "text/html" } })),
     };
     const { renderHtmlToPdf } = await import("./htmlToPdf");
 

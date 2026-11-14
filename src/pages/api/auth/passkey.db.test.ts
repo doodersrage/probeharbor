@@ -13,14 +13,18 @@ const ENV: Record<string, string> = {
   CRON_SECRET: "test-step-up-secret-0123456789",
 };
 vi.mock("../../../lib/runtimeEnv", () => ({
-  getRuntimeEnv: (key: string) => (key === "DATABASE_URL" ? testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!) : ENV[key]),
+  getRuntimeEnv: (key: string) =>
+    key === "DATABASE_URL" ? testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!) : ENV[key],
   hasRuntimeEnv: () => false,
 }));
 vi.mock("@neondatabase/serverless", async (orig) => ({
   ...(await orig<typeof import("@neondatabase/serverless")>()),
   Pool: (await import("pg")).default.Pool,
 }));
-vi.mock("../../../lib/turnstile", () => ({ getTurnstileToken: () => "ok", verifyTurnstileToken: async () => ({ success: true }) }));
+vi.mock("../../../lib/turnstile", () => ({
+  getTurnstileToken: () => "ok",
+  verifyTurnstileToken: async () => ({ success: true }),
+}));
 vi.mock("../../../lib/mailer", () => ({ sendEmail: async () => {} }));
 
 import { getAuthFromRequest } from "../../../lib/auth";
@@ -44,13 +48,22 @@ function remember(browser: Browser, res: Response) {
     else browser.set(name, value);
   }
 }
-function ctx(browser: Browser, method: "GET" | "POST", path: string, opts: { form?: Record<string, string>; json?: unknown } = {}) {
+function ctx(
+  browser: Browser,
+  method: "GET" | "POST",
+  path: string,
+  opts: { form?: Record<string, string>; json?: unknown } = {},
+) {
   const headers = new Headers({ cookie: [...browser].map(([n, v]) => `${n}=${v}`).join("; ") });
   if (opts.json) headers.set("content-type", "application/json");
   const request = new Request(`http://localhost:4321${path}`, {
     method,
     headers,
-    body: opts.json ? JSON.stringify(opts.json) : opts.form ? new URLSearchParams(opts.form) : undefined,
+    body: opts.json
+      ? JSON.stringify(opts.json)
+      : opts.form
+        ? new URLSearchParams(opts.form)
+        : undefined,
   });
   const jar = new Map([...browser].map(([n, v]) => [n, decodeURIComponent(v)]));
   return {
@@ -62,19 +75,25 @@ function ctx(browser: Browser, method: "GET" | "POST", path: string, opts: { for
       delete: (n: string) => void jar.delete(n),
       has: (n: string) => jar.has(n),
     },
-    redirect: (location: string) => new Response(null, { status: 302, headers: { Location: location } }),
+    redirect: (location: string) =>
+      new Response(null, { status: 302, headers: { Location: location } }),
     clientAddress: "127.0.0.1",
     locals: { locale: "en" },
     site: undefined,
   } as unknown as APIContext;
 }
-async function call(browser: Browser, route: (c: APIContext) => Promise<Response> | Response, c: APIContext) {
+async function call(
+  browser: Browser,
+  route: (c: APIContext) => Promise<Response> | Response,
+  c: APIContext,
+) {
   const res = await route(c);
   remember(browser, res);
   return res;
 }
 const body = async (res: Response) => (await res.clone().json()) as Record<string, unknown>;
-const post = (browser: Browser, json: unknown) => call(browser, passkey, ctx(browser, "POST", "/api/auth/passkey", { json }));
+const post = (browser: Browser, json: unknown) =>
+  call(browser, passkey, ctx(browser, "POST", "/api/auth/passkey", { json }));
 
 // ---- a software authenticator ------------------------------------------------------
 
@@ -127,7 +146,14 @@ class SoftAuthenticator {
     return Buffer.concat(parts);
   }
   register(options: { challenge: string }, origin: string, rpId: string) {
-    const clientData = Buffer.from(JSON.stringify({ type: "webauthn.create", challenge: options.challenge, origin, crossOrigin: false }));
+    const clientData = Buffer.from(
+      JSON.stringify({
+        type: "webauthn.create",
+        challenge: options.challenge,
+        origin,
+        crossOrigin: false,
+      }),
+    );
     const attestation = Uint8Array.from(
       cbor([
         ["fmt", "none"],
@@ -140,13 +166,24 @@ class SoftAuthenticator {
       id,
       rawId: id,
       type: "public-key",
-      response: { clientDataJSON: b64url(clientData), attestationObject: b64url(attestation), transports: ["internal"] },
+      response: {
+        clientDataJSON: b64url(clientData),
+        attestationObject: b64url(attestation),
+        transports: ["internal"],
+      },
       clientExtensionResults: {},
       authenticatorAttachment: "platform",
     };
   }
   assert(options: { challenge: string }, origin: string, rpId: string) {
-    const clientData = Buffer.from(JSON.stringify({ type: "webauthn.get", challenge: options.challenge, origin, crossOrigin: false }));
+    const clientData = Buffer.from(
+      JSON.stringify({
+        type: "webauthn.get",
+        challenge: options.challenge,
+        origin,
+        crossOrigin: false,
+      }),
+    );
     const authData = this.authData(rpId, 0x05, false);
     const signature = sign("sha256", Buffer.concat([authData, sha256(clientData)]), this.key);
     const id = b64url(this.credentialId);
@@ -154,7 +191,11 @@ class SoftAuthenticator {
       id,
       rawId: id,
       type: "public-key",
-      response: { clientDataJSON: b64url(clientData), authenticatorData: b64url(authData), signature: b64url(signature) },
+      response: {
+        clientDataJSON: b64url(clientData),
+        authenticatorData: b64url(authData),
+        signature: b64url(signature),
+      },
       clientExtensionResults: {},
     };
   }
@@ -167,7 +208,10 @@ const site = () => new URL(buildSiteUrl(new Request("http://localhost:4321/")));
 async function signedIn(email: string) {
   const { createBetterAuth } = await import("../../../lib/betterAuthConfig");
   const pg = (await import("pg")).default;
-  const pool = new pg.Pool({ connectionString: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!), max: 1 });
+  const pool = new pg.Pool({
+    connectionString: testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!),
+    max: 1,
+  });
   const auth = createBetterAuth({
     database: pool,
     secret: ENV.BETTER_AUTH_SECRET!,
@@ -180,20 +224,34 @@ async function signedIn(email: string) {
   await pool.end();
   await sql(`update public.auth_users set "emailVerified" = true where email = $1`, [email]);
   const browser: Browser = new Map();
-  await call(browser, signin, ctx(browser, "POST", "/api/auth/signin", { form: { email, password: "pw-123456" } }));
-  const [u] = await sql<{ id: string }>("select id from public.auth_users where email = $1", [email]);
+  await call(
+    browser,
+    signin,
+    ctx(browser, "POST", "/api/auth/signin", { form: { email, password: "pw-123456" } }),
+  );
+  const [u] = await sql<{ id: string }>("select id from public.auth_users where email = $1", [
+    email,
+  ]);
   return { browser, id: u!.id };
 }
 async function addPasskey(browser: Browser, key: SoftAuthenticator) {
   const started = await post(browser, { action: "register_options" });
   expect(started.status).toBe(200);
-  const { options } = (await body(started)) as { options: { challenge: string; rp: { id: string } } };
+  const { options } = (await body(started)) as {
+    options: { challenge: string; rp: { id: string } };
+  };
   const s = site();
-  return post(browser, { action: "register_verify", name: "Laptop", response: key.register(options, s.origin, s.hostname) });
+  return post(browser, {
+    action: "register_verify",
+    name: "Laptop",
+    response: key.register(options, s.origin, s.hostname),
+  });
 }
 async function signInWithPasskey(key: SoftAuthenticator, next?: string, origin = site().origin) {
   const browser: Browser = new Map();
-  const { options } = (await body(await post(browser, { action: "signin_options" }))) as { options: { challenge: string } };
+  const { options } = (await body(await post(browser, { action: "signin_options" }))) as {
+    options: { challenge: string };
+  };
   const assertion = key.assert(options, origin, site().hostname);
   const res = await post(browser, { action: "signin_verify", response: assertion, next });
   return { browser, res, assertion };
@@ -205,14 +263,18 @@ describe("passkeys (Neon)", () => {
     const key = new SoftAuthenticator();
     const added = await addPasskey(browser, key);
     expect(added.status).toBe(200);
-    const listed = (await body(await listPasskeys(ctx(browser, "GET", "/api/auth/passkey")))) as { passkeys: Array<{ name: string }> };
+    const listed = (await body(await listPasskeys(ctx(browser, "GET", "/api/auth/passkey")))) as {
+      passkeys: Array<{ name: string }>;
+    };
     expect(listed.passkeys.map((p) => p.name)).toEqual(["Laptop"]);
 
     await sql("delete from public.auth_sessions");
     const { browser: fresh, res } = await signInWithPasskey(key, "/dashboard/devices");
     expect(await body(res)).toEqual({ ok: true, redirectTo: "/dashboard/devices" });
     const cookie = [...fresh].map(([n, v]) => `${n}=${v}`).join("; ");
-    const auth = await getAuthFromRequest(new Request("http://x/", { headers: { cookie } }), { get: () => undefined } as never);
+    const auth = await getAuthFromRequest(new Request("http://x/", { headers: { cookie } }), {
+      get: () => undefined,
+    } as never);
     expect(auth.user?.id).toBe(id);
   });
 
@@ -232,7 +294,10 @@ describe("passkeys (Neon)", () => {
 
   it("with a second factor on, adding a passkey needs a verified session", async () => {
     const { browser, id } = await signedIn("y@example.com");
-    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [id, JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] })]);
+    await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [
+      id,
+      JSON.stringify({ yubikey_otp_public_ids: ["ccccccbcdefg"] }),
+    ]);
     const blocked = await post(browser, { action: "register_options" });
     expect(blocked.status).toBe(401);
     expect(await sql("select 1 from public.auth_passkeys")).toHaveLength(0);

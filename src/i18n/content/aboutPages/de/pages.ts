@@ -209,13 +209,15 @@ export default {
     title: "Firmware-Watchdog und Wiederherstellung",
     description:
       "Seltene Netzwerkhänger und Sensorbus-Fehler beheben, ohne auf die Leiter zu steigen und das Board neu zu starten.",
-    summary: "Watchdog-Timer, Wiederholungen und Neustartstrategien für unbeaufsichtigte Installationen.",
+    summary:
+      "Watchdog-Timer, Wiederholungen und Neustartstrategien für unbeaufsichtigte Installationen.",
   },
   "breadboard-power-rails": {
     title: "Stromschienen auf dem Breadboard",
     description:
       "USB- oder Hohlsteckerstrom über das Breadboard an Sensoren, LCD und Pull-ups verteilen, mit gemeinsamer Masse.",
-    summary: "Saubere Stromschienen verringern Störungen, die sonst als falsche Feuchtespitzen auftauchen.",
+    summary:
+      "Saubere Stromschienen verringern Störungen, die sonst als falsche Feuchtespitzen auftauchen.",
   },
   "ethernet-shield-stacking": {
     title: "Ethernet-Shield aufstecken",
@@ -227,7 +229,8 @@ export default {
     title: "Fehlersuche in der Verdrahtung",
     description:
       "Leeres LCD, fehlende DHT22-Fühler und sporadische Lesefehler mit Multimeter, seriellen Logs und einer Checkliste von Strom bis Daten finden.",
-    summary: "Systematische Prüfungen von der Versorgung bis zu den Datenleitungen, bevor du Teile tauschst.",
+    summary:
+      "Systematische Prüfungen von der Versorgung bis zu den Datenleitungen, bevor du Teile tauschst.",
   },
   "liquid-crystal-gpio-map": {
     title: "LiquidCrystal-GPIO-Belegung",
@@ -276,6 +279,7 @@ export default {
     title: "Veraltete Messwerte untersuchen",
     description:
       "Veraltete oder fehlende Werte von der Firmware über den Relay-Cache bis zur Zuordnung im ProbeHarbor-Dashboard verfolgen, mit curl- und Auth-Checkliste.",
-    summary: "Checkliste in der richtigen Reihenfolge: curl, Cache, Authentifizierung und Tippfehler in Schlüsseln.",
+    summary:
+      "Checkliste in der richtigen Reihenfolge: curl, Cache, Authentifizierung und Tippfehler in Schlüsseln.",
   },
 } satisfies AboutPageOverlay;

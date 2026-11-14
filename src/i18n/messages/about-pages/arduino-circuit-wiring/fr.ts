@@ -1,11 +1,11 @@
-
 /** /about/arduino-circuit-wiring body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
 const fr: Messages = {
   introHtml:
     "Ce montage s’articule autour d’un Arduino Uno surmonté d’un shield Ethernet W5100, d’une platine d’essai sans soudure pour distribuer l’alimentation et accueillir les composants de l’écran, d’un écran LCD de 16×2 caractères pour l’affichage local et de deux capteurs de température et d’humidité DHT22. Pendant le développement, l’USB alimente le banc d’essai ; une installation permanente passe généralement à une alimentation régulée de 5 V.",
-  diagramAlt: "Schéma de câblage d’un Arduino Uno avec shield Ethernet, platine d’essai, écran LCD et deux capteurs DHT22",
+  diagramAlt:
+    "Schéma de câblage d’un Arduino Uno avec shield Ethernet, platine d’essai, écran LCD et deux capteurs DHT22",
   diagramCaption:
     "Câblage simplifié : l’alimentation arrive sur l’Uno, les signaux passent par la platine d’essai vers l’écran LCD et les deux capteurs DHT22.",
   breadboardTitle: "Platine d’essai et rails d’alimentation",

@@ -1,18 +1,12 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
-import {
-  getAlertSettingsForUser,
-  saveAlertSettingsForUser,
-} from "../../../lib/notify";
+import { getAlertSettingsForUser, saveAlertSettingsForUser } from "../../../lib/notify";
 import {
   snoozeUntilFromHours,
   vacationUntilFromDate,
   vacationUntilFromDays,
 } from "../../../lib/alertSnooze";
-import {
-  redirectUnlessEditor,
-  requireHouseholdEditor,
-} from "../../../lib/householdAuth";
+import { redirectUnlessEditor, requireHouseholdEditor } from "../../../lib/householdAuth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { fmt, plural } from "../../../i18n";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
@@ -139,13 +133,23 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
 
   if (action === "clear_snooze") {
     await saveAlertSettingsForUser(user.id, { ...settings, snoozeUntil: null });
-    if (asJson) return jsonResponse({ ok: true, kind: "clear_snooze", message: apiUserMessages(locale).snooze.snoozeCleared });
+    if (asJson)
+      return jsonResponse({
+        ok: true,
+        kind: "clear_snooze",
+        message: apiUserMessages(locale).snooze.snoozeCleared,
+      });
     return redirect(withQuery(redirectTo, { snooze_cleared: "1" }));
   }
 
   if (action === "clear_vacation") {
     await saveAlertSettingsForUser(user.id, { ...settings, vacationUntil: null });
-    if (asJson) return jsonResponse({ ok: true, kind: "clear_vacation", message: apiUserMessages(locale).snooze.vacationCleared });
+    if (asJson)
+      return jsonResponse({
+        ok: true,
+        kind: "clear_vacation",
+        message: apiUserMessages(locale).snooze.vacationCleared,
+      });
     return redirect(withQuery(redirectTo, { vacation_cleared: "1" }));
   }
 

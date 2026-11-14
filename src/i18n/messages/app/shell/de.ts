@@ -46,7 +46,8 @@ const de: ShellMessages = {
     switchError: "Objekt konnte nicht gewechselt werden. Bitte versuch es noch einmal.",
   },
   billing: {
-    paymentFailed: "Deine letzte Zahlung ist fehlgeschlagen. Dein Tarif bleibt aktiv, während Stripe die Karte erneut belastet; aktualisiere deine Zahlungsmethode, damit die bezahlten Funktionen nicht enden.",
+    paymentFailed:
+      "Deine letzte Zahlung ist fehlgeschlagen. Dein Tarif bleibt aktiv, während Stripe die Karte erneut belastet; aktualisiere deine Zahlungsmethode, damit die bezahlten Funktionen nicht enden.",
     updatePayment: "Zahlungsmethode aktualisieren",
   },
   kiosk: {
@@ -180,14 +181,16 @@ const de: ShellMessages = {
     title: "Web-App (PWA) installieren",
     body: "ProbeHarbor funktioniert schon jetzt – füge es in Chrome oder Safari zum Startbildschirm hinzu. Gleiches Konto, Live-Messwerte und Alarme. Die native Android-App ist im Vorabzugang auf GitHub, solange die Prüfung bei Google Play läuft; du musst nicht auf Play warten.",
     step1: "Öffne probeharbor.dev in Chrome (Android) oder Safari (iPhone).",
-    step2Html: "Tippe auf <strong>App installieren</strong> oder Teilen → <strong>Zum Home-Bildschirm</strong>.",
+    step2Html:
+      "Tippe auf <strong>App installieren</strong> oder Teilen → <strong>Zum Home-Bildschirm</strong>.",
     step3: "Öffne das Symbol; Push kannst du später unter Dashboard → Alarme aktivieren.",
     installApp: "App installieren",
     guide: "PWA-Installationsschritte",
     android: "Native Android-App (folgt)",
     client: {
       installStarted: "Installation gestartet.",
-      installDismissed: "Installation abgebrochen: Die Schritt-für-Schritt-Anleitung funktioniert weiterhin.",
+      installDismissed:
+        "Installation abgebrochen: Die Schritt-für-Schritt-Anleitung funktioniert weiterhin.",
       installed: "App installiert.",
     },
   },

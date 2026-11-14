@@ -63,7 +63,16 @@ describe("listHouseholdActivity", () => {
   });
 
   it("returns the rows from the query", async () => {
-    const rows = [{ id: "a1", household_id: "house-1", user_id: null, action: "x", detail: null, created_at: "t" }];
+    const rows = [
+      {
+        id: "a1",
+        household_id: "house-1",
+        user_id: null,
+        action: "x",
+        detail: null,
+        created_at: "t",
+      },
+    ];
     mockListActivity.mockResolvedValue(rows);
     const { listHouseholdActivity } = await import("./householdActivity");
 

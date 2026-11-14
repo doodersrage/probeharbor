@@ -102,9 +102,7 @@ describe("POST /api/user/alert-events/ack", () => {
   it("executes the ack playbook and returns JSON success", async () => {
     const { POST } = await import("./ack");
 
-    const response = await POST(
-      makeJsonContext({ event_id: 12, action: "snooze_1h" }),
-    );
+    const response = await POST(makeJsonContext({ event_id: 12, action: "snooze_1h" }));
 
     expect(mockExecuteAlertAckPlaybook).toHaveBeenCalledWith({
       userId: "user-1",

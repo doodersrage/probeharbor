@@ -68,13 +68,15 @@ export function buildColdSnapReplay(
       }
       if (current.length > 0) {
         const episode = { label: current[0]!.probeLabel, points: current, endAt: point.timestamp };
-        if (!latest || Date.parse(current[0]!.timestamp) > Date.parse(latest.points[0]!.timestamp)) latest = episode;
+        if (!latest || Date.parse(current[0]!.timestamp) > Date.parse(latest.points[0]!.timestamp))
+          latest = episode;
         current = [];
       }
     }
     if (current.length > 0) {
       const episode = { label: current[0]!.probeLabel, points: current, endAt: null };
-      if (!latest || Date.parse(current[0]!.timestamp) > Date.parse(latest.points[0]!.timestamp)) latest = episode;
+      if (!latest || Date.parse(current[0]!.timestamp) > Date.parse(latest.points[0]!.timestamp))
+        latest = episode;
     }
   }
   if (!latest) return null;
@@ -96,7 +98,12 @@ export function buildColdSnapReplay(
   const steps: ColdSnapStep[] = [
     {
       at: startAt,
-      text: fmt(t.reached, { probe: latest.label, temp: temp(latest.points[0]!.tempf), threshold, unit }),
+      text: fmt(t.reached, {
+        probe: latest.label,
+        temp: temp(latest.points[0]!.tempf),
+        threshold,
+        unit,
+      }),
       tone: "cold",
     },
     { at: lowest.timestamp, text: fmt(t.lowest, { temp: temp(lowest.tempf), unit }), tone: "cold" },
@@ -107,7 +114,8 @@ export function buildColdSnapReplay(
 
   for (const event of alertEvents) {
     const created = Date.parse(event.created_at);
-    if (!Number.isFinite(created) || created < startMs - LEAD_MS || created > endMs + TRAIL_MS) continue;
+    if (!Number.isFinite(created) || created < startMs - LEAD_MS || created > endMs + TRAIL_MS)
+      continue;
     if (event.kind === "digest" || event.kind === "generic") continue;
     const sent = event.channels_sent.length > 0;
     steps.push({
@@ -118,7 +126,10 @@ export function buildColdSnapReplay(
             channels: event.channels_sent.join(", "),
           })
         : event.channels_skipped.length
-          ? fmt(t.notDeliveredChannels, { title: event.title, channels: event.channels_skipped.join(", ") })
+          ? fmt(t.notDeliveredChannels, {
+              title: event.title,
+              channels: event.channels_skipped.join(", "),
+            })
           : fmt(t.notDelivered, { title: event.title }),
       tone: event.kind === "recovery" ? "ok" : sent ? "alert" : "info",
     });
@@ -140,7 +151,9 @@ export function buildColdSnapReplay(
     lowestF: lowest.tempf,
     lowestAt: lowest.timestamp,
     hoursBelow: (endMs - startMs) / HOUR_MS,
-    recoveryHours: latest.endAt ? (Date.parse(latest.endAt) - Date.parse(lowest.timestamp)) / HOUR_MS : null,
+    recoveryHours: latest.endAt
+      ? (Date.parse(latest.endAt) - Date.parse(lowest.timestamp)) / HOUR_MS
+      : null,
     otherLows: [...otherLows.entries()]
       .map(([probeLabel, lowestF]) => ({ probeLabel, lowestF }))
       .sort((a, b) => a.lowestF - b.lowestF),

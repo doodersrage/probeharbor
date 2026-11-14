@@ -12,7 +12,8 @@ const es: GuidesMessages = {
   breadcrumbHome: "Inicio",
   breadcrumbPage: "Guías",
   kicker: "Guías",
-  headerTitle: "Configura sondas, alertas de congelación e inundación, el acceso compartido y la API",
+  headerTitle:
+    "Configura sondas, alertas de congelación e inundación, el acceso compartido y la API",
   lede: "Empieza por la tarea que necesitas resolver. Hardware, alertas de congelación e inundación/fugas, acceso compartido del hogar y documentación de ingesta/API en un solo lugar; después, explora todos los artículos si quieres ver cada guía.",
   startFree: "Empieza gratis",
   allArticles: "Todos los artículos",
@@ -25,7 +26,8 @@ const es: GuidesMessages = {
   },
   alsoRelevant: "También es útil para:",
   alsoUsefulTitle: "También útil",
-  alsoUsefulSubtitle: "Escenarios, comparativas e integraciones, junto a la biblioteca de guías prácticas.",
+  alsoUsefulSubtitle:
+    "Escenarios, comparativas e integraciones, junto a la biblioteca de guías prácticas.",
   alsoUseful: {
     "/stories": {
       label: "Escenarios",
@@ -41,11 +43,13 @@ const es: GuidesMessages = {
     },
     "/accessories": {
       label: "Accesorios",
-      summary: "Claim puck, baliza de alerta, contactos de puerta/fuga/corriente, etiquetas del kit y soportes.",
+      summary:
+        "Claim puck, baliza de alerta, contactos de puerta/fuga/corriente, etiquetas del kit y soportes.",
     },
     "/gift": {
       label: "Regalo / recomendación",
-      summary: "Comparte un enlace de invitación: la otra persona recibe días extra de prueba de Pro, y tú también cuando se suscriba.",
+      summary:
+        "Comparte un enlace de invitación: la otra persona recibe días extra de prueba de Pro, y tú también cuando se suscriba.",
     },
   },
   itemListName: "Guías de ProbeHarbor por tarea",

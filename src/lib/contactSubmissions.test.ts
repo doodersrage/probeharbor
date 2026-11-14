@@ -30,7 +30,7 @@ describe("getContactMessageText", () => {
 
   it("falls back to the raw message when JSON.parse throws", async () => {
     const { getContactMessageText } = await import("./contactSubmissions");
-    expect(getContactMessageText('{not valid json')).toBe('{not valid json');
+    expect(getContactMessageText("{not valid json")).toBe("{not valid json");
   });
 
   it("leaves a message that merely contains quotes mid-string alone", async () => {
@@ -149,7 +149,10 @@ describe("fetchAllContactSubmissions", () => {
     mockAllContacts.mockResolvedValue({ rows: [{ id: 1 }, { id: 2 }], error: null });
     const { fetchAllContactSubmissions } = await import("./contactSubmissions");
 
-    expect(await fetchAllContactSubmissions()).toEqual({ submissions: [{ id: 1 }, { id: 2 }], error: null });
+    expect(await fetchAllContactSubmissions()).toEqual({
+      submissions: [{ id: 1 }, { id: 2 }],
+      error: null,
+    });
   });
 
   it("returns the error", async () => {

@@ -24,13 +24,15 @@ const de: OverviewMessages = {
   },
   glance: {
     title: "Auf einen Blick",
-    firstRunDesc: "Nur das Wichtigste, bis Frostschwelle, E-Mail und ein Testalarm eingerichtet sind.",
+    firstRunDesc:
+      "Nur das Wichtigste, bis Frostschwelle, E-Mail und ein Testalarm eingerichtet sind.",
     descHtml:
       'Kennzahlen für dieses Objekt. Tippe auf ★ auf einer Karte, um sie anzuheften. Die Messwerte der einzelnen Fühler findest du unter <a class="text-link" href="/dashboard/live">Live</a>.',
     pinMetrics: "Kennzahlen anheften",
     savePins: "Anheftungen speichern",
     pinnedSaved: "Angeheftete Kennzahlen gespeichert.",
-    pinnedMax: "Du kannst bis zu {max} anheften. Entferne zuerst einen Haken und wähl dann die neue Kennzahl.",
+    pinnedMax:
+      "Du kannst bis zu {max} anheften. Entferne zuerst einen Haken und wähl dann die neue Kennzahl.",
     pinnedError: "Angeheftete Kennzahlen konnten nicht gespeichert werden. Versuch es noch einmal.",
   },
   metricLabels: {
@@ -48,13 +50,20 @@ const de: OverviewMessages = {
   },
   metricsHow: {
     summary: "So werden diese Werte berechnet",
-    freezeHours: "Froststunden: Zeit in den letzten 7 Tagen, in der ein Fühler auf oder unter deiner Frostgrenze von {threshold} {unit} lag. {unit}·h (Gradstunden) addiert, wie weit und wie lange darunter: 3 Stunden lang 2 {unit} darunter sind 6 {unit}·h.",
-    coldestMargin: "Kältester Abstand: dein kältester aktueller Fühler minus die Frostgrenze von {threshold} {unit}. Gelb innerhalb von {band}, rot auf oder unter der Grenze.",
-    indoorOutdoor: "Innen − außen: kältester Fühler (oder Hausthermostat) minus aktuelle Außentemperatur. Unter {band} (gelb) folgt der Raum der Außenluft eng und kühlt in einer kalten Nacht schnell aus.",
-    probeSpread: "Fühler-Spanne: wärmster minus kältester aktueller Fühler. Ab {band} (gelb) kann das eine kalte Stelle, geschichtete Luft oder einen defekten Sensor bedeuten.",
-    condensation: "Kondensation: Stunden in den letzten 7 Tagen, in denen die Luft bis auf {band} an ihren Taupunkt herankam (aus Temperatur und Luftfeuchtigkeit berechnet), sodass Oberflächen feucht werden können. Gelb ab 6 Stunden oder wenn es gerade weniger als {nowBand} sind.",
-    feedHealth: "Feed-Zustand: wie viele deiner Pull-Feeds gerade geantwortet haben, keine Verfügbarkeit über die Zeit.",
-    measured: "Alle Werte stammen aus deinen Messwerten und Wetterdaten; keiner ist eine Vorhersage.",
+    freezeHours:
+      "Froststunden: Zeit in den letzten 7 Tagen, in der ein Fühler auf oder unter deiner Frostgrenze von {threshold} {unit} lag. {unit}·h (Gradstunden) addiert, wie weit und wie lange darunter: 3 Stunden lang 2 {unit} darunter sind 6 {unit}·h.",
+    coldestMargin:
+      "Kältester Abstand: dein kältester aktueller Fühler minus die Frostgrenze von {threshold} {unit}. Gelb innerhalb von {band}, rot auf oder unter der Grenze.",
+    indoorOutdoor:
+      "Innen − außen: kältester Fühler (oder Hausthermostat) minus aktuelle Außentemperatur. Unter {band} (gelb) folgt der Raum der Außenluft eng und kühlt in einer kalten Nacht schnell aus.",
+    probeSpread:
+      "Fühler-Spanne: wärmster minus kältester aktueller Fühler. Ab {band} (gelb) kann das eine kalte Stelle, geschichtete Luft oder einen defekten Sensor bedeuten.",
+    condensation:
+      "Kondensation: Stunden in den letzten 7 Tagen, in denen die Luft bis auf {band} an ihren Taupunkt herankam (aus Temperatur und Luftfeuchtigkeit berechnet), sodass Oberflächen feucht werden können. Gelb ab 6 Stunden oder wenn es gerade weniger als {nowBand} sind.",
+    feedHealth:
+      "Feed-Zustand: wie viele deiner Pull-Feeds gerade geantwortet haben, keine Verfügbarkeit über die Zeit.",
+    measured:
+      "Alle Werte stammen aus deinen Messwerten und Wetterdaten; keiner ist eine Vorhersage.",
   },
   metric: {
     feedIssues: { one: "{count} Problem", other: "{count} Probleme" },
@@ -85,7 +94,10 @@ const de: OverviewMessages = {
     pinCount: "{count} von {max} angeheftet.",
     pinRoomHint: "Entferne einen Haken, um Platz für eine andere zu schaffen.",
     updatedJustNow: "Gerade aktualisiert",
-    updatedMinutesAgo: { one: "Vor {count} Min. aktualisiert", other: "Vor {count} Min. aktualisiert" },
+    updatedMinutesAgo: {
+      one: "Vor {count} Min. aktualisiert",
+      other: "Vor {count} Min. aktualisiert",
+    },
     unhandledAlerts: { one: "unbearbeiteter Alarm.", other: "unbearbeitete Alarme." },
     ackLatest: "Neuesten bestätigen",
     alertsClear: "Keine offenen Alarme",
@@ -145,7 +157,8 @@ const de: OverviewMessages = {
         detail:
           "Schritt 1 von 3: Füge auf der Seite Geräte ein Gerät hinzu (ESP32-Flasher oder Home Assistant). Ein Demo-Feed dient nur zum Ausprobieren und zählt nicht.",
         waitingTitle: "Warten auf den ersten Messwert",
-        waitingDetail: "Schritt 1 von 3: Dein Gerät ist angelegt, hat aber noch nichts gemeldet. Prüfe die Einrichtung unter Geräte.",
+        waitingDetail:
+          "Schritt 1 von 3: Dein Gerät ist angelegt, hat aber noch nichts gemeldet. Prüfe die Einrichtung unter Geräte.",
       },
       alerts: {
         title: "Frostschwelle + E-Mail einstellen",
@@ -166,7 +179,8 @@ const de: OverviewMessages = {
       },
       rename: {
         title: "Importierte Sensoren umbenennen",
-        detail: "Übernimm die vorgeschlagenen Namen auf der Gerätekarte, damit Übersicht und Alarme gut lesbar sind.",
+        detail:
+          "Übernimm die vorgeschlagenen Namen auf der Gerätekarte, damit Übersicht und Alarme gut lesbar sind.",
       },
       qr: {
         title: "Optional: QR-Aufkleber",

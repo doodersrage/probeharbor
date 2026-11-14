@@ -89,7 +89,9 @@ export async function checkStripeWebhookHealth(options: {
   }
 
   try {
-    const since = Math.floor(((options.now ?? new Date()).getTime() - 2 * 24 * 60 * 60 * 1000) / 1000);
+    const since = Math.floor(
+      ((options.now ?? new Date()).getTime() - 2 * 24 * 60 * 60 * 1000) / 1000,
+    );
     const failed = await options.stripe.events.list({
       delivery_success: false,
       created: { gte: since },

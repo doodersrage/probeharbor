@@ -18,7 +18,8 @@ const fr: IntegrationsMessages = {
     dashboardShare: "Dashboard → Share",
     startFree: "Commencer gratuitement",
     hacsStatus: "Intégration HACS officielle, disponible dans le store par défaut de HACS.",
-    devDocsHtml: 'Vous cherchez les schémas OpenAPI ou le détail du JSON des tableaux de bord Grafana ? La <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">documentation développeur (GitHub Pages)</a> s’ouvre dans un nouvel onglet. Voir aussi : <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
+    devDocsHtml:
+      'Vous cherchez les schémas OpenAPI ou le détail du JSON des tableaux de bord Grafana ? La <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">documentation développeur (GitHub Pages)</a> s’ouvre dans un nouvel onglet. Voir aussi : <a class="text-link" href="/integrations/influx">Influx / Telegraf</a>, <a class="text-link" href="/integrations/node-red">Node-RED</a>, <a class="text-link" href="/integrations/automation">IFTTT / n8n</a>.',
     learnMore: "En savoir plus",
     more: "Plus",
     opensDevDocs: " (ouvre la documentation développeur)",
@@ -51,13 +52,17 @@ const fr: IntegrationsMessages = {
     addsFootHtml:
       'Deux sens, utilisez l’un, l’autre ou les deux : envoyez des entités de Home Assistant vers ProbeHarbor pour les alertes externes (le YAML est généré avec votre clé dans <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> quand vous choisissez Home Assistant), et récupérez les sondes ProbeHarbor dans Home Assistant sous forme d’entités grâce à l’intégration HACS ci-dessous. Pour aller plus loin : <a class="text-link" href="/answers/home-assistant-freeze-alert">configurer une alerte gel dans Home Assistant</a> et <a class="text-link" href="/answers/wifi-freeze-alarm-power-outage">ce qui se passe lors d’une coupure de courant</a>.',
     installTitle: "Installation via HACS",
-    installStep1Html: "Dans Home Assistant, ouvrez <strong>HACS</strong> et cherchez <strong>ProbeHarbor</strong>",
-    installStep2Html: 'Ouvrez-la et choisissez <strong>Download</strong> (dépôt : <code class="text-xs break-all">{repo}</code>)',
+    installStep1Html:
+      "Dans Home Assistant, ouvrez <strong>HACS</strong> et cherchez <strong>ProbeHarbor</strong>",
+    installStep2Html:
+      'Ouvrez-la et choisissez <strong>Download</strong> (dépôt : <code class="text-xs break-all">{repo}</code>)',
     installStep3Html: "Redémarrez Home Assistant",
-    installStep4Html: "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
+    installStep4Html:
+      "<strong>Settings → Devices &amp; services → Add integration → ProbeHarbor</strong>",
     installStep5Html:
       'Créez un lien de partage <strong>live</strong> dans <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> (Free inclut un lien live familial ; Pro ajoute l’historique/les métriques et les liens sans expiration) et collez le jeton issu de <code>/share/YOUR_TOKEN</code>',
-    installFootHtml: 'Guide développeur détaillé : <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">guide Home Assistant ↗</a> · Les recettes YAML manuelles fonctionnent toujours si vous préférez des capteurs REST à HACS.',
+    installFootHtml:
+      'Guide développeur détaillé : <a class="text-link" href="{devDocsUrl}" target="_blank" rel="noreferrer">guide Home Assistant ↗</a> · Les recettes YAML manuelles fonctionnent toujours si vous préférez des capteurs REST à HACS.',
     showsTitle: "Ce qui apparaît dans HA",
     showsItemsHtml: [
       "<strong>Capteurs</strong> : température, humidité, CO₂, pression, PM2.5, COV, niveau, énergie et sondes numériques génériques",
@@ -85,7 +90,8 @@ const fr: IntegrationsMessages = {
     nestTitle: "Nest OAuth (Pro, à privilégier si disponible)",
     nestCopyHtml:
       'Sur <strong>probeharbor.dev</strong>, les foyers Pro peuvent connecter Nest depuis <a class="text-link" href="/dashboard/devices">Dashboard → Temperature</a> pour afficher la température intérieure en direct, la consigne et le mode CVC à côté des sondes du grenier, du vide sanitaire ou de l’atelier : les alertes gel peuvent inclure ce contexte. L’historique enregistre des instantanés du thermostat avec la même tâche planifiée d’environ 15 minutes que les autres collecteurs Pro.',
-    nestCompareHtml: 'Comparatif pour les utilisateurs : <a class="text-link" href="/compare/nest">ProbeHarbor vs Nest</a>',
+    nestCompareHtml:
+      'Comparatif pour les utilisateurs : <a class="text-link" href="/compare/nest">ProbeHarbor vs Nest</a>',
     nestOperatorHtml:
       'Opérateurs auto-hébergés qui activent les secrets OAuth : <a class="text-link" href="/about/thermostat-oauth">configuration opérateur Nest &amp; Ecobee</a>',
     planBTitle: "Plan B : envoyer la température intérieure depuis Home Assistant",
@@ -110,7 +116,8 @@ const fr: IntegrationsMessages = {
     alertsLede:
       "Les webhooks sortants Pro se déclenchent quand ProbeHarbor envoie une alerte de gel, de fuite ou de règle personnalisée. Pointez l’URL vers votre endpoint webhook HA ou importez le blueprint.",
     downloadBlueprint: "Télécharger le blueprint webhook (YAML)",
-    entityYamlHtml: '<a class="text-link" href="{href}" download>YAML de nommage des entités</a> pour les appareils push',
+    entityYamlHtml:
+      '<a class="text-link" href="{href}" download>YAML de nommage des entités</a> pour les appareils push',
     productGuideHtml:
       'Guide produit : <a class="text-link" href="/about/ingest-and-webhooks">Ingestion et webhooks</a>',
     configureTokensHtml:
@@ -118,8 +125,10 @@ const fr: IntegrationsMessages = {
     verifyHtml:
       '<strong>Vérifiez <code>X-Signature</code></strong> lorsque vous définissez un secret de signature de webhook dans ProbeHarbor. HA (ou tout autre récepteur) doit rejeter les POST qui échouent à la vérification HMAC. Le blueprint documente l’en-tête ; détails dans le <a class="text-link" href="/about/ingest-and-webhooks">guide ingestion et webhooks</a> et la FAQ ci-dessous.',
     exampleTitle: "Exemple d’automatisation",
-    exampleLede: "Mettre en pause les alertes gel et fuite de ProbeHarbor pendant qu’une porte est ouverte pour l’entretien :",
-    faqLede: "Questions fréquentes sur HACS, les liens de partage et le fonctionnement en parallèle avec MQTT.",
+    exampleLede:
+      "Mettre en pause les alertes gel et fuite de ProbeHarbor pendant qu’une porte est ouverte pour l’entretien :",
+    faqLede:
+      "Questions fréquentes sur HACS, les liens de partage et le fonctionnement en parallèle avec MQTT.",
   },
 
   matter: {
@@ -135,10 +144,12 @@ const fr: IntegrationsMessages = {
     installTitle: "Installation",
     installStep1Html:
       'Installez <a class="text-link" href="https://matterbridge.io/" target="_blank" rel="noreferrer">Matterbridge</a> sur une machine du réseau local (Raspberry Pi, NAS ou PC toujours allumé). L’appairage Matter nécessite le mDNS local — il ne fonctionne pas sur Cloudflare Workers.',
-    installStep2Html: 'Clonez <code class="text-xs break-all">{repo}</code>, lancez <code>npm install &amp;&amp; npm run build</code>, puis <code>matterbridge --add .</code>',
+    installStep2Html:
+      'Clonez <code class="text-xs break-all">{repo}</code>, lancez <code>npm install &amp;&amp; npm run build</code>, puis <code>matterbridge --add .</code>',
     installStep3Html:
       'Créez un lien de partage <strong>live familial</strong> dans <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a> et collez le jeton issu de <code>/share/YOUR_TOKEN</code> dans la configuration du plugin.',
-    installStep4: "Redémarrez Matterbridge et appairez le QR code dans Apple Home / Google Home / Alexa.",
+    installStep4:
+      "Redémarrez Matterbridge et appairez le QR code dans Apple Home / Google Home / Alexa.",
     readmeLead: "README complet et schéma de configuration :",
     mapTitle: "Correspondance des capteurs",
     mapCaption: "Types ProbeHarbor associés aux types d’appareils Matter",
@@ -175,14 +186,17 @@ const fr: IntegrationsMessages = {
       "Copiez l’URL IFTTT Maker dans ProbeHarbor <strong>Pro → Alerts → Outbound webhook</strong>. Vous pouvez définir un secret de signature et vérifier <code>X-Signature</code> dans une étape de filtre si votre plan IFTTT autorise le code.",
       "Action : envoyer une notification, basculer une prise connectée ou ajouter une ligne à une feuille Google via le service Sheets d’IFTTT.",
     ],
-    n8nStep1Html: 'Importez <a class="text-link" href="{href}" download>probeharbor-alert-to-sheets.json</a> (Webhook → Set → ajout Google Sheets).',
-    n8nStep2: "Activez le workflow ; copiez l’URL du webhook de production dans le webhook sortant de ProbeHarbor.",
+    n8nStep1Html:
+      'Importez <a class="text-link" href="{href}" download>probeharbor-alert-to-sheets.json</a> (Webhook → Set → ajout Google Sheets).',
+    n8nStep2:
+      "Activez le workflow ; copiez l’URL du webhook de production dans le webhook sortant de ProbeHarbor.",
     n8nStep3Html:
       "Remplacez <code>YOUR_GOOGLE_SHEET_ID</code> ; en-têtes de la feuille : <code>sent_at</code>, <code>kind</code>, <code>title</code>, <code>body</code>.",
     n8nFootHtml:
       "Même payload que pour Zapier : <code>title</code>, <code>body</code>, <code>kind</code>, <code>sent_at</code>. <code>kind</code> peut valoir <code>threshold</code>, <code>flood</code>, <code>runway</code>, <code>forecast</code>, entre autres.",
     sheetsTitle: "Google Sheets et Notion",
-    sheetsLede: "Une trace écrite pour bailleurs et assurances, sans développer de connecteur de logiciel de gestion locative :",
+    sheetsLede:
+      "Une trace écrite pour bailleurs et assurances, sans développer de connecteur de logiciel de gestion locative :",
     sheetsItemHtml:
       "<strong>Sheets</strong> — utilisez le flow n8n ci-dessus, IFTTT Sheets ou l’action Zapier « Create Spreadsheet Row ».",
     notionItemHtml:
@@ -210,7 +224,8 @@ const fr: IntegrationsMessages = {
     quickTitle: "Démarrage rapide",
     quickStep1Html:
       'Créez une clé API Pro dans <a class="text-link" href="/dashboard/share">Dashboard → Share</a>.',
-    quickStep2Html: 'Téléchargez <a class="text-link" href="{href}" download>telegraf/probeharbor.conf</a> et définissez <code>PROBEHARBOR_API_KEY</code>, <code>INFLUX_TOKEN</code>, <code>INFLUX_ORG</code>, <code>INFLUX_BUCKET</code>.',
+    quickStep2Html:
+      'Téléchargez <a class="text-link" href="{href}" download>telegraf/probeharbor.conf</a> et définissez <code>PROBEHARBOR_API_KEY</code>, <code>INFLUX_TOKEN</code>, <code>INFLUX_ORG</code>, <code>INFLUX_BUCKET</code>.',
     quickStep3Html:
       "<code>telegraf --config probeharbor.conf</code> — vérifiez que les points <code>probeharbor_sensor_value</code> arrivent dans le bucket.",
     shapeTitle: "Forme des métriques",
@@ -236,10 +251,12 @@ const fr: IntegrationsMessages = {
     installTitle: "Installation",
     step1Html:
       'Créez un <strong>appareil push</strong> dans <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> et copiez la clé d’ingestion.',
-    step2Html: 'Dans Node-RED : <strong>Menu → Import</strong> → importez <a class="text-link" href="{href}" download>mqtt-to-probeharbor.json</a> (ou collez l’URL).',
+    step2Html:
+      'Dans Node-RED : <strong>Menu → Import</strong> → importez <a class="text-link" href="{href}" download>mqtt-to-probeharbor.json</a> (ou collez l’URL).',
     step3Html:
       "Définissez la variable d’environnement <code>PROBEHARBOR_INGEST_KEY</code> (ou modifiez le nœud function). Pointez les nœuds MQTT vers votre broker.",
-    step4: "Déployez et vérifiez le code HTTP 200 dans le nœud debug. Les relevés apparaissent dans Devices / Overview.",
+    step4:
+      "Déployez et vérifiez le code HTTP 200 dans le nœud debug. Les relevés apparaissent dans Devices / Overview.",
     installFoot:
       "Le flow limite l’envoi à environ 1 POST par minute et inclut un onglet optionnel pour la porte de garage. ProbeHarbor n’est pas un broker MQTT — gardez Mosquitto sur le réseau local.",
     postsTitle: "Ce qu’il envoie",
@@ -269,9 +286,12 @@ const fr: IntegrationsMessages = {
     setupTitle: "Configuration",
     setupStep1Html:
       'Créez un lien de partage live familial dans <a class="text-link" href="/dashboard/share/links">Dashboard → Share</a>.',
-    setupStep2Html: 'Installez Matterbridge + <a class="text-link" href="{href}" target="_blank" rel="noreferrer">probeharbor-matter</a> sur un Raspberry Pi ou un NAS.',
-    setupStep3: "Dans l’app SmartThings : ajoutez un appareil Matter / scannez le QR code de Matterbridge (même procédure que pour les autres ponts Matter).",
-    setupStep4: "Gardez les SMS de gel sur l’ingestion push de ProbeHarbor — l’interrogation Matter sert au coup d’œil et aux automatisations locales.",
+    setupStep2Html:
+      'Installez Matterbridge + <a class="text-link" href="{href}" target="_blank" rel="noreferrer">probeharbor-matter</a> sur un Raspberry Pi ou un NAS.',
+    setupStep3:
+      "Dans l’app SmartThings : ajoutez un appareil Matter / scannez le QR code de Matterbridge (même procédure que pour les autres ponts Matter).",
+    setupStep4:
+      "Gardez les SMS de gel sur l’ingestion push de ProbeHarbor — l’interrogation Matter sert au coup d’œil et aux automatisations locales.",
     aloneTitle: "Quand s’en tenir à ProbeHarbor seul",
     aloneCopyHtml:
       'Les capteurs grand public ST/Govee l’emportent sur le prix pour les chambres. Pour les garages indépendants et les ateliers, l’ingestion ESP et les canaux d’alerte gel/fuite du foyer restent plus efficaces que la portée Bluetooth des fabricants. Voir <a class="text-link" href="/compare/govee">ProbeHarbor vs Govee / SmartThings</a>.',

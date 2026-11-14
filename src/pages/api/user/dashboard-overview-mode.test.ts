@@ -33,7 +33,9 @@ function makeContext(formEntries: Record<string, string> = {}): APIContext {
     formData.set(key, value);
   }
   const request = { formData: async () => formData } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return { request, cookies: makeCookies(), redirect } as unknown as APIContext;
 }
 
@@ -104,5 +106,4 @@ describe("POST /api/user/dashboard-overview-mode", () => {
 
     expect(context.redirect).toHaveBeenCalledWith("/dashboard");
   });
-
 });

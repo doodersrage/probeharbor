@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  absoluteOgImageUrl,
-  resolveOgImageAlt,
-  resolveOgImagePath,
-} from "./ogMeta";
+import { absoluteOgImageUrl, resolveOgImageAlt, resolveOgImagePath } from "./ogMeta";
 
 describe("ogMeta", () => {
   it("maps public paths to dedicated share images", () => {
@@ -14,9 +10,7 @@ describe("ogMeta", () => {
     expect(resolveOgImagePath("/about")).toBe("/og-about.jpg");
     expect(resolveOgImagePath("/about/ingest-and-webhooks")).toBe("/og-about.jpg");
     expect(resolveOgImagePath("/guides")).toBe("/og-about.jpg");
-    expect(resolveOgImagePath("/stories/garage-freeze-alert")).toBe(
-      "/og-story-freeze.jpg",
-    );
+    expect(resolveOgImagePath("/stories/garage-freeze-alert")).toBe("/og-story-freeze.jpg");
     expect(resolveOgImagePath("/docs/api")).toBe("/og-api.jpg");
     expect(resolveOgImagePath("/android")).toBe("/og-android.jpg");
     expect(resolveOgImagePath("/apps")).toBe("/og-android.jpg");
@@ -25,9 +19,7 @@ describe("ogMeta", () => {
     expect(resolveOgImagePath("/accessories")).toBe("/og-about.jpg");
     expect(resolveOgImagePath("/claim-puck")).toBe("/og-about.jpg");
     expect(resolveOgImagePath("/probe-mount-kit")).toBe("/og-about.jpg");
-    expect(resolveOgImagePath("/integrations/home-assistant")).toBe(
-      "/og-dashboard.jpg",
-    );
+    expect(resolveOgImagePath("/integrations/home-assistant")).toBe("/og-dashboard.jpg");
     expect(resolveOgImagePath("/gift")).toBe("/og-dashboard.jpg");
     expect(resolveOgImagePath("/claims-pack")).toBe("/og-dashboard.jpg");
   });
@@ -36,9 +28,9 @@ describe("ogMeta", () => {
     expect(absoluteOgImageUrl("https://probeharbor.dev", "/og-api.jpg")).toBe(
       "https://probeharbor.dev/og-api.jpg",
     );
-    expect(
-      absoluteOgImageUrl("https://probeharbor.dev", "https://cdn.example/x.jpg"),
-    ).toBe("https://cdn.example/x.jpg");
+    expect(absoluteOgImageUrl("https://probeharbor.dev", "https://cdn.example/x.jpg")).toBe(
+      "https://cdn.example/x.jpg",
+    );
   });
 
   it("returns descriptive alts", () => {

@@ -17,7 +17,8 @@ const en = {
   backToOverview: "Back to overview",
   convertBar: {
     label: "Try ProbeHarbor",
-    copyHtml: "<strong>Live demo</strong>, no account. Ready to connect probes? Free forever, no card.",
+    copyHtml:
+      "<strong>Live demo</strong>, no account. Ready to connect probes? Free forever, no card.",
     demo: "Try live demo",
     startFree: "Start free",
   },

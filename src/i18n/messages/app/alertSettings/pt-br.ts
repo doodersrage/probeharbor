@@ -23,12 +23,14 @@ const ptBr: AlertSettingsMessages = {
     outageHint:
       "Uma sonda em silêncio não consegue avisar sobre congelamento, por isso este costuma ser o alerta mais útil.",
     earlyWarnings: "Avisos antecipados",
-    runwayToggle: "Avisar antes de uma sonda chegar ao congelamento, enquanto ainda há tempo para agir",
+    runwayToggle:
+      "Avisar antes de uma sonda chegar ao congelamento, enquanto ainda há tempo para agir",
     runwayHint:
       "Estima quando cada espaço vai atingir seu limite de congelamento pela velocidade de resfriamento (e pela previsão externa, se houver um local de clima definido) e avisa dentro da janela acima para você deixar as torneiras pingando ou ligar um aquecedor.",
     forecastToggle: "Avisar quando a previsão externa ficar abaixo de zero",
     forecastHours: "Com quantas horas de antecedência",
-    forecastHoursHint: "Usado pelos dois avisos antecipados: o da previsão e o do tempo até o congelamento.",
+    forecastHoursHint:
+      "Usado pelos dois avisos antecipados: o da previsão e o do tempo até o congelamento.",
     nwsSummary: "Umidade, quedas rápidas e avisos oficiais de geada",
     humidityAbove: "Umidade acima de (%)",
     rateDrop: "Queda rápida ({unit} / hora)",
@@ -59,7 +61,8 @@ const ptBr: AlertSettingsMessages = {
     outboundWebhook: "Webhook de saída",
     twilioMissing:
       "Seu plano inclui SMS, mas o Twilio não está configurado neste servidor. As mensagens serão ignoradas até que os segredos `TWILIO_*` sejam definidos.",
-    unlockProHtml: 'Libere SMS e webhooks com o <a class="text-link" href="/dashboard/plans">Pro</a>.',
+    unlockProHtml:
+      'Libere SMS e webhooks com o <a class="text-link" href="/dashboard/plans">Pro</a>.',
     webhookUrl: "URL do webhook",
     botToken: "Token do bot",
     chatId: "ID do chat (necessário para comandos)",
@@ -68,7 +71,8 @@ const ptBr: AlertSettingsMessages = {
       "Há um segredo salvo. Ele não é exibido novamente: digite um novo para substituí-lo ou deixe o campo vazio para mantê-lo.",
     webhookSecretReplacePlaceholder: "Digite um novo segredo para substituí-lo",
     webhookSecretRemove: "Remover o segredo salvo",
-    webhookSecretRemoveHint: "Os comandos do Telegram param de funcionar até você salvar um novo segredo.",
+    webhookSecretRemoveHint:
+      "Os comandos do Telegram param de funcionar até você salvar um novo segredo.",
     telegramHintHtml:
       "Use o <code>setWebhook</code> do Telegram com <code>secret_token</code> para que o Telegram envie <code>X-Telegram-Bot-Api-Secret-Token</code> (o parâmetro <code>?secret=</code> não é aceito). Salve um ID de chat acima: os comandos só funcionam a partir desse chat (/status [nome], /snooze [horas], /vacation [dias]).",
     incomingWebhookUrl: "URL do webhook de entrada",
@@ -82,7 +86,8 @@ const ptBr: AlertSettingsMessages = {
     signingSecret: "Segredo de assinatura (opcional)",
     pushHintHtml:
       "Um único canal cobre <strong>este navegador</strong> (Web Push) e o <strong>app ProbeHarbor para Android</strong> (FCM). Ative abaixo para este navegador; o app Android se registra sozinho quando você entra com o Pro.",
-    pushNotConfigured: "O push do navegador ainda não está configurado no servidor (faltam as chaves VAPID).",
+    pushNotConfigured:
+      "O push do navegador ainda não está configurado no servidor (faltam as chaves VAPID).",
     pushChecking: "Verificando o status do push…",
     pushEnable: "Ativar push do navegador neste dispositivo",
   },
@@ -92,7 +97,8 @@ const ptBr: AlertSettingsMessages = {
     subtitle: "Horário silencioso à noite, ou adiar e modo férias quando você já está ciente.",
     enable: "Ativar horário silencioso",
     bypassFreeze: "Sempre enviar alertas de congelamento, alagamento e previsão",
-    smsCritical: "Continuar enviando por SMS os alertas críticos de congelamento/alagamento/previsão (Pro)",
+    smsCritical:
+      "Continuar enviando por SMS os alertas críticos de congelamento/alagamento/previsão (Pro)",
     upgradeLinkHtml: ': <a class="text-link" href="/dashboard/plans">Fazer upgrade</a>',
     start: "Início",
     end: "Fim",
@@ -113,12 +119,15 @@ const ptBr: AlertSettingsMessages = {
   reports: {
     title: "E-mails de resumo",
     subtitle: "Resumo semanal e relatórios mais longos. Nenhum deles é um alerta.",
-    weeklyDigest: "Resumo semanal por e-mail (segundas-feiras): noite mais fria, vazamentos e quedas",
-    portfolioDigest: "Resumo de imóveis em risco: e-mail quando qualquer imóvel atingir o congelamento",
+    weeklyDigest:
+      "Resumo semanal por e-mail (segundas-feiras): noite mais fria, vazamentos e quedas",
+    portfolioDigest:
+      "Resumo de imóveis em risco: e-mail quando qualquer imóvel atingir o congelamento",
     monthlyReport: "Relatório mensal de congelamento (dia 1º, anexo HTML)",
     quarterlyReport: "Relatório sazonal trimestral (jan, abr, jul, out)",
     dripEmails: "Dicas para começar (1, 3 e 7 dias após o cadastro)",
-    freezeDrill: "Simulado de congelamento antes da temporada (e-mail de set a nov com nota de preparo)",
+    freezeDrill:
+      "Simulado de congelamento antes da temporada (e-mail de set a nov com nota de preparo)",
   },
 
   automation: {
@@ -128,11 +137,13 @@ const ptBr: AlertSettingsMessages = {
     compositeRules: "Regras combinadas",
     compositeHintHtml:
       'Disparam quando todas (ou alguma) das condições de uma regra forem verdadeiras, por ex. cano abaixo de 3 °C (38 °F) E área externa abaixo de −7 °C (20 °F). Alagamento já alerta quando molha; adicione uma condição de alagamento aqui só para combiná-la com outras verificações. Exemplo de porta + frio: <a class="text-link" href="/about/garage-door-cold-playbook">guia do portão da garagem</a>.',
-    doorDurationHint: "“Porta aberta por mais de N minutos” dispara quando uma porta fica aberta por N minutos e é encerrada quando ela fecha, então aberturas rápidas não alertam. Use “Porta aberta” para saber de cada abertura.",
+    doorDurationHint:
+      "“Porta aberta por mais de N minutos” dispara quando uma porta fica aberta por N minutos e é encerrada quando ela fecha, então aberturas rápidas não alertam. Use “Porta aberta” para saber de cada abertura.",
     addRule: "Adicionar regra",
     addHeatRule: "Adicionar regra de calor ({threshold} {unit})",
     playbooks: "Roteiros de alerta",
-    playbooksHint: "Etapas de acompanhamento após o alerta inicial: por ex. SMS 15 minutos depois se ainda não foi confirmado.",
+    playbooksHint:
+      "Etapas de acompanhamento após o alerta inicial: por ex. SMS 15 minutos depois se ainda não foi confirmado.",
     addStep: "Adicionar etapa",
     smsEscalation: "Escalonamento por SMS",
     escalationToggle: "Reenviar alertas de limite por SMS",
@@ -141,12 +152,14 @@ const ptBr: AlertSettingsMessages = {
 
   advanced: {
     title: "Avançado",
-    subtitle: "Roteamento de canais por tipo e por espaço, textos de mensagem próprios e webhooks de leituras.",
+    subtitle:
+      "Roteamento de canais por tipo e por espaço, textos de mensagem próprios e webhooks de leituras.",
     severitySummary: "Roteamento por gravidade (opcional)",
     severityHint:
       "Deixe vazio para usar as caixas de canal gerais. Caso contrário, só os canais selecionados disparam para aquele tipo.",
     spaceSummary: "Roteamento de canais por espaço",
-    spaceEmpty: "Defina um espaço nos dispositivos (Painel → Dispositivos) para rotear alertas por local.",
+    spaceEmpty:
+      "Defina um espaço nos dispositivos (Painel → Dispositivos) para rotear alertas por local.",
     spaceHint:
       "Escolha canais por espaço e tipo de alerta. Tipos desmarcados usam o roteamento geral ou por gravidade.",
     templatesSummary: "Mensagens de alerta personalizadas",
@@ -156,13 +169,15 @@ const ptBr: AlertSettingsMessages = {
     templatePlaceholder: "Deixe em branco para usar o padrão",
     readingSummary: "Webhooks de leituras (Pro)",
     readingUrl: "URL do webhook de leituras",
-    readingHint: "POST a cada ingestão bem-sucedida de um dispositivo, com o JSON das leituras mais recentes.",
+    readingHint:
+      "POST a cada ingestão bem-sucedida de um dispositivo, com o JSON das leituras mais recentes.",
   },
 
   save: {
     button: "Salvar configurações de alerta",
     saveAndTest: "Salvar e enviar teste",
-    incompleteHint: "Um canal marcado precisa do destino preenchido, ou será ignorado quando os alertas dispararem.",
+    incompleteHint:
+      "Um canal marcado precisa do destino preenchido, ou será ignorado quando os alertas dispararem.",
     notApplied: "As alterações só valem depois que você salvar.",
   },
 
@@ -214,7 +229,8 @@ const ptBr: AlertSettingsMessages = {
 
   clientSubmit: {
     saving: "Salvando…",
-    saveBeforeTest: "Você tem alterações de alertas não salvas. Salvá-las e enviar o teste com as novas configurações?",
+    saveBeforeTest:
+      "Você tem alterações de alertas não salvas. Salvá-las e enviar o teste com as novas configurações?",
     saveButton: "Salvar configurações de alerta",
     saveFailed: "Não foi possível salvar as configurações de alerta.",
     pickVacationDate: "Escolha uma data de volta das férias.",
@@ -258,7 +274,8 @@ const ptBr: AlertSettingsMessages = {
     noVapidKeyServer: "A chave pública VAPID não está configurada no servidor",
     permissionDenied: "A permissão de notificações não foi concedida",
     serverRejected: "O servidor recusou a inscrição",
-    subscribed: "Inscrito neste navegador. Salve as configurações de alerta e depois envie um teste.",
+    subscribed:
+      "Inscrito neste navegador. Salve as configurações de alerta e depois envie um teste.",
     subscribedHint:
       "O canal “Push (navegador + Android)” foi marcado: clique em Salvar configurações de alerta antes de testar.",
     refresh: "Reativar / atualizar push",
@@ -280,7 +297,8 @@ const ptBr: AlertSettingsMessages = {
     notSubscribed: "Permissão concedida, mas este navegador ainda não está inscrito.",
     notEnabled: "Ainda não ativado neste navegador.",
     enable: "Ativar push do navegador neste dispositivo",
-    vapidMissing: "Faltam as chaves VAPID do servidor: o push do navegador só funciona depois de configurá-las.",
+    vapidMissing:
+      "Faltam as chaves VAPID do servidor: o push do navegador só funciona depois de configurá-las.",
     androidRegistered:
       "O app Android está registrado: marque “Push (navegador + Android)”, salve e depois teste.",
     statusFailed: "Não foi possível ler o status do push.",

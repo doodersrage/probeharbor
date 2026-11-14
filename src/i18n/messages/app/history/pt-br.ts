@@ -11,12 +11,16 @@ const ptBr: AppHistoryMessages = {
       openDevices: "Abrir Dispositivos",
       overview: "Visão geral",
     },
-    introCsv: "Navegue pelas leituras salvas de temperatura e umidade por feed e sonda. Baixe o CSV na aba Tabela ou em Exportações abaixo.",
-    introNoCsv: "Navegue pelas leituras salvas de temperatura e umidade por feed e sonda. Assine para exportar seu histórico salvo em CSV.",
+    introCsv:
+      "Navegue pelas leituras salvas de temperatura e umidade por feed e sonda. Baixe o CSV na aba Tabela ou em Exportações abaixo.",
+    introNoCsv:
+      "Navegue pelas leituras salvas de temperatura e umidade por feed e sonda. Assine para exportar seu histórico salvo em CSV.",
     tabsAria: "Visualizações do histórico",
     tabs: { chart: "Gráfico", table: "Tabela", exports: "Exportações", doors: "Portas" },
-    retentionTitle: "Leituras brutas com mais de 90 dias viram médias por hora nos períodos mais longos.",
-    retention: "Seu plano {plan} guarda {retention}{plus} de histórico; leituras com mais de 90 dias ficam salvas como médias por hora.",
+    retentionTitle:
+      "Leituras brutas com mais de 90 dias viram médias por hora nos períodos mais longos.",
+    retention:
+      "Seu plano {plan} guarda {retention}{plus} de histórico; leituras com mais de 90 dias ficam salvas como médias por hora.",
     adminPlan: "Admin",
     retentionYears: { one: "{count} ano", other: "{count} anos" },
     retentionDays: { one: "{count} dia", other: "{count} dias" },
@@ -39,7 +43,8 @@ const ptBr: AppHistoryMessages = {
     summary: "Comparar",
     outdoorTitle: "Interno x externo",
     outdoorSubtitle: "Média das sondas no período do gráfico comparada com o clima externo atual.",
-    outdoorSubtitleCity: "Média das sondas no período do gráfico comparada com o clima externo atual em {city}.",
+    outdoorSubtitleCity:
+      "Média das sondas no período do gráfico comparada com o clima externo atual em {city}.",
     indoorAvg: "Média interna",
     outdoorNow: "Externo agora",
     delta: "Diferença",
@@ -53,7 +58,8 @@ const ptBr: AppHistoryMessages = {
   },
   exports: {
     summaryTitle: "Resumo do período",
-    summarySubtitle: "Resumo de {from} → {to} (o mesmo período do pacote para sinistro abaixo). Abra a aba Gráfico para explorar ou baixe as evidências em Exportações.",
+    summarySubtitle:
+      "Resumo de {from} → {to} (o mesmo período do pacote para sinistro abaixo). Abra a aba Gráfico para explorar ou baixe as evidências em Exportações.",
     notEnough: "Ainda não há leituras suficientes neste período para um resumo.",
     coldest: "Mínima",
     hoursAtOrBelow: "Horas estimadas ≤ {temp} {unit}",
@@ -73,16 +79,21 @@ const ptBr: AppHistoryMessages = {
       recipient_not_allowed: "Não foi possível entregar para esse endereço de e-mail.",
       send_failed: "Não foi possível enviar o e-mail com o pacote para sinistro. Tente novamente.",
     },
-    claimsUsesFilters: "Usa os filtros do histórico acima, quando definidos ({from} → {to}). Baixa um resumo em PDF; os CSVs complementares cobrem o mesmo período.",
+    claimsUsesFilters:
+      "Usa os filtros do histórico acima, quando definidos ({from} → {to}). Baixa um resumo em PDF; os CSVs complementares cobrem o mesmo período.",
     htmlVersion: "Versão HTML",
     adjusterEmail: "E-mail do perito",
     adjusterPlaceholder: "perito@seguradora.com.br",
     sendClaims: "Enviar pacote para sinistro",
     claimsUpgrade: "Faça upgrade para o Pro para baixar o pacote para sinistro nesta aba.",
     certificateTitle: "Certificado de monitoramento",
-    certificateSubtitle: "Resumo em PDF de uma página com sua configuração de alertas e os dispositivos monitorados: útil para seguradoras, proprietários ou administradoras de imóveis.",
+    certificateSubtitle:
+      "Resumo em PDF de uma página com sua configuração de alertas e os dispositivos monitorados: útil para seguradoras, proprietários ou administradoras de imóveis.",
     certificateDownload: "Baixar certificado de monitoramento (PDF)",
-    seasonalTitle: { one: "Insights da temporada ({count} dia)", other: "Insights da temporada ({count} dias)" },
+    seasonalTitle: {
+      one: "Insights da temporada ({count} dia)",
+      other: "Insights da temporada ({count} dias)",
+    },
     icalLink: "Assinar a previsão de congelamento (iCal)",
   },
   table: {
@@ -92,9 +103,13 @@ const ptBr: AppHistoryMessages = {
     downloadCsv: "Baixar CSV",
     csvTimesUtc: "Os horários no CSV estão em UTC (ISO 8601, terminando em Z).",
     chartTitleDates: "Tendência de temperatura (datas selecionadas)",
-    chartTitleDays: { one: "Tendência de temperatura (último {count} dia)", other: "Tendência de temperatura (últimos {count} dias)" },
+    chartTitleDays: {
+      one: "Tendência de temperatura (último {count} dia)",
+      other: "Tendência de temperatura (últimos {count} dias)",
+    },
     anomaliesTitle: "Padrões incomuns detectados no período do gráfico",
-    anomaliesHow: "Marcado quando uma sonda cai {band} ou mais entre duas leituras com até 60 minutos de intervalo; uma porta aberta nos 30 minutos próximos é mencionada.",
+    anomaliesHow:
+      "Marcado quando uma sonda cai {band} ou mais entre duas leituras com até 60 minutos de intervalo; uma porta aberta nos 30 minutos próximos é mencionada.",
     feed: "Feed",
     allFeeds: "Todos os feeds",
     probe: "Sonda",
@@ -125,11 +140,14 @@ const ptBr: AppHistoryMessages = {
     viewNamePlaceholder: "Dê um nome a esta visualização",
     saveView: "Salvar visualização",
     loadError: "Não foi possível carregar o histórico de leituras: {error}",
-    noMatch: "Nenhuma leitura corresponde a esses filtros. Tente um período maior ou limpe os filtros.",
-    noHistory: "Ainda não há histórico de clima. As leituras são coletadas quando os dispositivos estão online e quando você abre a Visão geral com a sessão iniciada.",
+    noMatch:
+      "Nenhuma leitura corresponde a esses filtros. Tente um período maior ou limpe os filtros.",
+    noHistory:
+      "Ainda não há histórico de clima. As leituras são coletadas quando os dispositivos estão online e quando você abre a Visão geral com a sessão iniciada.",
     stepAddDevice: "Adicione um dispositivo ou feed",
     stepVerify: "Confira a ingestão na página Dispositivos",
-    stepLiveHtml: '<a class="text-link" href="/dashboard/live">Abra Ao vivo</a> para confirmar as leituras ao vivo',
+    stepLiveHtml:
+      '<a class="text-link" href="/dashboard/live">Abra Ao vivo</a> para confirmar as leituras ao vivo',
     goDevices: "Ir para Dispositivos",
     humidityRh: "{value}% UR",
     colRecorded: "Registrada",
@@ -187,15 +205,21 @@ const ptBr: AppHistoryMessages = {
     matchDevice: "mesmo dispositivo",
     matchSpace: "mesmo espaço",
     howTitle: "Como esses números são calculados",
-    howBody: "Cada porta é comparada com um sensor de temperatura e um de umidade: o primeiro do próprio dispositivo da porta ou, se não houver, um de outro dispositivo no mesmo espaço (defina os espaços em Dispositivos). Os valores de \"abertura\" e \"fechamento\" são a última leitura desse sensor naquele momento ou antes, se tiver no máximo 30 minutos; caso contrário, a célula informa. A variação é fechamento menos abertura. Ela mostra como o espaço mudou enquanto a porta estava aberta, não o que causou a mudança.",
+    howBody:
+      'Cada porta é comparada com um sensor de temperatura e um de umidade: o primeiro do próprio dispositivo da porta ou, se não houver, um de outro dispositivo no mesmo espaço (defina os espaços em Dispositivos). Os valores de "abertura" e "fechamento" são a última leitura desse sensor naquele momento ou antes, se tiver no máximo 30 minutos; caso contrário, a célula informa. A variação é fechamento menos abertura. Ela mostra como o espaço mudou enquanto a porta estava aberta, não o que causou a mudança.',
     empty: "Nenhuma abertura de porta salva neste período.",
-    emptyHint: "Uma abertura é salva quando o sensor da porta volta a informar que ela está fechada. Portas abertas por mais de 24 horas ainda não são salvas.",
-    noDoorSensors: "Ainda não há sensores de porta. Adicione um em Dispositivos para ver as aberturas aqui.",
-    truncated: "Mostrando as {count} aberturas mais recentes deste período. Reduza as datas para ver as anteriores.",
+    emptyHint:
+      "Uma abertura é salva quando o sensor da porta volta a informar que ela está fechada. Portas abertas por mais de 24 horas ainda não são salvas.",
+    noDoorSensors:
+      "Ainda não há sensores de porta. Adicione um em Dispositivos para ver as aberturas aqui.",
+    truncated:
+      "Mostrando as {count} aberturas mais recentes deste período. Reduza as datas para ver as anteriores.",
     loadError: "Não foi possível carregar o histórico das portas. Tente de novo em instantes.",
-    readingsError: "Não foi possível carregar a temperatura e a umidade de cada abertura, então essas colunas estão vazias.",
+    readingsError:
+      "Não foi possível carregar a temperatura e a umidade de cada abertura, então essas colunas estão vazias.",
     downloadCsv: "Baixar CSV",
-    csvNote: "Os horários do CSV estão em UTC (ISO 8601). Temperaturas em °F, umidade em %. Célula vazia significa sem leitura.",
+    csvNote:
+      "Os horários do CSV estão em UTC (ISO 8601). Temperaturas em °F, umidade em %. Célula vazia significa sem leitura.",
     csvUpgrade: "A exportação CSV das aberturas de portas está incluída na assinatura.",
   },
 };

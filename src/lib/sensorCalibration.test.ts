@@ -76,4 +76,3 @@ describe("calibrationOffsetUnit", () => {
     expect(calibrationOffsetUnit("pressure", null)).toBe("");
   });
 });
-

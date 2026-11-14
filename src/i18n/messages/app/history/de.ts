@@ -11,12 +11,16 @@ const de: AppHistoryMessages = {
       openDevices: "Geräte öffnen",
       overview: "Übersicht",
     },
-    introCsv: "Durchsuche gespeicherte Temperatur- und Luftfeuchte-Messwerte nach Feed und Fühler. Lade die CSV im Tab Tabelle oder unten unter Exporte herunter.",
-    introNoCsv: "Durchsuche gespeicherte Temperatur- und Luftfeuchte-Messwerte nach Feed und Fühler. Mit einem Abo kannst du deinen Verlauf als CSV exportieren.",
+    introCsv:
+      "Durchsuche gespeicherte Temperatur- und Luftfeuchte-Messwerte nach Feed und Fühler. Lade die CSV im Tab Tabelle oder unten unter Exporte herunter.",
+    introNoCsv:
+      "Durchsuche gespeicherte Temperatur- und Luftfeuchte-Messwerte nach Feed und Fühler. Mit einem Abo kannst du deinen Verlauf als CSV exportieren.",
     tabsAria: "Verlaufsansichten",
     tabs: { chart: "Diagramm", table: "Tabelle", exports: "Exporte", doors: "Türen" },
-    retentionTitle: "Rohmesswerte, die älter als 90 Tage sind, werden für längere Zeiträume zu Stundenmitteln zusammengefasst.",
-    retention: "Dein Tarif {plan} speichert {retention}{plus} Verlauf; Messwerte, die älter als 90 Tage sind, bleiben als Stundenmittel erhalten.",
+    retentionTitle:
+      "Rohmesswerte, die älter als 90 Tage sind, werden für längere Zeiträume zu Stundenmitteln zusammengefasst.",
+    retention:
+      "Dein Tarif {plan} speichert {retention}{plus} Verlauf; Messwerte, die älter als 90 Tage sind, bleiben als Stundenmittel erhalten.",
     adminPlan: "Admin",
     retentionYears: { one: "{count} Jahr", other: "{count} Jahre" },
     retentionDays: { one: "{count} Tag", other: "{count} Tage" },
@@ -38,13 +42,16 @@ const de: AppHistoryMessages = {
   compare: {
     summary: "Vergleichen",
     outdoorTitle: "Innen und außen",
-    outdoorSubtitle: "Durchschnitt der Fühler im Diagrammzeitraum im Vergleich zum aktuellen Wetter draußen.",
-    outdoorSubtitleCity: "Durchschnitt der Fühler im Diagrammzeitraum im Vergleich zum aktuellen Wetter draußen in {city}.",
+    outdoorSubtitle:
+      "Durchschnitt der Fühler im Diagrammzeitraum im Vergleich zum aktuellen Wetter draußen.",
+    outdoorSubtitleCity:
+      "Durchschnitt der Fühler im Diagrammzeitraum im Vergleich zum aktuellen Wetter draußen in {city}.",
     indoorAvg: "Innen (Mittel)",
     outdoorNow: "Außen aktuell",
     delta: "Differenz",
     spreadTitle: "Streuung der Fühler",
-    spreadSubtitle: "Stündlicher Abstand zwischen dem wärmsten und dem kältesten Fühler in diesem Zeitraum.",
+    spreadSubtitle:
+      "Stündlicher Abstand zwischen dem wärmsten und dem kältesten Fühler in diesem Zeitraum.",
     freezeTitle: "Frostbelastung der Saison",
     freezeSubtitle: "Geschätzte Zeit bei oder unter {temp} {unit} im gewählten Diagrammzeitraum.",
     hoursAtOrBelow: "Stunden ≤ {temp} {unit}",
@@ -53,7 +60,8 @@ const de: AppHistoryMessages = {
   },
   exports: {
     summaryTitle: "Zusammenfassung des Zeitraums",
-    summarySubtitle: "Überblick für {from} → {to} (derselbe Zeitraum wie die Schadensmappe unten). Im Tab Diagramm kannst du genauer hinsehen, unter Exporte die Nachweise herunterladen.",
+    summarySubtitle:
+      "Überblick für {from} → {to} (derselbe Zeitraum wie die Schadensmappe unten). Im Tab Diagramm kannst du genauer hinsehen, unter Exporte die Nachweise herunterladen.",
     notEnough: "Für eine Zusammenfassung gibt es in diesem Zeitraum noch nicht genug Messwerte.",
     coldest: "Tiefstwert",
     hoursAtOrBelow: "Geschätzte Stunden ≤ {temp} {unit}",
@@ -71,18 +79,24 @@ const de: AppHistoryMessages = {
       invalid_email: "Gib eine gültige E-Mail-Adresse des Gutachters ein.",
       no_household: "Kein Haushalt gefunden, für den eine Schadensmappe erstellt werden kann.",
       recipient_not_allowed: "An diese E-Mail-Adresse konnte nicht zugestellt werden.",
-      send_failed: "Die E-Mail mit der Schadensmappe konnte nicht gesendet werden. Versuch es noch einmal.",
+      send_failed:
+        "Die E-Mail mit der Schadensmappe konnte nicht gesendet werden. Versuch es noch einmal.",
     },
-    claimsUsesFilters: "Nutzt die Verlaufsfilter oben, sofern gesetzt ({from} → {to}). Lädt eine PDF-Zusammenfassung herunter; die zugehörigen CSVs decken denselben Zeitraum ab.",
+    claimsUsesFilters:
+      "Nutzt die Verlaufsfilter oben, sofern gesetzt ({from} → {to}). Lädt eine PDF-Zusammenfassung herunter; die zugehörigen CSVs decken denselben Zeitraum ab.",
     htmlVersion: "HTML-Version",
     adjusterEmail: "E-Mail an den Gutachter",
     adjusterPlaceholder: "gutachter@versicherung.de",
     sendClaims: "Schadensmappe senden",
     claimsUpgrade: "Mit Pro kannst du die Schadensmappe in diesem Tab herunterladen.",
     certificateTitle: "Überwachungszertifikat",
-    certificateSubtitle: "Einseitige PDF-Zusammenfassung deiner Alarmeinstellungen und überwachten Geräte: nützlich für Versicherer, Vermieter oder Hausverwaltungen.",
+    certificateSubtitle:
+      "Einseitige PDF-Zusammenfassung deiner Alarmeinstellungen und überwachten Geräte: nützlich für Versicherer, Vermieter oder Hausverwaltungen.",
     certificateDownload: "Überwachungszertifikat herunterladen (PDF)",
-    seasonalTitle: { one: "Saisonale Auswertung ({count} Tag)", other: "Saisonale Auswertung ({count} Tage)" },
+    seasonalTitle: {
+      one: "Saisonale Auswertung ({count} Tag)",
+      other: "Saisonale Auswertung ({count} Tage)",
+    },
     icalLink: "Frostprognose abonnieren (iCal)",
   },
   table: {
@@ -92,9 +106,13 @@ const de: AppHistoryMessages = {
     downloadCsv: "CSV herunterladen",
     csvTimesUtc: "Zeiten in der CSV sind in UTC (ISO 8601, mit Z am Ende).",
     chartTitleDates: "Temperaturverlauf (gewählte Daten)",
-    chartTitleDays: { one: "Temperaturverlauf (letzter {count} Tag)", other: "Temperaturverlauf (letzte {count} Tage)" },
+    chartTitleDays: {
+      one: "Temperaturverlauf (letzter {count} Tag)",
+      other: "Temperaturverlauf (letzte {count} Tage)",
+    },
     anomaliesTitle: "Ungewöhnliche Muster im Diagrammzeitraum erkannt",
-    anomaliesHow: "Markiert, wenn ein Fühler zwischen zwei höchstens 60 Minuten auseinanderliegenden Messwerten um {band} oder mehr fällt; eine innerhalb von 30 Minuten geöffnete Tür wird erwähnt.",
+    anomaliesHow:
+      "Markiert, wenn ein Fühler zwischen zwei höchstens 60 Minuten auseinanderliegenden Messwerten um {band} oder mehr fällt; eine innerhalb von 30 Minuten geöffnete Tür wird erwähnt.",
     feed: "Feed",
     allFeeds: "Alle Feeds",
     probe: "Fühler",
@@ -125,11 +143,14 @@ const de: AppHistoryMessages = {
     viewNamePlaceholder: "Ansicht benennen",
     saveView: "Ansicht speichern",
     loadError: "Gespeicherte Messwerte konnten nicht geladen werden: {error}",
-    noMatch: "Keine Messwerte passen zu diesen Filtern. Wähle einen größeren Zeitraum oder setze die Filter zurück.",
-    noHistory: "Noch kein Klimaverlauf. Messwerte werden gesammelt, wenn Geräte online sind und wenn du angemeldet die Übersicht öffnest.",
+    noMatch:
+      "Keine Messwerte passen zu diesen Filtern. Wähle einen größeren Zeitraum oder setze die Filter zurück.",
+    noHistory:
+      "Noch kein Klimaverlauf. Messwerte werden gesammelt, wenn Geräte online sind und wenn du angemeldet die Übersicht öffnest.",
     stepAddDevice: "Gerät oder Feed hinzufügen",
     stepVerify: "Empfang auf der Seite Geräte prüfen",
-    stepLiveHtml: '<a class="text-link" href="/dashboard/live">Live öffnen</a>, um die Live-Werte zu bestätigen',
+    stepLiveHtml:
+      '<a class="text-link" href="/dashboard/live">Live öffnen</a>, um die Live-Werte zu bestätigen',
     goDevices: "Zu den Geräten",
     humidityRh: "{value} % r. F.",
     colRecorded: "Erfasst",
@@ -187,15 +208,21 @@ const de: AppHistoryMessages = {
     matchDevice: "gleiches Gerät",
     matchSpace: "gleicher Bereich",
     howTitle: "So werden diese Zahlen berechnet",
-    howBody: "Jede Tür wird mit einem Temperatur- und einem Feuchtesensor verglichen: dem ersten am Gerät der Tür, sonst einem an einem anderen Gerät im selben Bereich (Bereiche legst du unter Geräte fest). Die Werte „Öffnen“ und „Schließen“ sind der letzte Messwert dieses Sensors zu diesem Zeitpunkt oder davor, wenn er höchstens 30 Minuten alt ist; sonst steht das in der Zelle. Die Änderung ist Schließen minus Öffnen. Sie zeigt, wie sich der Raum bei offener Tür verändert hat, nicht, was die Ursache war.",
+    howBody:
+      "Jede Tür wird mit einem Temperatur- und einem Feuchtesensor verglichen: dem ersten am Gerät der Tür, sonst einem an einem anderen Gerät im selben Bereich (Bereiche legst du unter Geräte fest). Die Werte „Öffnen“ und „Schließen“ sind der letzte Messwert dieses Sensors zu diesem Zeitpunkt oder davor, wenn er höchstens 30 Minuten alt ist; sonst steht das in der Zelle. Die Änderung ist Schließen minus Öffnen. Sie zeigt, wie sich der Raum bei offener Tür verändert hat, nicht, was die Ursache war.",
     empty: "In diesem Zeitraum wurden keine Türöffnungen gespeichert.",
-    emptyHint: "Eine Öffnung wird gespeichert, wenn der Türsensor wieder „geschlossen“ meldet. Türen, die länger als 24 Stunden offen sind, werden noch nicht gespeichert.",
-    noDoorSensors: "Noch keine Türsensoren. Füge unter Geräte einen hinzu, um hier Türöffnungen zu sehen.",
-    truncated: "Es werden die {count} neuesten Öffnungen in diesem Zeitraum angezeigt. Grenze die Daten ein, um ältere zu sehen.",
+    emptyHint:
+      "Eine Öffnung wird gespeichert, wenn der Türsensor wieder „geschlossen“ meldet. Türen, die länger als 24 Stunden offen sind, werden noch nicht gespeichert.",
+    noDoorSensors:
+      "Noch keine Türsensoren. Füge unter Geräte einen hinzu, um hier Türöffnungen zu sehen.",
+    truncated:
+      "Es werden die {count} neuesten Öffnungen in diesem Zeitraum angezeigt. Grenze die Daten ein, um ältere zu sehen.",
     loadError: "Der Türverlauf konnte nicht geladen werden. Bitte versuch es gleich noch einmal.",
-    readingsError: "Temperatur und Luftfeuchte zu den Öffnungen konnten nicht geladen werden, daher sind diese Spalten leer.",
+    readingsError:
+      "Temperatur und Luftfeuchte zu den Öffnungen konnten nicht geladen werden, daher sind diese Spalten leer.",
     downloadCsv: "CSV herunterladen",
-    csvNote: "Zeiten in der CSV sind UTC (ISO 8601). Temperaturen in °F, Luftfeuchte in %. Leere Zellen bedeuten: kein Messwert.",
+    csvNote:
+      "Zeiten in der CSV sind UTC (ISO 8601). Temperaturen in °F, Luftfeuchte in %. Leere Zellen bedeuten: kein Messwert.",
     csvUpgrade: "Der CSV-Export der Türöffnungen ist in einem Abo enthalten.",
   },
 };

@@ -155,7 +155,10 @@ describe("recordInboundSignatureFormat", () => {
     const { recordInboundSignatureFormat } = await import("./inboundWebhooks");
 
     await expect(recordInboundSignatureFormat("w1", "v2")).resolves.toBeUndefined();
-    expect(warn).toHaveBeenCalledWith("inbound webhook: could not record signature format", expect.any(Error));
+    expect(warn).toHaveBeenCalledWith(
+      "inbound webhook: could not record signature format",
+      expect.any(Error),
+    );
     warn.mockRestore();
   });
 });

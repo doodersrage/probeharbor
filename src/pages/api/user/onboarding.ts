@@ -28,7 +28,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(withQuery(redirectTo, { onboarding_error: "1" }));
   }
 
-
   return redirect(
     `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}${
       dismissed ? "onboarding_dismissed=1" : "onboarding_reset=1"

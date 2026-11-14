@@ -42,8 +42,7 @@ const de: DeviceSetupPushMessages = {
   updateTo: "Auf {version} aktualisieren",
   labelsFine: "Die Bezeichnungen passen so.",
   renameLater: "Später umbenennen",
-  noPostsYet:
-    "Noch keine POSTs: Der erste JSON-POST importiert die Sensorschlüssel automatisch.",
+  noPostsYet: "Noch keine POSTs: Der erste JSON-POST importiert die Sensorschlüssel automatisch.",
   waitingKeys: "Warte auf den ersten POST mit den Schlüsseln",
   seeChecklist: "Checkliste ansehen",
   manage: "Verwalten",

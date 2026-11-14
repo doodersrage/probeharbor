@@ -5,11 +5,7 @@ import { fmt } from "../i18n/format";
 import type { Locale } from "../i18n/locales";
 import { inviteEmailMessages } from "../i18n/messages/app/email/invite";
 
-export type HouseholdInviteRole =
-  | "member"
-  | "viewer"
-  | "alert_only"
-  | "property_manager";
+export type HouseholdInviteRole = "member" | "viewer" | "alert_only" | "property_manager";
 
 export type HouseholdInvite = {
   id: string;
@@ -72,9 +68,7 @@ export async function createHouseholdInvite(
 ): Promise<{ invite: PendingInvite | null; token: string | null; error: string | null }> {
   const normalized = email.trim().toLowerCase();
   const token = randomToken();
-  const expires_at = new Date(
-    Date.now() + expiresInDays * 24 * 60 * 60 * 1000,
-  ).toISOString();
+  const expires_at = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
   const created = await neonAccess.insertInvite({
     householdId,
     email: normalized,
@@ -83,7 +77,9 @@ export async function createHouseholdInvite(
     expiresAt: expires_at,
     role,
   });
-  return created.invite ? { invite: created.invite, token, error: null } : { invite: null, token: null, error: created.error };
+  return created.invite
+    ? { invite: created.invite, token, error: null }
+    : { invite: null, token: null, error: created.error };
 }
 
 /**
@@ -97,8 +93,15 @@ export async function reissueHouseholdInvite(
 ): Promise<{ invite: PendingInvite | null; token: string | null; error: string | null }> {
   const token = randomToken();
   const expires_at = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
-  const reissued = await neonAccess.reissueInvite(householdId, inviteId, await sha256Hex(token), expires_at);
-  return reissued.invite ? { invite: reissued.invite, token, error: null } : { invite: null, token: null, error: reissued.error };
+  const reissued = await neonAccess.reissueInvite(
+    householdId,
+    inviteId,
+    await sha256Hex(token),
+    expires_at,
+  );
+  return reissued.invite
+    ? { invite: reissued.invite, token, error: null }
+    : { invite: null, token: null, error: reissued.error };
 }
 
 export async function listPendingInvites(
@@ -108,9 +111,7 @@ export async function listPendingInvites(
 }
 
 /** The invite this link opens, only while it is usable (not accepted, not expired). */
-export async function getInviteByToken(
-  token: string,
-): Promise<HouseholdInvite | null> {
+export async function getInviteByToken(token: string): Promise<HouseholdInvite | null> {
   return neonAccess.findInviteByTokenKeys(await inviteTokenLookupKeys(token.trim()));
 }
 
@@ -122,8 +123,12 @@ export async function getInviteByToken(
 export async function getInviteTokenState(
   token: string,
 ): Promise<{ householdId: string; accepted: boolean; expired: boolean } | null> {
-  const state = await neonAccess.findInviteStateByTokenKeys(await inviteTokenLookupKeys(token.trim()));
-  return state ? { householdId: state.household_id, accepted: state.accepted, expired: state.expired } : null;
+  const state = await neonAccess.findInviteStateByTokenKeys(
+    await inviteTokenLookupKeys(token.trim()),
+  );
+  return state
+    ? { householdId: state.household_id, accepted: state.accepted, expired: state.expired }
+    : null;
 }
 
 export async function acceptHouseholdInvite(
@@ -150,10 +155,7 @@ export async function acceptHouseholdInvite(
     return { householdId: null, error: "Invite expired" };
   }
 
-  if (
-    !userEmail?.trim() ||
-    invite.email.toLowerCase() !== userEmail.trim().toLowerCase()
-  ) {
+  if (!userEmail?.trim() || invite.email.toLowerCase() !== userEmail.trim().toLowerCase()) {
     return {
       householdId: null,
       error: "Sign in with the invited email address to accept",
@@ -161,9 +163,7 @@ export async function acceptHouseholdInvite(
   }
 
   const role =
-    invite.role === "viewer" ||
-    invite.role === "alert_only" ||
-    invite.role === "property_manager"
+    invite.role === "viewer" || invite.role === "alert_only" || invite.role === "property_manager"
       ? invite.role
       : "member";
   // Someone who already belongs keeps their role (an owner stays owner, an

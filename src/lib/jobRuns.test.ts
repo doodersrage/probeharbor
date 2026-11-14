@@ -60,7 +60,9 @@ describe("closeAbandonedJobRuns", () => {
       "2026-10-28T11:30:00.000Z",
       expect.objectContaining({ abandoned: true }),
     );
-    expect(console.error).toHaveBeenCalledWith("job collect-history: 2 run(s) never finished; marked as errors");
+    expect(console.error).toHaveBeenCalledWith(
+      "job collect-history: 2 run(s) never finished; marked as errors",
+    );
   });
 
   it("returns 0 instead of throwing when the update fails", async () => {
@@ -77,8 +79,15 @@ describe("startJobRun closes abandoned runs first", () => {
     const { startJobRun } = await import("./jobRuns");
 
     expect(await startJobRun("collect-history")).toBe(43);
-    expect(mockClose).toHaveBeenCalledWith("collect-history", expect.any(String), expect.any(String), expect.any(Object));
-    expect(mockClose.mock.invocationCallOrder[0]).toBeLessThan(mockStart.mock.invocationCallOrder[0]!);
+    expect(mockClose).toHaveBeenCalledWith(
+      "collect-history",
+      expect.any(String),
+      expect.any(String),
+      expect.any(Object),
+    );
+    expect(mockClose.mock.invocationCallOrder[0]).toBeLessThan(
+      mockStart.mock.invocationCallOrder[0]!,
+    );
   });
 
   it("still starts the run when the cleanup fails", async () => {
@@ -139,7 +148,9 @@ describe("listRecentJobRuns", () => {
 describe("retentionCutoff", () => {
   it("starts at the UTC hour, retentionDays back, so no hour is split across runs", async () => {
     const { retentionCutoff } = await import("./jobRuns");
-    expect(retentionCutoff(90, new Date("2024-06-15T12:34:56.000Z"))).toBe("2024-03-17T12:00:00.000Z");
+    expect(retentionCutoff(90, new Date("2024-06-15T12:34:56.000Z"))).toBe(
+      "2024-03-17T12:00:00.000Z",
+    );
   });
 });
 
@@ -160,7 +171,9 @@ describe("runSensorReadingRetention", () => {
   });
 
   it("reports the error and deletes nothing when the function fails or is missing", async () => {
-    mockRollUp.mockRejectedValue(new Error("function public.roll_up_and_prune_readings does not exist"));
+    mockRollUp.mockRejectedValue(
+      new Error("function public.roll_up_and_prune_readings does not exist"),
+    );
     const { runSensorReadingRetention } = await import("./jobRuns");
 
     expect(await runSensorReadingRetention(90)).toEqual({

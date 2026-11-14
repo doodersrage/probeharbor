@@ -37,7 +37,8 @@ const fr: SystemStatusMessages = {
     lede: "Comptes rendus écrits des pannes ou dégradations visibles par les clients. Les erreurs cron ci-dessus pilotent aussi le bandeau en direct et les e-mails aux abonnés.",
     none: "Aucun incident enregistré pour l’instant. Lorsque nous publierons un incident résolu (date, impact, rétablissement), il apparaîtra ici. D’ici là, le bandeau en direct et le tableau des exécutions cron récentes font foi.",
     open: "En cours : service dégradé",
-    started: "Commencé vers le chargement de cette page ({when}). Les abonnés sont prévenus lors de la dégradation et du rétablissement.",
+    started:
+      "Commencé vers le chargement de cette page ({when}). Les abonnés sont prévenus lors de la dégradation et du rétablissement.",
   },
   runs: {
     title: "Exécutions cron récentes",
@@ -69,7 +70,8 @@ const fr: SystemStatusMessages = {
   notify: {
     title: "Être prévenu",
     lede: "Recevez un e-mail ponctuel si cet état change (dégradé ou retour à la normale). Aucun e-mail de routine. Le formulaire est protégé par Cloudflare Turnstile.",
-    subscribed: "Consultez votre boîte de réception : votre abonnement ne sera actif qu’après avoir cliqué sur le lien de confirmation.",
+    subscribed:
+      "Consultez votre boîte de réception : votre abonnement ne sera actif qu’après avoir cliqué sur le lien de confirmation.",
     confirmed: "Vous êtes abonné aux mises à jour de l’état du service.",
     unsubscribed: "Vous êtes désabonné des mises à jour de l’état du service.",
     errors: {

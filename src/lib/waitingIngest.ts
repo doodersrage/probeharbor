@@ -68,4 +68,3 @@ export function buildEspHomeHttpRequestSnippet(
     Content-Type: application/json
   body: '${body}'`;
 }
-

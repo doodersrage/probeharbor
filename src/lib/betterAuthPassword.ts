@@ -31,7 +31,10 @@ export function clearResetTokenCookie(cookies: AstroCookies): void {
 }
 
 /** The user a reset token belongs to, or null when unknown or expired. Doesn't use it up. */
-export async function resetTokenUserId(auth: ProbeHarborAuth, token: string): Promise<string | null> {
+export async function resetTokenUserId(
+  auth: ProbeHarborAuth,
+  token: string,
+): Promise<string | null> {
   if (!token) return null;
   const ctx = await auth.$context;
   const found = await ctx.internalAdapter.findVerificationValue(`reset-password:${token}`);
@@ -39,13 +42,22 @@ export async function resetTokenUserId(auth: ProbeHarborAuth, token: string): Pr
 }
 
 /** Signed-in password change: no current password, creates one if the account has none. */
-export async function setPasswordForUser(auth: ProbeHarborAuth, userId: string, newPassword: string): Promise<void> {
+export async function setPasswordForUser(
+  auth: ProbeHarborAuth,
+  userId: string,
+  newPassword: string,
+): Promise<void> {
   const ctx = await auth.$context;
   const hash = await ctx.password.hash(newPassword);
   if (await ctx.internalAdapter.findCredentialAccount(userId)) {
     await ctx.internalAdapter.updatePassword(userId, hash);
   } else {
-    await ctx.internalAdapter.createAccount({ userId, providerId: "credential", accountId: userId, password: hash });
+    await ctx.internalAdapter.createAccount({
+      userId,
+      providerId: "credential",
+      accountId: userId,
+      password: hash,
+    });
   }
 }
 

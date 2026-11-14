@@ -2,11 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ChartPoint } from "./garageTempsHistory";
 import { detectTemperatureAnomalies } from "./anomalyDetection";
 
-function point(
-  timestamp: string,
-  tempf: number,
-  probeLabel = "Bay",
-): ChartPoint {
+function point(timestamp: string, tempf: number, probeLabel = "Bay"): ChartPoint {
   return { timestamp, tempf, humidity: 40, probeLabel };
 }
 
@@ -37,10 +33,7 @@ describe("detectTemperatureAnomalies", () => {
 
   it("mentions nearby open door events", () => {
     const notices = detectTemperatureAnomalies(
-      [
-        point("2026-01-01T10:00:00.000Z", 50),
-        point("2026-01-01T10:20:00.000Z", 35),
-      ],
+      [point("2026-01-01T10:00:00.000Z", 50), point("2026-01-01T10:20:00.000Z", 35)],
       10,
       60 * 60 * 1000,
       [{ label: "Garage", open: true, recordedAt: "2026-01-01T10:15:00.000Z" }],
@@ -51,10 +44,7 @@ describe("detectTemperatureAnomalies", () => {
 
   it("ignores closed doors and doors outside the near window", () => {
     const notices = detectTemperatureAnomalies(
-      [
-        point("2026-01-01T10:00:00.000Z", 50),
-        point("2026-01-01T10:20:00.000Z", 35),
-      ],
+      [point("2026-01-01T10:00:00.000Z", 50), point("2026-01-01T10:20:00.000Z", 35)],
       10,
       60 * 60 * 1000,
       [
@@ -67,10 +57,7 @@ describe("detectTemperatureAnomalies", () => {
 
   it("counts a door that opened long before the drop and was still open", () => {
     const notices = detectTemperatureAnomalies(
-      [
-        point("2026-01-01T10:00:00.000Z", 50),
-        point("2026-01-01T10:20:00.000Z", 35),
-      ],
+      [point("2026-01-01T10:00:00.000Z", 50), point("2026-01-01T10:20:00.000Z", 35)],
       10,
       60 * 60 * 1000,
       [
@@ -86,10 +73,7 @@ describe("detectTemperatureAnomalies", () => {
   });
 
   it("counts a door with no close reported yet, but not one closed well before", () => {
-    const drop = [
-      point("2026-01-01T10:00:00.000Z", 50),
-      point("2026-01-01T10:20:00.000Z", 35),
-    ];
+    const drop = [point("2026-01-01T10:00:00.000Z", 50), point("2026-01-01T10:20:00.000Z", 35)];
     const stillOpen = detectTemperatureAnomalies(drop, 10, 60 * 60 * 1000, [
       { label: "Garage", open: true, recordedAt: "2026-01-01T08:00:00.000Z", until: null },
     ]);
@@ -109,10 +93,7 @@ describe("detectTemperatureAnomalies", () => {
   it("ignores drops outside the elapsed window", () => {
     expect(
       detectTemperatureAnomalies(
-        [
-          point("2026-01-01T10:00:00.000Z", 50),
-          point("2026-01-01T12:30:00.000Z", 30),
-        ],
+        [point("2026-01-01T10:00:00.000Z", 50), point("2026-01-01T12:30:00.000Z", 30)],
         10,
         60 * 60 * 1000,
       ),

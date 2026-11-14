@@ -18,7 +18,8 @@ const en = {
   embed: "Embed",
   freezeSeason: "Freeze season",
   shareKit: "Share kit",
-  seedIntroHtml: "<strong>Showing sample data</strong>, live city readings appear once enough households opt in ({floor}+ probes per city).",
+  seedIntroHtml:
+    "<strong>Showing sample data</strong>, live city readings appear once enough households opt in ({floor}+ probes per city).",
   optInNone: "No households have opted in yet: be the first in your metro.",
   optInCount: {
     one: "{count} household has opted in so far.",
@@ -28,13 +29,16 @@ const en = {
   linkCreate: "Create an account to contribute",
   liveNotice: {
     one: "Live opt-in aggregates · {count} household contributing · cities need {floor}+ households to show readings",
-    other: "Live opt-in aggregates · {count} households contributing · cities need {floor}+ households to show readings",
+    other:
+      "Live opt-in aggregates · {count} households contributing · cities need {floor}+ households to show readings",
   },
   lastSnapshot: " · Last snapshot {label}",
   liveOptOut: ". Opt out anytime under Household.",
   momentumTitle: "Momentum",
-  momentumApproaching: "Cities closest to going live ({floor} households each). Your opt-in moves the count.",
-  momentumWaiting: "Once a city reaches {floor} opted-in households with a live probe, sample preview for that metro is replaced by real readings.",
+  momentumApproaching:
+    "Cities closest to going live ({floor} households each). Your opt-in moves the count.",
+  momentumWaiting:
+    "Once a city reaches {floor} opted-in households with a live probe, sample preview for that metro is replaced by real readings.",
   householdsProgress: "{count}/{floor} households",
   moreToGo: {
     one: " · {count} more to go live",
@@ -51,7 +55,8 @@ const en = {
   },
   sparsePrivate: {
     one: "{count} city has fewer than {floor} households, so its readings stay private until more homes join. It’s listed under Momentum with its household count only.",
-    other: "{count} cities have fewer than {floor} households, so their readings stay private until more homes join. They’re listed under Momentum with their household counts only.",
+    other:
+      "{count} cities have fewer than {floor} households, so their readings stay private until more homes join. They’re listed under Momentum with their household counts only.",
   },
   mapTitle: "Map",
   mapSubtitle:

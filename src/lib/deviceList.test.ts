@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildDeviceListRows, countDevicesWithoutSpace, deviceHref, formatSensorValue, spaceSuggestions } from "./deviceList";
+import {
+  buildDeviceListRows,
+  countDevicesWithoutSpace,
+  deviceHref,
+  formatSensorValue,
+  spaceSuggestions,
+} from "./deviceList";
 import type { DeviceSensor, DeviceWithSensors } from "./devices";
 import type { SensorKind } from "./sensorKinds";
 import type { LatestSensorRow } from "./sensorReadings";
@@ -8,7 +14,17 @@ const now = Date.parse("2026-10-14T12:00:00Z");
 const ago = (m: number) => new Date(now - m * 60_000).toISOString();
 
 function sensor(id: string, kind: SensorKind, label: string, visible = true): DeviceSensor {
-  return { id, device_id: "", key: id, label, kind, unit: kind === "temperature" ? "°F" : null, visible, sort_order: 0, offset_num: 0 };
+  return {
+    id,
+    device_id: "",
+    key: id,
+    label,
+    kind,
+    unit: kind === "temperature" ? "°F" : null,
+    visible,
+    sort_order: 0,
+    offset_num: 0,
+  };
 }
 
 function device(id: string, over: Partial<DeviceWithSensors> = {}): DeviceWithSensors {
@@ -43,14 +59,21 @@ describe("buildDeviceListRows", () => {
   it("marks the example feed as demo data", () => {
     const rows = buildDeviceListRows({
       devices: [
-        device("demo", { source: "pull_url", pull_url: "https://probeharbor.com/api/feeds/example" }),
+        device("demo", {
+          source: "pull_url",
+          pull_url: "https://probeharbor.com/api/feeds/example",
+        }),
         device("real", { source: "pull_url", pull_url: "https://garage.example.org/temps.json" }),
         device("push"),
       ],
       latest: [],
       now,
     });
-    expect(Object.fromEntries(rows.map((r) => [r.id, r.demo]))).toEqual({ demo: true, real: false, push: false });
+    expect(Object.fromEntries(rows.map((r) => [r.id, r.demo]))).toEqual({
+      demo: true,
+      real: false,
+      push: false,
+    });
   });
 
   it("puts trouble first and shows a recognizable reading", () => {
@@ -74,7 +97,17 @@ describe("buildDeviceListRows", () => {
     const [row] = buildDeviceListRows({
       devices: [device("feed", { source: "pull_url", sensors: [leak] })],
       latest: [reading(leak, false)],
-      feedStatuses: [{ feedId: "feed", feedName: "feed", url: "", ok: false, message: "HTTP 500", probeCount: 0, checkedAt: ago(1) }],
+      feedStatuses: [
+        {
+          feedId: "feed",
+          feedName: "feed",
+          url: "",
+          ok: false,
+          message: "HTTP 500",
+          probeCount: 0,
+          checkedAt: ago(1),
+        },
+      ],
       now,
     });
     expect(row?.headline).toBe("Sump Dry");
@@ -83,7 +116,11 @@ describe("buildDeviceListRows", () => {
 
   it("reads °F temperatures in °C for °C users; other units stay as stored", () => {
     const pipe = sensor("t", "temperature", "Pipe");
-    const [row] = buildDeviceListRows({ devices: [device("d", { sensors: [pipe] })], latest: [reading(pipe, 41.24)], now }, "en", true);
+    const [row] = buildDeviceListRows(
+      { devices: [device("d", { sensors: [pipe] })], latest: [reading(pipe, 41.24)], now },
+      "en",
+      true,
+    );
     expect(row?.headline).toBe("Pipe 5.1 °C");
     const withUnit = (unit: string | null) => reading({ ...pipe, unit }, 33.8);
     expect(formatSensorValue(withUnit("F"), "en", true)).toBe("1.0 °C");
@@ -100,16 +137,22 @@ describe("buildDeviceListRows", () => {
 
 describe("space helpers", () => {
   it("counts enabled devices with no space", () => {
-    expect(countDevicesWithoutSpace([device("a"), device("b", { space: "Garage" }), device("c", { enabled: false })])).toBe(1);
+    expect(
+      countDevicesWithoutSpace([
+        device("a"),
+        device("b", { space: "Garage" }),
+        device("c", { enabled: false }),
+      ]),
+    ).toBe(1);
   });
 
   it("suggests spaces already in use first, without duplicates", () => {
-    expect(spaceSuggestions([device("a", { space: "Pump house" }), device("b", { space: "garage" })]).slice(0, 4)).toEqual([
-      "Pump house",
-      "garage",
-      "Attic",
-      "Crawlspace",
-    ]);
+    expect(
+      spaceSuggestions([
+        device("a", { space: "Pump house" }),
+        device("b", { space: "garage" }),
+      ]).slice(0, 4),
+    ).toEqual(["Pump house", "garage", "Attic", "Crawlspace"]);
   });
 
   it("encodes ids in links", () => {

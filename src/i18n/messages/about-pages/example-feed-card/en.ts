@@ -1,4 +1,3 @@
-
 /** ExampleFeedCard copy (also rendered on the English-only dashboard). */
 
 const en = {

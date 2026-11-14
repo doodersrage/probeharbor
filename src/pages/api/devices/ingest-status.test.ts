@@ -58,7 +58,13 @@ describe("GET /api/devices/ingest-status", () => {
     mockListHouseholdDevices.mockResolvedValue({
       devices: [
         { id: "d1", name: "Garage", source: "push", last_seen_at: null, sensors: [] },
-        { id: "d2", name: "Attic", source: "push", last_seen_at: "2024-01-01", sensors: [{ key: "temp" }] },
+        {
+          id: "d2",
+          name: "Attic",
+          source: "push",
+          last_seen_at: "2024-01-01",
+          sensors: [{ key: "temp" }],
+        },
         { id: "d3", name: "Pull feed", source: "pull", last_seen_at: null, sensors: [] },
       ],
     });

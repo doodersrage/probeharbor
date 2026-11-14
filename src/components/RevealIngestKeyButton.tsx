@@ -9,7 +9,11 @@ interface Props {
   text?: RevealIngestKeyText;
 }
 
-export default function RevealIngestKeyButton({ deviceId, deviceName, text = en.revealKey }: Props) {
+export default function RevealIngestKeyButton({
+  deviceId,
+  deviceName,
+  text = en.revealKey,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [key, setKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

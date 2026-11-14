@@ -67,7 +67,8 @@ const en = {
   beforeTitle: "Before you start",
   wireHtml:
     'Wire the sensor: power to 3.3V, ground to GND, data to GPIO 4, with a 4.7kΩ resistor between data and 3.3V (<a class="text-link" href="/about/esp32-freeze-kit">diagram</a>). That\'s the same for a DS18B20 probe (red, black, yellow wires) and a DHT22; the firmware detects which one is connected.',
-  extrasIntro: "Optional extras, on these pins (each switch or contact goes between the pin and GND):",
+  extrasIntro:
+    "Optional extras, on these pins (each switch or contact goes between the pin and GND):",
   pinTable: {
     connect: "Connect",
     data: "DS18B20 or DHT22 data",
@@ -76,7 +77,8 @@ const en = {
     door: "Door reed switch",
     battery: "Battery + through a 1:1 divider (2 × 100kΩ)",
   },
-  i2cNote: "I²C sensors are found automatically; tick leak, door, or battery below so the board knows they're wired.",
+  i2cNote:
+    "I²C sensors are found automatically; tick leak, door, or battery below so the board knows they're wired.",
   featherHtml:
     "<strong>Adafruit Feather (HUZZAH32 or ESP32 Feather V2):</strong> use the ESP32 column. Probe data (GPIO 4) is the pin labelled A5, the door switch (GPIO 26) is A0, and the leak contact goes on pin 27. The battery divider is already on the board: plug a LiPo into the battery connector and tick battery, no resistors needed. An I²C sensor goes on the Feather's own SDA/SCL pins or its STEMMA QT port; the firmware finds it there at startup (power-cycle after plugging one in). Feathers have no BOOT button on GPIO 0, so the 5-second reset won't work; to change Wi-Fi, send new settings from this page instead.",
   deviceKeyHtml:
@@ -85,7 +87,7 @@ const en = {
   buyIntro:
     "Parts that match the pins above. A plain ESP32, an ESP32-S3 or an ESP32-C3 is a tested choice. The S3 and C3 links are Espressif's own dev boards, which the firmware is built for; when they're sold out, another ESP32-S3-DevKitC-1 or ESP32-C3-DevKitM-1 board (or a clone with the same pinout) should work too.",
   leakHtml:
-    '<strong>Leak sensor:</strong> the easiest low-cost option is an LM393 "rain / water sensor" module (sold by many shops): VCC to the board\'s 3.3V pin (never 5V, so its output stays safe for the ESP32), GND to GND, DO to the leak pin. Turn its dial until a drop of water reads Wet, then check it reads Dry again. Its exposed pads corrode if left wet, so treat it as a starter part. For a longer-lasting install, use two stainless screws or probes about 5&nbsp;mm apart, one to the leak pin and one to GND. Either way, test with your own water: very clean water or a thin film may not trip it. Sensors whose output goes high when wet, such as Adafruit\'s water sensor, need a different input and don\'t work with this firmware.',
+    "<strong>Leak sensor:</strong> the easiest low-cost option is an LM393 \"rain / water sensor\" module (sold by many shops): VCC to the board's 3.3V pin (never 5V, so its output stays safe for the ESP32), GND to GND, DO to the leak pin. Turn its dial until a drop of water reads Wet, then check it reads Dry again. Its exposed pads corrode if left wet, so treat it as a starter part. For a longer-lasting install, use two stainless screws or probes about 5&nbsp;mm apart, one to the leak pin and one to GND. Either way, test with your own water: very clean water or a thin film may not trip it. Sensors whose output goes high when wet, such as Adafruit's water sensor, need a different input and don't work with this firmware.",
   afterTitle: "After it is live",
   afterHtml:
     'Readings arrive once a minute. Mount the probe against the coldest pipe, set a freeze threshold of 34–38°F under <a class="text-link" href="/dashboard/alerts">Dashboard → Alerts</a>, and send a test alert. See <a class="text-link" href="/answers/crawlspace-freeze-sensor-placement">where to put the sensor</a> and <a class="text-link" href="/answers/freeze-alarm-temperature-setting">what temperature to alert at</a>. Prefer to edit the code yourself? The <a class="text-link" href="/about/esp32-web-flash">other flashing options</a> cover Arduino, PlatformIO, MicroPython, and ESPHome.',

@@ -37,7 +37,8 @@ const es: SystemStatusMessages = {
     lede: "Notas escritas sobre caídas o degradaciones visibles para los clientes. Los errores de cron de arriba también controlan el aviso en vivo y los correos a los suscriptores de estado.",
     none: "Todavía no hay incidentes registrados. Cuando publiquemos un incidente resuelto (fecha, impacto, recuperación), aparecerá aquí. Hasta entonces, el aviso en vivo y la tabla de ejecuciones cron recientes son la referencia.",
     open: "Abierto: servicio degradado",
-    started: "Empezó alrededor de esta carga de la página ({when}). Avisamos a los suscriptores de estado cuando el servicio se degrada y cuando se recupera.",
+    started:
+      "Empezó alrededor de esta carga de la página ({when}). Avisamos a los suscriptores de estado cuando el servicio se degrada y cuando se recupera.",
   },
   runs: {
     title: "Ejecuciones cron recientes",
@@ -69,7 +70,8 @@ const es: SystemStatusMessages = {
   notify: {
     title: "Recibe avisos",
     lede: "Recibe un único correo si este estado cambia (degradado o de vuelta a la normalidad). Nada de correos rutinarios. El formulario está protegido con Cloudflare Turnstile.",
-    subscribed: "Revisa tu bandeja de entrada: te enviamos un enlace de confirmación y no quedarás suscrito hasta que hagas clic en él.",
+    subscribed:
+      "Revisa tu bandeja de entrada: te enviamos un enlace de confirmación y no quedarás suscrito hasta que hagas clic en él.",
     confirmed: "Ya estás suscrito a las actualizaciones de estado.",
     unsubscribed: "Cancelaste tu suscripción a las actualizaciones de estado.",
     errors: {

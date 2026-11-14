@@ -1,10 +1,10 @@
-
 /** /about/arduino-circuit-wiring body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 
 const en = {
   introHtml:
     "This build centers on an Arduino Uno with a W5100 Ethernet shield stacked on top, a solderless breadboard for power distribution and LCD support components, a 16×2 character LCD for local readouts, and two DHT22 temperature and humidity sensors. USB supplies bench power during development; a permanent install typically moves to a regulated 5 V supply.",
-  diagramAlt: "Wiring diagram of Arduino Uno with Ethernet shield, breadboard, LCD, and two DHT22 sensors",
+  diagramAlt:
+    "Wiring diagram of Arduino Uno with Ethernet shield, breadboard, LCD, and two DHT22 sensors",
   diagramCaption:
     "High-level wiring: power enters the Uno, signals route through the breadboard to the LCD and both DHT22 sensors.",
   breadboardTitle: "Breadboard and power rails",

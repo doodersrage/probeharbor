@@ -18,7 +18,9 @@ export function libFixed(value: number, digits: number, locale: Locale): string 
 
 /** `String(value)` in English (unchanged output); locale digits otherwise. */
 export function libNumber(value: number, locale: Locale): string {
-  return locale === "en" ? String(value) : formatNumber(value, locale, { maximumFractionDigits: 2 });
+  return locale === "en"
+    ? String(value)
+    : formatNumber(value, locale, { maximumFractionDigits: 2 });
 }
 
 /** `new Date(x).toLocaleString()` in English (unchanged output); the locale's format otherwise. */
@@ -30,6 +32,7 @@ export function libDateTime(value: string | number | Date, locale: Locale): stri
 /** `new Date(x).toLocaleDateString()` in English (unchanged output); the locale's format otherwise. */
 export function libDate(value: string | number | Date, locale: Locale): string {
   const date = new Date(value);
-  return locale === "en" ? date.toLocaleDateString() : date.toLocaleDateString(LOCALE_META[locale].intl);
+  return locale === "en"
+    ? date.toLocaleDateString()
+    : date.toLocaleDateString(LOCALE_META[locale].intl);
 }
-

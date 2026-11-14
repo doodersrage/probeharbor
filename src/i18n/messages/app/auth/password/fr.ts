@@ -9,7 +9,8 @@ const fr: AuthPasswordMessages = {
   },
   forgot: {
     title: "Mot de passe oublié",
-    description: "Demandez un lien de réinitialisation du mot de passe de votre compte ProbeHarbor.",
+    description:
+      "Demandez un lien de réinitialisation du mot de passe de votre compte ProbeHarbor.",
     heading: "Mot de passe oublié",
     lede: "Saisissez l’e-mail de votre compte et nous vous enverrons un lien pour choisir un nouveau mot de passe.",
     sent: "Si un compte existe pour cette adresse, un lien de réinitialisation est en route. Vérifiez votre boîte de réception et vos spams.",

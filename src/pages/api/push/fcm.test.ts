@@ -101,11 +101,7 @@ describe("POST /api/push/fcm", () => {
 
     const response = await POST(makeContext({ token: "a".repeat(30), platform: "web" }));
 
-    expect(mockReleaseFcmTokenFromOtherUsers).toHaveBeenCalledWith(
-      null,
-      "user-1",
-      "a".repeat(30),
-    );
+    expect(mockReleaseFcmTokenFromOtherUsers).toHaveBeenCalledWith(null, "user-1", "a".repeat(30));
     expect(mockSaveFcmToken).toHaveBeenCalledWith("user-1", "a".repeat(30), "web", null);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
@@ -116,7 +112,12 @@ describe("POST /api/push/fcm", () => {
 
     await POST(makeContext({ token: "a".repeat(30), appId: "  com.example.app  " }));
 
-    expect(mockSaveFcmToken).toHaveBeenCalledWith("user-1", "a".repeat(30), "android", "com.example.app");
+    expect(mockSaveFcmToken).toHaveBeenCalledWith(
+      "user-1",
+      "a".repeat(30),
+      "android",
+      "com.example.app",
+    );
   });
 
   it("returns 500 with the db error message when saving fails", async () => {

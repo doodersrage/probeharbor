@@ -1,4 +1,3 @@
-
 /**
  * /about/ingest-and-webhooks body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Code samples stay in the page.
@@ -42,14 +41,16 @@ const de: IngestAndWebhooksMessages = {
   },
   webhooks: {
     title: "Ausgehende Alarm-Webhooks",
-    introHtml: "Pro-Konten können in den Alarmeinstellungen einen ausgehenden Webhook aktivieren. Jeder Alarm sendet dieses JSON per POST:",
+    introHtml:
+      "Pro-Konten können in den Alarmeinstellungen einen ausgehenden Webhook aktivieren. Jeder Alarm sendet dieses JSON per POST:",
     kindsHtml: `<code>kind</code> kann ${webhookKinds} oder <code>generic</code> sein. Ist ein Webhook-Secret gesetzt, enthält die Anfrage <code>X-Signature</code> als hexadezimalen HMAC-SHA256 des Roh-Bodys. Nutze ihn in Home Assistant oder IFTTT Webhooks, um die Echtheit zu prüfen.`,
   },
   homeAssistant: {
     title: "Home Assistant",
     bodyHtml:
       'Installiere die offizielle <a class="text-link" href="/integrations/home-assistant">HACS-Integration</a> für Sensoren aus Freigabelinks und Dienste zum Stummschalten/für den Urlaubsmodus. Für <strong>Alarme in HA</strong> nutzt du den ausgehenden HTTPS-Webhook (Pro) oder importierst den Blueprint. Für <strong>MQTT-Messwerte in ProbeHarbor</strong> siehe das <a class="text-link" href="/about/mqtt-bridge">MQTT-Bridge-Rezept</a>.',
-    blueprintHtml: '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>HA-Blueprint herunterladen (YAML)</a>',
+    blueprintHtml:
+      '<a class="text-link" href="/ha/probeharbor_webhook.yaml" download>HA-Blueprint herunterladen (YAML)</a>',
     pointHtml:
       "Richte die URL deines ausgehenden ProbeHarbor-Webhooks auf <code>https://&lt;your-ha-host&gt;/api/webhook/probeharbor_alerts</code> (oder eine Cloudflare-Tunnel- bzw. Nabu-Casa-URL). Prüfe <code>X-Signature</code> in einer Template-Bedingung, wenn du ein Secret gesetzt hast.",
     mqttHtml:
@@ -57,7 +58,8 @@ const de: IngestAndWebhooksMessages = {
   },
   metrics: {
     title: "Grafana-/Prometheus-Metriken",
-    introHtml: "Pro-Konten können Dashboard-API-Schlüssel anlegen (Dashboard → Share) und Folgendes abfragen:",
+    introHtml:
+      "Pro-Konten können Dashboard-API-Schlüssel anlegen (Dashboard → Share) und Folgendes abfragen:",
     shareHtml: "Oder nutze einen Pro-Freigabelink mit dem Bereich <strong>Metrics</strong>:",
     grafanaHtml:
       "Oder <code>?format=grafana</code> für ein einfaches JSON-Array mit Datenpunkten. Der Freigabebereich für den Verlauf liefert ein 7-Tage-Diagramm auf der öffentlichen Seite.",

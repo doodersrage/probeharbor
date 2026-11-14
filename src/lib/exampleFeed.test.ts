@@ -1,7 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import {
-  DEFAULT_SITE_URL,
-} from "./siteConfig";
+import { DEFAULT_SITE_URL } from "./siteConfig";
 import {
   EXAMPLE_FEED_PATH,
   getDefaultPublicFeedUrl,

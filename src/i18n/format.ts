@@ -41,7 +41,12 @@ const pluralRules = new Map<Locale, Intl.PluralRules>();
  * formatted for the locale; pass extra placeholders in `vars`.
  * `plural({ one: "{count} probe", other: "{count} probes" }, 3, "en")` → "3 probes".
  */
-export function plural(forms: PluralForms, count: number, locale: Locale, vars: FormatVars = {}): string {
+export function plural(
+  forms: PluralForms,
+  count: number,
+  locale: Locale,
+  vars: FormatVars = {},
+): string {
   let rules = pluralRules.get(locale);
   if (!rules) {
     rules = new Intl.PluralRules(LOCALE_META[locale].intl);
@@ -53,7 +58,11 @@ export function plural(forms: PluralForms, count: number, locale: Locale, vars: 
 }
 
 /** `1234.5` → "1,234.5" (en), "1.234,5" (de). */
-export function formatNumber(value: number, locale: Locale, options?: Intl.NumberFormatOptions): string {
+export function formatNumber(
+  value: number,
+  locale: Locale,
+  options?: Intl.NumberFormatOptions,
+): string {
   return new Intl.NumberFormat(LOCALE_META[locale].intl, options).format(value);
 }
 

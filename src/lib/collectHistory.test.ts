@@ -65,7 +65,9 @@ beforeEach(() => {
   mockMaybeSendDeviceHealthAlerts.mockReset();
   mockMaybeSendThresholdAlerts.mockReset();
   mockGetAlertSettingsForUser.mockReset().mockResolvedValue({});
-  mockGetHouseholdAlertHold.mockReset().mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
+  mockGetHouseholdAlertHold
+    .mockReset()
+    .mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
   mockCollectThermostatSnapshotsForAllHouseholds
     .mockReset()
     .mockResolvedValue({ errors: [], warnings: [] });
@@ -73,7 +75,12 @@ beforeEach(() => {
 
 describe("checkFeedHealth", () => {
   it("passes through a device-config error without calling fetchTemps", async () => {
-    mockGetUserDevicesAsTempConfig.mockResolvedValue({ error: "no devices", feeds: [], probes: [], devices: [] });
+    mockGetUserDevicesAsTempConfig.mockResolvedValue({
+      error: "no devices",
+      feeds: [],
+      probes: [],
+      devices: [],
+    });
     const { checkFeedHealth } = await import("./collectHistory");
 
     const result = await checkFeedHealth("user-1");
@@ -182,7 +189,10 @@ describe("collectHistoryForAllUsers", () => {
     return {
       error: null,
       feeds: [],
-      probes: [{ id: "p1", visible: true }, { id: "p2", visible: false }],
+      probes: [
+        { id: "p1", visible: true },
+        { id: "p2", visible: false },
+      ],
       devices: [],
       householdId: "house-1",
       ...overrides,
@@ -207,7 +217,9 @@ describe("collectHistoryForAllUsers", () => {
   });
 
   it("only forwards visible probes to fetchTemps for history collection", async () => {
-    mockListHouseholdIdsForCron.mockResolvedValue([{ householdId: "house-1", ownerUserId: "owner-1" }]);
+    mockListHouseholdIdsForCron.mockResolvedValue([
+      { householdId: "house-1", ownerUserId: "owner-1" },
+    ]);
     mockGetUserDevicesAsTempConfig.mockResolvedValue(baseConfig());
     mockFetchTemps.mockResolvedValue([]);
     const { collectHistoryForAllUsers } = await import("./collectHistory");
@@ -224,7 +236,9 @@ describe("collectHistoryForAllUsers", () => {
   });
 
   it("runs the full alert pipeline once per household member and counts them", async () => {
-    mockListHouseholdIdsForCron.mockResolvedValue([{ householdId: "house-1", ownerUserId: "owner-1" }]);
+    mockListHouseholdIdsForCron.mockResolvedValue([
+      { householdId: "house-1", ownerUserId: "owner-1" },
+    ]);
     mockGetUserDevicesAsTempConfig.mockResolvedValue(baseConfig());
     mockFetchTemps.mockResolvedValue([{ id: "p1", probes: {} }]);
     mockListHouseholdMembers.mockResolvedValue({
@@ -254,9 +268,13 @@ describe("collectHistoryForAllUsers", () => {
       .mockResolvedValueOnce(baseConfig({ householdId: "house-2" }));
     mockFetchTemps.mockResolvedValue([]);
     // The same person belongs to both households; only house-1 is snoozed.
-    mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "shared" }, { user_id: "other" }] });
+    mockListHouseholdMembers.mockResolvedValue({
+      members: [{ user_id: "shared" }, { user_id: "other" }],
+    });
     mockGetHouseholdAlertHold.mockImplementation(async (id: string) =>
-      id === "house-1" ? { snoozeUntil: until, vacationUntil: null } : { snoozeUntil: null, vacationUntil: null },
+      id === "house-1"
+        ? { snoozeUntil: until, vacationUntil: null }
+        : { snoozeUntil: null, vacationUntil: null },
     );
     mockGetAlertSettingsForUser.mockResolvedValue({ snoozeUntil: null, vacationUntil: null });
     const { collectHistoryForAllUsers } = await import("./collectHistory");
@@ -265,27 +283,42 @@ describe("collectHistoryForAllUsers", () => {
 
     // Once per household, not per member.
     expect(mockGetHouseholdAlertHold.mock.calls).toEqual([["house-1"], ["house-2"]]);
-    const thresholdHolds = mockMaybeSendThresholdAlerts.mock.calls.map((call) => [call[6], call[9]]);
+    const thresholdHolds = mockMaybeSendThresholdAlerts.mock.calls.map((call) => [
+      call[6],
+      call[9],
+    ]);
     expect(thresholdHolds).toEqual([
       ["house-1", { snoozeUntil: until, vacationUntil: null }],
       ["house-1", { snoozeUntil: until, vacationUntil: null }],
       ["house-2", { snoozeUntil: null, vacationUntil: null }],
       ["house-2", { snoozeUntil: null, vacationUntil: null }],
     ]);
-    const rateSnooze = mockMaybeSendRateAndOutageAlerts.mock.calls.map((call) => [call[4], call[3].snoozeUntil]);
+    const rateSnooze = mockMaybeSendRateAndOutageAlerts.mock.calls.map((call) => [
+      call[4],
+      call[3].snoozeUntil,
+    ]);
     expect(rateSnooze).toEqual([
       ["house-1", until],
       ["house-1", until],
       ["house-2", null],
       ["house-2", null],
     ]);
-    expect(mockMaybeSendDeviceHealthAlerts.mock.calls.map((call) => call[3].snoozeUntil)).toEqual([until, until, null, null]);
+    expect(mockMaybeSendDeviceHealthAlerts.mock.calls.map((call) => call[3].snoozeUntil)).toEqual([
+      until,
+      until,
+      null,
+      null,
+    ]);
     // The quiet-hours recap spans every household: the member's own settings only.
-    expect(mockMaybeSendQuietHoursSummary.mock.calls.every((call) => call[2].snoozeUntil === null)).toBe(true);
+    expect(
+      mockMaybeSendQuietHoursSummary.mock.calls.every((call) => call[2].snoozeUntil === null),
+    ).toBe(true);
   });
 
   it("alerts without the hold when it can't be read", async () => {
-    mockListHouseholdIdsForCron.mockResolvedValue([{ householdId: "house-1", ownerUserId: "owner-1" }]);
+    mockListHouseholdIdsForCron.mockResolvedValue([
+      { householdId: "house-1", ownerUserId: "owner-1" },
+    ]);
     mockGetUserDevicesAsTempConfig.mockResolvedValue(baseConfig());
     mockFetchTemps.mockResolvedValue([]);
     mockListHouseholdMembers.mockResolvedValue({ members: [{ user_id: "member-1" }] });

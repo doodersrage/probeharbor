@@ -23,9 +23,7 @@ import type { Locale } from "../i18n/locales";
 
 export type { PersonalWeatherConfig };
 
-export function getPersonalWeatherConfig(
-  user: User | null | undefined,
-): PersonalWeatherConfig {
+export function getPersonalWeatherConfig(user: User | null | undefined): PersonalWeatherConfig {
   const display = getDisplayPreferencesFromMetadata(user);
   return personalWeatherConfigFromPreferences(display);
 }
@@ -34,18 +32,11 @@ export async function fetchWeatherSnapshotForConfig(
   config: PersonalWeatherConfig,
 ): Promise<WeatherSnapshot | null> {
   if (config.source === "ambient" && config.ambientMac && config.ambientApiKey) {
-    const snapshot = await fetchAmbientWeatherSnapshot(
-      config.ambientMac,
-      config.ambientApiKey,
-    );
+    const snapshot = await fetchAmbientWeatherSnapshot(config.ambientMac, config.ambientApiKey);
     if (snapshot) return snapshot;
   }
 
-  if (
-    config.source === "weatherflow" &&
-    config.weatherflowStationId &&
-    config.weatherflowToken
-  ) {
+  if (config.source === "weatherflow" && config.weatherflowStationId && config.weatherflowToken) {
     const snapshot = await fetchWeatherFlowSnapshot(
       config.weatherflowStationId,
       config.weatherflowToken,
@@ -73,11 +64,7 @@ export async function fetchForecastMinTempForConfig(
 ): Promise<ForecastWindow | null> {
   const snapshot = await fetchWeatherSnapshotForConfig(config);
   if (snapshot?.lat != null && snapshot.lon != null) {
-    const byCoords = await fetchForecastMinTempByCoords(
-      snapshot.lat,
-      snapshot.lon,
-      hoursAhead,
-    );
+    const byCoords = await fetchForecastMinTempByCoords(snapshot.lat, snapshot.lon, hoursAhead);
     if (byCoords) return byCoords;
   }
 
@@ -92,19 +79,23 @@ export async function fetchNightsAtRiskForConfig(
   locale: Locale = "en",
 ): Promise<NightRisk[]> {
   const snapshot =
-    existingSnapshot !== undefined
-      ? existingSnapshot
-      : await fetchWeatherSnapshotForConfig(config);
+    existingSnapshot !== undefined ? existingSnapshot : await fetchWeatherSnapshotForConfig(config);
   if (snapshot?.lat != null && snapshot.lon != null) {
-    return fetchNightsAtRisk({
-      lat: snapshot.lat,
-      lon: snapshot.lon,
-      freezeThresholdF,
-    }, locale);
+    return fetchNightsAtRisk(
+      {
+        lat: snapshot.lat,
+        lon: snapshot.lon,
+        freezeThresholdF,
+      },
+      locale,
+    );
   }
 
-  return fetchNightsAtRisk({
-    cityId: resolveWeatherCityId(config.openWeatherCityId),
-    freezeThresholdF,
-  }, locale);
+  return fetchNightsAtRisk(
+    {
+      cityId: resolveWeatherCityId(config.openWeatherCityId),
+      freezeThresholdF,
+    },
+    locale,
+  );
 }

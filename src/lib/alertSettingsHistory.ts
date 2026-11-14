@@ -23,11 +23,7 @@ export const HISTORY_KEEP = 20;
  * Operational state, not configuration: cooldown clocks, snooze/vacation, and
  * playbook progress. Never restored from a snapshot and never a "change".
  */
-const STATE_KEYS = new Set<keyof AlertSettings>([
-  "snoozeUntil",
-  "vacationUntil",
-  "playbookFired",
-]);
+const STATE_KEYS = new Set<keyof AlertSettings>(["snoozeUntil", "vacationUntil", "playbookFired"]);
 
 function isStateKey(key: string): boolean {
   return key.startsWith("last") || STATE_KEYS.has(key as keyof AlertSettings);
@@ -64,7 +60,9 @@ function shown(value: unknown, t: AlertSettingsHistoryMessages, locale: Locale):
 
 /** The Telegram secret compares in its stored (hashed) form: re-entering the same secret isn't a change. */
 function comparable(key: keyof AlertSettings, value: unknown): unknown {
-  return key === "telegramCommandSecret" ? storedTelegramCommandSecret((value as string | null) ?? null) : value;
+  return key === "telegramCommandSecret"
+    ? storedTelegramCommandSecret((value as string | null) ?? null)
+    : value;
 }
 
 /** What changed between two versions, in plain words. Values of secrets stay hidden. */
@@ -107,7 +105,10 @@ function escapeRegExp(text: string): string {
 
 /** A number as `shown` wrote it ("34.5" in English, "34,5" elsewhere); null if it isn't one. */
 function parseShownNumber(text: string): number | null {
-  const normalized = text.trim().replace(/\u2212/g, "-").replace(",", ".");
+  const normalized = text
+    .trim()
+    .replace(/\u2212/g, "-")
+    .replace(",", ".");
   if (!/^-?\d+(\.\d+)?$/.test(normalized)) return null;
   return Number(normalized);
 }
@@ -119,7 +120,11 @@ function parseShownNumber(text: string): number | null {
  * Lines are matched against the saved wording in `locale` and English; any
  * other line, or a value that isn't a number, is returned unchanged.
  */
-export function historyChangeInDisplayUnit(line: string, locale: Locale, useCelsius: boolean): string {
+export function historyChangeInDisplayUnit(
+  line: string,
+  locale: Locale,
+  useCelsius: boolean,
+): string {
   if (!useCelsius) return line;
   const locales: Locale[] = locale === "en" ? ["en"] : [locale, "en"];
   for (const lineLocale of locales) {
@@ -130,15 +135,24 @@ export function historyChangeInDisplayUnit(line: string, locale: Locale, useCels
       // Split the template around two markers that can't occur in it.
       const [head = "", rest = ""] = fmt(t.fromTo, { label, from: "", to: "" }).split("");
       const [middle = "", tail = ""] = rest.split("");
-      const match = new RegExp(`^${escapeRegExp(head)}(.+?)${escapeRegExp(middle)}(.+?)${escapeRegExp(tail)}$`).exec(line);
+      const match = new RegExp(
+        `^${escapeRegExp(head)}(.+?)${escapeRegExp(middle)}(.+?)${escapeRegExp(tail)}$`,
+      ).exec(line);
       if (!match) continue;
       const convert = (raw: string) => {
         const value = parseShownNumber(raw);
         if (value == null) return raw;
-        const c = kind === "delta" ? displayDeltaInputValue(value, true) : displayTempInputValue(value, true);
+        const c =
+          kind === "delta"
+            ? displayDeltaInputValue(value, true)
+            : displayTempInputValue(value, true);
         return shown(c, t, lineLocale);
       };
-      return fmt(t.fromTo, { label: label.replace("°F", "°C"), from: convert(match[1]!), to: convert(match[2]!) });
+      return fmt(t.fromTo, {
+        label: label.replace("°F", "°C"),
+        from: convert(match[1]!),
+        to: convert(match[2]!),
+      });
     }
   }
   return line;
@@ -153,7 +167,9 @@ export function historyChangeInDisplayUnit(line: string, locale: Locale, useCels
 function configRow(settings: AlertSettings): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(alertSettingsToRow(settings)).filter(
-      ([column]) => !column.startsWith("last_") && !["snooze_until", "vacation_until", "playbook_fired"].includes(column),
+      ([column]) =>
+        !column.startsWith("last_") &&
+        !["snooze_until", "vacation_until", "playbook_fired"].includes(column),
     ),
   );
 }
@@ -176,12 +192,18 @@ export async function recordAlertSettingsChange(
 
 export type AlertSettingsHistoryEntry = { id: number; savedAt: string; changes: string[] };
 
-export async function listAlertSettingsHistory(userId: string, limit = 10): Promise<AlertSettingsHistoryEntry[]> {
+export async function listAlertSettingsHistory(
+  userId: string,
+  limit = 10,
+): Promise<AlertSettingsHistoryEntry[]> {
   return neonExtras.listSettingsHistory(userId, limit);
 }
 
 /** Snapshot config over current state: cooldowns and snooze stay as they are now. */
-export function mergeSnapshotOntoCurrent(snapshotRow: Record<string, unknown>, current: AlertSettings): AlertSettings {
+export function mergeSnapshotOntoCurrent(
+  snapshotRow: Record<string, unknown>,
+  current: AlertSettings,
+): AlertSettings {
   const fromSnapshot = rowToAlertSettings(snapshotRow);
   const merged = { ...fromSnapshot } as AlertSettings;
   for (const key of Object.keys(current) as Array<keyof AlertSettings>) {

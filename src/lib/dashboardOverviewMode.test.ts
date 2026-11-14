@@ -8,7 +8,9 @@ vi.mock("./sessionMetadata", () => ({
 }));
 
 beforeEach(() => {
-  mockUpdateSessionUserMetadata.mockReset().mockResolvedValue({ user: { id: "user-1" }, error: null });
+  mockUpdateSessionUserMetadata
+    .mockReset()
+    .mockResolvedValue({ user: { id: "user-1" }, error: null });
 });
 
 describe("getDashboardOverviewMode", () => {
@@ -22,9 +24,9 @@ describe("getDashboardOverviewMode", () => {
   it("defaults to 'simple' for any other value, missing metadata, or no user", async () => {
     const { getDashboardOverviewMode } = await import("./dashboardOverviewMode");
 
-    expect(getDashboardOverviewMode({ user_metadata: { dashboard_overview_mode: "bogus" } } as never)).toBe(
-      "simple",
-    );
+    expect(
+      getDashboardOverviewMode({ user_metadata: { dashboard_overview_mode: "bogus" } } as never),
+    ).toBe("simple");
     expect(getDashboardOverviewMode({ user_metadata: {} } as never)).toBe("simple");
     expect(getDashboardOverviewMode(null)).toBe("simple");
     expect(getDashboardOverviewMode(undefined)).toBe("simple");
@@ -34,12 +36,20 @@ describe("getDashboardOverviewMode", () => {
 describe("updateDashboardOverviewMode", () => {
   it("writes dashboard_overview_mode for the session's user and returns the user", async () => {
     const { updateDashboardOverviewMode } = await import("./dashboardOverviewMode");
-    await expect(updateDashboardOverviewMode("access", "", "insights")).resolves.toEqual({ user: { id: "user-1" }, error: null });
-    expect(mockUpdateSessionUserMetadata).toHaveBeenCalledWith("access", "", { dashboard_overview_mode: "insights" });
+    await expect(updateDashboardOverviewMode("access", "", "insights")).resolves.toEqual({
+      user: { id: "user-1" },
+      error: null,
+    });
+    expect(mockUpdateSessionUserMetadata).toHaveBeenCalledWith("access", "", {
+      dashboard_overview_mode: "insights",
+    });
   });
 
   it("passes the helper's error back", async () => {
-    mockUpdateSessionUserMetadata.mockResolvedValue({ user: null, error: new Error("Invalid session") });
+    mockUpdateSessionUserMetadata.mockResolvedValue({
+      user: null,
+      error: new Error("Invalid session"),
+    });
     const { updateDashboardOverviewMode } = await import("./dashboardOverviewMode");
     const result = await updateDashboardOverviewMode("access", "", "simple");
     expect(result.error?.message).toBe("Invalid session");

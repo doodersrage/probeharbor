@@ -27,14 +27,17 @@ export type CatalogEntry = {
  */
 export function catalogEntryForPath(file: string): CatalogEntry | null {
   const normalized = file.replaceAll("\\", "/");
-  const message = /(?:^|\/)(?:i18n\/)?messages\/(.+)\/([a-z]{2}(?:-[a-z]{2})?)\.ts$/.exec(normalized);
+  const message = /(?:^|\/)(?:i18n\/)?messages\/(.+)\/([a-z]{2}(?:-[a-z]{2})?)\.ts$/.exec(
+    normalized,
+  );
   if (message) {
     const [, namespace, locale] = message;
     if (!isLocale(locale) || locale === "en") return null;
     const group: CatalogGroup = namespace.startsWith("app/") ? "app" : "site";
     return { locale, group, namespace, part: null };
   }
-  const content = /(?:^|\/)(?:i18n\/)?content\/([^/]+)\/([a-z]{2}(?:-[a-z]{2})?)\/([^/]+)\.ts$/.exec(normalized);
+  const content =
+    /(?:^|\/)(?:i18n\/)?content\/([^/]+)\/([a-z]{2}(?:-[a-z]{2})?)\/([^/]+)\.ts$/.exec(normalized);
   if (content) {
     const [, dataset, locale, part] = content;
     if (!isLocale(locale) || locale === "en") return null;

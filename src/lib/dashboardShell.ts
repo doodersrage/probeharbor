@@ -4,15 +4,8 @@ import { getAuthFromCookies } from "./auth";
 import { isUserAdmin } from "./adminAccess";
 import { getUserEntitlements, type Entitlements } from "./entitlements";
 import { countUnacknowledgedAlerts } from "./alertEvents";
-import {
-  getOrCreateHouseholdForUser,
-  listUserHouseholds,
-  type UserHousehold,
-} from "./households";
-import {
-  fetchLatestSensorValuesResult,
-  type LatestSensorRow,
-} from "./sensorReadings";
+import { getOrCreateHouseholdForUser, listUserHouseholds, type UserHousehold } from "./households";
+import { fetchLatestSensorValuesResult, type LatestSensorRow } from "./sensorReadings";
 import { formatRelativeAge } from "./relativeTime";
 import { newestRecordedAt } from "./dashboardNav";
 import { getUserSubscription } from "./stripeSubscriptions";
@@ -76,12 +69,10 @@ export async function loadDashboardShellForUser(
 
   const households = userHouseholds.households;
   const householdCount = households.length;
-  const showPortfolioInMonitor =
-    entitlements.canUsePortfolio || householdCount >= 2;
+  const showPortfolioInMonitor = entitlements.canUsePortfolio || householdCount >= 2;
   const activeHouseholdId = household.householdId;
   const activeHouseholdName =
-    households.find((row) => row.household_id === activeHouseholdId)?.name ??
-    null;
+    households.find((row) => row.household_id === activeHouseholdId)?.name ?? null;
 
   let liveLagging = false;
   let latest: LatestSensorRow[] | null = null;
@@ -97,7 +88,8 @@ export async function loadDashboardShellForUser(
       result.rows.length > 0 &&
       result.rows.some((row) => {
         if (!row.recorded_at) return true;
-        return formatRelativeAge(row.recorded_at, undefined, undefined, row.reportIntervalMs).lagging;
+        return formatRelativeAge(row.recorded_at, undefined, undefined, row.reportIntervalMs)
+          .lagging;
       });
   }
 

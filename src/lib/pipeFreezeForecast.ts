@@ -81,7 +81,9 @@ export function summarizeFreezeNights(periods: NwsHourlyPeriod[], maxNights = 5)
     let low = hours[0]!;
     for (const hour of hours) if (toF(hour) < toF(low)) low = hour;
     const freezing = hours.filter((hour) => toF(hour) <= FREEZING_F);
-    const winds = freezing.map((hour) => parseWindMph(hour.windSpeed)).filter((w): w is number => w != null);
+    const winds = freezing
+      .map((hour) => parseWindMph(hour.windSpeed))
+      .filter((w): w is number => w != null);
     const lowF = Math.round(toF(low));
 
     nights.push({
@@ -124,7 +126,9 @@ export function describeFreezeNight(night: FreezeNight, unit: TempUnit = "F"): s
     parts.push(`Stays above freezing (low ${low}).`);
   }
   if (night.maxFreezingWindMph != null && night.maxFreezingWindMph >= WINDY_MPH) {
-    parts.push(`Wind up to ${formatWind(night.maxFreezingWindMph, unit)} while below freezing pulls heat from exposed pipes faster.`);
+    parts.push(
+      `Wind up to ${formatWind(night.maxFreezingWindMph, unit)} while below freezing pulls heat from exposed pipes faster.`,
+    );
   }
   if (night.staysBelowFreezingNextDay) {
     parts.push("The next day stays below freezing too, so unheated spaces won't warm back up.");
@@ -133,7 +137,11 @@ export function describeFreezeNight(night: FreezeNight, unit: TempUnit = "F"): s
 }
 
 function escapeAttr(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 /** iframe plus a plain attribution link: links inside an iframe don't count for the host page. */

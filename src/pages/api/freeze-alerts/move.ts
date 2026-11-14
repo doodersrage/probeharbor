@@ -9,12 +9,22 @@ import { apiMorePublicFormsMessages } from "../../../i18n/messages/app/apiMore/p
 export const prerender = false;
 
 function escapeHtml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 const FORECAST_PATH = "/pipe-freeze-forecast";
 
-function page(locale: Locale, forecastLink: string, title: string, bodyHtml: string, status = 200): Response {
+function page(
+  locale: Locale,
+  forecastLink: string,
+  title: string,
+  bodyHtml: string,
+  status = 200,
+): Response {
   const html = `<!DOCTYPE html>
 <html lang="${LOCALE_META[locale].htmlLang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">

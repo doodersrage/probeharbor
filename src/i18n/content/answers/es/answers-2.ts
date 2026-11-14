@@ -196,7 +196,10 @@ export default {
       { label: "¿Cómo creo una alerta de congelación con ESPHome?" },
     ],
     sources: [
-      { label: "Waterproof DS18B20 digital temperature sensor: especificaciones técnicas (Adafruit)" },
+      {
+        label:
+          "Waterproof DS18B20 digital temperature sensor: especificaciones técnicas (Adafruit)",
+      },
       { label: "Hoja de datos AM2302 / DHT22 (Aosong, alojada por Adafruit)" },
     ],
   },
@@ -339,8 +342,6 @@ export default {
       { label: "Dosier de pruebas para reclamaciones" },
       { label: "¿A qué temperatura dejo la casa en invierno cuando me voy?" },
     ],
-    sources: [
-      { label: "Frozen pipes: prevention and thawing (Cruz Roja Americana)" },
-    ],
+    sources: [{ label: "Frozen pipes: prevention and thawing (Cruz Roja Americana)" }],
   },
 } satisfies AnswerOverlay;

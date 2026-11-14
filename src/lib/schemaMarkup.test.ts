@@ -17,9 +17,7 @@ describe("schemaMarkup", () => {
       target: { urlTemplate: string };
     };
     expect(action["@type"]).toBe("SearchAction");
-    expect(action.target.urlTemplate).toBe(
-      "https://probeharbor.dev/about?q={search_term_string}",
-    );
+    expect(action.target.urlTemplate).toBe("https://probeharbor.dev/about?q={search_term_string}");
   });
 
   it("uses stable Article dates by default", () => {

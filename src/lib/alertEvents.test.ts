@@ -32,8 +32,13 @@ beforeEach(() => {
 
 describe("acknowledgeLatestUnackedAlert", () => {
   it("passes the unhandled rule's kinds and the localized 'none' message", async () => {
-    neon.acknowledgeLatestUnackedAlert.mockResolvedValue({ ok: false, error: "No unhandled alerts." });
-    const { acknowledgeLatestUnackedAlert, INFORMATIONAL_ALERT_KINDS } = await import("./alertEvents");
+    neon.acknowledgeLatestUnackedAlert.mockResolvedValue({
+      ok: false,
+      error: "No unhandled alerts.",
+    });
+    const { acknowledgeLatestUnackedAlert, INFORMATIONAL_ALERT_KINDS } = await import(
+      "./alertEvents"
+    );
 
     const result = await acknowledgeLatestUnackedAlert("user-1");
 
@@ -75,10 +80,17 @@ describe("autoResolveAlerts", () => {
 
 describe("listRecentAlertEventsFiltered", () => {
   it("clamps limit and offset and passes exact kinds through", async () => {
-    neon.listRecentAlertEventsFiltered.mockResolvedValue({ events: [row({ kind: "threshold" })], hasMore: false });
+    neon.listRecentAlertEventsFiltered.mockResolvedValue({
+      events: [row({ kind: "threshold" })],
+      hasMore: false,
+    });
     const { listRecentAlertEventsFiltered } = await import("./alertEvents");
 
-    const result = await listRecentAlertEventsFiltered("user-1", { limit: 500, offset: -3, kinds: ["threshold", "freeze"] });
+    const result = await listRecentAlertEventsFiltered("user-1", {
+      limit: 500,
+      offset: -3,
+      kinds: ["threshold", "freeze"],
+    });
     await listRecentAlertEventsFiltered("user-1", { limit: 0 });
 
     expect(result.events).toHaveLength(1);
@@ -87,7 +99,10 @@ describe("listRecentAlertEventsFiltered", () => {
       offset: 0,
       kinds: ["threshold", "freeze"],
     });
-    expect(neon.listRecentAlertEventsFiltered.mock.calls[1]?.[3]).toMatchObject({ limit: 1, offset: 0 });
+    expect(neon.listRecentAlertEventsFiltered.mock.calls[1]?.[3]).toMatchObject({
+      limit: 1,
+      offset: 0,
+    });
   });
 });
 

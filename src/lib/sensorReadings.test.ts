@@ -76,9 +76,19 @@ describe("insertSensorReadings", () => {
   it("passes skipDuplicates through to the database", async () => {
     mockInsert.mockResolvedValue({ error: null, inserted: 0 });
     const { insertSensorReadings } = await import("./sensorReadings");
-    const rows = [{ sensor_id: "s1", household_id: "h1", value_num: 40, recorded_at: "2026-11-13T11:00:00.000Z" }];
+    const rows = [
+      {
+        sensor_id: "s1",
+        household_id: "h1",
+        value_num: 40,
+        recorded_at: "2026-11-13T11:00:00.000Z",
+      },
+    ];
 
-    expect(await insertSensorReadings(rows, { skipDuplicates: true })).toEqual({ error: null, inserted: 0 });
+    expect(await insertSensorReadings(rows, { skipDuplicates: true })).toEqual({
+      error: null,
+      inserted: 0,
+    });
     expect(mockInsert).toHaveBeenCalledWith(rows, { skipDuplicates: true });
   });
 
@@ -187,7 +197,9 @@ describe("buildReadingRowsFromTempResults", () => {
 describe("getFreezeDwellSamples", () => {
   it("prepends the latest pre-cutoff reading to the window samples", async () => {
     readings.getDwellAnchor.mockResolvedValue([{ at: "2024-01-01T11:20:00Z", tempF: 31 }]);
-    readings.getRecentNumericReadingSamples.mockResolvedValue([{ at: "2024-01-01T11:40:00Z", tempF: 30 }]);
+    readings.getRecentNumericReadingSamples.mockResolvedValue([
+      { at: "2024-01-01T11:40:00Z", tempF: 30 },
+    ]);
     const { getFreezeDwellSamples } = await import("./sensorReadings");
 
     const result = await getFreezeDwellSamples("house-1", "sensor-1", "2024-01-01T11:30:00.000Z");
@@ -203,13 +215,24 @@ describe("getFreezeDwellSamples", () => {
       "2023-12-31T11:30:00.000Z",
       "2024-01-01T11:30:00.000Z",
     );
-    expect(readings.getRecentNumericReadingSamples).toHaveBeenCalledWith("house-1", "sensor-1", "2024-01-01T11:30:00.000Z");
+    expect(readings.getRecentNumericReadingSamples).toHaveBeenCalledWith(
+      "house-1",
+      "sensor-1",
+      "2024-01-01T11:30:00.000Z",
+    );
   });
 });
 
 describe("fetchLatestSensorValues", () => {
   it("returns the rows of the result, a failed lookup as no rows", async () => {
-    const row = { sensor: sensor(), deviceName: "Garage", value_num: 40, value_bool: null, value_text: null, recorded_at: "2024-01-01T00:00:00Z" };
+    const row = {
+      sensor: sensor(),
+      deviceName: "Garage",
+      value_num: 40,
+      value_bool: null,
+      value_text: null,
+      recorded_at: "2024-01-01T00:00:00Z",
+    };
     readings.fetchLatestSensorValuesResult
       .mockResolvedValueOnce({ rows: [row], error: null })
       .mockResolvedValueOnce({ rows: [], error: "connection lost" });

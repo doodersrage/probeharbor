@@ -74,26 +74,27 @@ export const GET: APIRoute = async ({ cookies, request, locals }) => {
       ? Math.min(...temps)
       : chartWeek.points.filter((p) => Number.isFinite(p.tempf)).at(-1)?.tempf;
   const doorOpenNearby = latest.some(
-    (row) =>
-      row.sensor.kind === "door" &&
-      (row.value_bool === true || row.value_text === "open"),
+    (row) => row.sensor.kind === "door" && (row.value_bool === true || row.value_text === "open"),
   );
   const timeToFreeze =
     currentTempF != null
       ? timeToFreezeApiPayload(
-          buildTimeToFreezeProjection({
-            currentTempF,
-            freezeThresholdF: alertSettings.freezeThresholdF,
-            indoorSamples: chartWeek.points
-              .filter((p) => Number.isFinite(p.tempf))
-              .map((p) => ({ at: p.timestamp, tempF: p.tempf })),
-            outdoorPast: outdoorPointsFromHourly(outdoorSplit.past),
-            outdoorForecast: outdoorPointsFromHourly(outdoorSplit.forecast),
-            doorOpenNearby,
-            timeZone: alertSettings.quietHoursTimezone,
-            lookAheadHours: alertSettings.forecastHoursAhead,
-            useCelsius: preferences.useCelsius,
-          }, locale),
+          buildTimeToFreezeProjection(
+            {
+              currentTempF,
+              freezeThresholdF: alertSettings.freezeThresholdF,
+              indoorSamples: chartWeek.points
+                .filter((p) => Number.isFinite(p.tempf))
+                .map((p) => ({ at: p.timestamp, tempF: p.tempf })),
+              outdoorPast: outdoorPointsFromHourly(outdoorSplit.past),
+              outdoorForecast: outdoorPointsFromHourly(outdoorSplit.forecast),
+              doorOpenNearby,
+              timeZone: alertSettings.quietHoursTimezone,
+              lookAheadHours: alertSettings.forecastHoursAhead,
+              useCelsius: preferences.useCelsius,
+            },
+            locale,
+          ),
         )
       : null;
 

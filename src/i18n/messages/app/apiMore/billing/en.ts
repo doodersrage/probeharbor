@@ -21,7 +21,8 @@ const en = {
     range: "{from} to {to}",
     preheader: "A ProbeHarbor freeze-exposure report for {household} is ready to view.",
     title: "Claims pack: {household}",
-    intro: "A ProbeHarbor household member shared a freeze-exposure and alert-history report covering {range}.",
+    intro:
+      "A ProbeHarbor household member shared a freeze-exposure and alert-history report covering {range}.",
     body: "The report includes freeze-exposure stats, device and probe tables, and a timeline of critical alerts for the selected period, with a verification code so this specific export can be reconfirmed later.",
     verificationCode: "Verification code: {code}",
     cta: "View claims pack",

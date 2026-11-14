@@ -45,7 +45,8 @@ const de: GuidesMessages = {
     },
     "/gift": {
       label: "Geschenk / Empfehlung",
-      summary: "Teile einen Einladungslink: Die eingeladene Person bekommt zusätzliche Pro-Testtage, und du auch, sobald sie ein Abo abschließt.",
+      summary:
+        "Teile einen Einladungslink: Die eingeladene Person bekommt zusätzliche Pro-Testtage, und du auch, sobald sie ein Abo abschließt.",
     },
   },
   itemListName: "ProbeHarbor-Anleitungen nach Aufgabe",

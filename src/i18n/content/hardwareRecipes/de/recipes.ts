@@ -62,7 +62,8 @@ export default {
   },
   "esp32-battery": {
     title: "Akkubetriebener Fühler",
-    hardware: "ESP32 mit LiPo-Akku über einen 1:1-Spannungsteiler (GPIO 35 auf einem klassischen ESP32)",
+    hardware:
+      "ESP32 mit LiPo-Akku über einen 1:1-Spannungsteiler (GPIO 35 auf einem klassischen ESP32)",
     path: "Web-Flasher, Extras-Option",
     notes:
       "Meldet den Akkustand in Prozent, damit Devices dich warnt, bevor er leer ist. Mit WLAN reicht er Wochen, nicht Monate.",

@@ -17,7 +17,10 @@ import { getUserRecord } from "./userRecords";
 export const BETTER_AUTH_COOKIE = "better-auth.session_token";
 export const BETTER_AUTH_SECURE_COOKIE = `__Secure-${BETTER_AUTH_COOKIE}`;
 
-export async function authResultFromHeaders(auth: Pick<ProbeHarborAuth, "api">, headers: Headers): Promise<AuthResult> {
+export async function authResultFromHeaders(
+  auth: Pick<ProbeHarborAuth, "api">,
+  headers: Headers,
+): Promise<AuthResult> {
   const found = await auth.api.getSession({ headers });
   if (!found) return { session: null, user: null, source: "better-auth" };
   const record = await getUserRecord(found.user.id);

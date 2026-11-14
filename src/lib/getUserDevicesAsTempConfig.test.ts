@@ -24,10 +24,7 @@ describe("getUserDevicesAsTempConfig", () => {
 
     await getUserDevicesAsTempConfig("user-1", "user@example.com");
 
-    expect(mockGetOrCreateHouseholdForUser).toHaveBeenCalledWith(
-      "user-1",
-      "user@example.com",
-    );
+    expect(mockGetOrCreateHouseholdForUser).toHaveBeenCalledWith("user-1", "user@example.com");
     expect(mockListHouseholdDevices).toHaveBeenCalledWith("house-1");
   });
 

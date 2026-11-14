@@ -1,4 +1,3 @@
-
 /**
  * /about/pico-w-ingest body copy. `*Html` keys are trusted inline HTML;
  * hrefs stay English (middleware localizes them). Pin names, part numbers,
@@ -26,10 +25,12 @@ const de: PicoWIngestMessages = {
     boardPart: "Pico W oder Pico 2 W",
     boardWhy: "CYW43439-WLAN und TLS an Bord. Der Pico 2 W (RP2350) ist das direkte Upgrade.",
     probePart: "Wasserdichter DS18B20",
-    probeWhyHtml: "Fühler für Rohr oder Kriechkeller; funktioniert unter dem Gefrierpunkt. Daten an <strong>GP4</strong>.",
+    probeWhyHtml:
+      "Fühler für Rohr oder Kriechkeller; funktioniert unter dem Gefrierpunkt. Daten an <strong>GP4</strong>.",
     amazon: "Amazon",
     resistorPart: "4,7-kΩ-Widerstand",
-    resistorWhy: "Pull-up von der DS18B20-Datenleitung auf 3,3 V. Versorge den Fühler an einem Pico nicht mit 5 V.",
+    resistorWhy:
+      "Pull-up von der DS18B20-Datenleitung auf 3,3 V. Versorge den Fühler an einem Pico nicht mit 5 V.",
     amazonResistor: "4,7k bei Amazon",
   },
   wiringTitle: "Verdrahtung",

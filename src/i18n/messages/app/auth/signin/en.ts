@@ -1,4 +1,7 @@
-import { YUBIKEY_OTP_SIGNIN_HINT, YUBIKEY_TOTP_SIGNIN_HINT } from "../../../../../lib/mfaWebAuthnUi";
+import {
+  YUBIKEY_OTP_SIGNIN_HINT,
+  YUBIKEY_TOTP_SIGNIN_HINT,
+} from "../../../../../lib/mfaWebAuthnUi";
 
 /** Sign-in, register and MFA challenge pages, OAuth buttons and sign-in errors. */
 const en = {
@@ -19,7 +22,8 @@ const en = {
     submit: "Sign in with email",
     forgotPassword: "Forgot password?",
     passkeySignIn: "Sign in with a passkey",
-    passkeyFailed: "Passkey sign-in didn't work. Try again, or sign in with your email and password.",
+    passkeyFailed:
+      "Passkey sign-in didn't work. Try again, or sign in with your email and password.",
     newHere: "New here?",
     createAccount: "Create a free account",
     privacy: "Privacy",
@@ -48,7 +52,8 @@ const en = {
       weak_password: "Password must be at least 8 characters.",
       generic: "Something went wrong while creating your account. Please try again.",
       signup_failed: "Something went wrong while creating your account. Please try again.",
-      email_taken: "This email may already have an account. Sign in, or reset your password if you forgot it.",
+      email_taken:
+        "This email may already have an account. Sign in, or reset your password if you forgot it.",
     },
   },
   oauth: {
@@ -66,18 +71,21 @@ const en = {
       "Please confirm your email address before signing in. Check your inbox for the confirmation link.",
     oauth_failed: "We couldn't start social sign-in. Please try again or sign in with email.",
     oauth_denied: "Social sign-in was cancelled. Try again when you're ready.",
-    oauth_provider_failed: "Social sign-in failed at the provider. Try again or sign in with email.",
+    oauth_provider_failed:
+      "Social sign-in failed at the provider. Try again or sign in with email.",
     oauth_secret_mismatch:
       "Social sign-in credentials are out of date. Regenerate the client secret in the provider app (Discord, GitHub, or Google) and update the matching *_CLIENT_SECRET setting on the site.",
     oauth_github_profile:
       "GitHub sign-in could not read your profile or email. Revoke ProbeHarbor under GitHub → Settings → Authorized OAuth Apps, then try again: the authorize screen must show ProbeHarbor and request email access.",
     oauth_account_exists:
       "An account with this email already exists and isn't linked to this sign-in method. Sign in with your email and password instead.",
-    oauth_exchange_failed: "Something went wrong while completing social sign-in. Please try again.",
+    oauth_exchange_failed:
+      "Something went wrong while completing social sign-in. Please try again.",
     confirm_link:
       "That confirmation link has expired or was already used. If you already confirmed, just sign in.",
     turnstile_failed: "Please complete the human verification checkbox, then try again.",
-    rate_limited: "Too many sign-in attempts for this account. Please wait a few minutes and try again.",
+    rate_limited:
+      "Too many sign-in attempts for this account. Please wait a few minutes and try again.",
     generic: "Something went wrong while signing in. Please try again.",
   },
   mfa: {
@@ -85,13 +93,16 @@ const en = {
     description: "Complete sign-in with an authenticator code or YubiKey OTP.",
     yourAccount: "your account",
     errors: {
-      invalid_code: "That code was incorrect or expired. Enter a fresh code from your authenticator app.",
+      invalid_code:
+        "That code was incorrect or expired. Enter a fresh code from your authenticator app.",
       invalid_yubikey:
         "That YubiKey OTP was not accepted. Click the YubiKey OTP field, tap your key (long touch), and wait for the full code before submitting.",
-      replayed_otp: "That YubiKey OTP was already used. Tap your key again to generate a fresh code.",
+      replayed_otp:
+        "That YubiKey OTP was already used. Tap your key again to generate a fresh code.",
       yubikey_not_enrolled:
         "That YubiKey is not enrolled on this account. Add it under Settings → Security, or use your authenticator code.",
-      no_factor: "No MFA factor is enrolled on this account. Sign in again and add one under Settings.",
+      no_factor:
+        "No MFA factor is enrolled on this account. Sign in again and add one under Settings.",
       rate_limited: "Too many incorrect attempts. Please wait a few minutes and try again.",
       generic: "Something went wrong verifying your code. Try again.",
     },

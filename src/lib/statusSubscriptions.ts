@@ -26,7 +26,8 @@ async function sha256Hex(value: string): Promise<string> {
  * rotated. Older emails carry a random token; that still works by its hash
  * (or, before migration 0004, by the stored raw token).
  */
-const SIGNED_UNSUBSCRIBE = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.([0-9a-f]{64})$/i;
+const SIGNED_UNSUBSCRIBE =
+  /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.([0-9a-f]{64})$/i;
 
 function unsubscribePayload(id: string): string {
   return `status-unsubscribe:${id.toLowerCase()}`;
@@ -50,7 +51,11 @@ function unsubscribeUrl(token: string): string {
   return `${resolveSiteUrl(null)}/api/status/unsubscribe?token=${token}`;
 }
 
-async function sendConfirmEmail(email: string, token: string, locale: Locale = "en"): Promise<void> {
+async function sendConfirmEmail(
+  email: string,
+  token: string,
+  locale: Locale = "en",
+): Promise<void> {
   await ensureLocale(locale, ["app"]);
   const t = statusEmailMessages(locale).confirm;
   const { text, html } = brandedEmailParts(
@@ -91,7 +96,10 @@ export async function subscribeToStatusUpdates(
   try {
     found = await neonStatus.findStatusSubscriber(email);
   } catch (lookupError) {
-    console.error("status subscribe lookup failed:", lookupError instanceof Error ? lookupError.message : lookupError);
+    console.error(
+      "status subscribe lookup failed:",
+      lookupError instanceof Error ? lookupError.message : lookupError,
+    );
     return { ok: false, error: "Something went wrong. Please try again." };
   }
   // Already subscribed and confirmed -- nothing to do, don't re-email.
@@ -100,7 +108,10 @@ export async function subscribeToStatusUpdates(
   try {
     await neonStatus.writeStatusSubscriberToken(email, await sha256Hex(token));
   } catch (writeError) {
-    console.error("status subscribe write failed:", writeError instanceof Error ? writeError.message : writeError);
+    console.error(
+      "status subscribe write failed:",
+      writeError instanceof Error ? writeError.message : writeError,
+    );
     return { ok: false, error: "Something went wrong. Please try again." };
   }
   try {
@@ -141,15 +152,16 @@ export type ConfirmedStatusSubscriber = {
   locale?: Locale;
 };
 
-export async function listConfirmedStatusSubscribers(): Promise<
-  ConfirmedStatusSubscriber[]
-> {
+export async function listConfirmedStatusSubscribers(): Promise<ConfirmedStatusSubscriber[]> {
   // No locale column yet: add "locale" here once status_subscriptions stores one.
   let data: Array<{ id: string; email: string; locale?: unknown }>;
   try {
     data = await neonStatus.listConfirmedStatusSubscribers();
   } catch (error) {
-    console.error("Failed to list status subscribers:", error instanceof Error ? error.message : error);
+    console.error(
+      "Failed to list status subscribers:",
+      error instanceof Error ? error.message : error,
+    );
     return [];
   }
 
@@ -173,7 +185,9 @@ export async function statusUnsubscribeUrlFor(subscriber: { id: string }): Promi
   if (signed) return unsubscribeUrl(signed);
   if (!warnedUnsigned) {
     warnedUnsigned = true;
-    console.warn("status-notify: no ALERT_ACK_SECRET/CRON_SECRET; issuing a fresh unsubscribe token per email");
+    console.warn(
+      "status-notify: no ALERT_ACK_SECRET/CRON_SECRET; issuing a fresh unsubscribe token per email",
+    );
   }
   const token = randomToken();
   await neonStatus.rotateStatusSubscriberTokenHash(subscriber.id, await sha256Hex(token));

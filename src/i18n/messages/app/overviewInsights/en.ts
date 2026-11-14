@@ -73,7 +73,8 @@ const en = {
     title: "Air quality",
     subtitle: "Latest CO₂, particles, VOC, and pressure readings.",
     pressureTitle: "Barometric pressure",
-    pressureSubtitle: "Latest reading and the measured change over the last 3 hours. Not a forecast.",
+    pressureSubtitle:
+      "Latest reading and the measured change over the last 3 hours. Not a forecast.",
     trend: {
       steady: "steady over 3 h",
       rising: "rising {delta} hPa in 3 h",
@@ -95,7 +96,8 @@ const en = {
   },
   battery: {
     title: "Battery trend",
-    subtitle: "Decline from recent device battery samples. Days left assume the drain rate of the last 7 days continues.",
+    subtitle:
+      "Decline from recent device battery samples. Days left assume the drain rate of the last 7 days continues.",
     daysRemaining: {
       one: "~{count} days remaining at this rate",
       other: "~{count} days remaining at this rate",
@@ -108,7 +110,8 @@ const en = {
   },
   rssi: {
     title: "Signal strength",
-    subtitle: "Wi-Fi signal each device last reported, in dBm (closer to 0 is stronger). Weak links drop readings first.",
+    subtitle:
+      "Wi-Fi signal each device last reported, in dBm (closer to 0 is stronger). Weak links drop readings first.",
     quality: {
       strong: "strong",
       good: "good",
@@ -123,7 +126,8 @@ const en = {
     title: "Power draw",
     subtitle: "{label}: heater / load proxy from energy sensor.",
     stats: "Avg {avg} W · ~{kwh} kWh over samples · {age}",
-    coolingLowPower: "Space cooling ~{rate}{unit}/h while power is low. heater may be off or undersized.",
+    coolingLowPower:
+      "Space cooling ~{rate}{unit}/h while power is low. heater may be off or undersized.",
     loadActive: "Load active (~{watts} W) while space is warming.",
   },
   claimsPack: {
@@ -171,7 +175,8 @@ const en = {
     doorVsTemp: "Door vs temperature",
     doorVsTempDetail: "Doors open ~{minutes} min in 24h; space cooled ~{rate}{unit}/h recently.",
     coldAir: "Cold air admitted",
-    coldAirDetail: "Doors open ~{minutes} min with outdoor {outdoor}{unit} (cold-air index ~{index}).",
+    coldAirDetail:
+      "Doors open ~{minutes} min with outdoor {outdoor}{unit} (cold-air index ~{index}).",
     doorActivity: "Door activity",
     doorActivityDetail: "About {minutes} minutes open in the last 24 hours.",
     powerOffNow: "Power off now",
@@ -221,7 +226,8 @@ const en = {
       heating: "actively heating",
       cooling: "actively cooling",
       notHeating: "not actively heating",
-      sentence: "{parts} -- this alert is from an unconditioned space and is expected to run colder.",
+      sentence:
+        "{parts} -- this alert is from an unconditioned space and is expected to run colder.",
       separator: ", ",
     },
   },

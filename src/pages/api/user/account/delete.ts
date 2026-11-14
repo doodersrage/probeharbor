@@ -44,7 +44,10 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
   }
   const yubikeys = getYubiKeyPublicIdsFromUser({ user_metadata: await getUserMetadata(user.id) });
-  if ((state.enabled || yubikeys.length > 0) && !(await isElevated(state, request, cookies, user.id))) {
+  if (
+    (state.enabled || yubikeys.length > 0) &&
+    !(await isElevated(state, request, cookies, user.id))
+  ) {
     return redirect("/dashboard/settings?delete_error=mfa");
   }
   // Deleting the user row also deletes its Better Auth sessions, logins,

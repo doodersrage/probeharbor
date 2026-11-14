@@ -1,4 +1,3 @@
-
 /** Body copy for /about/cellular-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -18,7 +17,8 @@ const fr: Messages = {
   resistorPart: "Résistance 4.7kΩ",
   resistorWhy: "Pull-up de la ligne de données du DS18B20 vers 3.3V.",
   planPart: "Forfait mobile",
-  planWhy: "Cloud Particle + données de l’opérateur. Prévoyez le budget pour les sites isolés qui ne se réveillent qu’une fois par heure.",
+  planWhy:
+    "Cloud Particle + données de l’opérateur. Prévoyez le budget pour les sites isolés qui ne se réveillent qu’une fois par heure.",
   planBuy: "Facturation Particle Console, ou votre propre nano-SIM si la référence le permet.",
   bluesPart: "En option : Blues Notecard",
   bluesWhy: "Autre voie mobile via une route webhook Notehub (même URL d’ingestion).",

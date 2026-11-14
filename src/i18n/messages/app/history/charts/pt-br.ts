@@ -7,12 +7,14 @@ const ptBr: AppHistoryChartsMessages = {
     house: "Casa",
     comparisonOverlay: "Cinza = sobreposição de comparação",
     notEnough: "Ainda não há leituras suficientes para um gráfico.",
-    emptySteps: "{addDevice} → confira se os dados estão chegando → {openLive} para que as leituras se acumulem.",
+    emptySteps:
+      "{addDevice} → confira se os dados estão chegando → {openLive} para que as leituras se acumulem.",
     emptyAddDevice: "Adicione um dispositivo",
     emptyOpenLive: "abra Ao vivo",
     summaryLatest: "Última leitura: {temp} {unit}.",
     summaryRange: "Faixa neste período: de {min} {unit} a {max} {unit}.",
-    summaryBelow: "Chegou à linha de congelamento de {freeze} {unit} ou abaixo dela em {below} de {total} leituras.",
+    summaryBelow:
+      "Chegou à linha de congelamento de {freeze} {unit} ou abaixo dela em {below} de {total} leituras.",
     summaryAbove: "Ficou acima da linha de congelamento de {freeze} {unit} durante todo o período.",
     hoverAlert: "Alerta: {title}",
     guideFreeze: "Congelamento",
@@ -54,20 +56,27 @@ const ptBr: AppHistoryChartsMessages = {
     dewPointF: "ponto de orvalho {unit}",
     dashed: " (tracejado)",
     humidityFrom: " · de {probe}",
-    humidityNoDew: " (sem ponto de orvalho: este sensor de umidade não tem uma temperatura correspondente)",
+    humidityNoDew:
+      " (sem ponto de orvalho: este sensor de umidade não tem uma temperatura correspondente)",
     humidityFromLabel: "Umidade de",
     humidityAuto: "Leitura mais recente",
     humidityAll: "Todas as sondas",
     humidityAllLegend: "Umidade (linha fina) e ponto de orvalho (tracejada) na cor de cada sonda",
     chartTips: "Dicas do gráfico",
-    tipsExpanded: "Visão ampliada: arraste para selecionar um período, role para dar zoom e use Esc ou Fechar para sair.",
-    tipsDefault: "Arraste para selecionar um período (Shift + arrastar com zoom), role para dar zoom, use Link para copiar esta janela e PNG para salvar.",
-    tipsAlerts: " As marcas coloridas indicam alertas: passe o mouse perto de uma para ver os detalhes.",
-    tipsTrace: "A linha fica {cool} na linha de congelamento ou abaixo dela, e {warm} na linha alta ou acima dela.",
-    tipsDew: " A linha tracejada do ponto de orvalho é calculada a partir da temperatura e da umidade: superfícies mais frias que ela ficam úmidas.",
+    tipsExpanded:
+      "Visão ampliada: arraste para selecionar um período, role para dar zoom e use Esc ou Fechar para sair.",
+    tipsDefault:
+      "Arraste para selecionar um período (Shift + arrastar com zoom), role para dar zoom, use Link para copiar esta janela e PNG para salvar.",
+    tipsAlerts:
+      " As marcas coloridas indicam alertas: passe o mouse perto de uma para ver os detalhes.",
+    tipsTrace:
+      "A linha fica {cool} na linha de congelamento ou abaixo dela, e {warm} na linha alta ou acima dela.",
+    tipsDew:
+      " A linha tracejada do ponto de orvalho é calculada a partir da temperatura e da umidade: superfícies mais frias que ela ficam úmidas.",
     tipsCool: "fria",
     tipsWarm: "quente",
-    canvasAria: "Gráfico de linhas interativo: {title}. Arraste para selecionar um período, role para dar zoom ou amplie para ver maior.",
+    canvasAria:
+      "Gráfico de linhas interativo: {title}. Arraste para selecionar um período, role para dar zoom ou amplie para ver maior.",
     tooltipAlert: "Alerta",
     tooltipDew: "orvalho",
     optionsSummary: "Opções do gráfico: linhas de referência",
@@ -85,9 +94,12 @@ const ptBr: AppHistoryChartsMessages = {
     summaryDoors: "Períodos com porta aberta sombreados no gráfico: {list}.",
     summaryDoorItem: "{door}: {count}",
     doorLegendTitle: "Mostrar ou ocultar quando {door} estava aberta",
-    tipsDoors: " As faixas sombreadas mostram quando um sensor de porta da sua casa informou que estava aberta; com mais de uma porta, cada uma tem sua própria linha acima do gráfico.",
-    doorLanesMore: " As linhas mostram até {max} portas; as outras continuam sombreadas e aparecem ao passar o mouse.",
-    doorsUnavailable: "Não foi possível carregar o histórico das portas, então as portas abertas não aparecem sombreadas.",
+    tipsDoors:
+      " As faixas sombreadas mostram quando um sensor de porta da sua casa informou que estava aberta; com mais de uma porta, cada uma tem sua própria linha acima do gráfico.",
+    doorLanesMore:
+      " As linhas mostram até {max} portas; as outras continuam sombreadas e aparecem ao passar o mouse.",
+    doorsUnavailable:
+      "Não foi possível carregar o histórico das portas, então as portas abertas não aparecem sombreadas.",
   },
   freezeHours: {
     title: "Horas em congelamento ou abaixo por dia",
@@ -100,10 +112,12 @@ const ptBr: AppHistoryChartsMessages = {
     coldest: "Mínima",
     hoursValue: "{hours} h",
     summaryNone: "Dias exibidos: {days}. Nenhum tempo a {temp}{unit} ou menos.",
-    summarySome: "Dias exibidos: {days}. Dias com tempo a {temp}{unit} ou menos: {belowDays}. Máximo: {hours} h em {day}.",
+    summarySome:
+      "Dias exibidos: {days}. Dias com tempo a {temp}{unit} ou menos: {belowDays}. Máximo: {hours} h em {day}.",
   },
   probeSpread: {
-    summary: "Diferença mais recente entre a sonda mais quente e a mais fria: {spread} {unit} ({min} {unit} a {max} {unit}). Maior diferença neste período: {widest} {unit}, em {time}.",
+    summary:
+      "Diferença mais recente entre a sonda mais quente e a mais fria: {spread} {unit} ({min} {unit} a {max} {unit}). Maior diferença neste período: {widest} {unit}, em {time}.",
     title: "Dispersão entre sondas ({unit})",
     closeExpandedAria: "Fechar o gráfico ampliado",
     close: "Fechar",
@@ -114,7 +128,8 @@ const ptBr: AppHistoryChartsMessages = {
     warmest: "Mais quente",
   },
   indoorOutdoor: {
-    summary: "Mais recente: interno {indoor} {unit}, externo {outdoor} {unit}, uma diferença de {delta} {unit}. Neste período a diferença variou de {min} {unit} a {max} {unit}.",
+    summary:
+      "Mais recente: interno {indoor} {unit}, externo {outdoor} {unit}, uma diferença de {delta} {unit}. Neste período a diferença variou de {min} {unit} a {max} {unit}.",
     title: "Diferença interno-externo",
     closeExpandedAria: "Fechar o gráfico ampliado",
     controlsAria: "Controles do gráfico",

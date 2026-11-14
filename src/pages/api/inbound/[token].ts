@@ -1,8 +1,5 @@
 import type { APIRoute } from "astro";
-import {
-  recordInboundSignatureFormat,
-  resolveInboundWebhook,
-} from "../../../lib/inboundWebhooks";
+import { recordInboundSignatureFormat, resolveInboundWebhook } from "../../../lib/inboundWebhooks";
 import { verifyInboundRequest } from "../../../lib/inboundSigning";
 import {
   applyHouseholdSnooze,
@@ -36,11 +33,7 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   const rawBody = await request.text();
-  const verification = await verifyInboundRequest(
-    resolved.signingSecret,
-    rawBody,
-    request.headers,
-  );
+  const verification = await verifyInboundRequest(resolved.signingSecret, rawBody, request.headers);
   if (!verification.ok) {
     const error =
       verification.reason === "stale_timestamp"
@@ -65,9 +58,7 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   const action =
-    typeof body.action === "string"
-      ? body.action
-      : new URL(request.url).searchParams.get("action");
+    typeof body.action === "string" ? body.action : new URL(request.url).searchParams.get("action");
 
   // Snooze / vacation hold this household's routine alerts (for all its
   // members), not the members' alerts for their other households: they are
@@ -124,10 +115,10 @@ export const POST: APIRoute = async ({ params, request }) => {
     const sensors = await fetchLatestSensorValues(resolved.householdId);
     const hold = await getHouseholdAlertHold(resolved.householdId);
     const activeEnd = (until: string | null) =>
-      isSnoozeActive({ snoozeUntil: until }) ? new Date(Date.parse(until as string)).toISOString() : null;
-    const temps = sensors.filter(
-      (s) => s.sensor.kind === "temperature" && s.value_num != null,
-    );
+      isSnoozeActive({ snoozeUntil: until })
+        ? new Date(Date.parse(until as string)).toISOString()
+        : null;
+    const temps = sensors.filter((s) => s.sensor.kind === "temperature" && s.value_num != null);
     return new Response(
       JSON.stringify({
         ok: true,
@@ -154,8 +145,7 @@ export const POST: APIRoute = async ({ params, request }) => {
   return new Response(
     JSON.stringify({
       ok: true,
-      message:
-        "Use action=snooze, vacation, clear_snooze, clear_vacation, or status.",
+      message: "Use action=snooze, vacation, clear_snooze, clear_vacation, or status.",
     }),
     { headers: { "Content-Type": "application/json" } },
   );

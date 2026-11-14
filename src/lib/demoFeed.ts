@@ -81,7 +81,9 @@ export function realReadingRows<T extends { sensor: { device_id: string }; devic
   rows: T[],
   devices: Array<DemoCheckDevice & { id: string }>,
 ): T[] {
-  const demoIds = new Set(devices.filter((device) => isDemoDevice(device)).map((device) => device.id));
+  const demoIds = new Set(
+    devices.filter((device) => isDemoDevice(device)).map((device) => device.id),
+  );
   return rows.filter((row) => row.deviceDemo !== true && !demoIds.has(row.sensor.device_id));
 }
 
@@ -99,7 +101,8 @@ export function onboardingDeviceStep(
 ): OnboardingDeviceStep {
   const realDevices = excludeDemoDevices(devices);
   const realReported =
-    realDevices.some((device) => Boolean(device.last_seen_at)) || realReadingRows(latest, devices).length > 0;
+    realDevices.some((device) => Boolean(device.last_seen_at)) ||
+    realReadingRows(latest, devices).length > 0;
   if (realReported) return "done";
   return realDevices.length > 0 ? "waiting" : "todo";
 }

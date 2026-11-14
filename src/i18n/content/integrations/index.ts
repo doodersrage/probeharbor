@@ -42,7 +42,9 @@ const taglineOverlays = () =>
   fromContentModules("integrations", "taglines", (modules) => {
     const out: Partial<Record<TranslatedLocale, IntegrationTaglinesOverlay>> = {};
     for (const [file, mod] of Object.entries(modules)) {
-      const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/taglines\.ts$/.exec(file)?.[1] as TranslatedLocale | undefined;
+      const locale = /\/([a-z]{2}(?:-[a-z]{2})?)\/taglines\.ts$/.exec(file)?.[1] as
+        | TranslatedLocale
+        | undefined;
       if (locale) out[locale] = mod.default as IntegrationTaglinesOverlay;
     }
     return out;

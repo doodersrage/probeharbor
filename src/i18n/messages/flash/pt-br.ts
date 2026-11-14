@@ -68,7 +68,8 @@ const ptBr: FlashMessages = {
   beforeTitle: "Antes de começar",
   wireHtml:
     'Ligue o sensor: alimentação em 3,3 V, terra em GND e dados no GPIO 4, com um resistor de 4,7 kΩ entre dados e 3,3 V (<a class="text-link" href="/about/esp32-freeze-kit">diagrama</a>). É igual para uma sonda DS18B20 (fios vermelho, preto e amarelo) e para um DHT22; o firmware detecta qual está conectado.',
-  extrasIntro: "Extras opcionais, nestes pinos (cada interruptor ou contato fica entre o pino e o GND):",
+  extrasIntro:
+    "Extras opcionais, nestes pinos (cada interruptor ou contato fica entre o pino e o GND):",
   pinTable: {
     connect: "Ligação",
     data: "Dados do DS18B20 ou DHT22",
@@ -87,7 +88,7 @@ const ptBr: FlashMessages = {
   buyIntro:
     "Peças que combinam com os pinos acima. Um ESP32 comum, um ESP32-S3 ou um ESP32-C3 é uma opção testada. Os links S3 e C3 são das placas de desenvolvimento da própria Espressif, para as quais o firmware foi compilado; se estiverem esgotadas, outra placa ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou um clone com a mesma pinagem) também deve funcionar.",
   leakHtml:
-    '<strong>Sensor de vazamento:</strong> a opção barata mais fácil é um módulo LM393 de “sensor de chuva / água” (vendido em muitas lojas): VCC no pino de 3,3 V da placa (nunca 5 V, para a saída continuar segura para o ESP32), GND no GND e DO no pino de vazamento. Gire o trimpot até uma gota de água indicar molhado e confira que ele volta a indicar seco. As trilhas expostas oxidam se ficarem molhadas, então considere-o uma peça para começar. Para uma instalação mais durável, use dois parafusos ou pontas de aço inox a cerca de 5&nbsp;mm um do outro, um no pino de vazamento e outro no GND. De qualquer forma, teste com a sua própria água: água muito limpa ou uma película fina podem não acioná-lo. Sensores cuja saída vai para nível alto quando molhados, como o sensor de água da Adafruit, precisam de outra entrada e não funcionam com este firmware.',
+    "<strong>Sensor de vazamento:</strong> a opção barata mais fácil é um módulo LM393 de “sensor de chuva / água” (vendido em muitas lojas): VCC no pino de 3,3 V da placa (nunca 5 V, para a saída continuar segura para o ESP32), GND no GND e DO no pino de vazamento. Gire o trimpot até uma gota de água indicar molhado e confira que ele volta a indicar seco. As trilhas expostas oxidam se ficarem molhadas, então considere-o uma peça para começar. Para uma instalação mais durável, use dois parafusos ou pontas de aço inox a cerca de 5&nbsp;mm um do outro, um no pino de vazamento e outro no GND. De qualquer forma, teste com a sua própria água: água muito limpa ou uma película fina podem não acioná-lo. Sensores cuja saída vai para nível alto quando molhados, como o sensor de água da Adafruit, precisam de outra entrada e não funcionam com este firmware.",
   afterTitle: "Depois que estiver funcionando",
   afterHtml:
     'As leituras chegam uma vez por minuto. Prenda a sonda no cano mais frio, defina um limite de congelamento de 1–3 °C (34–38 °F) em <a class="text-link" href="/dashboard/alerts">Dashboard → Alerts</a> e envie um alerta de teste. Veja <a class="text-link" href="/answers/crawlspace-freeze-sensor-placement">onde colocar o sensor</a> e <a class="text-link" href="/answers/freeze-alarm-temperature-setting">em que temperatura alertar</a>. Prefere editar o código você mesmo? As <a class="text-link" href="/about/esp32-web-flash">outras opções de gravação</a> cobrem Arduino, PlatformIO, MicroPython e ESPHome.',

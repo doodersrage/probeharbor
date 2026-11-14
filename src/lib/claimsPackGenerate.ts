@@ -63,8 +63,7 @@ export async function generateClaimsPackForUser(
   siteUrl: string,
 ): Promise<GeneratedClaimsPack> {
   const rangeFrom = clampIsoToHistoryWindow(
-    parseClaimsDateParam(range.from) ??
-      historyCutoffIso(Math.min(30, entitlements.historyDays)),
+    parseClaimsDateParam(range.from) ?? historyCutoffIso(Math.min(30, entitlements.historyDays)),
     entitlements.historyDays,
   );
   const rangeTo = parseClaimsDateParam(range.to, true) ?? new Date().toISOString();
@@ -82,9 +81,7 @@ export async function generateClaimsPackForUser(
       to: rangeTo,
     }),
     listAlertEventsInRange(user.id, rangeFrom, rangeTo),
-    householdId
-      ? listHouseholdDevices(householdId)
-      : Promise.resolve({ devices: [], error: null }),
+    householdId ? listHouseholdDevices(householdId) : Promise.resolve({ devices: [], error: null }),
     householdId
       ? (getHouseholdFields(householdId, ["name"]) as Promise<{ data: { name: string } | null }>)
       : Promise.resolve({ data: null }),
@@ -93,14 +90,17 @@ export async function generateClaimsPackForUser(
   const devices: ClaimsDeviceSummary[] = devicesResult.devices.map((d) => ({
     name: d.name,
     space: d.space ?? null,
-    sensors: d.sensors
-      .filter((s) => s.visible)
-      .map((s) => ({ label: s.label, kind: s.kind })),
+    sensors: d.sensors.filter((s) => s.visible).map((s) => ({ label: s.label, kind: s.kind })),
   }));
 
   // Recorded readings (not chart samples) for "Total readings" / "Readings ≤ threshold".
   const readingCounts = householdId
-    ? await fetchTemperatureReadingCounts(householdId, rangeFrom, rangeTo, alertSettings.freezeThresholdF)
+    ? await fetchTemperatureReadingCounts(
+        householdId,
+        rangeFrom,
+        rangeTo,
+        alertSettings.freezeThresholdF,
+      )
     : null;
 
   const cleanSiteUrl = siteUrl.replace(/\/$/, "");
@@ -110,9 +110,7 @@ export async function generateClaimsPackForUser(
 
   const pack = buildClaimsPackData({
     householdLabel:
-      (householdRow.data as { name?: string } | null)?.name?.trim() ||
-      user.email ||
-      "Household",
+      (householdRow.data as { name?: string } | null)?.name?.trim() || user.email || "Household",
     rangeFrom,
     rangeTo,
     freezeThresholdF: alertSettings.freezeThresholdF,

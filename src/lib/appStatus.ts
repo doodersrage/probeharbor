@@ -2,10 +2,7 @@ import * as neonAdmin from "./db/admin";
 import { listRecentIngestStatsAdmin } from "./ingestStats";
 import { flagIngestAbuse } from "./ingestAbuse";
 import { listRecentJobRuns, type JobRun } from "./jobRuns";
-import {
-  fetchLastSuccessfulCollectHistory,
-  isCollectHistoryStale,
-} from "./cronHealth";
+import { fetchLastSuccessfulCollectHistory, isCollectHistoryStale } from "./cronHealth";
 
 export type AppStatus = {
   healthy: boolean;
@@ -38,10 +35,7 @@ export async function fetchAppStatus(): Promise<AppStatus> {
 
   const historyPollStale = isCollectHistoryStale(lastHistoryPollAt);
   const healthy =
-    recentJobErrors === 0 &&
-    latest != null &&
-    latest.status === "success" &&
-    !historyPollStale;
+    recentJobErrors === 0 && latest != null && latest.status === "success" && !historyPollStale;
 
   /** Informational rate-limit hits: does not flip the page to degraded by itself. */
   const ingestRateLimitElevated = ingestAbuseCount > 0;

@@ -23,8 +23,16 @@ export function appSessionCookieName(): string {
 
 /** `value.signature` the way Better Auth signs its cookies (HMAC-SHA256, base64). */
 async function signSessionToken(token: string, secret: string): Promise<string> {
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(token)));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const mac = new Uint8Array(
+    await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(token)),
+  );
   let binary = "";
   for (const byte of mac) binary += String.fromCharCode(byte);
   return `${token}.${btoa(binary)}`;
@@ -51,7 +59,10 @@ export async function createAppSessionToken(request: Request, userId: string): P
  * (provider not configured). Provider returns to the app's callback routes,
  * then /api/auth/oauth-done.
  */
-export async function startBetterAuthOAuth(request: Request, provider: OAuthProviderId): Promise<Response | null> {
+export async function startBetterAuthOAuth(
+  request: Request,
+  provider: OAuthProviderId,
+): Promise<Response | null> {
   const res = await withBetterAuth(request, (auth) =>
     auth.api.signInSocial({
       body: {
@@ -63,7 +74,10 @@ export async function startBetterAuthOAuth(request: Request, provider: OAuthProv
       asResponse: true,
     }),
   ).catch((error: unknown) => {
-    console.error(`OAuth sign-in start failed (${provider}):`, error instanceof Error ? error.message : error);
+    console.error(
+      `OAuth sign-in start failed (${provider}):`,
+      error instanceof Error ? error.message : error,
+    );
     return null;
   });
   const started = res?.ok ? ((await res.clone().json()) as { url?: string }) : null;

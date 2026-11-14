@@ -25,7 +25,8 @@ const fr: ContactMessages = {
     "Questions d’ingestion ou de sondes après avoir consulté les guides",
   ],
   issuesTitle: "Issues GitHub",
-  issuesHtml: 'Les bugs, correctifs de firmware et idées de fonctionnalités ont leur place dans les <a class="text-link" href="{url}" target="_blank" rel="noreferrer">issues GitHub</a>, pour que les autres bricoleurs puissent suivre. Vous préférez éviter les formulaires web ? C’est la meilleure voie publique.',
+  issuesHtml:
+    'Les bugs, correctifs de firmware et idées de fonctionnalités ont leur place dans les <a class="text-link" href="{url}" target="_blank" rel="noreferrer">issues GitHub</a>, pour que les autres bricoleurs puissent suivre. Vous préférez éviter les formulaires web ? C’est la meilleure voie publique.',
   beforeTitle: "Avant d’écrire",
   beforeHtml:
     'Beaucoup de réponses se trouvent déjà dans le <a class="text-link" href="/guides">centre des guides</a>, la <a class="text-link" href="/about">bibliothèque de documentation</a>, la <a class="text-link" href="/about/probe-demo">démo des sondes</a> et les <a class="text-link" href="/about/arduino-sketches">sketches Arduino</a>. Pour une réponse utile, précisez : carte, capteurs, relevés attendus et observés, et les URL de vos flux.',
@@ -41,7 +42,8 @@ const fr: ContactMessages = {
     turnstileHint: "Protégé par Cloudflare Turnstile.",
     sending: "Envoi…",
     send: "Envoyer le message",
-    success: "Merci, nous avons bien reçu votre message. Nous répondons généralement sous 1 à 2 jours ouvrés.",
+    success:
+      "Merci, nous avons bien reçu votre message. Nous répondons généralement sous 1 à 2 jours ouvrés.",
     genericError: "Une erreur s’est produite. Veuillez réessayer.",
     androidTopicMessage:
       "Merci de me prévenir quand l’application ProbeHarbor pour Android sera disponible sur Google Play.",

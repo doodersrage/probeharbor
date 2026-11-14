@@ -1,14 +1,8 @@
 import * as neonRemaining from "../../../lib/db/remaining";
 import { getUserRecord } from "../../../lib/userRecords";
 import type { APIRoute } from "astro";
-import {
-  getAlertSettingsForUser,
-  saveAlertSettingsForUser,
-} from "../../../lib/notify";
-import {
-  snoozeUntilFromHours,
-  vacationUntilFromDays,
-} from "../../../lib/alertSnooze";
+import { getAlertSettingsForUser, saveAlertSettingsForUser } from "../../../lib/notify";
+import { snoozeUntilFromHours, vacationUntilFromDays } from "../../../lib/alertSnooze";
 import { getUserHouseholdId } from "../../../lib/households";
 import { fetchLatestSensorValues } from "../../../lib/sensorReadings";
 import {
@@ -30,7 +24,9 @@ import { alertJobsMessages } from "../../../i18n/messages/app/alertJobs";
 async function linkedUserLocale(userId: string): Promise<Locale> {
   try {
     const data = { user: await getUserRecord(userId) };
-    const locale = localeFromMetadata(data.user?.user_metadata as Record<string, unknown> | undefined);
+    const locale = localeFromMetadata(
+      data.user?.user_metadata as Record<string, unknown> | undefined,
+    );
     await ensureLocale(locale, ["app"]);
     return locale;
   } catch {
@@ -38,9 +34,7 @@ async function linkedUserLocale(userId: string): Promise<Locale> {
   }
 }
 
-async function resolveUserByTelegramSecret(
-  secret: string,
-): Promise<string | null> {
+async function resolveUserByTelegramSecret(secret: string): Promise<string | null> {
   if (!secret.trim()) return null;
   return neonRemaining.userByTelegramSecret(secret.trim());
 }
@@ -126,22 +120,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       ...settings,
       snoozeUntil: snoozeUntilFromHours(hours),
     });
-    await sendTelegramReply(
-      token,
-      chatId,
-      plural(t.snoozed, hours, locale),
-    );
+    await sendTelegramReply(token, chatId, plural(t.snoozed, hours, locale));
   } else if (cmd === "/vacation") {
     const days = parseTelegramVacationDays(text);
     await saveAlertSettingsForUser(userId, {
       ...settings,
       vacationUntil: vacationUntilFromDays(days),
     });
-    await sendTelegramReply(
-      token,
-      chatId,
-      plural(t.vacation, days, locale),
-    );
+    await sendTelegramReply(token, chatId, plural(t.vacation, days, locale));
   } else if (cmd === "/status") {
     const householdId = await getUserHouseholdId(userId);
     if (!householdId) {
@@ -156,7 +142,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
             ? ""
             : locale === "en"
               ? row.value_num.toFixed(1)
-              : formatNumber(row.value_num, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+              : formatNumber(row.value_num, locale, {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                });
         const val =
           row.value_num != null
             ? `${num}${row.sensor.unit ?? ""}`
@@ -170,11 +159,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       await sendTelegramReply(
         token,
         chatId,
-        lines.length
-          ? lines.join("\n")
-          : query
-            ? fmt(t.noMatch, { query })
-            : t.noReadings,
+        lines.length ? lines.join("\n") : query ? fmt(t.noMatch, { query }) : t.noReadings,
       );
     }
   } else if (cmd === "/help") {

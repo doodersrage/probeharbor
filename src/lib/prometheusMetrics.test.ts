@@ -42,7 +42,9 @@ describe("buildPrometheusText", () => {
     ]);
 
     const body = await buildPrometheusText("hh-1");
-    expect(body).toContain(`# HELP ${PROMETHEUS_SENSOR_METRIC} Latest numeric ProbeHarbor sensor reading`);
+    expect(body).toContain(
+      `# HELP ${PROMETHEUS_SENSOR_METRIC} Latest numeric ProbeHarbor sensor reading`,
+    );
     expect(body).toContain(`# TYPE ${PROMETHEUS_SENSOR_METRIC} gauge`);
     const ts = Date.parse("2026-01-15T12:00:00.000Z");
     expect(body).toContain(

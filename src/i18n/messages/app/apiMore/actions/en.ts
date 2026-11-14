@@ -7,7 +7,8 @@ const en = {
   displayPrefsSaveFailed: "Could not save display preferences.",
   displayPrefsSaved: "Display preferences saved.",
   expectedFormData: "Expected form data.",
-  invalidWebhookUrl: "One of your webhook URLs isn't a valid https:// address, or points to a private network.",
+  invalidWebhookUrl:
+    "One of your webhook URLs isn't a valid https:// address, or points to a private network.",
   weakTelegramSecret: "Telegram webhook secret must be at least 16 characters.",
   alertSettingsSaveFailed: "Could not save alert settings.",
   alertSettingsSavedIncomplete: "Alert settings saved — some channels are missing destinations.",

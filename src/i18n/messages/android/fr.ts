@@ -6,8 +6,10 @@ import type { AndroidMessages } from "./en";
 
 const fr: AndroidMessages = {
   title: "Application Android",
-  descriptionLive: "{brand} pour Android sur Google Play : sondes en direct, alertes gel et inondation, MFA et outils du foyer. Le téléphone n’est pas un capteur.",
-  descriptionPwa: "{brand} sur Android via l’app web installable (app Play en examen) : sondes en direct, alertes gel et inondation. Le téléphone n’est pas un capteur.",
+  descriptionLive:
+    "{brand} pour Android sur Google Play : sondes en direct, alertes gel et inondation, MFA et outils du foyer. Le téléphone n’est pas un capteur.",
+  descriptionPwa:
+    "{brand} sur Android via l’app web installable (app Play en examen) : sondes en direct, alertes gel et inondation. Le téléphone n’est pas un capteur.",
   breadcrumbHome: "Accueil",
   breadcrumbApps: "Applications",
   breadcrumbAndroid: "Application Android",
@@ -24,7 +26,8 @@ const fr: AndroidMessages = {
   githubSideload: "GitHub · compiler ou installer manuellement",
   sourceOnGithub: "Code source sur GitHub",
   requestLaunchNote: "Être prévenu du lancement sur Play",
-  imageAlt: "Photo d’ambiance {brand} : consultation des relevés de sondes sur téléphone et ordinateur portable à côté d’une installation maison près de tuyaux en cuivre",
+  imageAlt:
+    "Photo d’ambiance {brand} : consultation des relevés de sondes sur téléphone et ordinateur portable à côté d’une installation maison près de tuyaux en cuivre",
   imageCaption:
     "Ambiance installation maison : le téléphone et l’ordinateur portable accompagnent vos propres sondes. Les écrans de cette illustration sont stylisés, ce n’est pas une capture du produit.",
   phoneTitle: "Ce que fait le téléphone (et ce qu’il ne fait pas)",
@@ -60,8 +63,10 @@ const fr: AndroidMessages = {
   deepLinksHtml:
     "Les liens profonds suivent ceux de l’application web (<code>/dashboard</code>, alertes, foyer) : le client natif et la PWA vous sembleront familiers.",
   ossTitle: "Open source",
-  ossHtml: 'Dépôt de l’application : <a class="text-link" href="{repo}" target="_blank" rel="noreferrer">probeharbor-android</a> · Confidentialité : <a class="text-link" href="/privacy">traitement des jetons push Android</a> · API : <a class="text-link" href="/docs/api">référence HTTP</a>',
-  faqLede: "Des réponses claires pour les examinateurs Play et les particuliers qui attendent la fiche.",
+  ossHtml:
+    'Dépôt de l’application : <a class="text-link" href="{repo}" target="_blank" rel="noreferrer">probeharbor-android</a> · Confidentialité : <a class="text-link" href="/privacy">traitement des jetons push Android</a> · API : <a class="text-link" href="/docs/api">référence HTTP</a>',
+  faqLede:
+    "Des réponses claires pour les examinateurs Play et les particuliers qui attendent la fiche.",
   backToApps: "← Toutes les applications compagnons",
 };
 

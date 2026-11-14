@@ -75,8 +75,18 @@ describe("createHouseholdApiKey", () => {
   it("passes a write scope through, and turns anything else into read", async () => {
     const { createHouseholdApiKey } = await import("./apiKeys");
 
-    await createHouseholdApiKey({ householdId: "house-1", name: "w", createdBy: "user-1", scope: "write" });
-    await createHouseholdApiKey({ householdId: "house-1", name: "r", createdBy: "user-1", scope: "read" });
+    await createHouseholdApiKey({
+      householdId: "house-1",
+      name: "w",
+      createdBy: "user-1",
+      scope: "write",
+    });
+    await createHouseholdApiKey({
+      householdId: "house-1",
+      name: "r",
+      createdBy: "user-1",
+      scope: "read",
+    });
     await createHouseholdApiKey({
       householdId: "house-1",
       name: "junk",
@@ -84,14 +94,22 @@ describe("createHouseholdApiKey", () => {
       scope: "admin" as unknown as "read",
     });
 
-    expect(mockInsertApiKey.mock.calls.map((c) => (c[0] as { scope: string }).scope)).toEqual(["write", "read", "read"]);
+    expect(mockInsertApiKey.mock.calls.map((c) => (c[0] as { scope: string }).scope)).toEqual([
+      "write",
+      "read",
+      "read",
+    ]);
   });
 
   it("reports the database error and returns no key on failure", async () => {
     mockInsertApiKey.mockResolvedValue({ key: null, error: "insert failed" });
     const { createHouseholdApiKey } = await import("./apiKeys");
 
-    const result = await createHouseholdApiKey({ householdId: "house-1", name: "x", createdBy: "user-1" });
+    const result = await createHouseholdApiKey({
+      householdId: "house-1",
+      name: "x",
+      createdBy: "user-1",
+    });
 
     expect(result).toEqual({ plaintext: null, key: null, error: "insert failed" });
   });

@@ -307,7 +307,7 @@ export default {
     {
       question: "O que o puck de contato de porta envia?",
       answer:
-        "JSON como {\"door1\":true} quando aberta. Sketch: sketches/arduino/door_contact_ingest. Guia: probeharbor.dev/door-puck.",
+        'JSON como {"door1":true} quando aberta. Sketch: sketches/arduino/door_contact_ingest. Guia: probeharbor.dev/door-puck.',
     },
     {
       question: "Uma porta aberta dispara o SMS de congelamento sozinha?",
@@ -324,7 +324,7 @@ export default {
     {
       question: "O que o puck de contato de vazamento envia?",
       answer:
-        "JSON como {\"leak1\":true} quando molhado. Chaves de alagamento/vazamento disparam alerta automaticamente quando molhadas, desde que os alertas estejam ativados. Guia: probeharbor.dev/leak-puck.",
+        'JSON como {"leak1":true} quando molhado. Chaves de alagamento/vazamento disparam alerta automaticamente quando molhadas, desde que os alertas estejam ativados. Guia: probeharbor.dev/leak-puck.',
     },
     {
       question: "Vazamento e temperatura podem usar a mesma chave de dispositivo?",
@@ -341,7 +341,7 @@ export default {
     {
       question: "O que o aviso de queda de energia envia?",
       answer:
-        "JSON como {\"power1\":false} quando a energia da rede/USB monitorada cai. O ESP32 que reporta deve ficar ligado a um nobreak. Guia: probeharbor.dev/power-nudge.",
+        'JSON como {"power1":false} quando a energia da rede/USB monitorada cai. O ESP32 que reporta deve ficar ligado a um nobreak. Guia: probeharbor.dev/power-nudge.',
     },
     {
       question: "E se a sonda de congelamento também ficar sem energia?",

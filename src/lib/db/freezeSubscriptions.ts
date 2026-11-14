@@ -14,10 +14,20 @@ import type { FreezeAlertSubscriber } from "../freezeAlerts";
 import { query } from "./client";
 
 /** Throws on failure. */
-export async function findByEmail(
-  email: string,
-): Promise<{ id: string; confirmed_at: string | null; place_label: string; lat: number; lon: number } | null> {
-  const [row] = await query<{ id: string; confirmed_at: string | null; place_label: string; lat: number; lon: number }>(
+export async function findByEmail(email: string): Promise<{
+  id: string;
+  confirmed_at: string | null;
+  place_label: string;
+  lat: number;
+  lon: number;
+} | null> {
+  const [row] = await query<{
+    id: string;
+    confirmed_at: string | null;
+    place_label: string;
+    lat: number;
+    lon: number;
+  }>(
     "select id, confirmed_at, place_label, lat, lon from public.freeze_alert_subscriptions where email = $1",
     [email],
   );
@@ -56,7 +66,12 @@ export async function writeUnconfirmed(
  * cleared only when the place actually changes. False when no confirmed row
  * has that id (unsubscribed since, bad id) or on a database error.
  */
-export async function moveConfirmed(id: string, label: string, lat: number, lon: number): Promise<boolean> {
+export async function moveConfirmed(
+  id: string,
+  label: string,
+  lat: number,
+  lon: number,
+): Promise<boolean> {
   try {
     const rows = await query(
       `update public.freeze_alert_subscriptions
@@ -88,7 +103,10 @@ export async function confirm(token: string): Promise<boolean> {
 
 export async function unsubscribe(token: string): Promise<boolean> {
   try {
-    const rows = await query("delete from public.freeze_alert_subscriptions where token = $1 returning id", [token]);
+    const rows = await query(
+      "delete from public.freeze_alert_subscriptions where token = $1 returning id",
+      [token],
+    );
     return rows.length > 0;
   } catch {
     return false;
@@ -105,5 +123,8 @@ export function listConfirmed(): Promise<FreezeAlertSubscriber[]> {
 
 /** Remember the night this subscriber was told about. Throws on failure. */
 export async function markAlerted(id: string, night: string): Promise<void> {
-  await query("update public.freeze_alert_subscriptions set last_alert_night = $2::date where id = $1", [id, night]);
+  await query(
+    "update public.freeze_alert_subscriptions set last_alert_night = $2::date where id = $1",
+    [id, night],
+  );
 }

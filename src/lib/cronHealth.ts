@@ -5,8 +5,7 @@ export const HISTORY_POLL_INTERVAL_MS = 15 * 60 * 1000;
 export const HISTORY_POLL_GRACE_MS = 5 * 60 * 1000;
 
 /** Two missed polls plus grace (~35 minutes). */
-export const HISTORY_POLL_STALE_MS =
-  HISTORY_POLL_INTERVAL_MS * 2 + HISTORY_POLL_GRACE_MS;
+export const HISTORY_POLL_STALE_MS = HISTORY_POLL_INTERVAL_MS * 2 + HISTORY_POLL_GRACE_MS;
 
 export function isCollectHistoryStale(
   lastSuccessAt: string | null | undefined,
@@ -18,9 +17,7 @@ export function isCollectHistoryStale(
   return now - parsed > HISTORY_POLL_STALE_MS;
 }
 
-export function collectHistoryStaleMessage(
-  lastSuccessAt: string | null | undefined,
-): string {
+export function collectHistoryStaleMessage(lastSuccessAt: string | null | undefined): string {
   if (!lastSuccessAt) {
     return "No successful history poll recorded in the last 24 hours.";
   }

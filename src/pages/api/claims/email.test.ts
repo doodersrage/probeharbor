@@ -52,7 +52,9 @@ function makeJsonContext(body: unknown | string): APIContext {
       return body;
     },
   } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return { request, cookies: {}, redirect } as unknown as APIContext;
 }
 
@@ -63,7 +65,9 @@ function makeFormContext(form: Record<string, string>): APIContext {
     headers: new Headers(),
     formData: async () => formData,
   } as unknown as Request;
-  const redirect = vi.fn((path: string) => new Response(null, { status: 302, headers: { Location: path } }));
+  const redirect = vi.fn(
+    (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
+  );
   return { request, cookies: {}, redirect } as unknown as APIContext;
 }
 
@@ -90,7 +94,9 @@ beforeEach(() => {
   });
   mockSendEmail.mockReset().mockResolvedValue(undefined);
   mockIsMailerRecipientNotAllowed.mockReset().mockReturnValue(false);
-  mockBrandedEmailParts.mockReset().mockReturnValue({ text: "text body", html: "<p>html body</p>" });
+  mockBrandedEmailParts
+    .mockReset()
+    .mockReturnValue({ text: "text body", html: "<p>html body</p>" });
 });
 
 describe("POST /api/claims/email", () => {
@@ -164,7 +170,11 @@ describe("POST /api/claims/email", () => {
   });
 
   it("returns send_failed when the export can't be persisted", async () => {
-    mockCreateClaimsPackExport.mockResolvedValue({ token: null, contentHash: null, error: "db down" });
+    mockCreateClaimsPackExport.mockResolvedValue({
+      token: null,
+      contentHash: null,
+      error: "db down",
+    });
     const { POST } = await import("./email");
 
     const response = await POST(makeJsonContext({ adjuster_email: "a@example.com" }));

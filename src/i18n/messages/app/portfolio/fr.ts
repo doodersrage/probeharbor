@@ -5,7 +5,8 @@ const fr: PortfolioMessages = {
   subtitle: "Risque de gel et d’inondation de tous vos biens, en un coup d’œil.",
   allProperties: "Tous les biens",
   upgradeToPro: "Passez à Pro pour débloquer la vue Portfolio et ses alertes.",
-  portfolioUpsell: "Portfolio relève le plafond de biens et ajoute des accès pour les gestionnaires.",
+  portfolioUpsell:
+    "Portfolio relève le plafond de biens et ajoute des accès pour les gestionnaires.",
   vacationSet: {
     one: "Mode vacances activé pour {days} jours sur {count} bien modifiable.",
     other: "Mode vacances activé pour {days} jours sur {count} biens modifiables.",
@@ -20,7 +21,8 @@ const fr: PortfolioMessages = {
   viewHeatmap: "Carte thermique",
   healthTitle: "État du portfolio",
   healthHowSummary: "Comment le score est calculé",
-  healthHow: "Le score de chaque bien reflète son problème le plus grave : aucun appareil (20) ou pas encore de mesure (30) ; un capteur de fuite mouillé (10–20) ; au seuil de gel ou en dessous (15–25) ; mesures de plus de 2 heures (45) ; certains appareils muets (50) ; à moins de {band} du seuil (70) ; sinon en bonne santé (95). Le chiffre le plus bas d’une plage s’applique quand les mesures sont aussi anciennes. La moyenne porte sur tous les biens.",
+  healthHow:
+    "Le score de chaque bien reflète son problème le plus grave : aucun appareil (20) ou pas encore de mesure (30) ; un capteur de fuite mouillé (10–20) ; au seuil de gel ou en dessous (15–25) ; mesures de plus de 2 heures (45) ; certains appareils muets (50) ; à moins de {band} du seuil (70) ; sinon en bonne santé (95). Le chiffre le plus bas d’une plage s’applique quand les mesures sont aussi anciennes. La moyenne porte sur tous les biens.",
   healthSummary:
     "Score moyen {score} % · {atRisk} à risque de gel/inondation{wet} · les plus froids ci-dessous",
   healthSummaryWet: " · mouillés : {count}",
@@ -42,7 +44,8 @@ const fr: PortfolioMessages = {
   addPropertyBody:
     "Portfolio prend tout son sens avec deux foyers ou plus. Créez un deuxième bien (location, résidence secondaire, atelier) dans Foyer, puis passez de l’un à l’autre ici.",
   addPropertyButton: "Ajouter un bien dans Foyer",
-  emptyPortfolio: "Aucun bien dans ce portfolio pour l’instant : ouvrez Foyer pour en créer ou en rejoindre un.",
+  emptyPortfolio:
+    "Aucun bien dans ce portfolio pour l’instant : ouvrez Foyer pour en créer ou en rejoindre un.",
   searchLabel: "Rechercher",
   searchPlaceholder: "Nom ou id du bien",
   statusLabel: "Statut",
@@ -67,7 +70,8 @@ const fr: PortfolioMessages = {
   },
   apply: "Appliquer",
   clear: "Effacer",
-  filterHint: "Le résumé d’état ci-dessus couvre tout le portfolio. Ce tableau filtre et trie la liste des biens.",
+  filterHint:
+    "Le résumé d’état ci-dessus couvre tout le portfolio. Ce tableau filtre et trie la liste des biens.",
   noMatches: "Aucun bien ne correspond à ces filtres.",
   noProperties: "Aucun bien dans ce portfolio pour l’instant.",
   heatmapTitle: "{name} : {score} % · {detail}",

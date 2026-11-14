@@ -25,8 +25,7 @@ const es: DeviceSetupPushMessages = {
   ],
   firstRunHtml:
     'Usa <a class="text-link" href="#devices-first-run">Conecta tu primer sensor</a> arriba para elegir un camino.',
-  viewOnly:
-    "Acceso de solo lectura: la creación de dispositivos está desactivada.",
+  viewOnly: "Acceso de solo lectura: la creación de dispositivos está desactivada.",
   otherDevicesHtml: {
     one: 'Tienes {count} dispositivo más en la pestaña <a class="text-link" href="/dashboard/devices?view=ops">Dispositivos</a>.',
     other:
@@ -52,8 +51,7 @@ const es: DeviceSetupPushMessages = {
   rename: "Renombrar",
   spaceExamplePlaceholder: "garaje, ático, sótano…",
   saveSpace: "Guardar espacio",
-  rotateConfirm:
-    "¿Rotar esta clave de ingesta? La clave anterior deja de funcionar de inmediato.",
+  rotateConfirm: "¿Rotar esta clave de ingesta? La clave anterior deja de funcionar de inmediato.",
   rotateKey: "Rotar clave",
   moveTo: "Mover a",
   transferDevice: "Transferir dispositivo",

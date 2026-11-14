@@ -49,9 +49,7 @@ describe("alertAckTokens", () => {
   it("fails closed without a signing secret", async () => {
     vi.stubEnv("CRON_SECRET", "");
     vi.stubEnv("ALERT_ACK_SECRET", "");
-    await expect(signAckPayload("user-123", Date.now() + 60_000)).rejects.toThrow(
-      /not configured/,
-    );
+    await expect(signAckPayload("user-123", Date.now() + 60_000)).rejects.toThrow(/not configured/);
   });
 
   it("returns null ack URLs when signing secrets are missing", async () => {

@@ -50,7 +50,14 @@ export const GET: APIRoute = async ({ cookies, url, locals }) => {
 
   const { devices } = await listHouseholdDevices(household.householdId);
   const doorFilter = validDoorFilter(url.searchParams.get("door"), devices);
-  const report = await loadDoorReport(household.householdId, devices, fromIso, toIso, DOOR_CSV_LIMIT, doorFilter);
+  const report = await loadDoorReport(
+    household.householdId,
+    devices,
+    fromIso,
+    toIso,
+    DOOR_CSV_LIMIT,
+    doorFilter,
+  );
   if (report.error) {
     console.error("Door events CSV failed:", report.error);
     return new Response(apiUserMessages(locale).doorCsvFailed, { status: 500 });

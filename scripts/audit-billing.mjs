@@ -80,7 +80,9 @@ try {
   const good = endpoints.filter((e) => {
     try {
       const url = new URL(e.url);
-      return e.status === "enabled" && url.hostname === CANONICAL_HOST && url.pathname === WEBHOOK_PATH;
+      return (
+        e.status === "enabled" && url.hostname === CANONICAL_HOST && url.pathname === WEBHOOK_PATH
+      );
     } catch {
       return false;
     }
@@ -105,7 +107,11 @@ try {
 // 2. Undelivered events
 try {
   const since = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60;
-  const failed = await stripe.events.list({ delivery_success: false, created: { gte: since }, limit: 50 });
+  const failed = await stripe.events.list({
+    delivery_success: false,
+    created: { gte: since },
+    limit: 50,
+  });
   if (failed.data.length === 0) ok("no undelivered events in the last 7 days");
   else {
     const types = [...new Set(failed.data.map((e) => e.type))].join(", ");
@@ -122,7 +128,8 @@ const { data: received, error: receivedError } = await read(
   "select type, received_at from public.stripe_webhook_events order by received_at desc limit 500",
 );
 if (receivedError) bad(`could not read stripe_webhook_events: ${receivedError.message}`);
-else if (!received?.length) note("stripe_webhook_events is empty: the Worker has not processed a webhook yet");
+else if (!received?.length)
+  note("stripe_webhook_events is empty: the Worker has not processed a webhook yet");
 else {
   const latest = new Map();
   for (const row of received) if (!latest.has(row.type)) latest.set(row.type, row.received_at);
@@ -150,7 +157,9 @@ if (rowsError) {
 }
 const rowBySub = new Map(rows.map((r) => [r.stripe_subscription_id, r]));
 
-note(`${stripeSubs.length} live Stripe subscription(s), ${rows.length} stripe_subscriptions row(s)`);
+note(
+  `${stripeSubs.length} live Stripe subscription(s), ${rows.length} stripe_subscriptions row(s)`,
+);
 
 for (const sub of stripeSubs) {
   const price = sub.items.data[0]?.price?.id ?? null;
@@ -158,7 +167,9 @@ for (const sub of stripeSubs) {
   const label = `${sub.id} (${customer}, ${sub.status}${sub.metadata?.smoke ? ", smoke" : ""})`;
   const expectedTier = price ? tierByPrice.get(price) : undefined;
   if (!expectedTier) {
-    bad(`${label}: price ${price} is not one of the configured STRIPE_PRICE_ID_* values, so it silently maps to "member"`);
+    bad(
+      `${label}: price ${price} is not one of the configured STRIPE_PRICE_ID_* values, so it silently maps to "member"`,
+    );
   }
   const row = rowBySub.get(sub.id);
   if (!row) {
@@ -173,7 +184,8 @@ for (const sub of stripeSubs) {
   const diffs = [];
   if (row.status !== sub.status) diffs.push(`status db=${row.status} stripe=${sub.status}`);
   if (row.stripe_price_id !== price) diffs.push(`price db=${row.stripe_price_id} stripe=${price}`);
-  if (expectedTier && row.plan_tier !== expectedTier) diffs.push(`tier db=${row.plan_tier} expected=${expectedTier}`);
+  if (expectedTier && row.plan_tier !== expectedTier)
+    diffs.push(`tier db=${row.plan_tier} expected=${expectedTier}`);
   if (diffs.length) bad(`${label}: ${diffs.join("; ")}`);
   else ok(`${label}: user ${row.user_id} on ${row.plan_tier}`);
 }

@@ -37,7 +37,8 @@ export const COOLDOWN_COLUMNS = [
 export type CooldownColumn = (typeof COOLDOWN_COLUMNS)[number];
 
 function cooldownColumn(field: string): CooldownColumn {
-  if (!(COOLDOWN_COLUMNS as readonly string[]).includes(field)) throw new Error(`Unknown cooldown field: ${field}`);
+  if (!(COOLDOWN_COLUMNS as readonly string[]).includes(field))
+    throw new Error(`Unknown cooldown field: ${field}`);
   return field as CooldownColumn;
 }
 
@@ -101,13 +102,18 @@ export async function getAlertSettingsRow(userId: string): Promise<Record<string
   const row: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(result.row)) {
     row[key] =
-      typeof value === "string" && JSONB_TIMESTAMPTZ.test(value) ? parseTimestamptz(value.replace("T", " ")) : value;
+      typeof value === "string" && JSONB_TIMESTAMPTZ.test(value)
+        ? parseTimestamptz(value.replace("T", " "))
+        : value;
   }
   return row;
 }
 
 /** First load: store these settings unless a row appeared meanwhile. */
-export async function insertDefaultAlertSettings(userId: string, row: Record<string, unknown>): Promise<void> {
+export async function insertDefaultAlertSettings(
+  userId: string,
+  row: Record<string, unknown>,
+): Promise<void> {
   try {
     await upsertSettingsRow(userId, row, "nothing");
   } catch (error) {
@@ -115,7 +121,10 @@ export async function insertDefaultAlertSettings(userId: string, row: Record<str
   }
 }
 
-export async function saveAlertSettingsRow(userId: string, row: Record<string, unknown>): Promise<{ error: string | null }> {
+export async function saveAlertSettingsRow(
+  userId: string,
+  row: Record<string, unknown>,
+): Promise<{ error: string | null }> {
   try {
     await upsertSettingsRow(userId, row, "update");
     return { error: null };
@@ -125,7 +134,11 @@ export async function saveAlertSettingsRow(userId: string, row: Record<string, u
 }
 
 /** Stamp a cooldown now; creates the row (defaults + stamp) when missing. */
-export async function markCooldown(userId: string, field: string, defaults: Record<string, unknown>): Promise<void> {
+export async function markCooldown(
+  userId: string,
+  field: string,
+  defaults: Record<string, unknown>,
+): Promise<void> {
   try {
     const column = cooldownColumn(field);
     const now = new Date().toISOString();
@@ -172,7 +185,8 @@ export async function claimCooldown(
     const current = row?.current ?? null;
     const currentMs = current ? Date.parse(current) : Number.NaN;
     const previousMs = previous ? Date.parse(previous) : Number.NEGATIVE_INFINITY;
-    if (row && Number.isFinite(currentMs) && currentMs > previousMs) return { claimed: false, claimedAt: null };
+    if (row && Number.isFinite(currentMs) && currentMs > previousMs)
+      return { claimed: false, claimedAt: null };
   } catch (error) {
     console.error(`claimCooldown(${field}) failed; sending anyway:`, message(error));
   }
@@ -180,7 +194,12 @@ export async function claimCooldown(
 }
 
 /** Undo a claim (only if nobody stamped again since). */
-export async function releaseCooldown(userId: string, field: string, claimedAt: string, previous: string | null): Promise<void> {
+export async function releaseCooldown(
+  userId: string,
+  field: string,
+  claimedAt: string,
+  previous: string | null,
+): Promise<void> {
   try {
     const column = cooldownColumn(field);
     await query(
@@ -195,9 +214,10 @@ export async function releaseCooldown(userId: string, field: string, claimedAt: 
 
 export async function markEscalation(userId: string): Promise<void> {
   try {
-    await query("update public.alert_settings set last_escalation_at = now(), updated_at = now() where user_id = $1", [
-      userId,
-    ]);
+    await query(
+      "update public.alert_settings set last_escalation_at = now(), updated_at = now() where user_id = $1",
+      [userId],
+    );
   } catch (error) {
     console.error("markEscalation failed:", message(error));
   }

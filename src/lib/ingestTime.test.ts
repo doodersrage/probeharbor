@@ -16,30 +16,61 @@ describe("parseRecordedAt", () => {
   });
 
   it("accepts ISO 8601 with Z or an offset, normalised to UTC", () => {
-    expect(parseRecordedAt("2026-11-13T11:00:00Z", NOW)).toEqual({ ok: true, iso: "2026-11-13T11:00:00.000Z" });
-    expect(parseRecordedAt("2026-11-13T06:00:00-05:00", NOW)).toEqual({ ok: true, iso: "2026-11-13T11:00:00.000Z" });
-    expect(parseRecordedAt("2026-11-13T11:00:00.250+0000", NOW)).toEqual({ ok: true, iso: "2026-11-13T11:00:00.250Z" });
+    expect(parseRecordedAt("2026-11-13T11:00:00Z", NOW)).toEqual({
+      ok: true,
+      iso: "2026-11-13T11:00:00.000Z",
+    });
+    expect(parseRecordedAt("2026-11-13T06:00:00-05:00", NOW)).toEqual({
+      ok: true,
+      iso: "2026-11-13T11:00:00.000Z",
+    });
+    expect(parseRecordedAt("2026-11-13T11:00:00.250+0000", NOW)).toEqual({
+      ok: true,
+      iso: "2026-11-13T11:00:00.250Z",
+    });
   });
 
   it("rejects a string with no time zone instead of guessing one", () => {
-    expect(parseRecordedAt("2026-11-13T11:00:00", NOW)).toEqual({ ok: false, reason: "invalid_recorded_at" });
-    expect(parseRecordedAt("2026-11-13", NOW)).toEqual({ ok: false, reason: "invalid_recorded_at" });
+    expect(parseRecordedAt("2026-11-13T11:00:00", NOW)).toEqual({
+      ok: false,
+      reason: "invalid_recorded_at",
+    });
+    expect(parseRecordedAt("2026-11-13", NOW)).toEqual({
+      ok: false,
+      reason: "invalid_recorded_at",
+    });
   });
 
   it("rejects non-times", () => {
-    for (const value of ["", "yesterday", true, {}, [], Number.NaN, Number.POSITIVE_INFINITY, undefined, null]) {
+    for (const value of [
+      "",
+      "yesterday",
+      true,
+      {},
+      [],
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      undefined,
+      null,
+    ]) {
       expect(parseRecordedAt(value, NOW)).toEqual({ ok: false, reason: "invalid_recorded_at" });
     }
   });
 
   it("accepts exactly 72 hours old and rejects older", () => {
     expect(parseRecordedAt((NOW - MAX_READING_AGE_MS) / 1000, NOW).ok).toBe(true);
-    expect(parseRecordedAt((NOW - MAX_READING_AGE_MS - 1000) / 1000, NOW)).toEqual({ ok: false, reason: "recorded_at_too_old" });
+    expect(parseRecordedAt((NOW - MAX_READING_AGE_MS - 1000) / 1000, NOW)).toEqual({
+      ok: false,
+      reason: "recorded_at_too_old",
+    });
   });
 
   it("allows 5 minutes of clock skew ahead and rejects more", () => {
     expect(parseRecordedAt((NOW + MAX_FUTURE_SKEW_MS) / 1000, NOW).ok).toBe(true);
-    expect(parseRecordedAt((NOW + MAX_FUTURE_SKEW_MS + 1000) / 1000, NOW)).toEqual({ ok: false, reason: "recorded_at_in_future" });
+    expect(parseRecordedAt((NOW + MAX_FUTURE_SKEW_MS + 1000) / 1000, NOW)).toEqual({
+      ok: false,
+      reason: "recorded_at_in_future",
+    });
   });
 
   it("rejects milliseconds sent where seconds belong (lands far in the future)", () => {
@@ -74,7 +105,10 @@ describe("splitIngestBody", () => {
 
   it("uses a valid recorded_at on a single payload", () => {
     const result = splitIngestBody({ temp_c: 4.5, recorded_at: NOW_S - 120 }, NOW);
-    expect(result.ok && result.entries[0]).toMatchObject({ recordedAt: "2026-11-13T11:58:00.000Z", deviceTime: true });
+    expect(result.ok && result.entries[0]).toMatchObject({
+      recordedAt: "2026-11-13T11:58:00.000Z",
+      deviceTime: true,
+    });
   });
 
   it("fails a single payload with a bad recorded_at rather than storing it at server time", () => {
@@ -103,8 +137,16 @@ describe("splitIngestBody", () => {
       ok: true,
       batch: true,
       entries: [
-        { payload: { temp_c: 1, recorded_at: NOW_S - 180 }, recordedAt: "2026-11-13T11:57:00.000Z", deviceTime: true },
-        { payload: { temp_c: 4, recorded_at: NOW_S - 60 }, recordedAt: "2026-11-13T11:59:00.000Z", deviceTime: true },
+        {
+          payload: { temp_c: 1, recorded_at: NOW_S - 180 },
+          recordedAt: "2026-11-13T11:57:00.000Z",
+          deviceTime: true,
+        },
+        {
+          payload: { temp_c: 4, recorded_at: NOW_S - 60 },
+          recordedAt: "2026-11-13T11:59:00.000Z",
+          deviceTime: true,
+        },
       ],
       rejectedEntries: [
         { index: 1, reason: "invalid_recorded_at" },
@@ -115,10 +157,19 @@ describe("splitIngestBody", () => {
   });
 
   it("rejects an empty or oversized batch", () => {
-    expect(splitIngestBody({ readings: [] }, NOW)).toEqual({ ok: false, error: "readings is empty" });
-    const many = Array.from({ length: MAX_BATCH_READINGS + 1 }, () => ({ temp_c: 1, recorded_at: NOW_S }));
+    expect(splitIngestBody({ readings: [] }, NOW)).toEqual({
+      ok: false,
+      error: "readings is empty",
+    });
+    const many = Array.from({ length: MAX_BATCH_READINGS + 1 }, () => ({
+      temp_c: 1,
+      recorded_at: NOW_S,
+    }));
     expect(splitIngestBody({ readings: many }, NOW)).toMatchObject({ ok: false });
-    const max = Array.from({ length: MAX_BATCH_READINGS }, () => ({ temp_c: 1, recorded_at: NOW_S }));
+    const max = Array.from({ length: MAX_BATCH_READINGS }, () => ({
+      temp_c: 1,
+      recorded_at: NOW_S,
+    }));
     expect(splitIngestBody({ readings: max }, NOW)).toMatchObject({ ok: true });
   });
 });
@@ -127,8 +178,14 @@ describe("splitIngestBody: SenML record times (t / bt)", () => {
   const iso = (ms: number) => new Date(ms).toISOString();
 
   it("keeps an untimed pack on the old path, untouched (t: 0 counts as untimed)", () => {
-    const pack = [{ n: "0", u: "Cel", v: 18.5, t: 0 }, { n: "1", u: "Cel", v: 19 }];
-    expect(splitIngestBody(pack, NOW)).toMatchObject({ batch: false, entries: [{ payload: pack, deviceTime: false }] });
+    const pack = [
+      { n: "0", u: "Cel", v: 18.5, t: 0 },
+      { n: "1", u: "Cel", v: 19 },
+    ];
+    expect(splitIngestBody(pack, NOW)).toMatchObject({
+      batch: false,
+      entries: [{ payload: pack, deviceTime: false }],
+    });
   });
 
   it("splits absolute times into one entry each, oldest first, as device time", () => {
@@ -220,13 +277,20 @@ describe("splitIngestBody: SenML record times (t / bt)", () => {
   });
 
   it("caps the number of distinct times like a batch", () => {
-    const pack = Array.from({ length: MAX_BATCH_READINGS + 1 }, (_, i) => ({ n: "a", v: i, t: NOW_S - i }));
+    const pack = Array.from({ length: MAX_BATCH_READINGS + 1 }, (_, i) => ({
+      n: "a",
+      v: i,
+      t: NOW_S - i,
+    }));
     expect(splitIngestBody(pack, NOW)).toMatchObject({ ok: false });
     expect(splitIngestBody(pack.slice(1), NOW)).toMatchObject({ ok: true });
   });
 
   it("leaves arrays that aren't all objects on the old path", () => {
     const junk = [{ n: "a", v: 1, t: NOW_S - 10 }, 5];
-    expect(splitIngestBody(junk, NOW)).toMatchObject({ batch: false, entries: [{ payload: junk }] });
+    expect(splitIngestBody(junk, NOW)).toMatchObject({
+      batch: false,
+      entries: [{ payload: junk }],
+    });
   });
 });

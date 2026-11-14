@@ -14,7 +14,8 @@ const es: FreezeMapMessages = {
   embed: "Insertar",
   freezeSeason: "Temporada de heladas",
   shareKit: "Kit para compartir",
-  seedIntroHtml: "<strong>Mostrando datos de ejemplo</strong>: las lecturas reales de cada ciudad aparecen cuando participan suficientes hogares ({floor}+ sondas por ciudad).",
+  seedIntroHtml:
+    "<strong>Mostrando datos de ejemplo</strong>: las lecturas reales de cada ciudad aparecen cuando participan suficientes hogares ({floor}+ sondas por ciudad).",
   optInNone: "Todavía no participa ningún hogar: sé el primero en tu ciudad.",
   optInCount: {
     one: "Por ahora participa {count} hogar.",
@@ -24,13 +25,16 @@ const es: FreezeMapMessages = {
   linkCreate: "Crea una cuenta para contribuir",
   liveNotice: {
     one: "Datos agregados en vivo · {count} hogar contribuye · una ciudad necesita {floor}+ hogares para mostrar lecturas",
-    other: "Datos agregados en vivo · {count} hogares contribuyen · una ciudad necesita {floor}+ hogares para mostrar lecturas",
+    other:
+      "Datos agregados en vivo · {count} hogares contribuyen · una ciudad necesita {floor}+ hogares para mostrar lecturas",
   },
   lastSnapshot: " · Última instantánea {label}",
   liveOptOut: ". Puedes dejar de participar cuando quieras desde Household.",
   momentumTitle: "Progreso",
-  momentumApproaching: "Ciudades más cerca de mostrar datos reales ({floor} hogares cada una). Tu participación suma.",
-  momentumWaiting: "Cuando una ciudad llega a {floor} hogares participantes con una sonda activa, la vista de ejemplo de esa ciudad se sustituye por lecturas reales.",
+  momentumApproaching:
+    "Ciudades más cerca de mostrar datos reales ({floor} hogares cada una). Tu participación suma.",
+  momentumWaiting:
+    "Cuando una ciudad llega a {floor} hogares participantes con una sonda activa, la vista de ejemplo de esa ciudad se sustituye por lecturas reales.",
   householdsProgress: "{count}/{floor} hogares",
   moreToGo: {
     one: " · falta {count} para mostrar datos reales",
@@ -47,7 +51,8 @@ const es: FreezeMapMessages = {
   },
   sparsePrivate: {
     one: "{count} ciudad tiene menos de {floor} hogares, así que sus lecturas se mantienen privadas hasta que se unan más hogares. Aparece en Progreso solo con su número de hogares.",
-    other: "{count} ciudades tienen menos de {floor} hogares, así que sus lecturas se mantienen privadas hasta que se unan más hogares. Aparecen en Progreso solo con su número de hogares.",
+    other:
+      "{count} ciudades tienen menos de {floor} hogares, así que sus lecturas se mantienen privadas hasta que se unan más hogares. Aparecen en Progreso solo con su número de hogares.",
   },
   mapTitle: "Mapa",
   mapSubtitle:
@@ -56,7 +61,8 @@ const es: FreezeMapMessages = {
   noSamples: "Todavía no hay muestras de ciudades",
   noSamplesFloor: " que alcancen el mínimo de muestras",
   noSamplesUser: " Sé el primero en participar desde la configuración de tu hogar.",
-  noSamplesGuest: " Crea una cuenta y participa desde la configuración de Household para contribuir.",
+  noSamplesGuest:
+    " Crea una cuenta y participa desde la configuración de Household para contribuir.",
   thCity: "Ciudad",
   thTrend: "Tendencia",
   thTrendUnit: "(prom. °F)",
@@ -74,7 +80,8 @@ const es: FreezeMapMessages = {
   tableNote:
     "Hogares = viviendas participantes en esa ciudad en esta instantánea. Proporción con riesgo = hogares cuya sonda más fría estaba a ≤1 °C (34 °F) en el momento de la captura. La tendencia es la temperatura media reciente de la ciudad en las instantáneas horarias.",
   findTitle: "Busca tu ciudad",
-  findSubtitle: "Busca con la geocodificación de OpenWeather para ver si tu ciudad está en el mapa.",
+  findSubtitle:
+    "Busca con la geocodificación de OpenWeather para ver si tu ciudad está en el mapa.",
   findUser: " Los titulares del hogar participan en Dashboard → Household.",
   findGuest: " Inicia sesión para sumar tu hogar.",
   searchLabel: "Buscar ciudad",

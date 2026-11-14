@@ -63,19 +63,13 @@ describe("POST /api/admin/email-suppressions/add", () => {
       "manual",
       "known bounce",
     );
-    expect(response.headers.get("Location")).toBe(
-      "/dashboard/email-suppressions?added=1",
-    );
+    expect(response.headers.get("Location")).toBe("/dashboard/email-suppressions?added=1");
   });
 
   it("defaults reason to manual when blank", async () => {
     const { POST } = await import("./add");
     await POST(makeContext({ email: "a@example.com", reason: "  " }));
-    expect(mockAddEmailSuppression).toHaveBeenCalledWith(
-      "a@example.com",
-      "manual",
-      null,
-    );
+    expect(mockAddEmailSuppression).toHaveBeenCalledWith("a@example.com", "manual", null);
   });
 
   it("redirects with an error when add fails", async () => {

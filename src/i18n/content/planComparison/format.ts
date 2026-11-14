@@ -15,7 +15,9 @@ export function formatRetention(days: number, locale: Locale): string {
   const u = UNITS[locale];
   if (days >= 365) {
     const years = days / 365;
-    return years === 1 ? `1 ${u.year}` : `${Number.isInteger(years) ? years : years.toFixed(1)} ${u.years}`;
+    return years === 1
+      ? `1 ${u.year}`
+      : `${Number.isInteger(years) ? years : years.toFixed(1)} ${u.years}`;
   }
   return `${days} ${u.days}`;
 }

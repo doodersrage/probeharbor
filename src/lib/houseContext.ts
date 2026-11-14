@@ -1,10 +1,7 @@
 import type { DeviceWithSensors } from "./devices";
 import type { LatestSensorRow } from "./sensorReadings";
 import type { ThermostatSnapshot } from "./thermostatCorrelation";
-import {
-  formatThermostatMetricDetail,
-  formatThermostatMetricValue,
-} from "./thermostatCorrelation";
+import { formatThermostatMetricDetail, formatThermostatMetricValue } from "./thermostatCorrelation";
 import { findReferenceSensorLabel } from "./indoorReference";
 import type { ChartPoint } from "./garageTempsHistory";
 import { fetchThermostatSnapshotChartPoints } from "./thermostatSnapshots";
@@ -35,12 +32,16 @@ export function resolveReferenceSensorTempF(
   return row?.value_num ?? null;
 }
 
-export function buildHouseContext(input: {
-  thermostatSnapshot: ThermostatSnapshot | null;
-  referenceSensorId: string | null;
-  latest: LatestSensorRow[];
-  devices: DeviceWithSensors[];
-}, locale: Locale = "en", useCelsius = false): HouseContext | null {
+export function buildHouseContext(
+  input: {
+    thermostatSnapshot: ThermostatSnapshot | null;
+    referenceSensorId: string | null;
+    latest: LatestSensorRow[];
+    devices: DeviceWithSensors[];
+  },
+  locale: Locale = "en",
+  useCelsius = false,
+): HouseContext | null {
   // useCelsius only changes metricValue/metricDetail text; ambientTempF stays °F.
   if (input.thermostatSnapshot?.ambientTempF != null) {
     const ambientTempF = input.thermostatSnapshot.ambientTempF;
@@ -54,16 +55,10 @@ export function buildHouseContext(input: {
     };
   }
 
-  const referenceTempF = resolveReferenceSensorTempF(
-    input.referenceSensorId,
-    input.latest,
-  );
+  const referenceTempF = resolveReferenceSensorTempF(input.referenceSensorId, input.latest);
   if (referenceTempF == null) return null;
 
-  const referenceLabel = findReferenceSensorLabel(
-    input.devices,
-    input.referenceSensorId,
-  );
+  const referenceLabel = findReferenceSensorLabel(input.devices, input.referenceSensorId);
 
   return {
     source: "reference_sensor",
@@ -81,7 +76,11 @@ export function buildHouseContext(input: {
 const REFERENCE_TARGET_POINTS = 900;
 
 /** Bucket width (seconds) so [from, to] comes out near `target` points; at least a minute. */
-export function bucketSecondsFor(fromIso: string, toIso: string, target = REFERENCE_TARGET_POINTS): number {
+export function bucketSecondsFor(
+  fromIso: string,
+  toIso: string,
+  target = REFERENCE_TARGET_POINTS,
+): number {
   const spanSec = Math.max(0, (Date.parse(toIso) - Date.parse(fromIso)) / 1000);
   return Math.max(60, Math.ceil(spanSec / target));
 }
@@ -102,23 +101,40 @@ export async function fetchReferenceSensorChartPoints(
     if (sensor && sensor.kind !== "temperature") return [];
     const label = sensor?.label ?? libTextMessages(locale).house.house;
     // Averages per time bucket, so a sensor reporting every minute still covers the whole window.
-    const rows = await neonPlaces.sensorBucketAverages(householdId, sensorId, from, to, bucketSecondsFor(from, to));
+    const rows = await neonPlaces.sensorBucketAverages(
+      householdId,
+      sensorId,
+      from,
+      to,
+      bucketSecondsFor(from, to),
+    );
     return rows
       .filter((row) => typeof row.avg_num === "number" && Number.isFinite(row.avg_num))
-      .map((row) => ({ timestamp: row.bucket_start, tempf: row.avg_num as number, humidity: null, probeLabel: label }));
+      .map((row) => ({
+        timestamp: row.bucket_start,
+        tempf: row.avg_num as number,
+        humidity: null,
+        probeLabel: label,
+      }));
   } catch (error) {
-    console.error("fetchReferenceSensorChartPoints failed:", error instanceof Error ? error.message : error);
+    console.error(
+      "fetchReferenceSensorChartPoints failed:",
+      error instanceof Error ? error.message : error,
+    );
     return [];
   }
 }
 
-export async function fetchHouseChartOverlay(input: {
-  householdId: string;
-  days: number;
-  hasThermostatConnection: boolean;
-  referenceSensorId: string | null;
-  filters?: { from?: string; to?: string };
-}, locale: Locale = "en"): Promise<{ points: ChartPoint[]; source: "thermostat" | "reference" | null }> {
+export async function fetchHouseChartOverlay(
+  input: {
+    householdId: string;
+    days: number;
+    hasThermostatConnection: boolean;
+    referenceSensorId: string | null;
+    filters?: { from?: string; to?: string };
+  },
+  locale: Locale = "en",
+): Promise<{ points: ChartPoint[]; source: "thermostat" | "reference" | null }> {
   if (input.hasThermostatConnection) {
     const points = await fetchThermostatSnapshotChartPoints(
       input.householdId,
@@ -183,10 +199,13 @@ export async function fetchHouseContextForUser(
     listHouseholdDevices(householdId),
   ]);
 
-  return buildHouseContext({
-    thermostatSnapshot,
-    referenceSensorId,
-    latest,
-    devices: devicesResult.devices,
-  }, locale);
+  return buildHouseContext(
+    {
+      thermostatSnapshot,
+      referenceSensorId,
+      latest,
+      devices: devicesResult.devices,
+    },
+    locale,
+  );
 }

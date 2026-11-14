@@ -39,8 +39,7 @@ vi.mock("../../../lib/households", async (importOriginal) => ({
   removeHouseholdMember: (...a: unknown[]) => mockRemoveHouseholdMember(...a),
   setActiveHouseholdForUser: (...a: unknown[]) => mockSetActiveHouseholdForUser(...a),
   updateHouseholdName: (...a: unknown[]) => mockUpdateHouseholdName(...a),
-  createAdditionalHouseholdForUser: (...a: unknown[]) =>
-    mockCreateAdditionalHouseholdForUser(...a),
+  createAdditionalHouseholdForUser: (...a: unknown[]) => mockCreateAdditionalHouseholdForUser(...a),
 }));
 
 const mockGetUserEntitlements = vi.fn();
@@ -71,8 +70,7 @@ vi.mock("../../../lib/stripe", () => ({
 const mockUpdateHouseholdFreezeMapSettings = vi.fn();
 const mockGetHouseholdFreezeMapSettings = vi.fn();
 vi.mock("../../../lib/freezeMap", () => ({
-  updateHouseholdFreezeMapSettings: (...a: unknown[]) =>
-    mockUpdateHouseholdFreezeMapSettings(...a),
+  updateHouseholdFreezeMapSettings: (...a: unknown[]) => mockUpdateHouseholdFreezeMapSettings(...a),
   getHouseholdFreezeMapSettings: (...a: unknown[]) => mockGetHouseholdFreezeMapSettings(...a),
 }));
 
@@ -282,9 +280,7 @@ describe("POST /api/household", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/household?error=not+allowed",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=not+allowed");
   });
 
   it("leaves a household", async () => {
@@ -304,9 +300,7 @@ describe("POST /api/household", () => {
 
     await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/household?error=cannot_leave_owner",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=cannot_leave_owner");
   });
 
   it("creates an additional property when under the limit", async () => {
@@ -437,9 +431,7 @@ describe("POST /api/household", () => {
     await POST(context);
 
     expect(mockCreateHouseholdInvite).not.toHaveBeenCalled();
-    expect(context.redirect).toHaveBeenCalledWith(
-      "/dashboard/household?error=portfolio_required",
-    );
+    expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=portfolio_required");
   });
 
   it("creates an invite, sends email, and redirects with invited=1", async () => {
@@ -513,7 +505,11 @@ describe("POST /api/household", () => {
   });
 
   it("redirects with an error and sends nothing when resend finds no pending invite", async () => {
-    mockReissueHouseholdInvite.mockResolvedValue({ invite: null, token: null, error: "Invite not found" });
+    mockReissueHouseholdInvite.mockResolvedValue({
+      invite: null,
+      token: null,
+      error: "Invite not found",
+    });
     const { POST } = await import("./index");
     const context = makePostContext({ action: "resend_invite", invite_id: "nope" });
 
@@ -548,7 +544,13 @@ describe("POST /api/household: who may invite and manage members", () => {
 
     const invite = makePostContext({ action: "invite", email: "new@example.com" });
     await POST(invite);
-    expect(mockCreateHouseholdInvite).toHaveBeenCalledWith("house-1", "new@example.com", "user-1", 7, "member");
+    expect(mockCreateHouseholdInvite).toHaveBeenCalledWith(
+      "house-1",
+      "new@example.com",
+      "user-1",
+      7,
+      "member",
+    );
     expect(invite.redirect).toHaveBeenCalledWith("/dashboard/household?invited=1");
 
     const resend = makePostContext({ action: "resend_invite", invite_id: "inv-1" });
@@ -560,24 +562,29 @@ describe("POST /api/household: who may invite and manage members", () => {
     expect(revoke.redirect).toHaveBeenCalledWith("/dashboard/household?invite_revoked=1");
   });
 
-  it.each(["viewer", "alert_only", "property_manager"])("blocks a %s from every invite action", async (role) => {
-    actAs(role);
-    const { POST } = await import("./index");
+  it.each(["viewer", "alert_only", "property_manager"])(
+    "blocks a %s from every invite action",
+    async (role) => {
+      actAs(role);
+      const { POST } = await import("./index");
 
-    for (const fields of <Array<Record<string, string>>>[
-      { action: "invite", email: "new@example.com" },
-      { email: "new@example.com" },
-      { action: "resend_invite", invite_id: "inv-1" },
-      { action: "revoke_invite", invite_id: "inv-1" },
-    ]) {
-      const context = makePostContext(fields);
-      await POST(context);
-      expect(context.redirect).toHaveBeenCalledWith("/dashboard/household?error=manager_required");
-    }
-    expect(mockCreateHouseholdInvite).not.toHaveBeenCalled();
-    expect(mockReissueHouseholdInvite).not.toHaveBeenCalled();
-    expect(mockRevokeHouseholdInvite).not.toHaveBeenCalled();
-  });
+      for (const fields of <Array<Record<string, string>>>[
+        { action: "invite", email: "new@example.com" },
+        { email: "new@example.com" },
+        { action: "resend_invite", invite_id: "inv-1" },
+        { action: "revoke_invite", invite_id: "inv-1" },
+      ]) {
+        const context = makePostContext(fields);
+        await POST(context);
+        expect(context.redirect).toHaveBeenCalledWith(
+          "/dashboard/household?error=manager_required",
+        );
+      }
+      expect(mockCreateHouseholdInvite).not.toHaveBeenCalled();
+      expect(mockReissueHouseholdInvite).not.toHaveBeenCalled();
+      expect(mockRevokeHouseholdInvite).not.toHaveBeenCalled();
+    },
+  );
 
   it.each(["member", "viewer", "alert_only", "property_manager"])(
     "doesn't let a %s rename the household, remove members or change roles",
@@ -623,21 +630,28 @@ describe("POST /api/household: who may invite and manage members", () => {
     expect(bad.redirect).toHaveBeenCalledWith("/dashboard/household?error=1");
 
     mockParseHouseholdInviteRole.mockReturnValue("property_manager");
-    const pm = makePostContext({ action: "change_role", user_id: "user-2", role: "property_manager" });
+    const pm = makePostContext({
+      action: "change_role",
+      user_id: "user-2",
+      role: "property_manager",
+    });
     await POST(pm);
     expect(pm.redirect).toHaveBeenCalledWith("/dashboard/household?error=portfolio_required");
     expect(mockChangeHouseholdMemberRole).not.toHaveBeenCalled();
   });
 
-  it.each(["cannot_change_owner", "not_a_member"])("shows %s when the change is refused", async (code) => {
-    mockChangeHouseholdMemberRole.mockResolvedValue({ error: code });
-    const { POST } = await import("./index");
-    const context = makePostContext({ action: "change_role", user_id: "user-2", role: "member" });
+  it.each(["cannot_change_owner", "not_a_member"])(
+    "shows %s when the change is refused",
+    async (code) => {
+      mockChangeHouseholdMemberRole.mockResolvedValue({ error: code });
+      const { POST } = await import("./index");
+      const context = makePostContext({ action: "change_role", user_id: "user-2", role: "member" });
 
-    await POST(context);
+      await POST(context);
 
-    expect(context.redirect).toHaveBeenCalledWith(`/dashboard/household?error=${code}`);
-  });
+      expect(context.redirect).toHaveBeenCalledWith(`/dashboard/household?error=${code}`);
+    },
+  );
 
   it("doesn't leak a database error message for a failed role change", async () => {
     mockChangeHouseholdMemberRole.mockResolvedValue({ error: "connection refused at 10.0.0.5" });

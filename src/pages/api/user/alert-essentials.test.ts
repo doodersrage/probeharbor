@@ -130,7 +130,9 @@ describe("POST /api/user/alert-essentials", () => {
 
   it("stores a °C threshold as °F (temp_unit=C)", async () => {
     const { POST } = await import("./alert-essentials");
-    await POST(makeContext({ temp_unit: "C", freeze_threshold_f: "1", alert_email: "a@example.com" }));
+    await POST(
+      makeContext({ temp_unit: "C", freeze_threshold_f: "1", alert_email: "a@example.com" }),
+    );
     expect(mockSaveAlertSettingsForUser).toHaveBeenCalledWith(
       "user-1",
       expect.objectContaining({ freezeThresholdF: 33.8 }),
@@ -139,7 +141,9 @@ describe("POST /api/user/alert-essentials", () => {
 
   it("keeps the stored threshold for a blank value in either unit", async () => {
     const { POST } = await import("./alert-essentials");
-    await POST(makeContext({ temp_unit: "C", freeze_threshold_f: "", alert_email: "a@example.com" }));
+    await POST(
+      makeContext({ temp_unit: "C", freeze_threshold_f: "", alert_email: "a@example.com" }),
+    );
     expect(mockSaveAlertSettingsForUser).toHaveBeenCalledWith(
       "user-1",
       expect.objectContaining({ freezeThresholdF: 35 }),

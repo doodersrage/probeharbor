@@ -10,7 +10,8 @@ const de: ApiMoreBillingMessages = {
   },
   claims: {
     requiresPro: "Das Schadensdossier erfordert Pro",
-    pdfUnavailable: "Die PDF-Erstellung ist vorübergehend nicht verfügbar. Versuche ?format=html oder probiere es gleich noch einmal.",
+    pdfUnavailable:
+      "Die PDF-Erstellung ist vorübergehend nicht verfügbar. Versuche ?format=html oder probiere es gleich noch einmal.",
   },
   certificate: {
     failed: "Zertifikat konnte nicht erstellt werden",
@@ -21,7 +22,8 @@ const de: ApiMoreBillingMessages = {
     range: "{from} bis {to}",
     preheader: "Ein ProbeHarbor-Bericht zur Frostbelastung für {household} steht bereit.",
     title: "Schadensdossier: {household}",
-    intro: "Ein Mitglied eines ProbeHarbor-Haushalts hat einen Bericht zu Frostbelastung und Alarmverlauf für den Zeitraum {range} geteilt.",
+    intro:
+      "Ein Mitglied eines ProbeHarbor-Haushalts hat einen Bericht zu Frostbelastung und Alarmverlauf für den Zeitraum {range} geteilt.",
     body: "Der Bericht enthält Statistiken zur Frostbelastung, Tabellen zu Geräten und Fühlern sowie eine Zeitleiste der kritischen Alarme im gewählten Zeitraum, dazu einen Prüfcode, mit dem sich genau dieser Export später erneut bestätigen lässt.",
     verificationCode: "Prüfcode: {code}",
     cta: "Schadensdossier ansehen",

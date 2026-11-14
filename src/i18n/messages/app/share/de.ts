@@ -10,21 +10,27 @@ const de: ShareMessages = {
   notices: {
     created: "Freigabelink erstellt. Kopiere ihn unten und schick ihn deiner Familie.",
     revoked: "Freigabelink widerrufen.",
-    regenerated: "Neuer Link erstellt, kopiere ihn unten. Der alte Link und alle Einbettungen oder Abrufe damit funktionieren nicht mehr.",
-    apiKeyCreated: "API-Schlüssel erstellt. Kopiere ihn jetzt, er wird nicht noch einmal angezeigt.",
+    regenerated:
+      "Neuer Link erstellt, kopiere ihn unten. Der alte Link und alle Einbettungen oder Abrufe damit funktionieren nicht mehr.",
+    apiKeyCreated:
+      "API-Schlüssel erstellt. Kopiere ihn jetzt, er wird nicht noch einmal angezeigt.",
     apiKeyRevoked: "API-Schlüssel widerrufen.",
     statusCreated: "Statusseite erstellt. Kopiere den Link unten.",
     statusRevoked: "Statusseite widerrufen.",
-    statusRegenerated: "Neuer Status-Link erstellt, kopiere ihn unten. Der alte Link und das Badge funktionieren nicht mehr.",
-    familyLimit: "Du hast bereits einen Live-Familienlink. Widerrufe ihn zuerst oder wechsle zu Pro für weitere.",
-    proRequired: "Diese Option erfordert Pro. Mit Free kannst du trotzdem einen Live-Familienlink erstellen.",
+    statusRegenerated:
+      "Neuer Status-Link erstellt, kopiere ihn unten. Der alte Link und das Badge funktionieren nicht mehr.",
+    familyLimit:
+      "Du hast bereits einen Live-Familienlink. Widerrufe ihn zuerst oder wechsle zu Pro für weitere.",
+    proRequired:
+      "Diese Option erfordert Pro. Mit Free kannst du trotzdem einen Live-Familienlink erstellen.",
     error: "Freigabelinks konnten nicht aktualisiert werden.",
   },
   links: {
     subtitle: "Live-Ansicht mit einem Klick. Jeder mit dem Link sieht die Sensoren live.",
     viewOnly: "Nur Lesezugriff: Du kannst keine Freigabelinks erstellen oder widerrufen.",
     newTitle: "Neuer Freigabelink",
-    newSubtitle: "Kopiere diesen Link und verschicke ihn. Jeder, der ihn hat, sieht die Sensoren live.",
+    newSubtitle:
+      "Kopiere diesen Link und verschicke ihn. Jeder, der ihn hat, sieht die Sensoren live.",
     copyLink: "Link kopieren",
     haTitle: "Diesen Link in Home Assistant oder Apple Home nutzen",
     haBodyHtml:
@@ -35,7 +41,8 @@ const de: ShareMessages = {
     familyDefaultLabel: "Live-Ansicht für die Familie",
     familyTitle: "Familienlink erstellen",
     familyBody: "Live-Sensoren, läuft nach 7 Tagen ab. Jederzeit widerrufbar.",
-    familyFreeNote: "Free enthält einen Live-Familienlink. Pro bietet zusätzlich Verlauf, Metriken und Links ohne Ablauf.",
+    familyFreeNote:
+      "Free enthält einen Live-Familienlink. Pro bietet zusätzlich Verlauf, Metriken und Links ohne Ablauf.",
     familySubmit: "Live-Familienlink erstellen",
     moreOptions: "Weitere Freigabeoptionen (Pro)",
     label: "Bezeichnung",
@@ -61,9 +68,11 @@ const de: ShareMessages = {
     embed: "Einbetten: {url}",
     scrape: "Scrape: {url}",
     confirmRevoke: "Diesen Freigabelink widerrufen?",
-    linkHidden: "Aus Sicherheitsgründen wird der vollständige Link nur beim Erstellen angezeigt. Erstelle ihn neu, wenn du ihn wieder brauchst.",
+    linkHidden:
+      "Aus Sicherheitsgründen wird der vollständige Link nur beim Erstellen angezeigt. Erstelle ihn neu, wenn du ihn wieder brauchst.",
     regenerate: "Link neu erstellen",
-    confirmRegenerate: "Neuen Link erstellen? Der aktuelle Link und alle Einbettungen oder Abrufe damit funktionieren dann nicht mehr.",
+    confirmRegenerate:
+      "Neuen Link erstellen? Der aktuelle Link und alle Einbettungen oder Abrufe damit funktionieren dann nicht mehr.",
     revoke: "Widerrufen",
     remove: "Entfernen",
     statusTitle: "Öffentliche Statusseiten",
@@ -73,9 +82,11 @@ const de: ShareMessages = {
     statusDefaultLabel: "Haushaltsstatus",
     createStatus: "Statusseite erstellen",
     noStatusPages: "Noch keine Statusseiten.",
-    statusUrlHidden: "Aus Sicherheitsgründen wird der Link nur beim Erstellen angezeigt. Erstelle ihn neu, wenn du ihn wieder brauchst.",
+    statusUrlHidden:
+      "Aus Sicherheitsgründen wird der Link nur beim Erstellen angezeigt. Erstelle ihn neu, wenn du ihn wieder brauchst.",
     regenerateStatus: "Link neu erstellen",
-    confirmRegenerateStatus: "Neuen Link erstellen? Der aktuelle Link und das Badge funktionieren dann nicht mehr.",
+    confirmRegenerateStatus:
+      "Neuen Link erstellen? Der aktuelle Link und das Badge funktionieren dann nicht mehr.",
     badgeLabel: "Badge:",
     preview: "Vorschau",
   },
@@ -95,7 +106,8 @@ const de: ShareMessages = {
     keyDefaultName: "Metrik-Schlüssel",
     scopeLabel: "Zugriff",
     scopeRead: "Nur lesen: Metriken und Geräteliste (empfohlen für Prometheus/Grafana)",
-    scopeWrite: "Lesen und schreiben: auch Geräte anlegen, Sensoren umbenennen oder ausblenden, Pull-Einrichtung ersetzen",
+    scopeWrite:
+      "Lesen und schreiben: auch Geräte anlegen, Sensoren umbenennen oder ausblenden, Pull-Einrichtung ersetzen",
     scopeReadBadge: "Nur lesen",
     scopeWriteBadge: "Lesen & schreiben",
     createKey: "API-Schlüssel erstellen",
@@ -105,7 +117,8 @@ const de: ShareMessages = {
     inboundTitle: "Eingehende Webhooks",
     inboundBodyHtml:
       'Lass Home Assistant oder Zapier per POST an ProbeHarbor senden. Aktionen: <code>snooze</code>, <code>vacation</code>, <code>clear_snooze</code>, <code>clear_vacation</code>, <code>status</code>. Beispiel: <code>{"action":"snooze","hours":24}</code> an <code>POST /api/inbound/&lt;token&gt;</code>. Snooze und Urlaub halten die Routinealarme dieses Haushalts für alle Mitglieder zurück (Frost-, Leck-, Strom- und Offline-Alarme werden weiterhin gesendet), nicht die Alarme der Mitglieder für ihre anderen Haushalte.',
-    inboundViewOnly: "Nur Lesezugriff: Eingehende Webhooks können nicht erstellt oder widerrufen werden.",
+    inboundViewOnly:
+      "Nur Lesezugriff: Eingehende Webhooks können nicht erstellt oder widerrufen werden.",
     newWebhookUrl: "Neue Webhook-URL (jetzt kopieren):",
     signingSecret: "Signatur-Secret (für X-ProbeHarbor-Signature-V2, jetzt kopieren):",
     copyUrl: "URL kopieren",
@@ -114,7 +127,8 @@ const de: ShareMessages = {
     noInbound: "Noch keine eingehenden Webhooks.",
     statsTitle: "Ingest-Statistik (7 Tage)",
     statsBody: "Erfolgreiche und fehlgeschlagene POSTs pro Tag und Push-Gerät.",
-    statsEmpty: "Noch keine Ingest-Aktivität erfasst. Sende einen POST von einem Push-Gerät, um sie hier zu sehen.",
+    statsEmpty:
+      "Noch keine Ingest-Aktivität erfasst. Sende einen POST von einem Push-Gerät, um sie hier zu sehen.",
     colDevice: "Gerät",
     colDay: "Tag",
     colOk: "OK",
@@ -126,7 +140,8 @@ const de: ShareMessages = {
     activityEmpty:
       "Aktionen im Haushalt (Freigabelinks, gespeicherte Alarmeinstellungen, Geräteübertragungen, angezeigte Ingest-Schlüssel) erscheinen hier.",
     exportTitle: "Deine Daten exportieren",
-    exportBody: "Lade Einstellungen, Alarmeinstellungen, einen Auszug aus dem Verlauf und deine Geräte als JSON herunter.",
+    exportBody:
+      "Lade Einstellungen, Alarmeinstellungen, einen Auszug aus dem Verlauf und deine Geräte als JSON herunter.",
     exportButton: "export.json herunterladen",
   },
   grafana: {
@@ -136,7 +151,8 @@ const de: ShareMessages = {
     step1: "Erstelle oben einen API-Schlüssel (Präfix {prefix}).",
     prefixPending: "wird nach dem Erstellen angezeigt",
     step2Lead: "In Grafana unter Connections → Data sources → Add Prometheus als URL",
-    step2TailHtml: "eintragen und den Header <code>Authorization: Bearer &lt;your-api-key&gt;</code> hinzufügen.",
+    step2TailHtml:
+      "eintragen und den Header <code>Authorization: Bearer &lt;your-api-key&gt;</code> hinzufügen.",
     step3Lead: "Lade",
     step3Tail: "herunter und importiere es über Dashboards → New → Import.",
     step4: "Optional: Panels pro Fühler-Bezeichnung oder Gerätename im Haushalt duplizieren.",
@@ -164,16 +180,19 @@ const de: ShareMessages = {
       'Installiere die offizielle <a class="text-link" href="{integrationHref}">HACS-Integration</a> für automatische Sensoren oder importiere die YAML-Blueprints und Webhook-Rezepte unten.',
     recommended: "Empfohlen:",
     hacsCustom: "Benutzerdefinierte HACS-Integration",
-    hacsCustomTail: "Freigabelink-Token einfügen; optional eingehender Webhook + Ingest-Schlüssel für Dienste",
+    hacsCustomTail:
+      "Freigabelink-Token einfügen; optional eingehender Webhook + Ingest-Schlüssel für Dienste",
     guide: "Anleitung zur Home-Assistant-Integration",
     devDocs: "Entwicklerdoku",
     downloadEntities: "YAML für Entitätsnamen herunterladen",
     downloadBlueprint: "YAML für Webhook-Automatisierung herunterladen",
     blueprintLead: "Import im Blueprint-Stil:",
-    blueprintTail: "kopieren und in HA unter Einstellungen → Automatisierungen → Erstellen → Aus YAML importieren einfügen.",
+    blueprintTail:
+      "kopieren und in HA unter Einstellungen → Automatisierungen → Erstellen → Aus YAML importieren einfügen.",
     inboundHtml:
       'Erstelle unter Teilen einen eingehenden Webhook und sende dann <code>{"action":"status"}</code> per POST aus einem rest_command.',
-    scrapeHtml: "Rufe Prometheus-Metriken mit einem Pro-API-Schlüssel unter <code>/api/v1/metrics</code> ab.",
+    scrapeHtml:
+      "Rufe Prometheus-Metriken mit einem Pro-API-Schlüssel unter <code>/api/v1/metrics</code> ab.",
     prefillRest: "Vorlage: rest_command",
     prefillPrometheus: "Vorlage: Prometheus-Scrape",
     seeAlsoHtml:
@@ -183,7 +202,8 @@ const de: ShareMessages = {
     title: "Home-Assistant-Diagnose",
     emptyHtml:
       'Noch kein Gerät hat Messwerte von Home Assistant erhalten. Installiere die <a class="text-link" href="{hacsHref}" target="_blank" rel="noreferrer">HACS-Integration</a>, trage in ihren Optionen den Ingest-Schlüssel eines Geräts ein und rufe den Dienst <code>thermaltrace.push</code> aus einer Automatisierung auf; das Gerät erscheint hier nach dem ersten Push. (Das Lesen von Daten in Home Assistant über einen Freigabelink wird hier nicht erfasst.)',
-    subtitle: "Von Home Assistant gespeiste Geräte, neueste zuerst. „Veraltet“ heißt: seit über 2 Stunden kein Push.",
+    subtitle:
+      "Von Home Assistant gespeiste Geräte, neueste zuerst. „Veraltet“ heißt: seit über 2 Stunden kein Push.",
     caption: "Geräte, die Messwerte von Home Assistant erhalten",
     colDevice: "Gerät",
     colSensors: "Sensoren",
@@ -203,7 +223,8 @@ const de: ShareMessages = {
   },
   lan: {
     title: "ESPHome & Shelly",
-    subtitle: "Sende Messwerte von handelsüblichen LAN-Sensoren, ohne eigene Firmware zu schreiben.",
+    subtitle:
+      "Sende Messwerte von handelsüblichen LAN-Sensoren, ohne eigene Firmware zu schreiben.",
     pushDeviceHtml:
       'Lege unter <a class="text-link" href="/dashboard/devices">Geräte</a> ein <strong>Push-Gerät</strong> an und kopiere die Ingest-URL.',
     recipesHtml:
@@ -222,8 +243,10 @@ const de: ShareMessages = {
     step1Html:
       'Lege unter <a class="text-link" href="/dashboard/devices">Geräte</a> ein Push-Gerät an und kopiere den Ingest-Schlüssel.',
     step2: "In Node-RED: Menü → Import → URL einfügen oder JSON hochladen.",
-    step3Html: 'Setze die Umgebungsvariable <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (oder bearbeite den Function-Node).',
-    step4: "Richte die MQTT-Nodes auf deinen Broker, klicke auf Deploy und achte im Debug-Node auf HTTP 200.",
+    step3Html:
+      'Setze die Umgebungsvariable <code class="text-xs">PROBEHARBOR_INGEST_KEY</code> (oder bearbeite den Function-Node).',
+    step4:
+      "Richte die MQTT-Nodes auf deinen Broker, klicke auf Deploy und achte im Debug-Node auf HTTP 200.",
     downloadFlow: "Flow-JSON herunterladen",
     devDocs: "Entwicklerdoku",
     fullGuide: "Vollständige Node-RED-Anleitung",

@@ -55,7 +55,8 @@ const es: DigestEmailMessages = {
     one: "Te llegó {reached} de {count} alerta por {channels}.",
     other: "Te llegaron {reached} de {count} alertas por {channels}.",
   },
-  notDelivered: "No se entregaron por: {failures}. Revisa esos canales en Alertas y envía una prueba.",
+  notDelivered:
+    "No se entregaron por: {failures}. Revisa esos canales en Alertas y envía una prueba.",
   failedChannel: "{channel} ({count}×)",
 };
 

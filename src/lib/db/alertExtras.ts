@@ -55,7 +55,10 @@ export async function listSettingsHistory(
 }
 
 /** The snapshot saved as entry `id`, only if it is the user's. */
-export async function getSettingsHistorySnapshot(userId: string, id: number): Promise<Record<string, unknown> | null> {
+export async function getSettingsHistorySnapshot(
+  userId: string,
+  id: number,
+): Promise<Record<string, unknown> | null> {
   try {
     const [row] = await query<{ settings: Record<string, unknown> }>(
       "select settings from public.alert_settings_history where user_id = $1 and id = $2",
@@ -69,7 +72,13 @@ export async function getSettingsHistorySnapshot(userId: string, id: number): Pr
 
 // ---- snooze links -----------------------------------------------------------
 
-export type SnoozeTokenRow = { token: string; user_id: string; hours: number; expires_at: string; used_at: string | null };
+export type SnoozeTokenRow = {
+  token: string;
+  user_id: string;
+  hours: number;
+  expires_at: string;
+  used_at: string | null;
+};
 
 export async function findSnoozeToken(lookupKeys: string[]): Promise<SnoozeTokenRow | null> {
   try {
@@ -83,14 +92,17 @@ export async function findSnoozeToken(lookupKeys: string[]): Promise<SnoozeToken
   }
 }
 
-export async function insertSnoozeToken(tokenHash: string, userId: string, hours: number, expiresAtIso: string): Promise<void> {
+export async function insertSnoozeToken(
+  tokenHash: string,
+  userId: string,
+  hours: number,
+  expiresAtIso: string,
+): Promise<void> {
   try {
-    await query("insert into public.alert_snooze_tokens (token, user_id, hours, expires_at) values ($1, $2, $3, $4)", [
-      tokenHash,
-      userId,
-      hours,
-      expiresAtIso,
-    ]);
+    await query(
+      "insert into public.alert_snooze_tokens (token, user_id, hours, expires_at) values ($1, $2, $3, $4)",
+      [tokenHash, userId, hours, expiresAtIso],
+    );
   } catch (error) {
     console.error("Failed to store snooze link:", message(error));
   }
@@ -100,7 +112,9 @@ export async function insertSnoozeToken(tokenHash: string, userId: string, hours
  * Mark the link used if it is unused and unexpired; returns who it snoozes and
  * for how long. Null means it was already used, expired, or unknown.
  */
-export async function claimSnoozeToken(lookupKeys: string[]): Promise<{ user_id: string; hours: number } | null> {
+export async function claimSnoozeToken(
+  lookupKeys: string[],
+): Promise<{ user_id: string; hours: number } | null> {
   const [row] = await query<{ user_id: string; hours: number }>(
     `update public.alert_snooze_tokens set used_at = now()
      where token = (
@@ -137,14 +151,25 @@ export async function recordWebhookDelivery(row: {
     await query(
       `insert into public.webhook_deliveries (user_id, webhook_type, url_host, status_code, success, error_message, duration_ms)
        values ($1, $2, $3, $4, $5, $6, $7)`,
-      [row.user_id, row.webhook_type, row.url_host, row.status_code, row.success, row.error_message, row.duration_ms],
+      [
+        row.user_id,
+        row.webhook_type,
+        row.url_host,
+        row.status_code,
+        row.success,
+        row.error_message,
+        row.duration_ms,
+      ],
     );
   } catch (error) {
     console.error("Failed to record webhook delivery:", message(error));
   }
 }
 
-export async function listRecentWebhookDeliveries(userId: string, limit: number): Promise<WebhookDeliveryRow[]> {
+export async function listRecentWebhookDeliveries(
+  userId: string,
+  limit: number,
+): Promise<WebhookDeliveryRow[]> {
   try {
     return await query<WebhookDeliveryRow>(
       `select id, webhook_type, url_host, status_code, success, error_message, duration_ms, created_at

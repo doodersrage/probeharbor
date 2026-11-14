@@ -27,20 +27,28 @@ const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString(
 /** A user, their household, and one device with a temperature + humidity probe. */
 async function setup(email: string, deviceName: string) {
   const userId = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [
-    userId,
-  ]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [userId],
+  );
   const householdId = m!.household_id;
   const [d] = await sql<{ id: string }>(
     "insert into public.devices (household_id, name, source) values ($1, $2, 'push') returning id",
     [householdId, deviceName],
   );
-  const temp = (await upsertDeviceSensor(householdId, d!.id, "0", "Bay", "temperature", "F")).sensor!.id;
-  const hum = (await upsertDeviceSensor(householdId, d!.id, "0", "Bay humidity", "humidity", "%")).sensor!.id;
+  const temp = (await upsertDeviceSensor(householdId, d!.id, "0", "Bay", "temperature", "F"))
+    .sensor!.id;
+  const hum = (await upsertDeviceSensor(householdId, d!.id, "0", "Bay humidity", "humidity", "%"))
+    .sensor!.id;
   return { userId, householdId, deviceId: d!.id, temp, hum };
 }
 
-async function pair(h: Awaited<ReturnType<typeof setup>>, at: string, tempF: number, humidity: number) {
+async function pair(
+  h: Awaited<ReturnType<typeof setup>>,
+  at: string,
+  tempF: number,
+  humidity: number,
+) {
   await sql(
     `insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num)
      values ($1, $3, $4, $5), ($2, $3, $4, $6)`,
@@ -71,7 +79,12 @@ describe("History table (Neon)", () => {
     const a = await setup("a@example.com", "Garage");
     const shed = await upsertDeviceSensor(
       a.householdId,
-      (await sql<{ id: string }>("insert into public.devices (household_id, name, source) values ($1, 'Shed', 'push') returning id", [a.householdId]))[0]!.id,
+      (
+        await sql<{ id: string }>(
+          "insert into public.devices (household_id, name, source) values ($1, 'Shed', 'push') returning id",
+          [a.householdId],
+        )
+      )[0]!.id,
       "7",
       "Shed probe",
       "temperature",
@@ -79,16 +92,25 @@ describe("History table (Neon)", () => {
     );
     await pair(a, minutesAgo(60), 40, 50);
     await pair(a, minutesAgo(10), 41, 51);
-    await sql("insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values ($1, $2, $3, 30)", [
-      shed.sensor!.id,
-      a.householdId,
-      minutesAgo(10),
-    ]);
+    await sql(
+      "insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values ($1, $2, $3, 30)",
+      [shed.sensor!.id, a.householdId, minutesAgo(10)],
+    );
 
-    expect((await fetchGarageTempHistory(a.userId, 1, 20, { feedName: "Shed" })).readings.map((r) => r.tempf)).toEqual([30]);
+    expect(
+      (await fetchGarageTempHistory(a.userId, 1, 20, { feedName: "Shed" })).readings.map(
+        (r) => r.tempf,
+      ),
+    ).toEqual([30]);
     expect((await fetchGarageTempHistory(a.userId, 1, 20, { probeKey: "0" })).totalCount).toBe(2);
-    expect((await fetchGarageTempHistory(a.userId, 1, 20, { from: minutesAgo(30) })).totalCount).toBe(2);
-    expect((await fetchGarageTempHistory(a.userId, 1, 20, { to: minutesAgo(30) })).readings.map((r) => r.tempf)).toEqual([40]);
+    expect(
+      (await fetchGarageTempHistory(a.userId, 1, 20, { from: minutesAgo(30) })).totalCount,
+    ).toBe(2);
+    expect(
+      (await fetchGarageTempHistory(a.userId, 1, 20, { to: minutesAgo(30) })).readings.map(
+        (r) => r.tempf,
+      ),
+    ).toEqual([40]);
   });
 });
 
@@ -168,8 +190,12 @@ describe("History helpers (Neon)", () => {
     await pair(a, minutesAgo(100), 35, 50);
     await pair(a, minutesAgo(10), 45, 50);
 
-    expect(Date.parse((await fetchEarliestSensorReadingAt(a.householdId))!)).toBe(Date.parse(first));
-    await expect(fetchTemperatureReadingCounts(a.householdId, minutesAgo(400), minutesAgo(0), 36)).resolves.toEqual({
+    expect(Date.parse((await fetchEarliestSensorReadingAt(a.householdId))!)).toBe(
+      Date.parse(first),
+    );
+    await expect(
+      fetchTemperatureReadingCounts(a.householdId, minutesAgo(400), minutesAgo(0), 36),
+    ).resolves.toEqual({
       total: 3,
       below: 2,
       approximate: false,

@@ -89,7 +89,9 @@ export async function sendQuarterlyReportsForAllUsers(): Promise<{
   skipped: number;
   errors: string[];
 }> {
-  const rows = (await neonEmail.userIdsWithFlag("quarterly_report_enabled")).map((user_id) => ({ user_id }));
+  const rows = (await neonEmail.userIdsWithFlag("quarterly_report_enabled")).map((user_id) => ({
+    user_id,
+  }));
 
   let sent = 0;
   let skipped = 0;
@@ -101,9 +103,7 @@ export async function sendQuarterlyReportsForAllUsers(): Promise<{
       if (ok) sent += 1;
       else skipped += 1;
     } catch (error) {
-      errors.push(
-        `${row.user_id}: ${error instanceof Error ? error.message : "unknown"}`,
-      );
+      errors.push(`${row.user_id}: ${error instanceof Error ? error.message : "unknown"}`);
     }
   }
 
@@ -130,9 +130,7 @@ async function sendQuarterlyReportForUser(userId: string): Promise<boolean> {
   const temps = points.map((p) => p.tempf);
   const minTemp = temps.length ? Math.min(...temps) : null;
   const maxTemp = temps.length ? Math.max(...temps) : null;
-  const avgTemp = temps.length
-    ? temps.reduce((a, b) => a + b, 0) / temps.length
-    : null;
+  const avgTemp = temps.length ? temps.reduce((a, b) => a + b, 0) / temps.length : null;
 
   const quarterLabel = formatQuarterlyWindowLabel(new Date(), locale);
 

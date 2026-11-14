@@ -1,8 +1,5 @@
 import { BRAND_DESCRIPTION, BRAND_NAME, BRAND_SPACES } from "./brand";
-import {
-  resolveConfiguredSiteUrl as resolveSiteUrl,
-  resolvePageUrl,
-} from "./siteConfig";
+import { resolveConfiguredSiteUrl as resolveSiteUrl, resolvePageUrl } from "./siteConfig";
 
 export { resolveSiteUrl, resolvePageUrl };
 
@@ -30,9 +27,7 @@ export function getOrganizationSchema(siteUrl: string) {
     },
     image: `${siteUrl}/og-dashboard.jpg`,
     description: DEFAULT_DESCRIPTION,
-    sameAs: [
-      "https://github.com/doodersrage/probeharbor",
-    ],
+    sameAs: ["https://github.com/doodersrage/probeharbor"],
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
@@ -165,8 +160,7 @@ export function getArticleSchema(options: {
     },
     image: options.imageUrl ? [options.imageUrl] : [`${options.siteUrl}/og-dashboard.jpg`],
     datePublished: options.datePublished ?? DEFAULT_ARTICLE_PUBLISHED,
-    dateModified:
-      options.dateModified ?? options.datePublished ?? DEFAULT_ARTICLE_MODIFIED,
+    dateModified: options.dateModified ?? options.datePublished ?? DEFAULT_ARTICLE_MODIFIED,
     articleSection: options.articleSection,
     author: {
       "@type": "Organization",
@@ -184,10 +178,7 @@ export function getArticleSchema(options: {
   };
 }
 
-export function getBreadcrumbSchema(
-  siteUrl: string,
-  items: Array<{ name: string; path: string }>,
-) {
+export function getBreadcrumbSchema(siteUrl: string, items: Array<{ name: string; path: string }>) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -297,7 +288,7 @@ export function getSiteSchemas(options: {
     schemas.push(getSoftwareApplicationSchema(options.siteUrl));
   }
 
-  schemas.push(...(options.extraSchemas ?? []).filter(Boolean) as Record<string, unknown>[]);
+  schemas.push(...((options.extraSchemas ?? []).filter(Boolean) as Record<string, unknown>[]));
   return schemas;
 }
 

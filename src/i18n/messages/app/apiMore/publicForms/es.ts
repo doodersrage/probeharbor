@@ -10,23 +10,27 @@ const es: ApiMorePublicFormsMessages = {
     sendFailed: "No se pudo enviar el mensaje. Inténtalo de nuevo.",
   },
   freezeAlerts: {
-    success: "Revisa tu correo para confirmar. Las alertas empiezan la siguiente noche de heladas después de confirmar.",
+    success:
+      "Revisa tu correo para confirmar. Las alertas empiezan la siguiente noche de heladas después de confirmar.",
     tooMany: "Demasiados intentos. Vuelve a intentarlo en unos minutos.",
     verificationFailed: "La verificación ha fallado. Inténtalo de nuevo.",
     genericError: "Algo salió mal. Inténtalo de nuevo.",
     move: {
       confirmTitle: "¿Cambiar las alertas de congelación?",
-      confirmBody: "Los correos de alertas de congelación de esta dirección se enviarán para {place} en lugar del lugar actual.",
+      confirmBody:
+        "Los correos de alertas de congelación de esta dirección se enviarán para {place} en lugar del lugar actual.",
       button: "Cambiar alertas",
       invalidTitle: "Enlace no válido",
-      invalidBodyHtml: "<p>Este enlace caducó, se modificó o las alertas se dieron de baja. Tus alertas de congelación actuales no cambian.</p>",
+      invalidBodyHtml:
+        "<p>Este enlace caducó, se modificó o las alertas se dieron de baja. Tus alertas de congelación actuales no cambian.</p>",
     },
     unsubscribe: {
       forecastLink: "Pronóstico de congelación de tuberías",
       invalidTitle: "Enlace no válido",
       invalidBodyHtml: "<p>A este enlace para darte de baja le falta su token.</p>",
       confirmTitle: "¿Dejar de recibir alertas de congelación?",
-      confirmBodyHtml: "<p>Dejarás de recibir correos de alertas de congelación en esta dirección.</p>",
+      confirmBodyHtml:
+        "<p>Dejarás de recibir correos de alertas de congelación en esta dirección.</p>",
       button: "Darme de baja",
       doneTitle: "Te has dado de baja",
       doneBodyHtml: "<p>No se enviarán más correos de alertas de congelación a esta dirección.</p>",

@@ -46,7 +46,9 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
     if (!userId) return redirect("/reset-password?error=session");
     setResetTokenCookie(cookies, tokenHash);
     const metadata = await getUserMetadata(userId).catch(() => ({}));
-    return redirect(localizeForAccount("/reset-password", getSavedUserLocale({ user_metadata: metadata })));
+    return redirect(
+      localizeForAccount("/reset-password", getSavedUserLocale({ user_metadata: metadata })),
+    );
   }
 
   const { res, userId } = await withBetterAuth(request, async (auth) => {
@@ -66,5 +68,8 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
   if (!userId) return redirect("/signin?error=confirm_link");
   const next = sanitizeNextPath(url.searchParams.get("next") ?? undefined) ?? REGISTER_NEXT_DEVICES;
   const metadata = await getUserMetadata(userId).catch(() => ({}));
-  return redirectWithAuthCookies(localizeForAccount(next, getSavedUserLocale({ user_metadata: metadata })), res);
+  return redirectWithAuthCookies(
+    localizeForAccount(next, getSavedUserLocale({ user_metadata: metadata })),
+    res,
+  );
 };

@@ -34,13 +34,19 @@ const SAFETY = SAFETY_ALERT_KINDS;
 
 async function home(email: string) {
   const userId = await insertTestUser(db.client(), email);
-  const [m] = await sql<{ household_id: string }>("select household_id from public.household_members where user_id = $1", [
-    userId,
-  ]);
+  const [m] = await sql<{ household_id: string }>(
+    "select household_id from public.household_members where user_id = $1",
+    [userId],
+  );
   return { userId, householdId: m!.household_id };
 }
 
-async function event(userId: string, kind: string, sent: string[], minutesAgo = 0): Promise<number> {
+async function event(
+  userId: string,
+  kind: string,
+  sent: string[],
+  minutesAgo = 0,
+): Promise<number> {
   const [row] = await sql<{ id: number }>(
     `insert into public.alert_events (user_id, kind, title, body, channels_sent, created_at)
      values ($1, $2, 't', 'b', $3::text[], now() - ($4 || ' minutes')::interval) returning id`,
@@ -50,7 +56,12 @@ async function event(userId: string, kind: string, sent: string[], minutesAgo = 
 }
 
 const settingsColumn = async (userId: string, name: string) =>
-  (await sql<Record<string, unknown>>(`select ${name} as v from public.alert_settings where user_id = $1`, [userId]))[0]?.v;
+  (
+    await sql<Record<string, unknown>>(
+      `select ${name} as v from public.alert_settings where user_id = $1`,
+      [userId],
+    )
+  )[0]?.v;
 
 /** Two users, each with an unhandled delivered alert; returns B's event id. */
 async function twoUsersWithAlerts() {
@@ -68,14 +79,31 @@ describe("alert events: reads never include another user's alerts", () => {
     const hour = new Date(Date.now() - 3600_000).toISOString();
     const now = new Date(Date.now() + 1000).toISOString();
 
-    const filtered = await events.listRecentAlertEventsFiltered(a, INFO, SAFETY, { limit: 50, offset: 0 });
+    const filtered = await events.listRecentAlertEventsFiltered(a, INFO, SAFETY, {
+      limit: 50,
+      offset: 0,
+    });
     expect(filtered.events.every((e) => e.user_id === a)).toBe(true);
     expect(filtered.events).toHaveLength(1);
     expect(
-      (await events.listRecentAlertEventsFiltered(a, INFO, SAFETY, { limit: 50, offset: 0, unackedOnly: true, kinds: ["freeze"] }))
-        .events,
+      (
+        await events.listRecentAlertEventsFiltered(a, INFO, SAFETY, {
+          limit: 50,
+          offset: 0,
+          unackedOnly: true,
+          kinds: ["freeze"],
+        })
+      ).events,
     ).toEqual([]);
-    expect((await events.listRecentAlertEventsFiltered(a, INFO, SAFETY, { limit: 50, offset: 0, kind: "free" })).events).toEqual([]);
+    expect(
+      (
+        await events.listRecentAlertEventsFiltered(a, INFO, SAFETY, {
+          limit: 50,
+          offset: 0,
+          kind: "free",
+        })
+      ).events,
+    ).toEqual([]);
 
     const recent = await events.listRecentAlertEvents(a, 50);
     expect(recent.map((e) => e.user_id)).toEqual([a]);
@@ -85,7 +113,9 @@ describe("alert events: reads never include another user's alerts", () => {
     const range = await events.listAlertEventsInRange(a, hour, now, 50);
     expect(range.map((e) => e.user_id)).toEqual([a]);
 
-    await expect(events.hasUnhandledAlertOfKinds(a, ["freeze", "rule"], INFO, SAFETY)).resolves.toBe(false);
+    await expect(
+      events.hasUnhandledAlertOfKinds(a, ["freeze", "rule"], INFO, SAFETY),
+    ).resolves.toBe(false);
     await expect(events.countUnacknowledgedAlerts(a, INFO, SAFETY)).resolves.toBe(0);
     await expect(settings.recentAlertReachedAChannel(a)).resolves.toBe(false);
     await expect(emailJobs.weekAlertDeliveries(a, hour)).resolves.toEqual([
@@ -100,7 +130,10 @@ describe("alert events: reads never include another user's alerts", () => {
 
   it("acknowledge-latest only closes the caller's newest unhandled alert", async () => {
     const { a, b, theirs } = await twoUsersWithAlerts();
-    await expect(events.acknowledgeLatestUnackedAlert(a, INFO, SAFETY, "none")).resolves.toEqual({ ok: false, error: "none" });
+    await expect(events.acknowledgeLatestUnackedAlert(a, INFO, SAFETY, "none")).resolves.toEqual({
+      ok: false,
+      error: "none",
+    });
     const left = await sql<{ id: number }>(
       "select id from public.alert_events where user_id = $1 and acknowledged_at is null order by id",
       [b],
@@ -112,7 +145,14 @@ describe("alert events: reads never include another user's alerts", () => {
   it("recordAlertEvent writes only under the given user", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     const b = await insertTestUser(db.client(), "b@example.com");
-    const id = await events.recordAlertEvent({ userId: a, kind: "rule", title: "t", body: "b", channelsSent: [], channelsSkipped: [] });
+    const id = await events.recordAlertEvent({
+      userId: a,
+      kind: "rule",
+      title: "t",
+      body: "b",
+      channelsSent: [],
+      channelsSkipped: [],
+    });
     await expect(events.getAlertEventForUser(b, id!)).resolves.toBeNull();
     expect(await sql("select 1 from public.alert_events where user_id = $1", [b])).toEqual([]);
   });
@@ -122,7 +162,10 @@ describe("alert settings: one user's stamps never reach another's row", () => {
   async function twoWithSettings() {
     const a = await insertTestUser(db.client(), "a@example.com");
     const b = await insertTestUser(db.client(), "b@example.com");
-    await sql("insert into public.alert_settings (user_id, freeze_threshold_f) values ($1, 30), ($2, 40)", [a, b]);
+    await sql(
+      "insert into public.alert_settings (user_id, freeze_threshold_f) values ($1, 30), ($2, 40)",
+      [a, b],
+    );
     return { a, b };
   }
 
@@ -167,7 +210,10 @@ describe("alert settings: one user's stamps never reach another's row", () => {
 
   it("email-job stamps, trial-reminder read and feed-uptime stamp are per user", async () => {
     const { a, b } = await twoWithSettings();
-    await emailJobs.stampSettings(a, "last_trial_reminder_at", { touchUpdatedAt: true, dripStage: 2 });
+    await emailJobs.stampSettings(a, "last_trial_reminder_at", {
+      touchUpdatedAt: true,
+      dripStage: 2,
+    });
     expect(await emailJobs.lastTrialReminderAt(a)).not.toBeNull();
     await expect(emailJobs.lastTrialReminderAt(b)).resolves.toBeNull();
     expect(await settingsColumn(b, "drip_email_stage")).not.toBe(2);
@@ -196,13 +242,18 @@ describe("settings history and snooze links", () => {
     await extras.insertSnoozeToken("hash-a", a, 3, later);
     await extras.insertSnoozeToken("hash-b", b, 24, later);
 
-    await expect(extras.findSnoozeToken(["hash-a", "unknown"])).resolves.toMatchObject({ user_id: a, token: "hash-a" });
+    await expect(extras.findSnoozeToken(["hash-a", "unknown"])).resolves.toMatchObject({
+      user_id: a,
+      token: "hash-a",
+    });
     await expect(extras.findSnoozeToken(["unknown"])).resolves.toBeNull();
     await expect(extras.claimSnoozeToken(["unknown"])).resolves.toBeNull();
     await expect(extras.claimSnoozeToken(["hash-a"])).resolves.toEqual({ user_id: a, hours: 3 });
     // A's (now used) link can't be replayed into anything else.
     await expect(extras.claimSnoozeToken(["hash-a"])).resolves.toBeNull();
-    const [bRow] = await sql<{ used_at: string | null }>("select used_at from public.alert_snooze_tokens where token = 'hash-b'");
+    const [bRow] = await sql<{ used_at: string | null }>(
+      "select used_at from public.alert_snooze_tokens where token = 'hash-b'",
+    );
     expect(bRow!.used_at).toBeNull();
   });
 });
@@ -212,7 +263,10 @@ describe("email jobs: households and readings stay within the user's memberships
     const a = await home("a@example.com");
     const b = await home("b@example.com");
     // B's household has a device that reported and a legacy reading.
-    await sql("insert into public.devices (household_id, name, source, last_seen_at) values ($1, 'P', 'push', now())", [b.householdId]);
+    await sql(
+      "insert into public.devices (household_id, name, source, last_seen_at) values ($1, 'P', 'push', now())",
+      [b.householdId],
+    );
     // C joins B's household as a plain member; A stays out. Everyone opts into digests.
     const c = await insertTestUser(db.client(), "c@example.com");
     await addHouseholdMemberByUserId(b.householdId, c, "member");
@@ -234,7 +288,12 @@ describe("freeze alert subscriptions: a token only reaches its own row", () => {
     await freeze.writeUnconfirmed("a@example.com", "A", 42, -71, "tok-a");
     await freeze.writeUnconfirmed("b@example.com", "B", 40, -74, "tok-b");
     const state = async (email: string) =>
-      (await sql<{ confirmed_at: string | null }>("select confirmed_at from public.freeze_alert_subscriptions where email = $1", [email]))[0];
+      (
+        await sql<{ confirmed_at: string | null }>(
+          "select confirmed_at from public.freeze_alert_subscriptions where email = $1",
+          [email],
+        )
+      )[0];
 
     await expect(freeze.confirm("tok-a")).resolves.toBe(true);
     expect((await state("a@example.com"))!.confirmed_at).not.toBeNull();
@@ -259,24 +318,48 @@ describe("jobs: per-sensor and per-user lookups", () => {
     const b = await home("b@example.com");
     const device = async (householdId: string) =>
       (
-        await sql<{ id: string }>("insert into public.devices (household_id, name, source) values ($1, 'D', 'push') returning id", [
-          householdId,
-        ])
+        await sql<{ id: string }>(
+          "insert into public.devices (household_id, name, source) values ($1, 'D', 'push') returning id",
+          [householdId],
+        )
       )[0]!.id;
-    const sa = (await upsertDeviceSensor(a.householdId, await device(a.householdId), "t", "T", "temperature", "F")).sensor!.id;
-    const sb = (await upsertDeviceSensor(b.householdId, await device(b.householdId), "t", "T", "temperature", "F")).sensor!.id;
+    const sa = (
+      await upsertDeviceSensor(
+        a.householdId,
+        await device(a.householdId),
+        "t",
+        "T",
+        "temperature",
+        "F",
+      )
+    ).sensor!.id;
+    const sb = (
+      await upsertDeviceSensor(
+        b.householdId,
+        await device(b.householdId),
+        "t",
+        "T",
+        "temperature",
+        "F",
+      )
+    ).sensor!.id;
     await sql(
       `insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num)
        select $1, $2, now() - (g || ' minutes')::interval, 70 + g from generate_series(1, 10) g`,
       [sb, b.householdId],
     );
-    await sql("insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values ($1, $2, now(), 41)", [
-      sa,
-      a.householdId,
-    ]);
+    await sql(
+      "insert into public.sensor_readings (sensor_id, household_id, recorded_at, value_num) values ($1, $2, now(), 41)",
+      [sa, a.householdId],
+    );
     const windowStart = new Date(Date.now() - 24 * 3600_000).toISOString();
     const facts = await jobs.stuckSensorFacts(sa, windowStart, windowStart);
-    expect(facts).toMatchObject({ latest_value: 41, samples_in_window: 1, last_different_at: null, reported_before_window: false });
+    expect(facts).toMatchObject({
+      latest_value: 41,
+      samples_in_window: 1,
+      last_different_at: null,
+      reported_before_window: false,
+    });
   });
 
   it("last OK feed check is the user's own", async () => {
@@ -284,8 +367,26 @@ describe("jobs: per-sensor and per-user lookups", () => {
     const b = await insertTestUser(db.client(), "b@example.com");
     const at = new Date().toISOString();
     await jobs.insertFeedUptimeChecks([
-      { user_id: b, feed_id: "f1", feed_name: "F", url: "https://x/", ok: true, message: null, latency_ms: 5, checked_at: at },
-      { user_id: a, feed_id: "f1", feed_name: "F", url: "https://x/", ok: false, message: "down", latency_ms: null, checked_at: at },
+      {
+        user_id: b,
+        feed_id: "f1",
+        feed_name: "F",
+        url: "https://x/",
+        ok: true,
+        message: null,
+        latency_ms: 5,
+        checked_at: at,
+      },
+      {
+        user_id: a,
+        feed_id: "f1",
+        feed_name: "F",
+        url: "https://x/",
+        ok: false,
+        message: "down",
+        latency_ms: null,
+        checked_at: at,
+      },
     ]);
     await expect(jobs.lastOkFeedCheckAt(a, "f1")).resolves.toBeNull();
     await expect(jobs.lastOkFeedCheckAt(b, "f1")).resolves.not.toBeNull();

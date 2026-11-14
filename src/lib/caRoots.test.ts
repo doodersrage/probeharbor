@@ -30,14 +30,18 @@ describe("probe CA roots", () => {
   it("writes a header whose PEM parses back to the same certificates", () => {
     const roots = selectRoots(tls.rootCertificates);
     const arrays = arraysIn(caRootsHeader(roots, "test"));
-    const pems = arrays.CA_ROOTS_PEM!.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g)!;
+    const pems = arrays.CA_ROOTS_PEM!.match(
+      /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g,
+    )!;
     expect(pems.map(cnOf)).toEqual(ROOT_CNS);
     expect(cnOf(arrays.CA_UNRELATED_TEST_PEM!)).toBe(UNRELATED_TEST_CN);
   });
 
   it("the committed ca_roots.h carries exactly the listed roots", () => {
     const arrays = arraysIn(readFileSync("firmware/probeharbor-probe/src/ca_roots.h", "utf8"));
-    const pems = arrays.CA_ROOTS_PEM!.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g)!;
+    const pems = arrays.CA_ROOTS_PEM!.match(
+      /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g,
+    )!;
     expect(pems.map(cnOf)).toEqual(ROOT_CNS);
   });
 });

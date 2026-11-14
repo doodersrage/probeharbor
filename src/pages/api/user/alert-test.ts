@@ -1,15 +1,8 @@
 import type { APIRoute } from "astro";
 import { getAuthFromRequest } from "../../../lib/auth";
-import {
-  getAlertSettingsForUser,
-  notifyUser,
-  saveAlertSettingsForUser,
-} from "../../../lib/notify";
+import { getAlertSettingsForUser, notifyUser, saveAlertSettingsForUser } from "../../../lib/notify";
 import { resolveAlertEmail } from "../../../lib/alerts";
-import {
-  redirectUnlessEditor,
-  requireHouseholdEditor,
-} from "../../../lib/householdAuth";
+import { redirectUnlessEditor, requireHouseholdEditor } from "../../../lib/householdAuth";
 import { formRedirectPath, withQuery } from "../../../lib/siteUrl";
 import { isAlertChannelName } from "../../../lib/channelDelivery";
 import { apiCommonMessages, apiLocale } from "../../../i18n/messages/app/api/common";
@@ -51,10 +44,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url, locals }
 
   if (channelRaw && !isAlertChannelName(channelRaw)) {
     if (json) {
-      return new Response(JSON.stringify({ error: apiUserMessages(locale).testAlert.unknownChannel }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: apiUserMessages(locale).testAlert.unknownChannel }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
     return redirect(withQuery(redirectTo, { test_error: "1" }));
   }
@@ -81,11 +77,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url, locals }
     // Persist account email when channel is on but destination was left blank
     // (notifyUser already falls back; Overview used to treat blank as incomplete).
     const resolvedEmail = resolveAlertEmail(settings, user.email);
-    if (
-      settings.channelEmail &&
-      !settings.email?.trim() &&
-      resolvedEmail
-    ) {
+    if (settings.channelEmail && !settings.email?.trim() && resolvedEmail) {
       settings = { ...settings, email: resolvedEmail };
       await saveAlertSettingsForUser(user.id, settings);
     }
@@ -108,7 +100,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect, url, locals }
       const reason = skipped.length > 0 ? "incomplete" : "none";
       if (json) {
         return new Response(
-          JSON.stringify({ ok: false, error: apiUserMessages(locale).testAlert.noChannels, reason, skipped }),
+          JSON.stringify({
+            ok: false,
+            error: apiUserMessages(locale).testAlert.noChannels,
+            reason,
+            skipped,
+          }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }

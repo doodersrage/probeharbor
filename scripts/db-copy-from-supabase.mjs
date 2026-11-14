@@ -68,12 +68,18 @@ const targetUrl = fromEnv(targetEnv);
 if (!sourceUrl) fail(`${sourceEnv} is not set.`);
 if (!targetUrl) fail(`${targetEnv} is not set.`);
 const secret = fromEnv(arg("--secret-env", "BETTER_AUTH_SECRET"));
-if (secret.length < 32) fail("BETTER_AUTH_SECRET (or --secret-env) must be set to the target deployment's secret (32+ characters).");
+if (secret.length < 32)
+  fail(
+    "BETTER_AUTH_SECRET (or --secret-env) must be set to the target deployment's secret (32+ characters).",
+  );
 
 const targetHost = new URL(targetUrl).hostname;
-if (/supabase\.(co|com|net)$/.test(targetHost)) fail("Refusing: the target is a Supabase database.");
+if (/supabase\.(co|com|net)$/.test(targetHost))
+  fail("Refusing: the target is a Supabase database.");
 if (["DATABASE_URL", "DATABASE_URL_UNPOOLED"].includes(targetEnv) && !flag("--cutover")) {
-  fail(`Refusing: ${targetEnv} is production. Rehearse on a branch; pass --cutover only in step 6.`);
+  fail(
+    `Refusing: ${targetEnv} is production. Rehearse on a branch; pass --cutover only in step 6.`,
+  );
 }
 
 const source = new pg.Client({ connectionString: sourceUrl });
@@ -90,19 +96,26 @@ try {
     target,
     "select (select count(*) from public.auth_users)::int as users, (select count(*) from public.households)::int as households",
   );
-  if (users > 0 || households > 0) fail("Refusing: the target already has users or households. Use a fresh branch.");
+  if (users > 0 || households > 0)
+    fail("Refusing: the target already has users or households. Use a fresh branch.");
 
   // Public tables to copy: what the migrations made, minus Better Auth's and our own.
   const skip = new Set(["schema_migrations", "user_profiles"]);
   const targetTables = (
-    await one(target, "select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'")
+    await one(
+      target,
+      "select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'",
+    )
   )
     .map((r) => r.table_name)
     .filter((t) => !t.startsWith("auth_") && !skip.has(t));
   const sourceTables = new Set(
-    (await one(source, "select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'")).map(
-      (r) => r.table_name,
-    ),
+    (
+      await one(
+        source,
+        "select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'",
+      )
+    ).map((r) => r.table_name),
   );
   const missing = targetTables.filter((t) => !sourceTables.has(t));
   if (missing.length) fail(`Source lacks tables the target has: ${missing.join(", ")}`);
@@ -131,7 +144,9 @@ try {
   const deferred = []; // { table, col }
   while (order.length < targetTables.length) {
     const left = [...deps.keys()].filter((t) => !order.includes(t));
-    const ready = left.filter((t) => [...deps.get(t).keys()].every((p) => order.includes(p))).sort();
+    const ready = left
+      .filter((t) => [...deps.get(t).keys()].every((p) => order.includes(p)))
+      .sort();
     if (ready.length) {
       order.push(...ready);
       continue;
@@ -160,20 +175,25 @@ try {
             encrypted_password
      from auth.users order by created_at, id`,
   );
-  if (authUsers.some((u) => !u.email)) fail("A source user has no email; Better Auth needs one. Look at it before copying.");
+  if (authUsers.some((u) => !u.email))
+    fail("A source user has no email; Better Auth needs one. Look at it before copying.");
   for (const u of authUsers) {
     const name = String(u.meta.full_name ?? u.meta.name ?? u.email.split("@")[0]).slice(0, 200);
-    const image = typeof u.meta.avatar_url === "string" ? u.meta.avatar_url : typeof u.meta.picture === "string" ? u.meta.picture : null;
+    const image =
+      typeof u.meta.avatar_url === "string"
+        ? u.meta.avatar_url
+        : typeof u.meta.picture === "string"
+          ? u.meta.picture
+          : null;
     await target.query(
       `insert into public.auth_users (id, name, email, "emailVerified", image, "createdAt", "updatedAt", "twoFactorEnabled")
        values ($1, $2, lower($3), $4, $5, $6::timestamptz, coalesce($7::timestamptz, $6::timestamptz), false)`,
       [u.id, name, u.email, u.email_confirmed_at !== null, image, u.created_at, u.updated_at],
     );
-    await target.query("insert into public.user_profiles (user_id, metadata, app_metadata) values ($1, $2, $3)", [
-      u.id,
-      JSON.stringify(u.meta),
-      JSON.stringify(u.app_meta),
-    ]);
+    await target.query(
+      "insert into public.user_profiles (user_id, metadata, app_metadata) values ($1, $2, $3)",
+      [u.id, JSON.stringify(u.meta), JSON.stringify(u.app_meta)],
+    );
     if (u.encrypted_password) {
       await target.query(
         `insert into public."auth_accounts" ("accountId", "providerId", "userId", password, "createdAt", "updatedAt")
@@ -219,9 +239,14 @@ try {
       `insert into public.auth_two_factors (secret, "backupCodes", "userId", verified) values ($1, '[]', $2, true)`,
       [encrypted, f.user_id],
     );
-    await target.query(`update public.auth_users set "twoFactorEnabled" = true where id = $1`, [f.user_id]);
+    await target.query(`update public.auth_users set "twoFactorEnabled" = true where id = $1`, [
+      f.user_id,
+    ]);
   }
-  const [{ n: webauthn }] = await one(source, "select count(*)::int as n from auth.mfa_factors where factor_type = 'webauthn'");
+  const [{ n: webauthn }] = await one(
+    source,
+    "select count(*)::int as n from auth.mfa_factors where factor_type = 'webauthn'",
+  );
 
   // ---- app data ------------------------------------------------------------------------
   await target.query("delete from public.groups");
@@ -237,9 +262,13 @@ try {
     ).map((r) => r.column_name);
     const list = columns.map(ident).join(", ");
     const nulled = new Set(deferred.filter((d) => d.table === table).map((d) => d.col));
-    const select = columns.map((c) => (nulled.has(c) ? `null as ${ident(c)}` : ident(c))).join(", ");
+    const select = columns
+      .map((c) => (nulled.has(c) ? `null as ${ident(c)}` : ident(c)))
+      .join(", ");
     await source.query("begin");
-    await source.query(`declare copy_cursor no scroll cursor for select row_to_json(t) as r from public.${ident(table)} t`);
+    await source.query(
+      `declare copy_cursor no scroll cursor for select row_to_json(t) as r from public.${ident(table)} t`,
+    );
     for (;;) {
       const { rows } = await source.query(`fetch ${BATCH} from copy_cursor`);
       if (!rows.length) break;
@@ -264,9 +293,15 @@ try {
       )
     ).map((r) => r.attname);
     if (pk.length !== 1) fail(`${table} needs a one-column primary key to fill in ${col}.`);
-    const rows = await one(source, `select ${ident(pk[0])} as k, ${ident(col)} as v from public.${ident(table)} where ${ident(col)} is not null`);
+    const rows = await one(
+      source,
+      `select ${ident(pk[0])} as k, ${ident(col)} as v from public.${ident(table)} where ${ident(col)} is not null`,
+    );
     for (const r of rows) {
-      await target.query(`update public.${ident(table)} set ${ident(col)} = $2 where ${ident(pk[0])} = $1`, [r.k, r.v]);
+      await target.query(
+        `update public.${ident(table)} set ${ident(col)} = $2 where ${ident(pk[0])} = $1`,
+        [r.k, r.v],
+      );
     }
   }
 
@@ -292,7 +327,9 @@ try {
   for (const table of order) {
     const [{ n: s }] = await one(source, `select count(*)::int as n from public.${ident(table)}`);
     const [{ n: t }] = await one(target, `select count(*)::int as n from public.${ident(table)}`);
-    report.push(`${table.padEnd(34)} ${String(s).padStart(8)} ${String(t).padStart(8)}${s === t ? "" : "  MISMATCH"}`);
+    report.push(
+      `${table.padEnd(34)} ${String(s).padStart(8)} ${String(t).padStart(8)}${s === t ? "" : "  MISMATCH"}`,
+    );
     if (s !== t) mismatches.push(table);
   }
   const [counts] = await one(
@@ -309,7 +346,9 @@ try {
   );
   if (mismatches.length || counts.users !== authUsers.length) {
     await target.query("rollback");
-    fail(`Counts differ (${mismatches.join(", ") || "users"}); rolled back, the target is unchanged.`);
+    fail(
+      `Counts differ (${mismatches.join(", ") || "users"}); rolled back, the target is unchanged.`,
+    );
   }
   if (flag("--dry-run")) {
     await target.query("rollback");

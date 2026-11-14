@@ -26,9 +26,7 @@ describe("formatLiveTempF", () => {
 
 describe("formatLiveTempDetail", () => {
   it("rounds C to tenths and humidity to whole percents", () => {
-    expect(formatLiveTempDetail(32.10001, 61.666)).toBe(
-      "32.1°C · 62% humidity",
-    );
+    expect(formatLiveTempDetail(32.10001, 61.666)).toBe("32.1°C · 62% humidity");
   });
 });
 

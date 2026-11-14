@@ -98,7 +98,9 @@ describe("heatingInsights display unit", () => {
       "Space is falling about 5.0°F/h. Check doors, heaters, and insulation.",
     );
     expect(detail(f, "Near freeze threshold")).toBe("Current 35.0°F: threshold is 34°F.");
-    expect(detail(f, "Cold snap outside")).toBe("Outdoor 20°F: 1°F margin above your freeze alert.");
+    expect(detail(f, "Cold snap outside")).toBe(
+      "Outdoor 20°F: 1°F margin above your freeze alert.",
+    );
     expect(detail(f, "House–probe gap")).toBe(
       "Indoor reference 72°F vs probe 35.0°F (37°F warmer inside). Freeze alerts still apply to the unconditioned probe.",
     );
@@ -112,7 +114,9 @@ describe("heatingInsights display unit", () => {
       "Space is falling about 2.8°C/h. Check doors, heaters, and insulation.",
     );
     expect(detail(c, "Near freeze threshold")).toBe("Current 1.7°C: threshold is 1.1°C.");
-    expect(detail(c, "Cold snap outside")).toBe("Outdoor -7°C: 1°C margin above your freeze alert.");
+    expect(detail(c, "Cold snap outside")).toBe(
+      "Outdoor -7°C: 1°C margin above your freeze alert.",
+    );
     expect(detail(c, "House–probe gap")).toBe(
       "Indoor reference 22°C vs probe 1.7°C (21°C warmer inside). Freeze alerts still apply to the unconditioned probe.",
     );

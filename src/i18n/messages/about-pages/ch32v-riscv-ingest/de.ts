@@ -1,4 +1,3 @@
-
 /** Body copy for /about/ch32v-riscv-ingest. Hrefs stay English; middleware localizes them. */
 import type { Messages } from "./en";
 
@@ -12,7 +11,8 @@ const de: Messages = {
   colPart: "Teil",
   colWhy: "Wozu",
   colBuy: "Kaufen",
-  boardWhy: "QingKe RISC-V, integrierter 10M-PHY + RJ45, WCH-Link. Der Gigabit-MAC bleibt hier ungenutzt.",
+  boardWhy:
+    "QingKe RISC-V, integrierter 10M-PHY + RJ45, WCH-Link. Der Gigabit-MAC bleibt hier ungenutzt.",
   probePart: "Wasserdichter DS18B20",
   probeWhyHtml: "Sonde für Rohr oder Kriechkeller. Daten an <strong>PB12</strong>.",
   resistorPart: "4.7kΩ-Widerstand",

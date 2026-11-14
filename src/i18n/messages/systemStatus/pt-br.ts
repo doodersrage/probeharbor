@@ -37,7 +37,8 @@ const ptBr: SystemStatusMessages = {
     lede: "Relatos escritos sobre quedas ou degradações visíveis para os clientes. Os erros de cron acima também acionam o aviso ao vivo e os e-mails para os assinantes de status.",
     none: "Nenhum incidente registrado ainda. Quando publicarmos um incidente resolvido (data, impacto, recuperação), ele aparecerá aqui. Até lá, o aviso ao vivo e a tabela de execuções recentes do cron são a referência.",
     open: "Aberto: serviço degradado",
-    started: "Começou por volta deste carregamento da página ({when}). Os assinantes de status são avisados na degradação e na recuperação.",
+    started:
+      "Começou por volta deste carregamento da página ({when}). Os assinantes de status são avisados na degradação e na recuperação.",
   },
   runs: {
     title: "Execuções recentes do cron",
@@ -69,7 +70,8 @@ const ptBr: SystemStatusMessages = {
   notify: {
     title: "Receba avisos",
     lede: "Receba um único e-mail se este status mudar (degradado ou de volta ao normal). Nada de e-mails de rotina. O formulário é protegido pelo Cloudflare Turnstile.",
-    subscribed: "Confira sua caixa de entrada: a inscrição só vale depois que você clicar no link de confirmação.",
+    subscribed:
+      "Confira sua caixa de entrada: a inscrição só vale depois que você clicar no link de confirmação.",
     confirmed: "Você está inscrito nas atualizações de status.",
     unsubscribed: "Você cancelou a inscrição nas atualizações de status.",
     errors: {

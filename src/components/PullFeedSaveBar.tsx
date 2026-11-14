@@ -37,9 +37,7 @@ export default function PullFeedSaveBar({ hasFeeds, text = en.saveBar }: Props) 
         {text.save}
       </button>
       <span class="text-sm text-[var(--color-text-muted)]">
-        {hasFeeds
-          ? text.hintWithFeeds
-          : text.hintNoFeeds}
+        {hasFeeds ? text.hintWithFeeds : text.hintNoFeeds}
       </span>
       {status ? <span class="text-sm text-[var(--color-text-muted)]">{status}</span> : null}
     </div>

@@ -41,9 +41,13 @@ export function nextAppVersion(date, tags) {
 }
 
 function listTags() {
-  const remote = spawnSync("git", ["ls-remote", "--tags", "--refs", "origin", `refs/tags/${TAG_PREFIX}*`], {
-    encoding: "utf8",
-  });
+  const remote = spawnSync(
+    "git",
+    ["ls-remote", "--tags", "--refs", "origin", `refs/tags/${TAG_PREFIX}*`],
+    {
+      encoding: "utf8",
+    },
+  );
   if (remote.status === 0) {
     return remote.stdout
       .split("\n")

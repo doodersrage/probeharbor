@@ -12,10 +12,7 @@ import { insertSensorReadings } from "../../../lib/sensorReadings";
 import { interpretIngestPayload } from "../../../lib/ingestInterpret";
 import { detectIngestClient, ingestClientPatch } from "../../../lib/ingestClient";
 import { ensureDiscoveredPushSensors } from "../../../lib/pushSensorDiscovery";
-import {
-  checkIngestRateLimit,
-  readJsonBodyWithLimit,
-} from "../../../lib/ingestLimits";
+import { checkIngestRateLimit, readJsonBodyWithLimit } from "../../../lib/ingestLimits";
 import { recordIngestStat } from "../../../lib/ingestStats";
 import { enrichDeviceMetaHistories } from "../../../lib/rssiHistory";
 import { runAfterResponse } from "../../../lib/backgroundWork";
@@ -24,13 +21,8 @@ import { splitIngestBody } from "../../../lib/ingestTime";
 import type { DiscoveredPushSensor } from "../../../lib/pushSensorDiscovery";
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export const POST: APIRoute = async ({ params, request, locals }) => {
@@ -38,8 +30,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const pathKey = params.deviceKey?.trim() ?? "";
   // Prefer header so bridges need not put secrets in the URL path. Path `_`
   // is a placeholder when the key is header-only.
-  const deviceKey =
-    headerKey || (pathKey && pathKey !== "_" ? pathKey : "");
+  const deviceKey = headerKey || (pathKey && pathKey !== "_" ? pathKey : "");
   if (!deviceKey) {
     return new Response(JSON.stringify({ error: "Missing device key" }), {
       status: 400,
@@ -60,9 +51,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       status: 429,
       headers: {
         "Content-Type": "application/json",
-        ...(rate.retryAfterSec
-          ? { "Retry-After": String(rate.retryAfterSec) }
-          : {}),
+        ...(rate.retryAfterSec ? { "Retry-After": String(rate.retryAfterSec) } : {}),
       },
     });
   }
@@ -76,10 +65,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     });
   }
 
-  const finish = async (
-    response: Response,
-    success: boolean,
-  ): Promise<Response> => {
+  const finish = async (response: Response, success: boolean): Promise<Response> => {
     try {
       await recordIngestStat(device.household_id, device.id, success);
     } catch (statError) {
@@ -122,7 +108,9 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     interpreted: interpretIngestPayload(entry.payload, device.name),
   }));
   // Device fields: top level of the body; in a batch, else the newest item.
-  const deviceFields = split.batch ? interpretIngestPayload(payload, device.name) : entries[0]!.interpreted;
+  const deviceFields = split.batch
+    ? interpretIngestPayload(payload, device.name)
+    : entries[0]!.interpreted;
   const newestEntry = entries.reduce<(typeof entries)[number] | null>(
     (newest, entry) => (newest == null || entry.recordedAt > newest.recordedAt ? entry : newest),
     null,
@@ -130,7 +118,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const interpreted = {
     batteryPct: deviceFields.batteryPct ?? newestEntry?.interpreted.batteryPct ?? null,
     rssi: deviceFields.rssi ?? newestEntry?.interpreted.rssi ?? null,
-    firmwareVersion: deviceFields.firmwareVersion ?? newestEntry?.interpreted.firmwareVersion ?? null,
+    firmwareVersion:
+      deviceFields.firmwareVersion ?? newestEntry?.interpreted.firmwareVersion ?? null,
     tlsUnverified: deviceFields.tlsUnverified || (newestEntry?.interpreted.tlsUnverified ?? false),
     rejected: entries.flatMap((entry) => entry.interpreted.rejected),
   };
@@ -179,15 +168,29 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       }
       const known = knownSensors.get(sensorId);
       const needsUnitFix =
-        known != null && reading.kind === "temperature" && reading.unit === "F" && known.unit != null && known.unit !== "F";
+        known != null &&
+        reading.kind === "temperature" &&
+        reading.unit === "F" &&
+        known.unit != null &&
+        known.unit !== "F";
       const sensor =
         known && !needsUnitFix
           ? { sensor: known, error: null }
-          : await upsertDeviceSensor(device.household_id, device.id, reading.key, reading.label, reading.kind, reading.unit);
+          : await upsertDeviceSensor(
+              device.household_id,
+              device.id,
+              reading.key,
+              reading.label,
+              reading.kind,
+              reading.unit,
+            );
       if (!sensor.sensor) {
         sensorFailures += 1;
         failedSensors.add(sensorId);
-        console.error(`Ingest for device ${device.id}: sensor ${reading.key} (${reading.kind}) not saved:`, sensor.error);
+        console.error(
+          `Ingest for device ${device.id}: sensor ${reading.key} (${reading.kind}) not saved:`,
+          sensor.error,
+        );
         continue;
       }
       // A batch names the same sensor many times: look it up once.
@@ -216,7 +219,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const closedDoors = [...latestDoor.entries()]
     .filter(([, door]) => door.closed)
     .map(([id, door]) => ({ id, label: door.label, at: door.at }));
-  const rejectedEntries = split.rejectedEntries.length > 0 ? { rejected_entries: split.rejectedEntries } : {};
+  const rejectedEntries =
+    split.rejectedEntries.length > 0 ? { rejected_entries: split.rejectedEntries } : {};
 
   if (interpreted.rejected.length > 0) {
     // Values that can't be real (e.g. a DS18B20 fault code) are reported, not stored.
@@ -289,7 +293,10 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
   // Door history is saved for every household, not only those with alert rules.
   if (closedDoors.length > 0 && inserted > 0) {
-    const closedAt = closedDoors.reduce((latest, door) => (door.at > latest ? door.at : latest), closedDoors[0]!.at);
+    const closedAt = closedDoors.reduce(
+      (latest, door) => (door.at > latest ? door.at : latest),
+      closedDoors[0]!.at,
+    );
     await runAfterResponse(locals, "Ingest door history", async () => {
       const { recordDoorSessionsIfJustClosed } = await import("../../../lib/doorEvents");
       await recordDoorSessionsIfJustClosed(
@@ -301,131 +308,145 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   }
 
   // Newest reading time in this request (the receive time unless the device sent times).
-  const newestRecordedAt = rows.reduce((latest, row) => (row.recorded_at > latest ? row.recorded_at : latest), rows[0]!.recorded_at);
+  const newestRecordedAt = rows.reduce(
+    (latest, row) => (row.recorded_at > latest ? row.recorded_at : latest),
+    rows[0]!.recorded_at,
+  );
 
   // Webhooks and alerts run after the response (waitUntil), so a slow
   // provider can't hold up the device. Failures stay in the alert log.
   // Nothing new stored (a resend of readings already saved): nothing to send.
-  if (inserted > 0) await runAfterResponse(locals, "Ingest webhooks/alerts", async () => {
-    // Each member's account and alert settings, loaded once and shared by the
-    // reading webhooks and the alert pass (was loaded twice per member).
-    type MemberContext = {
-      userId: string;
-      email: string | null | undefined;
-      userMetadata: Record<string, unknown> | undefined;
-      settings: Awaited<ReturnType<typeof import("../../../lib/notify").getAlertSettingsForUser>>;
-    };
-    let memberContexts: MemberContext[] = [];
-    try {
-      const { listHouseholdMembers } = await import("../../../lib/households");
-      const { getAlertSettingsForUser } = await import("../../../lib/notify");
-      const members = await listHouseholdMembers(device.household_id);
-      for (const member of members.members) {
-        // Isolate each member so one failure can't skip everyone after them.
-        try {
-          const data = { user: await getUserRecord(member.user_id) };
-          const userMetadata = data.user?.user_metadata as Record<string, unknown> | undefined;
-          memberContexts.push({
-            userId: member.user_id,
-            email: data.user?.email,
-            userMetadata,
-            settings: await getAlertSettingsForUser(member.user_id, userMetadata),
-          });
-        } catch (memberError) {
-          console.error(`Ingest: loading member ${member.user_id} failed:`, memberError);
-        }
-      }
-    } catch (membersError) {
-      console.error("Ingest: loading household members failed:", membersError);
-      memberContexts = [];
-    }
-
-    try {
-      const { sendReadingWebhook } = await import("../../../lib/readingWebhook");
-      for (const member of memberContexts) {
-        if (!member.settings.readingWebhookUrl) continue;
-        try {
-          await sendReadingWebhook(member.userId, member.settings, {
-            device_id: device.id,
-            device_name: device.name,
-            household_id: device.household_id,
-            recorded_at: newestRecordedAt,
-            reading_count: inserted,
-            battery_pct: metaPatch.battery_pct ?? null,
-            rssi: metaPatch.rssi ?? null,
-          });
-        } catch (memberError) {
-          console.error(`Reading webhook failed for member ${member.userId}:`, memberError);
-        }
-      }
-    } catch (webhookError) {
-      console.error("Reading webhook failed:", webhookError);
-    }
-
-    // Best-effort immediate alerts (cooldowns still apply)
-    if (memberContexts.length > 0) {
+  if (inserted > 0)
+    await runAfterResponse(locals, "Ingest webhooks/alerts", async () => {
+      // Each member's account and alert settings, loaded once and shared by the
+      // reading webhooks and the alert pass (was loaded twice per member).
+      type MemberContext = {
+        userId: string;
+        email: string | null | undefined;
+        userMetadata: Record<string, unknown> | undefined;
+        settings: Awaited<ReturnType<typeof import("../../../lib/notify").getAlertSettingsForUser>>;
+      };
+      let memberContexts: MemberContext[] = [];
       try {
-        const { listHouseholdDevices } = await import("../../../lib/devices");
-        const {
-          sendThresholdAlertsIfNeeded,
-          sendFloodAlertsIfNeeded,
-          maybeSendRuleAlerts,
-          buildAlertReadingsFromLatestSensors,
-          buildFloodReadingsFromLatestSensors,
-          fetchAlertSensorValues,
-        } = await import("../../../lib/alertNotifications");
-
-        const { withHouseholdHold } = await import("../../../lib/alertSnooze");
-        const { loadHouseholdAlertHold } = await import("../../../lib/alertSnoozeTokens");
-        // The household's own snooze / vacation (inbound webhook), read once:
-        // held like each member's own, for this household's alerts only.
-        const householdHold = await loadHouseholdAlertHold(device.household_id);
-
-        const devices = await listHouseholdDevices(device.household_id);
-        // Skips demo (simulated) feeds in the same household: they never alert.
-        const latest = await fetchAlertSensorValues(device.household_id);
-        const readings = buildAlertReadingsFromLatestSensors(latest);
-        const floodReadings = buildFloodReadingsFromLatestSensors(latest);
-
-        for (const member of memberContexts) {
+        const { listHouseholdMembers } = await import("../../../lib/households");
+        const { getAlertSettingsForUser } = await import("../../../lib/notify");
+        const members = await listHouseholdMembers(device.household_id);
+        for (const member of members.members) {
           // Isolate each member so one failure can't skip everyone after them.
           try {
-            // Alerts go out in each member's account language.
-            const locale = localeFromMetadata(member.userMetadata);
-            // Evaluation only, never saved (see withHouseholdHold).
-            const settings = withHouseholdHold(member.settings, householdHold);
-            const weatherCityId =
-              typeof member.userMetadata?.weather_city_id === "string"
-                ? member.userMetadata.weather_city_id.trim()
-                : null;
-            await sendThresholdAlertsIfNeeded(
-              member.userId,
-              member.email,
-              settings,
-              readings,
-              device.household_id,
-              { weatherCityId, latestSensors: latest, useCelsius: member.userMetadata?.use_celsius === true },
-              locale,
-            );
-            await sendFloodAlertsIfNeeded(member.userId, member.email, settings, floodReadings, locale);
-            await maybeSendRuleAlerts(
-              member.userId,
-              member.email,
-              devices.devices,
-              settings,
-              readings,
-              device.household_id,
-              locale,
-            );
+            const data = { user: await getUserRecord(member.user_id) };
+            const userMetadata = data.user?.user_metadata as Record<string, unknown> | undefined;
+            memberContexts.push({
+              userId: member.user_id,
+              email: data.user?.email,
+              userMetadata,
+              settings: await getAlertSettingsForUser(member.user_id, userMetadata),
+            });
           } catch (memberError) {
-            console.error(`Ingest alerts failed for member ${member.userId}:`, memberError);
+            console.error(`Ingest: loading member ${member.user_id} failed:`, memberError);
           }
         }
-      } catch (alertError) {
-        console.error("Ingest alert evaluation failed:", alertError);
+      } catch (membersError) {
+        console.error("Ingest: loading household members failed:", membersError);
+        memberContexts = [];
       }
-    }
-  });
+
+      try {
+        const { sendReadingWebhook } = await import("../../../lib/readingWebhook");
+        for (const member of memberContexts) {
+          if (!member.settings.readingWebhookUrl) continue;
+          try {
+            await sendReadingWebhook(member.userId, member.settings, {
+              device_id: device.id,
+              device_name: device.name,
+              household_id: device.household_id,
+              recorded_at: newestRecordedAt,
+              reading_count: inserted,
+              battery_pct: metaPatch.battery_pct ?? null,
+              rssi: metaPatch.rssi ?? null,
+            });
+          } catch (memberError) {
+            console.error(`Reading webhook failed for member ${member.userId}:`, memberError);
+          }
+        }
+      } catch (webhookError) {
+        console.error("Reading webhook failed:", webhookError);
+      }
+
+      // Best-effort immediate alerts (cooldowns still apply)
+      if (memberContexts.length > 0) {
+        try {
+          const { listHouseholdDevices } = await import("../../../lib/devices");
+          const {
+            sendThresholdAlertsIfNeeded,
+            sendFloodAlertsIfNeeded,
+            maybeSendRuleAlerts,
+            buildAlertReadingsFromLatestSensors,
+            buildFloodReadingsFromLatestSensors,
+            fetchAlertSensorValues,
+          } = await import("../../../lib/alertNotifications");
+
+          const { withHouseholdHold } = await import("../../../lib/alertSnooze");
+          const { loadHouseholdAlertHold } = await import("../../../lib/alertSnoozeTokens");
+          // The household's own snooze / vacation (inbound webhook), read once:
+          // held like each member's own, for this household's alerts only.
+          const householdHold = await loadHouseholdAlertHold(device.household_id);
+
+          const devices = await listHouseholdDevices(device.household_id);
+          // Skips demo (simulated) feeds in the same household: they never alert.
+          const latest = await fetchAlertSensorValues(device.household_id);
+          const readings = buildAlertReadingsFromLatestSensors(latest);
+          const floodReadings = buildFloodReadingsFromLatestSensors(latest);
+
+          for (const member of memberContexts) {
+            // Isolate each member so one failure can't skip everyone after them.
+            try {
+              // Alerts go out in each member's account language.
+              const locale = localeFromMetadata(member.userMetadata);
+              // Evaluation only, never saved (see withHouseholdHold).
+              const settings = withHouseholdHold(member.settings, householdHold);
+              const weatherCityId =
+                typeof member.userMetadata?.weather_city_id === "string"
+                  ? member.userMetadata.weather_city_id.trim()
+                  : null;
+              await sendThresholdAlertsIfNeeded(
+                member.userId,
+                member.email,
+                settings,
+                readings,
+                device.household_id,
+                {
+                  weatherCityId,
+                  latestSensors: latest,
+                  useCelsius: member.userMetadata?.use_celsius === true,
+                },
+                locale,
+              );
+              await sendFloodAlertsIfNeeded(
+                member.userId,
+                member.email,
+                settings,
+                floodReadings,
+                locale,
+              );
+              await maybeSendRuleAlerts(
+                member.userId,
+                member.email,
+                devices.devices,
+                settings,
+                readings,
+                device.household_id,
+                locale,
+              );
+            } catch (memberError) {
+              console.error(`Ingest alerts failed for member ${member.userId}:`, memberError);
+            }
+          }
+        } catch (alertError) {
+          console.error("Ingest alert evaluation failed:", alertError);
+        }
+      }
+    });
 
   return finish(
     new Response(

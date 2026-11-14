@@ -6,12 +6,16 @@ import { afterEach } from "vitest";
  * the test for the wrong reason. Record such queries and fail the test.
  */
 const unconfigured: string[] = [];
-(globalThis as { __unconfiguredQuery?: (statement: string) => void }).__unconfiguredQuery = (statement) => {
+(globalThis as { __unconfiguredQuery?: (statement: string) => void }).__unconfiguredQuery = (
+  statement,
+) => {
   unconfigured.push(statement);
 };
 
 afterEach(() => {
   if (unconfigured.length === 0) return;
   const statements = [...new Set(unconfigured.splice(0))].join(", ");
-  throw new Error(`Unmocked database query in a unit test (${statements}). Mock the db/* function or use setQueryRunnerForTests.`);
+  throw new Error(
+    `Unmocked database query in a unit test (${statements}). Mock the db/* function or use setQueryRunnerForTests.`,
+  );
 });

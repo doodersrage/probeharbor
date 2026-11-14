@@ -13,7 +13,10 @@ const en = {
     averageTitle: "{days}-day average",
     tempOn: "{temp}{unit} on {time} ({probe})",
     humidityOn: "{humidity}% on {time} ({probe})",
-    averageDetail: { one: "{temp}{unit} across {count} readings", other: "{temp}{unit} across {count} readings" },
+    averageDetail: {
+      one: "{temp}{unit} across {count} readings",
+      other: "{temp}{unit} across {count} readings",
+    },
     warmerThan: "{warmer} averages {delta}{unit} warmer than {cooler} in this window.",
     yoyTitle: "Year-over-year",
     yoyDetail: "This window averages {current}{unit} vs {prior}{unit} last year ({delta}{unit}).",
@@ -47,7 +50,10 @@ const en = {
     disabled: "Device disabled",
     waiting: "Waiting for first reading",
     floodWet: "Flood / leak contact wet",
-    noData: { one: "No data for {count} day, check power/Wi‑Fi", other: "No data for {count} days, check power/Wi‑Fi" },
+    noData: {
+      one: "No data for {count} day, check power/Wi‑Fi",
+      other: "No data for {count} days, check power/Wi‑Fi",
+    },
     stale: "Probe data stale, check power/Wi‑Fi",
     batteryLow: "Battery {pct}% — replace soon",
     batteryDays: { one: "Battery ~{count} days left", other: "Battery ~{count} days left" },
@@ -112,7 +118,10 @@ const en = {
       one: "{count} probe hasn't posted in 30+ minutes",
       other: "{count} probes haven't posted in 30+ minutes",
     },
-    mixed: { one: "{count} probe look stale ({parts})", other: "{count} probes look stale ({parts})" },
+    mixed: {
+      one: "{count} probe look stale ({parts})",
+      other: "{count} probes look stale ({parts})",
+    },
     partPush: "{count} push",
     partPull: "{count} pull",
     partUnknown: "{count} unknown",
@@ -128,7 +137,8 @@ const en = {
   runway: {
     prefix: "Thermal runway: {message}",
     doorOpen: "A door sensor is open: expect faster heat loss until it closes.",
-    forecastLow: "Forecast low ~{temp}°F in the next {hours}h: outdoor cold may accelerate indoor cooling.",
+    forecastLow:
+      "Forecast low ~{temp}°F in the next {hours}h: outdoor cold may accelerate indoor cooling.",
   },
   /** Regional comparison line (src/lib/regionalBenchmark.ts), also used in alerts. */
   benchmark: {

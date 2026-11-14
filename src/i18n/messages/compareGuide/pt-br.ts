@@ -15,7 +15,8 @@ const ptBr: CompareGuideMessages = {
   chooseOther: "Escolha {competitor} quando",
   faqLede: "Respostas diretas para quem está comparando o ProbeHarbor com {competitor}.",
   sourcesTitle: "Fontes",
-  sourcesNote: "As informações sobre {competitor} vêm das próprias páginas do fabricante, conferidas em {checkedOn}. Os preços mudam; confira antes de comprar.",
+  sourcesNote:
+    "As informações sobre {competitor} vêm das próprias páginas do fabricante, conferidas em {checkedOn}. Os preços mudam; confira antes de comprar.",
   relatedTitle: "Respostas relacionadas",
   forecastLink: "Meus canos vão congelar esta noite? (previsão)",
   calculatorLink: "Calculadora de tempo até o cano congelar",

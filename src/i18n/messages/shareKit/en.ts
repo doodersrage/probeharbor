@@ -28,7 +28,8 @@ const en = {
   haTail:
     "(Share your Projects / third-party integrations). Longer draft also lives in the repo under Contribute below.",
   blueskyTitle: "Bluesky / short social",
-  blueskyCopy: "Keep it short; lead with the freeze-risk hook. Optional follow-up reply with the simulator or map.",
+  blueskyCopy:
+    "Keep it short; lead with the freeze-risk hook. Optional follow-up reply with the simulator or map.",
   hnTitle: "Hacker News / Show HN",
   hnTitleHint: "Suggested title (paste into the Show HN title field):",
   hnBodyHint: "Comment body: story first, then links. HN rewards specifics over a generic tagline.",

@@ -57,7 +57,12 @@ export async function updateAlertEventMeta(
   patch: AlertEventMeta,
   locale: Locale = "en",
 ): Promise<{ ok: boolean; error?: string }> {
-  return neonEvents.updateAlertEventMeta(userId, eventId, patch, alertJobsMessages(locale).events.notFound);
+  return neonEvents.updateAlertEventMeta(
+    userId,
+    eventId,
+    patch,
+    alertJobsMessages(locale).events.notFound,
+  );
 }
 
 export async function updateAlertEventChannels(
@@ -123,7 +128,9 @@ export async function autoResolveAlerts(
 ): Promise<AutoResolveResult> {
   return neonEvents.autoResolveAlerts(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS, {
     kinds: options.kinds,
-    olderThanIso: options.olderThanMs ? new Date(Date.now() - options.olderThanMs).toISOString() : undefined,
+    olderThanIso: options.olderThanMs
+      ? new Date(Date.now() - options.olderThanMs).toISOString()
+      : undefined,
     reason: options.reason ?? "recovered",
   });
 }
@@ -142,13 +149,18 @@ export async function listRecentAlertEventsFiltered(
 ): Promise<{ events: AlertEventRow[]; hasMore: boolean }> {
   const limit = Math.min(Math.max(options.limit ?? 20, 1), 50);
   const offset = Math.max(options.offset ?? 0, 0);
-  return neonEvents.listRecentAlertEventsFiltered(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS, {
-    limit,
-    offset,
-    kind: options.kind,
-    kinds: options.kinds,
-    unackedOnly: options.unackedOnly,
-  });
+  return neonEvents.listRecentAlertEventsFiltered(
+    userId,
+    INFORMATIONAL_ALERT_KINDS,
+    SAFETY_ALERT_KINDS,
+    {
+      limit,
+      offset,
+      kind: options.kind,
+      kinds: options.kinds,
+      unackedOnly: options.unackedOnly,
+    },
+  );
 }
 
 export async function getAlertEventForUser(
@@ -158,10 +170,7 @@ export async function getAlertEventForUser(
   return neonEvents.getAlertEventForUser(userId, eventId);
 }
 
-export async function listRecentAlertEvents(
-  userId: string,
-  limit = 20,
-): Promise<AlertEventRow[]> {
+export async function listRecentAlertEvents(userId: string, limit = 20): Promise<AlertEventRow[]> {
   return neonEvents.listRecentAlertEvents(userId, limit);
 }
 
@@ -252,13 +261,25 @@ export function isUnhandledAlertEvent(
 export const CLAIMS_PACK_ALERT_KINDS = ["threshold", "freeze", "flood"] as const;
 
 /** Any unhandled alert of these kinds (same rule as the count). */
-export async function hasUnhandledAlertOfKinds(userId: string, kinds: readonly string[]): Promise<boolean> {
-  return neonEvents.hasUnhandledAlertOfKinds(userId, kinds, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS);
+export async function hasUnhandledAlertOfKinds(
+  userId: string,
+  kinds: readonly string[],
+): Promise<boolean> {
+  return neonEvents.hasUnhandledAlertOfKinds(
+    userId,
+    kinds,
+    INFORMATIONAL_ALERT_KINDS,
+    SAFETY_ALERT_KINDS,
+  );
 }
 
 export async function countUnacknowledgedAlerts(userId: string): Promise<number> {
   try {
-    return await neonEvents.countUnacknowledgedAlerts(userId, INFORMATIONAL_ALERT_KINDS, SAFETY_ALERT_KINDS);
+    return await neonEvents.countUnacknowledgedAlerts(
+      userId,
+      INFORMATIONAL_ALERT_KINDS,
+      SAFETY_ALERT_KINDS,
+    );
   } catch (error) {
     // A failed count must not pass silently as "nothing unhandled": report it so a
     // broken filter or an outage is noticed (Sentry groups repeats).

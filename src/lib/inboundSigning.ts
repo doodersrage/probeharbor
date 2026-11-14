@@ -22,7 +22,10 @@ export function pickInboundSignatureHeader(headers: Headers): string | null {
 }
 
 function normalizeHex(header: string): string {
-  return header.replace(/^sha256=/i, "").trim().toLowerCase();
+  return header
+    .replace(/^sha256=/i, "")
+    .trim()
+    .toLowerCase();
 }
 
 export type InboundSignatureFormat = "v2";
@@ -45,7 +48,10 @@ export async function verifyInboundRequest(
 ): Promise<InboundVerification> {
   const v2 = headers.get(SIGNATURE_V2_HEADER);
   if (v2 === null) {
-    return { ok: false, reason: pickInboundSignatureHeader(headers) ? "v2_required" : "invalid_signature" };
+    return {
+      ok: false,
+      reason: pickInboundSignatureHeader(headers) ? "v2_required" : "invalid_signature",
+    };
   }
   if (!secret?.trim() || !v2.trim()) return { ok: false, reason: "invalid_signature" };
   const timestamp = headers.get(TIMESTAMP_HEADER)?.trim() ?? "";

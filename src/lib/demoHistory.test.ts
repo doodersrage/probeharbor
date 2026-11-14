@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildDemoHistoryPoints, outdoorHistoryPoints, parseOpenMeteoDemoHourly } from "./demoHistory";
+import {
+  buildDemoHistoryPoints,
+  outdoorHistoryPoints,
+  parseOpenMeteoDemoHourly,
+} from "./demoHistory";
 
 describe("parseOpenMeteoDemoHourly", () => {
   const payload = {

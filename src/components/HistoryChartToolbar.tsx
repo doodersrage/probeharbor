@@ -49,102 +49,102 @@ export default function HistoryChartToolbar({
 }) {
   return (
     // biome-ignore lint/a11y/useSemanticElements: button toolbar; <fieldset> would add form semantics and default borders
-              <div class="history-chart-zoom" role="group" aria-label={t.controlsAria}>
-          <button
-            type="button"
-            class="history-chart-zoom-btn"
-            aria-label={t.zoomInAria}
-            onClick={() => onZoom(1 / 1.35)}
-          >
-            +
-          </button>
-          <button
-            type="button"
-            class="history-chart-zoom-btn"
-            aria-label={t.zoomOutAria}
-            onClick={() => onZoom(1.35)}
-            disabled={!zoomed}
-          >
-            −
-          </button>
-          <button
-            type="button"
-            class="history-chart-zoom-btn"
-            aria-label={t.resetZoomAria}
-            onClick={onResetZoom}
-            disabled={!zoomed}
-          >
-            {t.reset}
-          </button>
-          <button
-            type="button"
-            class="history-chart-zoom-btn history-chart-expand-btn"
-            aria-label={t.downloadPngAria}
-            onClick={onExportPng}
-          >
-            {t.png}
-          </button>
-          {!guest && (
-          <button
-            type="button"
-            class="history-chart-zoom-btn history-chart-expand-btn"
-            aria-label={t.copyLinkAria}
-            onClick={onCopyLink}
-          >
-            {linkCopied ? t.copied : t.link}
-          </button>
-          )}
-          {guest ? null : canShareChart ? (
-            <button
-              type="button"
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label={t.shareAria}
-              disabled={shareBusy}
-              onClick={onShare}
-            >
-              {shareBusy ? "…" : shared ? t.shared : t.share}
-            </button>
-          ) : (
-            <a
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              href="/dashboard/plans"
-              aria-label={t.upgradeShareAria}
-              title={t.upgradeShareTitle}
-            >
-              {t.share}
-            </a>
-          )}
-          {claimsHref && (
-            <a
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              href={claimsHref}
-              aria-label={t.claimsAria}
-            >
-              {t.claims}
-            </a>
-          )}
-          {expanded ? (
-            <button
-              ref={closeBtnRef}
-              type="button"
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label={t.closeExpandedAria}
-              onClick={onClose}
-            >
-              {t.close}
-            </button>
-          ) : (
-            <button
-              ref={expandBtnRef}
-              type="button"
-              class="history-chart-zoom-btn history-chart-expand-btn"
-              aria-label={t.expandAria}
-              aria-haspopup="dialog"
-              onClick={onExpand}
-            >
-              {t.expand}
-            </button>
-          )}
-        </div>
+    <div class="history-chart-zoom" role="group" aria-label={t.controlsAria}>
+      <button
+        type="button"
+        class="history-chart-zoom-btn"
+        aria-label={t.zoomInAria}
+        onClick={() => onZoom(1 / 1.35)}
+      >
+        +
+      </button>
+      <button
+        type="button"
+        class="history-chart-zoom-btn"
+        aria-label={t.zoomOutAria}
+        onClick={() => onZoom(1.35)}
+        disabled={!zoomed}
+      >
+        −
+      </button>
+      <button
+        type="button"
+        class="history-chart-zoom-btn"
+        aria-label={t.resetZoomAria}
+        onClick={onResetZoom}
+        disabled={!zoomed}
+      >
+        {t.reset}
+      </button>
+      <button
+        type="button"
+        class="history-chart-zoom-btn history-chart-expand-btn"
+        aria-label={t.downloadPngAria}
+        onClick={onExportPng}
+      >
+        {t.png}
+      </button>
+      {!guest && (
+        <button
+          type="button"
+          class="history-chart-zoom-btn history-chart-expand-btn"
+          aria-label={t.copyLinkAria}
+          onClick={onCopyLink}
+        >
+          {linkCopied ? t.copied : t.link}
+        </button>
+      )}
+      {guest ? null : canShareChart ? (
+        <button
+          type="button"
+          class="history-chart-zoom-btn history-chart-expand-btn"
+          aria-label={t.shareAria}
+          disabled={shareBusy}
+          onClick={onShare}
+        >
+          {shareBusy ? "…" : shared ? t.shared : t.share}
+        </button>
+      ) : (
+        <a
+          class="history-chart-zoom-btn history-chart-expand-btn"
+          href="/dashboard/plans"
+          aria-label={t.upgradeShareAria}
+          title={t.upgradeShareTitle}
+        >
+          {t.share}
+        </a>
+      )}
+      {claimsHref && (
+        <a
+          class="history-chart-zoom-btn history-chart-expand-btn"
+          href={claimsHref}
+          aria-label={t.claimsAria}
+        >
+          {t.claims}
+        </a>
+      )}
+      {expanded ? (
+        <button
+          ref={closeBtnRef}
+          type="button"
+          class="history-chart-zoom-btn history-chart-expand-btn"
+          aria-label={t.closeExpandedAria}
+          onClick={onClose}
+        >
+          {t.close}
+        </button>
+      ) : (
+        <button
+          ref={expandBtnRef}
+          type="button"
+          class="history-chart-zoom-btn history-chart-expand-btn"
+          aria-label={t.expandAria}
+          aria-haspopup="dialog"
+          onClick={onExpand}
+        >
+          {t.expand}
+        </button>
+      )}
+    </div>
   );
 }

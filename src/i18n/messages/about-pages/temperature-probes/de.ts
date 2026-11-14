@@ -1,4 +1,3 @@
-
 /** /about/temperature-probes body copy. `*Html` keys are trusted inline HTML (English hrefs). */
 import type { Messages } from "./en";
 
@@ -25,7 +24,8 @@ const de: Messages = {
   multipleHtml:
     "Garagen, Werkstätten und Dachböden sind keine gleichmäßigen Kisten. Ein einzelner Sensor zeigt vielleicht 7 °C (45 °F) in Bodennähe, während es unter der Decke an einem sonnigen Winternachmittag 14 °C (58 °F) sind. Mehrere Fühler machen Temperaturgefälle, schlecht gedämmte Stellen und den Bereich sichtbar, der das für dich relevante Risiko darstellt. Die Firmware mittelt die aktiven Fühler, sodass die Verlaufsseite weiterhin einen zusammenfassenden Wert pro Abruf hat, während die Startseite die Details je Fühler behält.",
   boardAlt: "ProbeHarbor-Fühlerplatine mit Ethernet-Anschluss und DHT22-Sensoren",
-  boardCaption: "Zweite Revision der ProbeHarbor-Fühlerplatine: Ethernet, LCD und zwei DHT22-Eingänge.",
+  boardCaption:
+    "Zweite Revision der ProbeHarbor-Fühlerplatine: Ethernet, LCD und zwei DHT22-Eingänge.",
   webTitle: "Vom Fühlerkabel zur Webseite",
   webHtml:
     'Die Fühler sprechen nicht direkt mit der Website. Der Arduino-Sketch liest jeden Sensor in festen Abständen, prüft die Wertebereiche und veröffentlicht JSON über HTTPS. Die Website ruft diesen Feed ab, ordnet die Schlüssel den lesbaren Bezeichnungen zu, die du im Dashboard festlegst, und speichert die Messwerte auf Wunsch, wenn du angemeldet bist. Probier die <a class="text-link" href="/about/probe-demo">interaktive Fühler-Demo</a> aus, um zu sehen, wie sich mehrere Bereiche und Mittelwerte verhalten, oder lies den Leitfaden zum <a class="text-link" href="/about/data-flow">Datenfluss von Anfang bis Ende</a>.',

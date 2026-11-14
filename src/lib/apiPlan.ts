@@ -32,6 +32,7 @@ export async function checkApiPlan(householdId: string): Promise<ApiPlanCheck> {
     return { ok: false, status: 503, error: "Could not check the plan. Try again." };
   }
   // API keys are created under the same Pro gate (api/api-keys/index.ts).
-  if (!entitlements.canCreateShareLinks) return { ok: false, status: 403, error: API_PLAN_REQUIRED };
+  if (!entitlements.canCreateShareLinks)
+    return { ok: false, status: 403, error: API_PLAN_REQUIRED };
   return { ok: true, entitlements };
 }

@@ -16,6 +16,10 @@ export function getLocalizedMarketingFaqs(key: MarketingFaqKey, locale: Locale):
   return mergeTranslation(base, overlays()[locale]?.[key]);
 }
 
-export function getLocalizedMarketingFaqSchema(pageUrl: string, key: MarketingFaqKey, locale: Locale) {
+export function getLocalizedMarketingFaqSchema(
+  pageUrl: string,
+  key: MarketingFaqKey,
+  locale: Locale,
+) {
   return getFaqPageSchema(pageUrl, getLocalizedMarketingFaqs(key, locale));
 }

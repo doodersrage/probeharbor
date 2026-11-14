@@ -27,7 +27,9 @@ export async function fetchChartDoorBands(
     return { bands: [], error: e instanceof Error ? e.message : String(e) };
   }
   if (rows.length === DOOR_BAND_LIMIT) {
-    console.warn(`Door bands for household ${householdId}: hit the ${DOOR_BAND_LIMIT}-row limit; oldest not shown`);
+    console.warn(
+      `Door bands for household ${householdId}: hit the ${DOOR_BAND_LIMIT}-row limit; oldest not shown`,
+    );
   }
 
   const bands: ChartDoorBand[] = rows

@@ -99,9 +99,21 @@ describe("executeAlertAckPlaybook", () => {
   });
 
   it.each([
-    ["snooze_1h", 1, "Alert handled: other alerts snoozed for 1 hour. Freeze alerts stay on; this one won't repeat while it continues."],
-    ["snooze_4h", 4, "Alert handled: other alerts snoozed for 4 hours. Freeze alerts stay on; this one won't repeat while it continues."],
-    ["snooze_24h", 24, "Alert handled: other alerts snoozed for 24 hours. Freeze alerts stay on; this one won't repeat while it continues."],
+    [
+      "snooze_1h",
+      1,
+      "Alert handled: other alerts snoozed for 1 hour. Freeze alerts stay on; this one won't repeat while it continues.",
+    ],
+    [
+      "snooze_4h",
+      4,
+      "Alert handled: other alerts snoozed for 4 hours. Freeze alerts stay on; this one won't repeat while it continues.",
+    ],
+    [
+      "snooze_24h",
+      24,
+      "Alert handled: other alerts snoozed for 24 hours. Freeze alerts stay on; this one won't repeat while it continues.",
+    ],
     [
       "false_alarm",
       24,
@@ -181,7 +193,10 @@ describe("executeAlertAckPlaybook", () => {
 
     it("surfaces a relay failure and does not ack", async () => {
       mockGetHouseholdFields.mockResolvedValue({ data: { name: "The Smiths" }, error: null });
-      mockSendTenantFreezeRelay.mockResolvedValue({ ok: false, error: "Not authorized to notify tenant." });
+      mockSendTenantFreezeRelay.mockResolvedValue({
+        ok: false,
+        error: "Not authorized to notify tenant.",
+      });
       const { executeAlertAckPlaybook } = await import("./alertAckPlaybook");
 
       const result = await executeAlertAckPlaybook({
@@ -280,11 +295,7 @@ describe("executeAlertAckPlaybook", () => {
         false,
         ["sign"],
       );
-      const expectedSig = await crypto.subtle.sign(
-        "HMAC",
-        key,
-        new TextEncoder().encode(body),
-      );
+      const expectedSig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
       const expectedHex = [...new Uint8Array(expectedSig)]
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");

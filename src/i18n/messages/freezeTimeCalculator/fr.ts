@@ -58,7 +58,8 @@ const fr: FreezeTimeCalculatorMessages = {
     headlineNotCooling: "Pas de refroidissement vers le gel",
     headlineNeedGap: "Écart trop court entre les relevés",
     detailEmpty: "Remplissez chaque champ avec un nombre pour obtenir une estimation.",
-    detailCooling: "Refroidissement d’environ {rate} : à peu près {duration} avant {threshold} à ce rythme.",
+    detailCooling:
+      "Refroidissement d’environ {rate} : à peu près {duration} avant {threshold} à ce rythme.",
     ratePerHour: "{value}°{unit}/h",
     minutes: "{n} minutes",
     hours: "{n} heures",

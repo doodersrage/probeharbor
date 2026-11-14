@@ -2,7 +2,8 @@ import type { HouseholdMessages } from "./en";
 
 const ptBr: HouseholdMessages = {
   title: "Casa",
-  subtitle: "Compartilhe dispositivos e histórico. Convide por e-mail — os convidados ainda não precisam ter conta.",
+  subtitle:
+    "Compartilhe dispositivos e histórico. Convide por e-mail — os convidados ainda não precisam ter conta.",
   notices: {
     invited: "Convite enviado por e-mail.",
     removed: "Membro removido.",
@@ -29,8 +30,10 @@ const ptBr: HouseholdMessages = {
     changeRole: "Alterar função",
     roleFor: "Função de {email}",
     confirmRemove: "Remover este membro da casa?",
-    confirmLeave: "Sair desta casa? Você perderá o acesso aos dispositivos compartilhados e ao histórico dela.",
-    leaveBody: "Você é membro desta casa. Ao sair, você perde o acesso aos dispositivos e ao histórico dela.",
+    confirmLeave:
+      "Sair desta casa? Você perderá o acesso aos dispositivos compartilhados e ao histórico dela.",
+    leaveBody:
+      "Você é membro desta casa. Ao sair, você perde o acesso aos dispositivos e ao histórico dela.",
     leave: "Sair da casa",
   },
   invite: {
@@ -45,7 +48,8 @@ const ptBr: HouseholdMessages = {
     roleAlertOnly: "Somente alertas (notificações, somente leitura)",
     portfolioHintHtml:
       '<a class="text-link" href="/pricing#portfolio">Portfolio</a> adiciona acessos de administrador do imóvel para a equipe no local (sem acesso ao faturamento).',
-    existingMemberHint: "Convidar alguém que já é membro não muda a função dessa pessoa. O proprietário pode alterar funções em Membros.",
+    existingMemberHint:
+      "Convidar alguém que já é membro não muda a função dessa pessoa. O proprietário pode alterar funções em Membros.",
     submit: "Enviar link de convite",
     invitesHeading: "Convites",
     managersOnly: "Somente o proprietário e os editores da casa podem enviar convites.",
@@ -88,7 +92,8 @@ const ptBr: HouseholdMessages = {
     selected: "Selecionada: {label}",
     searchHint: "Se a sua cidade não estiver na lista, pesquise e escolha um resultado.",
     submit: "Salvar configurações do mapa de congelamento",
-    publicListHtml: 'Veja a lista pública em <a class="text-link" href="/freeze-map">/freeze-map</a>.',
+    publicListHtml:
+      'Veja a lista pública em <a class="text-link" href="/freeze-map">/freeze-map</a>.',
   },
   property: {
     heading: "Adicionar outro imóvel",
@@ -99,7 +104,8 @@ const ptBr: HouseholdMessages = {
     submit: "Criar imóvel",
     limit: {
       one: "Seu plano permite {count} casa própria ({inUse} em uso). Faça upgrade para o Pro para ter vários imóveis.",
-      other: "Seu plano permite {count} casas próprias ({inUse} em uso). Faça upgrade para o Pro para ter vários imóveis.",
+      other:
+        "Seu plano permite {count} casas próprias ({inUse} em uso). Faça upgrade para o Pro para ter vários imóveis.",
     },
   },
   activity: {

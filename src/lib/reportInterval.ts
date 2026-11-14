@@ -21,7 +21,8 @@ function median(values: number[]): number {
 }
 
 export function reportIntervalSeconds(meta: unknown): number | null {
-  const value = meta && typeof meta === "object" ? (meta as Record<string, unknown>).report_interval_s : null;
+  const value =
+    meta && typeof meta === "object" ? (meta as Record<string, unknown>).report_interval_s : null;
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
 }
 
@@ -48,8 +49,11 @@ export function nextReportInterval(
   if (current != null && gapS > OUTAGE_FACTOR * current) return null;
   if (current == null && gapS > MAX_FIRST_GAP_S) return null;
 
-  const raw = meta && typeof meta === "object" ? (meta as Record<string, unknown>).report_intervals_s : null;
-  const samples = Array.isArray(raw) ? raw.filter((v): v is number => typeof v === "number" && v > 0) : [];
+  const raw =
+    meta && typeof meta === "object" ? (meta as Record<string, unknown>).report_intervals_s : null;
+  const samples = Array.isArray(raw)
+    ? raw.filter((v): v is number => typeof v === "number" && v > 0)
+    : [];
   const learned = current != null && samples.length >= MAX_SAMPLES;
   if (learned && Math.abs(gapS - current) <= CHANGE_FACTOR * current) return null;
 
