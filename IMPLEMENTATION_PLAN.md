@@ -88,12 +88,15 @@ decision with its test and hardware evidence) is
    backups"), first run, then decrypt one and restore it into a Neon branch
    (also the first restore-into-Neon rehearsal). Until then the daily job
    fails and emails.
-2. **Neon restore window and storage limit:** read them from the Neon
+2. **Neon plan:** upgrade (owner, 2026-11-14): production used 3.05 GB of
+   the free 5 GB transfer in a week; two fixes deployed (log: "Neon
+   transfer"); watch daily transfer before deciding to stay on paid.
+3. **Neon restore window and storage limit:** read them from the Neon
    console and record them in `docs/guide/deploy.md`.
-3. **ESP32-C3:** run tests 10–13 on 1.5.0 (released compile-only).
-4. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
+4. **ESP32-C3:** run tests 10–13 on 1.5.0 (released compile-only).
+5. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
    it); later releases arrive over the air.
-5. **Funnel** (owner ran `pnpm ops:funnel`, 2026-11-13; 10 accounts
+6. **Funnel** (owner ran `pnpm ops:funnel`, 2026-11-13; 10 accounts
    excluding the test account): signed up 10 → confirmed 8 → added a device
    2 → reading 2 → test alert 2 → reading in last 7 days 1 → real alert 1
    → paying 0. Demo feed: 0 accounts. The big drop is confirmed → device
@@ -113,9 +116,9 @@ decision with its test and hardware evidence) is
    Worker, and pending migrations blocking the deploy. Needs owner-created
    resources and secrets.
 2. **Retire the legacy `garage_temps` / `user_temp_feeds` path** (3.1).
-   Done except dropping the two empty `user_temp_*` tables: no code reads
-   any legacy table; `garage_temps` was exported to CSV and dropped
-   (migration 0006, applied 2026-11-13). Log: "Legacy tables".
+   Done except applying migration 0007 (drops the two empty `user_temp_*`
+   tables): no code reads any legacy table; `garage_temps` was exported
+   to CSV and dropped (0006, applied 2026-11-13). Log: "Legacy tables".
 3. **Code health** (3.4): split `dashboard.astro` and `HistoryChart.tsx`;
    turn on the formatter check (and move `biome.json` off the deprecated
    `recommended` field with it). Lint: 55 warnings → 0 (2026-11-13).

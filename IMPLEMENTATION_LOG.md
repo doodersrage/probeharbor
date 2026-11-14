@@ -6137,8 +6137,10 @@ Plan:
   `pnpm db:migrate`, `pnpm db:pending`; reported done (output not shared,
   so not independently checked here). `garage_temps` is gone from
   production.
-- [ ] `user_temp_feeds` / `user_temp_probes` (empty, unused) can be dropped
-  the same way later.
+- [x] `db/migrations/0007_drop_user_temp_tables.sql` written (2026-11-14):
+  drops both empty tables; applied cleanly by the test database
+  (`pnpm test:db` 415 passed).
+- [ ] Owner: `pnpm db:backup`, `pnpm db:migrate`, `pnpm db:pending`.
 
 ------------------------------------------------------------------------
 
