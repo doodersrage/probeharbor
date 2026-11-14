@@ -808,22 +808,17 @@ export async function maybeSendThresholdAlerts(
     feedReadings = buildReadingsFromResults(results, visibleProbes, deviceList);
   }
 
-  let sensorReadings: AlertReading[] = [];
-  let floodReadings: FloodAlertReading[] = [];
-  let powerOffReadings: FloodAlertReading[] = [];
-  if (householdId) {
-    const latest = await fetchLatestSensorValues(householdId);
-    sensorReadings = buildAlertReadingsFromLatestSensors(latest);
-    floodReadings = buildFloodReadingsFromLatestSensors(latest);
-    powerOffReadings = buildPowerOffReadingsFromLatestSensors(latest);
-  }
+  // Read once: the threshold, flood, power and runway checks all use it.
+  const latest = householdId ? await fetchLatestSensorValues(householdId) : [];
+  const sensorReadings: AlertReading[] = householdId ? buildAlertReadingsFromLatestSensors(latest) : [];
+  const floodReadings: FloodAlertReading[] = householdId ? buildFloodReadingsFromLatestSensors(latest) : [];
+  const powerOffReadings: FloodAlertReading[] = householdId ? buildPowerOffReadingsFromLatestSensors(latest) : [];
 
   const readings = mergeAlertReadings(feedReadings, sensorReadings);
   const weatherCityId =
     typeof userMetadata?.weather_city_id === "string"
       ? userMetadata.weather_city_id.trim()
       : null;
-  const latest = householdId ? await fetchLatestSensorValues(householdId) : [];
   await sendThresholdAlertsIfNeeded(userId, email, settings, readings, householdId, {
     weatherCityId,
     latestSensors: latest,
