@@ -123,9 +123,12 @@ decision with its test and hardware evidence) is
    thresholds yet. Baseline (unit tests only, 2026-11-13): lines 63.6%,
    branches 59.9%; after the notify.ts tests: 64.1% / 60.3%. `notify.ts`
    (alert delivery) 54% → 92.6% lines (every channel's send, reject,
-   network error, missing config, plan gating). Next gaps:
-   `alertNotifications.ts` 76%, `fcm.ts` 33%. Add a threshold once it has
-   moved further.
+   network error, missing config, plan gating); `alertNotifications.ts`
+   76% → 86.7% (forecast freeze, NWS warning, battery/signal alerts).
+   Totals 64.3% lines / 60.6% branches. CI now fails below floors of
+   lines 64, statements 63, functions 61, branches 60 (`vitest.config.ts`);
+   raise them as coverage rises. Next gap: `fcm.ts` 33% (Android push;
+   unused so far).
 4. **Cron fan-out with Queues** (2.4) before the household count makes one
    invocation too slow.
 5. **Battery sleep mode** in the firmware (1.5).

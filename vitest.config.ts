@@ -19,14 +19,17 @@ export default defineConfig({
     // Need a real Postgres: run with `pnpm test:db` (vitest.db.config.ts).
     exclude: ["src/**/*.db.test.ts", "**/node_modules/**"],
     setupFiles: ["src/test/unitSetup.ts"],
-    // `pnpm test:coverage`: a report, no thresholds (yet). Unit tests only;
-    // code exercised by the database tests (pnpm test:db) shows as uncovered.
+    // `pnpm test:coverage`. Unit tests only; code exercised by the database
+    // tests (pnpm test:db) shows as uncovered. The thresholds are floors just
+    // under the totals on 2026-11-13: coverage can't slide back. Raise them
+    // when it goes up; don't lower them to get a change through.
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.test.ts", "src/test/**", "src/**/*.d.ts", "src/i18n/**"],
       reporter: ["text-summary", "json-summary", "html"],
       reportsDirectory: "coverage",
+      thresholds: { lines: 64, statements: 63, functions: 61, branches: 60 },
     },
   },
 });
