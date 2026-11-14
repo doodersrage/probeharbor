@@ -97,7 +97,17 @@ const pgEnv = {
 console.log(`Backing up ${url.hostname} (${version.stdout.trim()}) → ${file}`);
 const dump = spawnSync(
   "pg_dump",
-  ["--format=custom", "--no-owner", "--no-privileges", "--file", file],
+  [
+    "--format=custom",
+    "--no-owner",
+    "--no-privileges",
+    // Neon's own auth product schema: switched on in the project but unused
+    // and empty (ProbeHarbor's auth is public.auth_*); the read-only backup
+    // role has no access to it.
+    "--exclude-schema=neon_auth",
+    "--file",
+    file,
+  ],
   { env: pgEnv, stdio: ["ignore", "inherit", "inherit"] },
 );
 if (dump.status !== 0) {
