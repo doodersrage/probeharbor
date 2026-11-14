@@ -51,6 +51,9 @@ const ptBr: DeviceDetailMessages = {
     crashBuildUnknown: "Build que falhou {elf}: sem nomes de funções",
     crashStackNote:
       "No ESP32-C3 estas são prováveis funções chamadoras encontradas na pilha, não uma cadeia de chamadas exata.",
+    crashWatchdog: "Reiniciada pelo watchdog: a sonda parou de responder",
+    crashWatchdogNote:
+      "O watchdog reinicia a sonda quando o loop principal fica parado por um minuto. Os endereços abaixo mostram onde o chip estava quando o watchdog disparou (geralmente a tarefa ociosa), não o código que parou.",
     crashReport: "Relatar no GitHub",
     state: "Estado",
     disabled: "Desativado: as leituras são ignoradas",

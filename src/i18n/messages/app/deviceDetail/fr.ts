@@ -51,6 +51,9 @@ const fr: DeviceDetailMessages = {
     crashBuildUnknown: "Version plantée {elf} : aucun nom de fonction",
     crashStackNote:
       "Sur l’ESP32-C3, ce sont des appelants probables trouvés sur la pile, pas une chaîne d’appels exacte.",
+    crashWatchdog: "Redémarrée par le watchdog : la sonde ne répondait plus",
+    crashWatchdogNote:
+      "Le watchdog redémarre la sonde quand sa boucle principale s’arrête pendant une minute. Les adresses ci-dessous montrent où était la puce quand le watchdog s’est déclenché (en général la tâche inactive), pas le code qui s’est arrêté.",
     crashReport: "Le signaler sur GitHub",
     state: "État",
     disabled: "Désactivé : les mesures sont ignorées",

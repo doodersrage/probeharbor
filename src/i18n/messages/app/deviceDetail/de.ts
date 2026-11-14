@@ -51,6 +51,9 @@ const de: DeviceDetailMessages = {
     crashBuildUnknown: "Abgestürzter Build {elf}: keine Funktionsnamen dafür",
     crashStackNote:
       "Beim ESP32-C3 sind das wahrscheinliche Aufrufer aus dem Stack, keine exakte Aufrufkette.",
+    crashWatchdog: "Vom Watchdog neu gestartet: die Sonde reagierte nicht mehr",
+    crashWatchdogNote:
+      "Der Watchdog startet die Sonde neu, wenn ihre Hauptschleife eine Minute lang hängt. Die Adressen unten zeigen, wo der Chip war, als der Watchdog auslöste (meist der Leerlauf-Task), nicht den Code, der hing.",
     crashReport: "Auf GitHub melden",
     state: "Status",
     disabled: "Deaktiviert: Messwerte werden ignoriert",

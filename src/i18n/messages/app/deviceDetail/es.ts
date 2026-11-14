@@ -51,6 +51,9 @@ const es: DeviceDetailMessages = {
     crashBuildUnknown: "Compilación que falló {elf}: sin nombres de funciones",
     crashStackNote:
       "En el ESP32-C3 son probables funciones llamantes encontradas en la pila, no una cadena de llamadas exacta.",
+    crashWatchdog: "Reiniciada por el watchdog: la sonda dejó de responder",
+    crashWatchdogNote:
+      "El watchdog reinicia la sonda cuando su bucle principal se detiene durante un minuto. Las direcciones de abajo muestran dónde estaba el chip cuando saltó el watchdog (normalmente la tarea inactiva), no el código que se detuvo.",
     crashReport: "Notificarlo en GitHub",
     state: "Estado",
     disabled: "Desactivado: se ignoran las lecturas",

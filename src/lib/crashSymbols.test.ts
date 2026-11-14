@@ -85,6 +85,21 @@ describe("decodeCrash", () => {
     expect(d.frames.every((f) => f.fn === null)).toBe(true);
   });
 
+  it("marks a watchdog restart and drops the exception cause, which doesn't apply", () => {
+    for (const reset of ["task_wdt", "int_wdt", "wdt"]) {
+      const d = decodeCrash(crash({ reset, task: "IDLE" }), table("esp32"));
+      expect(d.watchdog).toBe(true);
+      expect(d.cause).toBeNull();
+      expect(d.frames.length).toBeGreaterThan(0); // still listed for a bug report
+    }
+  });
+
+  it("an exception is not a watchdog restart, whatever the task", () => {
+    for (const reset of ["panic", null, "poweron"]) {
+      expect(decodeCrash(crash({ reset }), table("esp32")).watchdog).toBe(false);
+    }
+  });
+
   it("names causes per architecture", () => {
     expect(causeName("esp32s3", 29)).toBe("StoreProhibited");
     expect(causeName("esp32c3", 2)).toBe("Illegal instruction");

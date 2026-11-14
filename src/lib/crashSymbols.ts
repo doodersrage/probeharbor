@@ -32,7 +32,21 @@ export type DecodedCrash = {
   stackScan: boolean;
   /** "LoadProhibited", "Illegal instruction", … when the cause is known. */
   cause: string | null;
+  /**
+   * The chip was restarted by a watchdog (the reset reason the firmware sent),
+   * not by an exception: the addresses show where it was when the watchdog
+   * fired (for the task watchdog, usually the idle task), not the code that
+   * stopped responding, and the exception cause doesn't apply.
+   */
+  watchdog: boolean;
 };
+
+/** Reset reasons (firmware 1.5.1 resetReasonName) that mean a watchdog restart. */
+const WATCHDOG_RESETS = new Set(["task_wdt", "int_wdt", "wdt"]);
+
+export function isWatchdogReset(reset: string | null): boolean {
+  return reset != null && WATCHDOG_RESETS.has(reset);
+}
 
 /** The function containing `addr`, by binary search; null when none does. */
 export function lookupFunction(
@@ -109,7 +123,8 @@ export function decodeCrash(crash: CrashReport, table: SymbolTable | null): Deco
     chip,
     frames,
     stackScan,
-    cause: causeName(chip, crash.cause),
+    cause: isWatchdogReset(crash.reset) ? null : causeName(chip, crash.cause),
+    watchdog: isWatchdogReset(crash.reset),
   };
 }
 

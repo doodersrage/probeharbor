@@ -78,6 +78,19 @@ test.describe("device ingest", () => {
       await expect(page.getByText(/Cause: LoadProhibited/)).toBeVisible();
       await expect(page.getByTestId("crash-frames")).toContainText("0x400d61cc +0x4");
 
+      // A watchdog restart is worded as one, not as a crash in the idle task.
+      const wdtRes = await page.request.post(`/api/ingest/${ingestKey}`, {
+        data: {
+          temp1: 41.4,
+          fw: "1.5.1",
+          crash: { elf: "1f770d3282f88e89", task: "IDLE0", pc: "0x400d61cc", bt: [], cause: 0, addr: "0x0", reset: "task_wdt" },
+        },
+      });
+      expect(wdtRes.ok()).toBeTruthy();
+      await page.goto(`/dashboard/devices/${encodeURIComponent(deviceId!)}`);
+      await expect(page.getByText("Restarted by the watchdog: the probe stopped responding")).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(/Cause:/)).toHaveCount(0);
+
       // And the Devices list links to it.
       await page.goto("/dashboard/devices?view=ops");
       await expect(page.locator(`[data-device-row="${deviceId}"]`)).toBeVisible();

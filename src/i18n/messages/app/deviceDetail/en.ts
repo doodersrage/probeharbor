@@ -50,6 +50,9 @@ const en = {
     crashBuildUnknown: "Crashed build {elf}: no function names for it",
     crashStackNote:
       "On the ESP32-C3 these are likely callers found on the stack, not an exact call chain.",
+    crashWatchdog: "Restarted by the watchdog: the probe stopped responding",
+    crashWatchdogNote:
+      "The watchdog restarts the probe when its main loop stops for a minute. The addresses below show where the chip was when the watchdog fired (usually the idle task), not the code that stopped.",
     crashReport: "Report it on GitHub",
     state: "State",
     disabled: "Disabled: readings are ignored",

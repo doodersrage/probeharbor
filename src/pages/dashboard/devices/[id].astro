@@ -198,7 +198,11 @@ function offsetWithUnit(sensor: { offset_num?: number | null; kind?: string | nu
           <div>
             <dt>{t.status.lastCrash}</dt>
             <dd>
-              {crashTop.fn ? fmt(t.status.crashIn, { fn: crashTop.fn }) : fmt(t.status.crashAt, { addr: crashTop.addr })}
+              {crash.watchdog
+                ? t.status.crashWatchdog
+                : crashTop.fn
+                  ? fmt(t.status.crashIn, { fn: crashTop.fn })
+                  : fmt(t.status.crashAt, { addr: crashTop.addr })}
               <span class="block text-xs text-[var(--color-text-muted)]">
                 {fmt(t.status.crashWhen, { age: formatRelativeAge(lastCrash.received_at, "", locale).label })}
                 {crash.cause && <> · {t.status.crashCause}: {crash.cause}</>}
@@ -219,7 +223,8 @@ function offsetWithUnit(sensor: { offset_num?: number | null; kind?: string | nu
                     </li>
                   ))}
                 </ol>
-                {crash.stackScan && <p class="m-0 mt-1">{t.status.crashStackNote}</p>}
+                {crash.watchdog && <p class="m-0 mt-1">{t.status.crashWatchdogNote}</p>}
+                {crash.stackScan && !crash.watchdog && <p class="m-0 mt-1">{t.status.crashStackNote}</p>}
                 <a
                   class="text-link"
                   href="https://github.com/doodersrage/probeharbor/issues/new"
