@@ -495,6 +495,23 @@ few seconds, normal). Flashed the released 1.5.0 with esptool.
   function, not the code that hung.
 - Back on the published 1.5.1 app afterwards (written at 0x10000 from the
   release image so the settings stay), posting 200.
-- Not run on this board yet: test 12 (OTA), the setup portal from a phone,
-  a sensor on GPIO 4.
+- **Test 12 (OTA), 17:48–17:56:** test builds 1.4.0-test (base, USB) and
+  1.4.1-test (update), probation 5 minutes; test manifest signed by the
+  owner for esp32c3 only at `/firmware/ota-test/` (removed afterwards).
+  Corrupted signature: `1.4.1 is not signed by the ProbeHarbor key,
+  ignored`. Rollout 0: `not yet for this probe (rollout 0%)`. Install:
+  downloaded and installed in ~12 s, `running 1.4.1-test on probation`.
+  Posts failing on probation: 5 buffered, at 5 minutes `going back to the
+  previous version` → `TT firmware 1.4.0-test`, `5 reading(s) kept`, server
+  `"readings":6`. Hang on probation: watchdog restart 61 s later and the
+  bootloader went back to 1.4.0-test. Install with posts working: first post
+  → `1.4.1-test confirmed`. Back on the published 1.5.1 afterwards (boot_app0
+  and the release app written over USB; settings kept).
+- **Wi-Fi is marginal even at 8.5 dBm:** at the start of test 12 the board
+  failed to join (reasons 201, 39) and opened the setup portal; it kept 4
+  readings, did its offline restart after 4 minutes, joined, and the server
+  stored all 5. No data lost, but a SuperMini placed far from the access
+  point may drop out often.
+- Not run on this board yet: the setup portal from a phone, a sensor on
+  GPIO 4.
 
