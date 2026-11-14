@@ -121,9 +121,11 @@ decision with its test and hardware evidence) is
    `recommended` field with it). Lint: 55 warnings → 0 (2026-11-13).
    Coverage: `pnpm test:coverage`, in CI with a job-summary table, no
    thresholds yet. Baseline (unit tests only, 2026-11-13): lines 63.6%,
-   branches 59.9%. Least covered where it matters: `notify.ts` (alert
-   delivery) 54%, `alertNotifications.ts` 76%, `fcm.ts` 33%. Add a
-   threshold once it has moved.
+   branches 59.9%; after the notify.ts tests: 64.1% / 60.3%. `notify.ts`
+   (alert delivery) 54% → 92.6% lines (every channel's send, reject,
+   network error, missing config, plan gating). Next gaps:
+   `alertNotifications.ts` 76%, `fcm.ts` 33%. Add a threshold once it has
+   moved further.
 4. **Cron fan-out with Queues** (2.4) before the household count makes one
    invocation too slow.
 5. **Battery sleep mode** in the firmware (1.5).
