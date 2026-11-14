@@ -28,7 +28,7 @@ Status key: **Done**, **Partly done**, **Waiting on owner**, **Open**.
 ## 2. Operations
 
 1. **Backups are manual.**
-   **Waiting on owner.** A daily workflow dumps, checks, encrypts (age) and uploads to R2 with a checksum check (2ccbae9); it needs the key pair, bucket, token, read-only role and secrets described in `docs/guide/deploy.md`. A restore into Neon is still to be rehearsed.
+   **Done** (2026-11-14). A daily workflow dumps with a read-only role, checks, encrypts (age) and uploads to the private R2 bucket `probeharbor-db-backups` (35-day expiry) with a checksum check. First run: 54 tables, 3.4 MB encrypted. Restore rehearsed the same day: downloaded, decrypted with the owner's key, `pg_restore` into an empty local Postgres 18 with no errors; the schema matched a database built from the seven migrations line for line. Optional: repeat the restore into a Neon branch.
 2. **Nothing outside the Worker watches the Worker.**
    **Done.** Public `/api/health` (200 when history collection is current, 503 otherwise), checked every 15 minutes from GitHub Actions, outside Cloudflare; a failure emails the owner.
 3. **No staging.** One environment; a push to `main` deploys to production; migrations are manual.

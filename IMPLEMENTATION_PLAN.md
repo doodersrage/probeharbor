@@ -56,7 +56,7 @@ decision with its test and hardware evidence) is
 | Sensor data | Done for the audit gaps; device times and batches (2026-11-13); SenML record times (2026-11-14) | Pull feeds store what the URL serves at poll time, for every format; source times (SenML `t`/`bt`, HA `last_updated`) aren't read, so a source serving an old value looks fresh (stuck-sensor checks catch flatlines). Build only if a pull-feed user needs it |
 | Alerts | Done for the audit gaps | Property name in alert titles (deferred: every user has one property) |
 | Setup and hardware | Firmware 1.5.0 released; tests 9–13 passed on an ESP32-S3 and a plain ESP32 | ESP32-C3 on 1.5.0; portal, router power cut, leak/battery inputs, Feathers (`HARDWARE-TESTS.md`) |
-| Operations | Health endpoint + GitHub Actions heartbeat; backup workflow written | Backup setup and a restore into Neon; Neon restore window; staging |
+| Operations | Health endpoint + GitHub Actions heartbeat; daily encrypted off-site backups, restore rehearsed locally (2026-11-14) | Neon restore window; staging; optional restore into a Neon branch |
 | Security | Done for the audit gaps; probe TLS verified with fallback | Watch the bcrypt re-hash count reach 0, then drop `bcryptjs` |
 | Dashboard | Done; certificate warning per probe | Warning text not yet seen in a browser |
 | Integrations | Spec done; HA in the default HACS store | — |
@@ -84,10 +84,9 @@ decision with its test and hardware evidence) is
 
 ### Waiting on the owner
 
-1. **Backups:** setup steps in `docs/guide/deploy.md` ("Automatic off-site
-   backups"), first run, then decrypt one and restore it into a Neon branch
-   (also the first restore-into-Neon rehearsal). Until then the daily job
-   fails and emails.
+1. **Backups:** done 2026-11-14 (log: "Off-site backups set up"). Daily
+   at 08:17 UTC; the age private key is in the owner's password manager.
+   Optional: one restore into a Neon branch (rehearsed locally so far).
 2. **Neon plan:** upgraded by the owner (2026-11-14), so production can't
    be paused for transfer this month. Production had used 3.05 GB of the
    free 5 GB in a week; fixes deployed since (log: "Neon transfer"). Watch

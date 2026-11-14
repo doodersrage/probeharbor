@@ -249,7 +249,14 @@ run (including "not configured") emails whoever last changed the schedule.
    summary ("Backed up N tables, … verified") and that the object is in the
    bucket.
 
-**Restore from R2:** download the object (dashboard, or
+**Status:** set up 2026-11-14; restore rehearsed the same day into an empty
+local Postgres 18 (no errors; schema identical to a database built from the
+migrations). The dump leaves out Neon's `neon_auth` schema (Neon's own auth
+product, unused here). `BACKUP_DATABASE_URL` may be the bare URL or Neon's
+`psql '…'` form.
+
+**Restore from R2:** download the object (dashboard,
+`pnpm wrangler r2 object get probeharbor-db-backups/db/<file> --remote --file <file>`, or
 `aws s3 cp s3://probeharbor-db-backups/db/<file> . --endpoint-url https://<account id>.r2.cloudflarestorage.com`
 with an R2 token), then
 `age -d -i probeharbor-backup-key.txt <file>.dump.age > <file>.dump` and

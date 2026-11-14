@@ -6224,3 +6224,28 @@ Neon transfer to be measured.**
   five-days-old record listed by index, resend → `duplicates: 3`).
   `pnpm test` 3736, `pnpm test:db` 416, typecheck 0, lint 0. Not tested
   with a real SenML device.
+
+## Off-site backups set up (2026-11-14)
+
+- Owner: age key pair (private key in Vaultwarden), R2 token scoped to the
+  bucket, `backup_reader` role (`bypassrls`, select only) and its direct
+  URL as `BACKUP_DATABASE_URL`. Claude: bucket `probeharbor-db-backups`
+  (private; lifecycle `expire-db-35d` on `db/`, incomplete uploads aborted
+  after a day), variables `R2_ACCOUNT_ID`, `R2_BACKUP_BUCKET`,
+  `BACKUP_AGE_RECIPIENT` (public key via `age-keygen -y`).
+- Two fixes found by the first runs: the URL secret didn't parse (Neon's
+  Connect dialog shows `psql '…'`; the script now accepts it and describes
+  a bad value's shape without printing it), and pg_dump failed on
+  `neon_auth` (Neon's unused auth schema; now excluded, rather than
+  widening the role).
+- Run 43601874599: 54 tables, 3.4 MB encrypted,
+  `db/probeharbor-20261114T135225Z.dump.age`, checksum verified.
+- Restore rehearsal: object downloaded with wrangler, decrypted by the
+  owner, `pg_restore --exit-on-error` into an empty local Postgres 18:
+  exit 0. 56 tables, 138 indexes, 56 foreign keys, 7 migrations recorded,
+  245,886 readings (newest a minute before the dump). `pg_dump
+  --schema-only` of the restore vs a database built from
+  `db/migrations/0001–0007`: identical apart from pg_dump's random
+  `\restrict` tokens (so production has no schema drift). Decrypted file
+  shredded and both databases dropped afterwards.
+- Not done: a restore into a Neon branch (optional; same Postgres major).
