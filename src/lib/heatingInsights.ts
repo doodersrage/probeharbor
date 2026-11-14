@@ -1,3 +1,4 @@
+import { dewPoint } from "./dewPoint";
 import type { ChartPoint } from "./garageTempsHistory";
 import type { ThermostatSnapshot } from "./thermostatCorrelation";
 import { isThermostatCooling, isThermostatHeating } from "./thermostatCorrelation";
@@ -38,18 +39,9 @@ export function estimateHeatingLossRate(
   return rate;
 }
 
-/** Dew point °F from air temperature and relative humidity (Magnus-Tetens). */
+/** Dew point °F from air temperature (°F) and relative humidity (see ./dewPoint). */
 export function dewPointF(tempF: number, rhPct: number): number | null {
-  if (!Number.isFinite(tempF) || !Number.isFinite(rhPct) || rhPct <= 0 || rhPct > 100) {
-    return null;
-  }
-  const tC = (tempF - 32) * (5 / 9);
-  const a = 17.62;
-  const b = 243.12;
-  const gamma = Math.log(rhPct / 100) + (a * tC) / (b + tC);
-  const tdC = (b * gamma) / (a - gamma);
-  if (!Number.isFinite(tdC)) return null;
-  return tdC * (9 / 5) + 32;
+  return dewPoint(tempF, rhPct);
 }
 
 function fixed(value: number, digits: number, locale: Locale): string {

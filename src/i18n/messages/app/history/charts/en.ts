@@ -1,4 +1,4 @@
-import { HISTORY_CHART_UI_EN } from "../../../../../components/HistoryChart";
+import { HISTORY_CHART_UI_EN } from "../../../../../components/historyChartUi";
 import { FREEZE_HOURS_CHART_TEXT_EN } from "../../../../../components/FreezeHoursChart";
 import { PROBE_SPREAD_CHART_TEXT_EN } from "../../../../../components/ProbeSpreadChart";
 import { INDOOR_OUTDOOR_CHART_TEXT_EN } from "../../../../../components/IndoorOutdoorChart";

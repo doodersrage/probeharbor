@@ -1,7 +1,7 @@
 import { DEMO_TEMPS_TEXT_EN, type DemoTempsText } from "../../../components/DemoTempsPanel";
 import { WEATHER_PANEL_TEXT_EN, type WeatherPanelText } from "../../../components/WeatherPanel";
 import { DEMO_HISTORY_TEXT_EN, type DemoHistoryText } from "../../../components/DemoHistoryChart";
-import { HISTORY_CHART_UI_EN, type HistoryChartUi } from "../../../components/HistoryChart";
+import { HISTORY_CHART_UI_EN, type HistoryChartUi } from "../../../components/historyChartUi";
 
 /**
  * Strings for the live demo islands (DemoTempsPanel, WeatherPanel,

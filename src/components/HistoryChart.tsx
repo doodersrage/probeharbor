@@ -41,128 +41,20 @@ import { expandedChartDialogAttrs } from "../lib/chartLightbox";
 import { temperatureScale } from "../lib/chartScale";
 import { findSharedGaps, gapThresholdMs } from "../lib/chartGaps";
 import { pickHumiditySource } from "../lib/chartHumidity";
+import { dewPoint as dewPointF } from "../lib/dewPoint";
+import { fill, fixed, readStoredNumber, writeStoredNumber } from "../lib/historyChartFormat";
+import { HISTORY_CHART_UI_EN, type HistoryChartUi } from "./historyChartUi";
 
-/**
- * Every visible string, aria-label and title. Plain strings only (island props
- * are serialized); `{name}` marks a placeholder. English is the default;
- * marketing pages pass a translation from `src/i18n/messages/demoIslands/`.
- */
-export const HISTORY_CHART_UI_EN = {
-  defaultTitle: "Temperature trend (last 7 days)",
-  probe: "Probe",
-  house: "House",
-  comparisonOverlay: "Gray = comparison overlay",
-  notEnough: "Not enough readings yet for a chart.",
-  emptySteps: "{addDevice} → verify ingest → {openLive} so snapshots can collect.",
-  emptyAddDevice: "Add a device",
-  emptyOpenLive: "open Live",
-  summaryLatest: "Latest reading {temp}{unit}.",
-  summaryRange: "Range over this period: {min}{unit} to {max}{unit}.",
-  summaryBelow: "Dropped to or below the {freeze}{unit} freeze line in {below} of {total} readings.",
-  summaryAbove: "Stayed above the {freeze}{unit} freeze line the whole period.",
-  hoverAlert: "Alert: {title}",
-  guideFreeze: "Freeze",
-  guideTarget: "Target",
-  guideHigh: "High",
-  noData: "No data",
-  shareFailed: "Share failed",
-  shareLinkCopied: "Share link copied",
-  closeExpandedAria: "Close expanded chart",
-  controlsAria: "Chart controls",
-  zoomInAria: "Zoom in",
-  zoomOutAria: "Zoom out",
-  resetZoomAria: "Reset zoom",
-  reset: "Reset",
-  downloadPngAria: "Download chart PNG",
-  png: "PNG",
-  copyLinkAria: "Copy link to this chart window",
-  copied: "Copied",
-  link: "Link",
-  shareAria: "Share chart snapshot",
-  shared: "Shared",
-  share: "Share",
-  upgradeShareAria: "Upgrade to share chart snapshots",
-  upgradeShareTitle: "Chart share is on Member+",
-  claimsAria: "Download claims pack PDF for this chart window",
-  claims: "Claims",
-  close: "Close",
-  expandAria: "Expand chart",
-  expand: "Expand",
-  presetsAria: "Time range presets",
-  presetLabels: { "24h": "24h", "7d": "7d", "30d": "30d" } as Record<string, string>,
-  presetShowLast: "Show last {label}",
-  presetAlreadyShowing: "Already showing about {label} of loaded data",
-  presetOnlyLoaded: "Only {hours}h loaded here — open History for a longer range",
-  presetAll: "All",
-  loadedWindow: "Loaded window is about {hours}h.",
-  seriesAria: "Series visibility",
-  humidityPct: "Humidity %",
-  dewPointF: "dew point {unit}",
-  dashed: " (dashed)",
-  humidityFrom: " · from {probe}",
-  humidityNoDew: " (no dew point: this humidity sensor has no matching temperature)",
-  humidityFromLabel: "Humidity from",
-  humidityAuto: "Newest reading",
-  humidityAll: "All probes",
-  humidityAllLegend: "Humidity (thin line) and dew point (dashed) in each probe's color",
-  chartTips: "Chart tips",
-  tipsExpanded: "Expanded view — drag to select a range, scroll to zoom, Esc or Close to exit.",
-  tipsDefault: "Drag to select a range (Shift+drag when zoomed), scroll to zoom, Link to copy this window, PNG to save.",
-  tipsAlerts: " Colored ticks mark alerts — hover near a tick for details.",
-  tipsTrace: "Trace turns {cool} at/below freeze and {warm} at/above the high line.",
-  tipsDew: " The dashed dew-point line is worked out from temperature and humidity: surfaces colder than it get damp.",
-  tipsCool: "cool",
-  tipsWarm: "warm",
-  canvasAria: "Interactive line chart of {title}. Drag to select a range, scroll to zoom, expand for a larger view.",
-  tooltipAlert: "Alert",
-  tooltipDew: "dew",
-  optionsSummary: "Chart options: guide lines",
-  optionsSummaryHumidity: ", humidity",
-  targetAmbient: "Target ambient ({unit})",
-  highWarning: "High warning ({unit})",
-  optional: "Optional",
-  humidityDew: "Humidity + dew",
-  freezeLineFromAlerts: "Freeze line from alerts: {temp}{unit}",
-  doorOpenFor: "open {duration}",
-  doorStillOpen: "open, no close reported yet",
-  durationSeconds: "{seconds} s",
-  durationMinutes: "{minutes} min",
-  durationHoursMinutes: "{hours} h {minutes} min",
-  summaryDoors: "Door-open periods shaded on the chart: {list}.",
-  summaryDoorItem: "{door}: {count}",
-  doorLegendTitle: "Show or hide when {door} was open",
-  tipsDoors: " Shaded bands show when a door sensor in your household reported open; with more than one door, each door has its own row above the chart.",
-  doorLanesMore: " Rows show up to {max} doors; the others are still shaded and listed when you hover.",
-  doorsUnavailable: "Door history couldn't be loaded, so open doors aren't shaded.",
-};
+export { HISTORY_CHART_UI_EN, type HistoryChartUi };
 
-export type HistoryChartUi = typeof HISTORY_CHART_UI_EN;
+
 
 /** True when no locale (or an English one) is given: keep the original formatting. */
-function isEnglishLocale(locale?: string): boolean {
-  return !locale || locale.toLowerCase().startsWith("en");
-}
-
-/** `toFixed`, or the locale's decimal separator when a non-English locale is given. */
-function fixed(value: number, digits: number, locale?: string): string {
-  if (isEnglishLocale(locale)) return value.toFixed(digits);
-  return new Intl.NumberFormat(locale, {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-    useGrouping: false,
-  }).format(value);
-}
-
 /** `formatHoverTime`, in `locale` when a non-English one is given. */
 const hoverTime = (iso: string, locale?: string): string => formatHoverTime(iso, locale);
 
 /** `formatAxisTime`, in `locale` when a non-English one is given. */
 const axisTime = (ts: number, spanMs: number, locale?: string): string => formatAxisTime(ts, spanMs, locale);
-
-/** Replace `{name}` placeholders with plain values. */
-function fill(template: string, vars: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
-}
 
 /** Replace `{name}` placeholders with nodes (links, colored spans). */
 function fillNodes(template: string, nodes: Record<string, ComponentChildren>): ComponentChildren {
@@ -246,40 +138,6 @@ const DOOR_LANE_STEP = 12;
 const storageHigh = (celsius: boolean) => (celsius ? "tt-chart-high-c" : "tt-chart-high-f");
 const storageTarget = (celsius: boolean) => (celsius ? "tt-chart-target-c" : "tt-chart-target-f");
 const toCelsius = (f: number) => ((f - 32) * 5) / 9;
-
-/** Dew point in the same unit as `temp` (°C when `celsius`, else °F). */
-function dewPointF(temp: number, rhPct: number, celsius = false): number | null {
-  if (!Number.isFinite(temp) || !Number.isFinite(rhPct) || rhPct <= 0 || rhPct > 100) {
-    return null;
-  }
-  const tC = celsius ? temp : (temp - 32) * (5 / 9);
-  const a = 17.62;
-  const b = 243.12;
-  const gamma = Math.log(rhPct / 100) + (a * tC) / (b + tC);
-  const tdC = (b * gamma) / (a - gamma);
-  if (!Number.isFinite(tdC)) return null;
-  return celsius ? tdC : tdC * (9 / 5) + 32;
-}
-
-function readStoredNumber(key: string): number | null {
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw == null || raw === "") return null;
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeStoredNumber(key: string, value: number | null) {
-  try {
-    if (value == null) localStorage.removeItem(key);
-    else localStorage.setItem(key, String(value));
-  } catch {
-    /* ignore quota / private mode */
-  }
-}
 
 function segmentColor(
   tempf: number,
