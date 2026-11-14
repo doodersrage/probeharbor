@@ -482,7 +482,12 @@ void handleConfigLine(const String &line) {
   saveKey(key);
 
   Console.println("TT wifi joining");
-  wifiManager.stopConfigPortal();
+  // Only when it's running: WiFiManager 2.0.17's shutdownConfigPortal() calls
+  // server->handleClient() even after an earlier shutdown freed the server, so
+  // a second TTCFG (the flasher resends until it sees "key saved", and a probe
+  // already online may be re-configured) crashed here before saving the new
+  // Wi-Fi (found by 1.5.0 on the C3, 2026-11-14, from its core dump).
+  if (wifiManager.getConfigPortalActive()) wifiManager.stopConfigPortal();
   WiFi.mode(WIFI_STA);
   WiFi.persistent(true);
   WiFi.begin(ssid.c_str(), pass.c_str());
