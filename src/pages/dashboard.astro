@@ -81,6 +81,8 @@ import {
 import { getIndoorReferenceSensorId } from "../lib/indoorReference";
 import { buildHouseContext, fetchHouseChartOverlay } from "../lib/houseContext";
 import { fetchChartDoorBands } from "../lib/chartDoorBands.server";
+import { parseOverviewFlash, spaceCheckedAtFor } from "../lib/overviewFlash";
+import { overviewFocus } from "../lib/overviewFocus";
 import ProductAnalyticsTracker from "../components/ProductAnalyticsTracker.astro";
 import UnackedAlertsBanner from "../components/UnackedAlertsBanner.astro";
 import ColdSnapChecklistCard from "../components/ColdSnapChecklistCard.astro";
@@ -305,13 +307,6 @@ if (forceSimple) {
   overviewMode = "simple";
 }
 
-/**
- * Any device or feed, demo included: with freeze email + one alert it ends
- * first-run focus, so the demo feed can still be explored on Overview.
- */
-const hasDevices =
-  devices.some((d) => d.source === "push" || d.source === "pull_url") ||
-  latest.length > 0;
 // Checklist step 1 counts only a real (non-demo) device that has reported.
 const deviceStep = onboardingDeviceStep(devices, latest);
 const realLatest = realReadingRows(latest, devices);
@@ -326,29 +321,16 @@ const hasEmailAlerts =
   alertSettings.enabled &&
   alertSettings.channelEmail &&
   Boolean(resolveAlertEmail(alertSettings, user.email));
-const lastAlertAt =
-  [
-    alertSettings.lastAlertSentAt,
-    alertSettings.lastOutageAlertAt,
-    alertSettings.lastRateAlertAt,
-    alertSettings.lastForecastAlertAt,
-    alertSettings.lastRunwayAlertAt,
-    alertSettings.lastFloodAlertAt,
-    alertSettings.lastNwsAlertAt,
-  ]
-    .filter((at): at is string => Boolean(at))
-    .sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null;
-// Test sends don't set cooldown timestamps; fall back to the alert log.
-const hasSentAnyAlert =
-  Boolean(lastAlertAt) || hasDelivery;
-/** Live probes or a configured device, alerts on, and a delivered test/real alert. */
-const essentialDone =
-  hasDevices &&
-  hasAlertsEnabled &&
-  hasSentAnyAlert &&
-  hasConfiguredAlertChannel(alertSettings, user.email);
-const firstRunFocus = canEdit && !onboardingDismissed && !essentialDone;
-const showInsights = !firstRunFocus && overviewMode === "insights";
+const { hasDevices, lastAlertAt, hasSentAnyAlert, essentialDone, firstRunFocus, showInsights } = overviewFocus({
+  devices,
+  latestCount: latest.length,
+  alertSettings,
+  userEmail: user.email,
+  hasDelivery,
+  canEdit,
+  onboardingDismissed,
+  overviewMode,
+});
 
 const loadHeavyWeather = showInsights;
 // Probe curves render on Simple and Insights; only skip during first-run focus.
@@ -543,39 +525,26 @@ const houseContext = buildHouseContext({
 const hasSensors = devices.some((d) => d.sensors.length > 0);
 const hasHouseholdMembers = members.members.length > 1;
 
-const passwordUpdated = Astro.url.searchParams.get("password") === "updated";
-const prefsSaved = Astro.url.searchParams.get("prefs_saved");
-const pinnedFlash = Astro.url.searchParams.get("pinned_saved")
-  ? "saved"
-  : Astro.url.searchParams.get("pinned_error") === "max"
-    ? "max"
-    : Astro.url.searchParams.get("pinned_error")
-      ? "error"
-      : null;
-const checkedSaved = Astro.url.searchParams.get("checked_saved") === "1";
-const checkedError = Astro.url.searchParams.get("checked_error") === "1";
-const ackOk = Astro.url.searchParams.get("ack_ok") === "1";
-const ackMsg = Astro.url.searchParams.get("ack_msg");
-const snoozeFlash = Astro.url.searchParams.get("snooze") === "1";
-const snoozeCleared = Astro.url.searchParams.get("snooze_cleared") === "1";
-const vacationFlash = Astro.url.searchParams.get("vacation") === "1";
-const vacationCleared = Astro.url.searchParams.get("vacation_cleared") === "1";
-const vacationError = Astro.url.searchParams.get("vacation_error") === "1";
-const snoozeHours = Astro.url.searchParams.get("hours");
-const spaceCheckedMap =
-  user.user_metadata?.space_checked_by_household &&
-  typeof user.user_metadata.space_checked_by_household === "object" &&
-  !Array.isArray(user.user_metadata.space_checked_by_household)
-    ? (user.user_metadata.space_checked_by_household as Record<string, unknown>)
-    : {};
-const spaceCheckedAtForHousehold =
-  household.householdId &&
-  typeof spaceCheckedMap[household.householdId] === "string"
-    ? (spaceCheckedMap[household.householdId] as string)
-    : typeof user.user_metadata?.space_checked_at === "string"
-      ? user.user_metadata.space_checked_at
-      : null;
-const prefsError = Astro.url.searchParams.get("prefs_error");
+const {
+  passwordUpdated,
+  prefsSaved,
+  prefsError,
+  pinnedFlash,
+  checkedSaved,
+  checkedError,
+  ackOk,
+  ackMsg,
+  snoozeFlash,
+  snoozeCleared,
+  snoozeHours,
+  vacationFlash,
+  vacationCleared,
+  vacationError,
+} = parseOverviewFlash(Astro.url.searchParams);
+const spaceCheckedAtForHousehold = spaceCheckedAtFor(
+  user.user_metadata as Record<string, unknown> | undefined,
+  household.householdId,
+);
 
 // "Last reading": the newest probe, judged by its own report interval (shared freshness rule).
 const newestLatest = newestRowFreshness(latest, devices);
