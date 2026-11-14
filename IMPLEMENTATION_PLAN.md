@@ -53,7 +53,7 @@ decision with its test and hardware evidence) is
 
 | Area | State | Open |
 |---|---|---|
-| Sensor data | Done for the audit gaps; device times and batches (2026-11-13); SenML record times (2026-11-14) | Pull feeds still store a SenML pack at poll time |
+| Sensor data | Done for the audit gaps; device times and batches (2026-11-13); SenML record times (2026-11-14) | Pull feeds store what the URL serves at poll time, for every format; source times (SenML `t`/`bt`, HA `last_updated`) aren't read, so a source serving an old value looks fresh (stuck-sensor checks catch flatlines). Build only if a pull-feed user needs it |
 | Alerts | Done for the audit gaps | Property name in alert titles (deferred: every user has one property) |
 | Setup and hardware | Firmware 1.5.0 released; tests 9–13 passed on an ESP32-S3 and a plain ESP32 | ESP32-C3 on 1.5.0; portal, router power cut, leak/battery inputs, Feathers (`HARDWARE-TESTS.md`) |
 | Operations | Health endpoint + GitHub Actions heartbeat; backup workflow written | Backup setup and a restore into Neon; Neon restore window; staging |
