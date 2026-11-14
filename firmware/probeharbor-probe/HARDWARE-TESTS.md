@@ -512,6 +512,8 @@ few seconds, normal). Flashed the released 1.5.0 with esptool.
   readings, did its offline restart after 4 minutes, joined, and the server
   stored all 5. No data lost, but a SuperMini placed far from the access
   point may drop out often.
-- Not run on this board yet: the setup portal from a phone, a sensor on
-  GPIO 4.
+- **DHT22 on GPIO 4 (published 1.5.1, 2026-11-14):** `TT sensor: DHT22 on
+  GPIO 4`, posting 200 each minute; the leak input used as a stand-in during
+  the tests switched off (`TT extras: none`).
+- Not run on this board yet: the setup portal from a phone.
 
