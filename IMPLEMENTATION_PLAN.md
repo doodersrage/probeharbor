@@ -93,8 +93,16 @@ decision with its test and hardware evidence) is
 3. **ESP32-C3:** run tests 10–13 on 1.5.0 (released compile-only).
 4. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
    it); later releases arrive over the air.
-5. **Run `pnpm ops:funnel`** against production and share the step counts
-   (no emails), to pick the first funnel fix.
+5. **Funnel** (owner ran `pnpm ops:funnel`, 2026-11-13; 10 accounts
+   excluding the test account): signed up 10 → confirmed 8 → added a device
+   2 → reading 2 → test alert 2 → reading in last 7 days 1 → real alert 1
+   → paying 0. Demo feed: 0 accounts. The big drop is confirmed → device
+   (6 of 8). Not explained by missing UI: confirmation lands on Devices,
+   whose first-run card offers sensors / board / "No hardware yet → demo
+   feed", and the day-3/day-7 setup emails cover the demo too. Next, before
+   any code: `pnpm ops:funnel --days 8` (sign-ups since the 2026-11-05
+   first-run rework) and a short personal note to the 6 asking what stopped
+   them; at this size their answers beat any guess.
 
 ### Next engineering, in order
 
