@@ -98,11 +98,19 @@ the run. Run `pnpm db:pending` first to list what isn't applied yet.
   production (exit 1 if any). It's read-only.
 - After applying, run the read-only check from the migration's entry in
   `IMPLEMENTATION_LOG.md` when there is one (e.g. backfill counts).
-- CI's `migrations` job runs the same check against production on every
-  push to `main` and adds a **warning** (never a failure) when something is
-  pending. It connects as `ci_migration_check`, a role that can read only
-  `public.schema_migrations` (migration 0005). One-time setup, after
-  applying 0005 to production:
+- **Migration gate.** The deploy checks production before building
+  (`node scripts/db-migrate.mjs --gate`) and **stops** when a migration is
+  pending and not marked `-- deploy: after`, or when an applied file was
+  edited or is missing. Fix: `pnpm db:migrate`, then re-run the Deploy
+  workflow (Actions → Deploy → Run workflow). A migration the code doesn't
+  need yet (a drop of something the old code still reads) gets a header line
+  `-- deploy: after`: it doesn't block, and the log lists it to apply after
+  the deploy. If the database can't be reached the deploy stops too; in an
+  emergency, run Deploy by hand with **Skip the pending-migration check**.
+  CI's `migrations` job runs the same check on every push as an early
+  **warning**. Both connect as `ci_migration_check`, a role that can read
+  only `public.schema_migrations` (migration 0005), and never print the
+  database host. One-time setup (done for production), after applying 0005:
 
   ```bash
   # as the owner, on production; PASSWORD is a long random value
@@ -111,7 +119,7 @@ the run. Run `pnpm db:pending` first to list what isn't applied yet.
   gh secret set MIGRATION_CHECK_DATABASE_URL   # paste postgresql://ci_migration_check:<PASSWORD>@<host>/<db>?sslmode=require
   ```
 
-  Without the secret the job only prints a notice. To revoke: delete the
+  Without the secret both only print a notice (the deploy goes ahead). To revoke: delete the
   secret and `DROP ROLE ci_migration_check`.
 
 ## Rollback and recovery

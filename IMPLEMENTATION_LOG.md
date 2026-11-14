@@ -6249,3 +6249,27 @@ Neon transfer to be measured.**
   `\restrict` tokens (so production has no schema drift). Decrypted file
   shredded and both databases dropped afterwards.
 - Not done: a restore into a Neon branch (optional; same Postgres major).
+
+## Deploy migration gate (2026-11-14)
+
+- `scripts/db-migrate.mjs --gate` (pure `deployGate(plan, files)`): fails
+  on `db:migrate`'s blocking problems (applied file edited or missing,
+  pending older than applied) and on any pending migration without a header
+  line `-- deploy: after`; marked ones are listed to apply after the deploy.
+  Never prints the host; a connection failure prints only the error code.
+- Deploy workflow: "Migration gate" step after install, before the build,
+  as `ci_migration_check` (migration 0005; secret already set). Unset
+  secret → warning, deploy continues. Manual runs can tick "Skip the
+  pending-migration check" (emergency only).
+- Found and fixed: CI's `migrations` job ran `--check`, which printed the
+  production Neon hostname (no credentials) in public Actions logs on every
+  push. It now runs `--gate`, masks the host, and stays warning-only.
+  Older run logs still contain the hostname.
+- Evidence: `dbMigrate.test.ts` +7 (nothing pending, unmarked pending,
+  marked pending, mixed, marker only as its own line, edited/missing, the
+  committed migrations pass when all applied). End to end on a throwaway
+  Postgres 18 (Docker) with all 7 migrations and a login role in
+  `migration_reader`: all applied → exit 0; extra unmarked 0008 → exit 1;
+  marked 0008 → exit 0 and listed; edited 0006 → exit 1; host absent from
+  output; unreachable → exit 1 with `ECONNREFUSED`; wrong password → exit 1
+  with `28P01`; the role wrote nothing.

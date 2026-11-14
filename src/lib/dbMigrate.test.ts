@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   blockingProblems,
   checksum,
+  deployGate,
   checkTargetUrl,
   planMigrations,
   readMigrationFiles,
@@ -41,6 +42,62 @@ describe("db:migrate planning", () => {
     const plan = planMigrations([file("0001_a"), file("0002_b")], [applied("0002_b")]);
     expect(plan.outOfOrder).toEqual(["0001_a"]);
     expect(blockingProblems(plan)).toHaveLength(1);
+  });
+});
+
+describe("db:migrate --gate (the deploy's check)", () => {
+  const markedAfter = (version: string) =>
+    file(version, `-- ${version}\n--\n-- deploy: after\nselect 1;`);
+
+  it("passes when nothing is pending", () => {
+    const files = [file("0001_a")];
+    expect(deployGate(planMigrations(files, [applied("0001_a")]), files)).toEqual({
+      ok: true,
+      problems: [],
+      afterDeploy: [],
+    });
+  });
+
+  it("blocks on a pending migration the code may need", () => {
+    const files = [file("0001_a"), file("0002_b")];
+    const gate = deployGate(planMigrations(files, [applied("0001_a")]), files);
+    expect(gate.ok).toBe(false);
+    expect(gate.problems).toEqual([expect.stringContaining("0002_b")]);
+  });
+
+  it("lets a migration marked `-- deploy: after` wait, and lists it", () => {
+    const files = [file("0001_a"), markedAfter("0002_drop_old")];
+    expect(deployGate(planMigrations(files, [applied("0001_a")]), files)).toEqual({
+      ok: true,
+      problems: [],
+      afterDeploy: ["0002_drop_old"],
+    });
+  });
+
+  it("still blocks on an unmarked one next to a marked one", () => {
+    const files = [file("0001_a"), file("0002_add"), markedAfter("0003_drop")];
+    const gate = deployGate(planMigrations(files, [applied("0001_a")]), files);
+    expect(gate.ok).toBe(false);
+    expect(gate.problems.join()).toContain("0002_add");
+    expect(gate.problems.join()).not.toContain("0003_drop");
+    expect(gate.afterDeploy).toEqual(["0003_drop"]);
+  });
+
+  it("only counts the marker as its own comment line", () => {
+    const files = [file("0001_a", "-- see the deploy: after note elsewhere\nselect 1;")];
+    expect(deployGate(planMigrations(files, []), files).ok).toBe(false);
+  });
+
+  it("blocks on an applied file that was edited, or one missing from the repo", () => {
+    const edited = [file("0001_a", "-- edited")];
+    expect(deployGate(planMigrations(edited, [applied("0001_a")]), edited).ok).toBe(false);
+    expect(deployGate(planMigrations([], [applied("0001_a")]), []).ok).toBe(false);
+  });
+
+  it("no committed migration is pending-blocking against a database that has them all", () => {
+    const files = readMigrationFiles("db/migrations");
+    const all = files.map((f) => ({ version: f.version, checksum: checksum(f.sql) }));
+    expect(deployGate(planMigrations(files, all), files).ok).toBe(true);
   });
 });
 

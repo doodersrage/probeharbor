@@ -72,6 +72,8 @@ jobs:
           check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Early warning only; the deploy runs the same gate and stops there.
+      # --gate never prints the host (public log); masked as well.
       - name: Pending migrations on production (warning only)
         env:
           MIGRATION_CHECK_DATABASE_URL: ${{ secrets.MIGRATION_CHECK_DATABASE_URL }}
@@ -80,8 +82,10 @@ jobs:
             echo "::notice::MIGRATION_CHECK_DATABASE_URL isn't set; skipping the pending-migration check."
             exit 0
           fi
-          if ! node scripts/db-migrate.mjs --check --url-env MIGRATION_CHECK_DATABASE_URL; then
-            echo "::warning::Production has pending migrations (or the check failed). Apply them with pnpm db:migrate before relying on code that needs them."
+          host=$(node -e 'try { console.log(new URL(process.env.MIGRATION_CHECK_DATABASE_URL).hostname) } catch {}')
+          [ -n "$host" ] && echo "::add-mask::$host"
+          if ! node scripts/db-migrate.mjs --gate --env-file /dev/null --url-env MIGRATION_CHECK_DATABASE_URL; then
+            echo "::warning::The deploy will stop at its migration gate: apply pending migrations with pnpm db:migrate (or mark one '-- deploy: after'), then re-run the deploy."
           fi
 
   lint:

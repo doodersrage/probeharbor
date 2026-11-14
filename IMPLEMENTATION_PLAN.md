@@ -110,9 +110,16 @@ decision with its test and hardware evidence) is
 
 ### Next engineering, in order
 
-1. **Staging** (`IMPROVEMENT_PLAN.md` 2.3): a Neon branch and a second
-   Worker, and pending migrations blocking the deploy. Needs owner-created
-   resources and secrets.
+1. **Staging** (`IMPROVEMENT_PLAN.md` 2.3). Done 2026-11-14: the deploy's
+   migration gate (a pending migration not marked `-- deploy: after` stops
+   the deploy; `docs/guide/deploy.md`, "Migrations and deploy order").
+   Deferred (owner, 2026-11-14) until there are more users, a contributor or
+   a risky migration: a staging Worker on a Neon branch. A branch copies
+   real users, alert settings and phone numbers, so staging needs, before
+   anything else: no cron triggers; a hard outbound switch (no MAILER,
+   Twilio, FCM, web push or webhooks); Stripe test keys; its own Turnstile
+   keys and SITE_URL (build-time values); Cloudflare Access in front, since
+   it holds real data.
 2. ~~**Retire the legacy tables**~~ (3.1): done 2026-11-14. No code reads
    them; `garage_temps` exported to CSV and dropped (0006), the empty
    `user_temp_*` tables dropped (0007). Log: "Legacy tables".

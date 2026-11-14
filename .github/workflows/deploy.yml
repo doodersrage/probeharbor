@@ -9,6 +9,11 @@ on:
     types: [completed]
     branches: [main]
   workflow_dispatch:
+    inputs:
+      skip_migration_gate:
+        description: "Skip the pending-migration check (emergency only, e.g. the database is unreachable)"
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-production
@@ -151,6 +156,24 @@ jobs:
 
       - if: env.skip != 'true'
         run: pnpm install --frozen-lockfile
+
+      # Code must not go live before the migrations it needs. Fails when
+      # production has a pending migration not marked `-- deploy: after`, or
+      # one edited after it was applied. Connects as ci_migration_check, which
+      # can read only schema_migrations (migration 0005). Fix: pnpm db:migrate,
+      # then re-run this workflow. Setup: docs/guide/deploy.md, "Migration gate".
+      - name: Migration gate
+        if: env.skip != 'true' && inputs.skip_migration_gate != true
+        env:
+          MIGRATION_CHECK_DATABASE_URL: ${{ secrets.MIGRATION_CHECK_DATABASE_URL }}
+        run: |
+          if [ -z "$MIGRATION_CHECK_DATABASE_URL" ]; then
+            echo "::warning::Migration gate not configured (secret MIGRATION_CHECK_DATABASE_URL); deploying without it."
+            exit 0
+          fi
+          host=$(node -e 'try { console.log(new URL(process.env.MIGRATION_CHECK_DATABASE_URL).hostname) } catch {}')
+          [ -n "$host" ] && echo "::add-mask::$host"
+          node scripts/db-migrate.mjs --gate --env-file /dev/null --url-env MIGRATION_CHECK_DATABASE_URL
 
       # Date-based app version (YYYY.MM.DD[.N], UTC) from existing app-v* tags.
       # Baked into the build (footer, Sentry release) and the Worker version tag.

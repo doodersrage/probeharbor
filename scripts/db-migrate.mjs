@@ -7,6 +7,8 @@
  *   pnpm db:migrate                 apply pending migrations
  *   pnpm db:migrate --status        list applied / pending; change nothing
  *   pnpm db:migrate --check         like --status, exit 1 if anything is pending
+ *   pnpm db:migrate --gate          the deploy's check: exit 1 if a pending migration
+ *                                   lacks `-- deploy: after`, or on any blocking problem
  *   pnpm db:migrate --up-to 0003    apply pending migrations up to and including 0003 only
  *                                   (for a migration that must wait until after a deploy)
  *   options: --env-file .env  --url-env DATABASE_URL_UNPOOLED  --dir db/migrations
@@ -62,6 +64,32 @@ export function planMigrations(files, applied) {
   const lastApplied = done.at(-1) ?? changed.at(-1);
   const outOfOrder = lastApplied ? pending.filter((v) => v < lastApplied) : [];
   return { pending, changed, done, missing, outOfOrder };
+}
+
+/**
+ * A migration the code doesn't need yet: applied after the deploy (e.g. a drop
+ * of something the old code still reads). A header line `-- deploy: after`.
+ */
+export const DEPLOY_AFTER_MARKER = /^--\s*deploy:\s*after\b/im;
+
+/**
+ * The deploy's migration gate. Blocks on any blocking problem, and on any
+ * pending migration that isn't marked `-- deploy: after` (the code being
+ * deployed may depend on it). Marked ones are listed to apply after the deploy.
+ * @param {ReturnType<typeof planMigrations>} plan
+ * @param {{ version: string; sql: string }[]} files
+ */
+export function deployGate(plan, files) {
+  const sqlOf = new Map(files.map((f) => [f.version, f.sql]));
+  const afterDeploy = plan.pending.filter((v) => DEPLOY_AFTER_MARKER.test(sqlOf.get(v) ?? ""));
+  const beforeDeploy = plan.pending.filter((v) => !afterDeploy.includes(v));
+  const problems = blockingProblems(plan);
+  if (beforeDeploy.length) {
+    problems.push(
+      `pending, and the code may need them: ${beforeDeploy.join(", ")} (run pnpm db:migrate, then re-run the deploy; or mark a migration "-- deploy: after" if the code doesn't need it yet)`,
+    );
+  }
+  return { ok: problems.length === 0, problems, afterDeploy };
 }
 
 /** Pending versions to apply now: all of them, or only up to `NNNN` (inclusive). */
@@ -123,7 +151,8 @@ async function main() {
     const i = args.indexOf(flag);
     return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
   };
-  const statusOnly = args.includes("--status") || args.includes("--check");
+  const gate = args.includes("--gate");
+  const statusOnly = args.includes("--status") || args.includes("--check") || gate;
   const check = args.includes("--check");
   const envPath = resolve(argValue("--env-file", ".env"));
   const urlEnv = argValue("--url-env", "DATABASE_URL_UNPOOLED");
@@ -152,7 +181,16 @@ async function main() {
     connectionString: raw,
     application_name: "probeharbor-db-migrate",
   });
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    if (!gate) throw error;
+    // Public CI log: the error text can carry the server's address.
+    console.error(
+      `Blocks the deploy: could not reach the database (${error?.code ?? "connection error"}). Retry, or run the deploy by hand with "skip migration gate" in an emergency.`,
+    );
+    return 1;
+  }
   try {
     await client.query("select pg_advisory_lock($1)", [MIGRATION_LOCK_ID]);
     const { rows: found } = await client.query(
@@ -172,11 +210,21 @@ async function main() {
         ? await client.query("select version, checksum from public.schema_migrations")
         : { rows: [] };
     const plan = planMigrations(files, rows);
-    const host = new URL(raw).hostname;
-    console.log(`Target: ${urlEnv} (${host})`);
+    // The gate runs in public CI logs: name the variable, never the host.
+    console.log(gate ? `Target: ${urlEnv}` : `Target: ${urlEnv} (${new URL(raw).hostname})`);
     console.log(
       `Applied: ${plan.done.length}. Pending: ${plan.pending.length ? plan.pending.join(", ") : "none"}.`,
     );
+
+    if (gate) {
+      const result = deployGate(plan, files);
+      for (const p of result.problems) console.error(`Blocks the deploy: ${p}`);
+      if (result.afterDeploy.length) {
+        console.log(`Apply after this deploy: ${result.afterDeploy.join(", ")} (pnpm db:migrate).`);
+      }
+      if (result.ok) console.log("Migration gate: OK.");
+      return result.ok ? 0 : 1;
+    }
 
     const problems = blockingProblems(plan);
     if (problems.length) {

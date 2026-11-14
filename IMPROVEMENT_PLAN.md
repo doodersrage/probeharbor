@@ -32,7 +32,7 @@ Status key: **Done**, **Partly done**, **Waiting on owner**, **Open**.
 2. **Nothing outside the Worker watches the Worker.**
    **Done.** Public `/api/health` (200 when history collection is current, 503 otherwise), checked every 15 minutes from GitHub Actions, outside Cloudflare; a failure emails the owner.
 3. **No staging.** One environment; a push to `main` deploys to production; migrations are manual.
-   **Open.**
+   **Partly done** (2026-11-14): the deploy now stops when production has a pending migration the code may need (not marked `-- deploy: after`). A staging Worker is deferred by the owner; its requirements (above all: no outbound messages from a copy of real data) are in `IMPLEMENTATION_PLAN.md`.
 4. **Cron won't scale.** `collectHistory.ts` loops every household in one invocation.
    **Open** (fine at today's size).
 
