@@ -6170,10 +6170,22 @@ Neon transfer to be measured.**
   sparse readings unchanged, nulls / other sensors / other households
   excluded); the alert-pipeline integration test got a matching fake.
   `pnpm test` 3688, `pnpm test:db` 414, typecheck 0, lint 0.
-- [ ] Measure: after a day, rerun the pg_stat_statements query (or reset it
-  now with `select pg_stat_statements_reset();`) and check Neon's daily
-  transfer. If still high, next candidates: the per-post alert pass and
-  the 30-second live loop.
+- Measured locally (2026-11-14; real queries against Postgres, Neon's HTTP
+  response size estimated as rows + per-column metadata; one probe, a week
+  of one-a-minute readings): runway input 391 KB → 41 KB per call; one
+  probe post with its alert pass 12 queries / ~23 KB, of which the
+  `alert_settings` read was 12.6 KB (92 columns: metadata outweighs the
+  row); one 15-minute pass per user 27 queries / ~85 KB; one live-loop
+  round 7 queries / ~9 KB. `runway_alert_enabled` defaults to true, so
+  every household with a temperature sensor paid the 391 KB per pass.
+- [x] `getAlertSettingsRow` reads the row as one jsonb value (one column of
+  metadata instead of 92), timestamptz normalized to the driver's UTC form.
+  `notify.db.test.ts`: a row with 60+ columns set to non-default values
+  reads back deep-equal to `select *` (session in America/New_York).
+- [ ] Measure: after a day, rerun the pg_stat_statements query (reset it
+  first with `select pg_stat_statements_reset();`) and check Neon's daily
+  transfer. If still high: the per-post alert pass (12 queries per post)
+  and the 30-second live loop.
 - Not chosen: moving to Cloudflare D1 (see the reply in this session: a
   second database migration a week after the first, SQLite instead of
   Postgres, for a problem one query explains).

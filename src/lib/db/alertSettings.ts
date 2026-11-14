@@ -14,6 +14,7 @@
  * - markCooldown is one statement (before: update, then upsert if the row
  *   was missing).
  */
+import { parseTimestamptz } from "./types";
 import { query } from "./client";
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
@@ -78,10 +79,31 @@ async function upsertSettingsRow(
   );
 }
 
-/** The user's settings row, or null when there is none. Throws on failure. */
+/** jsonb timestamptz ("…T…±hh:mm", in the session's zone) → the driver's "…+00:00" form. */
+const JSONB_TIMESTAMPTZ = /^\d{4,}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?[+-]\d{2}:\d{2}$/;
+
+/**
+ * The user's settings row, or null when there is none. Throws on failure.
+ *
+ * Read as one jsonb value, not `select *`: the table has ~90 columns, and
+ * Neon's HTTP driver sends metadata for every column with every result, so
+ * `select *` cost ~12.6 KB per read against ~2 KB this way. It's read on
+ * every probe post and twice per user on every 15-minute pass. Values come
+ * out as `select *` gave them (alertSettings.db.test.ts checks a full row):
+ * jsonb already uses PostgREST's shapes, and timestamptz is normalized to UTC.
+ */
 export async function getAlertSettingsRow(userId: string): Promise<Record<string, unknown> | null> {
-  const [row] = await query<Record<string, unknown>>("select * from public.alert_settings where user_id = $1", [userId]);
-  return row ?? null;
+  const [result] = await query<{ row: Record<string, unknown> }>(
+    "select to_jsonb(a) as row from public.alert_settings a where user_id = $1",
+    [userId],
+  );
+  if (!result) return null;
+  const row: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(result.row)) {
+    row[key] =
+      typeof value === "string" && JSONB_TIMESTAMPTZ.test(value) ? parseTimestamptz(value.replace("T", " ")) : value;
+  }
+  return row;
 }
 
 /** First load: store these settings unless a row appeared meanwhile. */

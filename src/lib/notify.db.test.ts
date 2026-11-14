@@ -172,3 +172,50 @@ describe("escalation and delivery evidence (Neon)", () => {
     expect((await ensureAlertDeliveryEvidence(userId, DEFAULT_ALERT_SETTINGS)).hasDelivery).toBe(true);
   });
 });
+
+describe("alert settings read as one jsonb value", () => {
+  it("returns exactly what select * returned, for a fully populated row", async () => {
+    const { query } = await import("./db/client");
+    const { getAlertSettingsRow } = await import("./db/alertSettings");
+    const userId = await insertTestUser(db.client(), "a@example.com");
+    await getAlertSettingsForUser(userId, {}); // creates the row
+
+    // Give every column a non-default value of its type (skip any a check rejects).
+    const columns = await sql<{ column_name: string; data_type: string }>(
+      `select column_name, data_type from information_schema.columns
+       where table_schema = 'public' and table_name = 'alert_settings' and column_name <> 'user_id'`,
+    );
+    const sample: Record<string, string> = {
+      "timestamp with time zone": "2026-11-07 10:00:00.123456+00",
+      "timestamp without time zone": "2026-11-07 10:00:00.123456",
+      numeric: "1.25",
+      "double precision": "2.5",
+      integer: "7",
+      smallint: "3",
+      bigint: "9",
+      boolean: "true",
+      jsonb: '{"a": [1, "x"], "b": {"c": null}}',
+      json: '{"a": 1}',
+      text: "x",
+      ARRAY: "{a,b}",
+    };
+    let populated = 0;
+    for (const { column_name, data_type } of columns) {
+      const value = sample[data_type];
+      if (value === undefined) continue;
+      try {
+        await sql(`update public.alert_settings set "${column_name}" = $2 where user_id = $1`, [userId, value]);
+        populated += 1;
+      } catch {
+        // a check constraint (e.g. HH:MM text) rejects the sample; that column keeps its default
+      }
+    }
+    expect(populated).toBeGreaterThan(60);
+
+    const [viaSelectStar] = await query<Record<string, unknown>>("select * from public.alert_settings where user_id = $1", [
+      userId,
+    ]);
+    expect(await getAlertSettingsRow(userId)).toEqual(viaSelectStar);
+    expect(await getAlertSettingsRow("00000000-0000-0000-0000-000000000000")).toBeNull();
+  });
+});
