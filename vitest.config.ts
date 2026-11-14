@@ -26,7 +26,9 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.ts", "src/test/**", "src/**/*.d.ts", "src/i18n/**"],
+      // Page scripts (DOM code moved out of .astro <script> tags) were never
+      // counted while they lived in the page; they're exercised by e2e.
+      exclude: ["src/**/*.test.ts", "src/test/**", "src/**/*.d.ts", "src/i18n/**", "src/lib/overviewPageScript.ts"],
       reporter: ["text-summary", "json-summary", "html"],
       reportsDirectory: "coverage",
       thresholds: { lines: 64, statements: 63, functions: 61, branches: 60 },

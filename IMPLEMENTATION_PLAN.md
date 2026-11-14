@@ -118,7 +118,9 @@ decision with its test and hardware evidence) is
 2. ~~**Retire the legacy tables**~~ (3.1): done 2026-11-14. No code reads
    them; `garage_temps` exported to CSV and dropped (0006), the empty
    `user_temp_*` tables dropped (0007). Log: "Legacy tables".
-3. **Code health** (3.4): split `dashboard.astro` and `HistoryChart.tsx`
+3. **Code health** (3.4): split `dashboard.astro` (2,078 → 1,563 lines on
+   2026-11-14: its 516-line browser script moved to
+   `src/lib/overviewPageScript.ts`) and `HistoryChart.tsx`
    (HistoryChart 1,680 → 1,538 lines on 2026-11-14 by moving its strings
    and pure helpers out, and one shared dew-point formula; what's left is
    one ~1,360-line component, best split with a browser check);
