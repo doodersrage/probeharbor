@@ -10,6 +10,7 @@
  * Always pass values as parameters ($1, $2, ...); never build SQL from input.
  */
 import { neon, types as neonTypes } from "@neondatabase/serverless";
+import pg from "pg";
 import { getRuntimeEnv } from "../runtimeEnv";
 import { makeGetTypeParser } from "./types";
 
@@ -37,6 +38,70 @@ export function neonRunner(url: string): QueryRunner {
   const sql = neon(url, queryTypes);
   return async <Row>(text: string, params: readonly unknown[] = []) =>
     (await sql.query(text, params as unknown[], queryTypes)) as Row[];
+}
+
+/**
+ * Postgres over Cloudflare Hyperdrive (e.g. Layerbase): a fresh pg client per
+ * query, as Cloudflare recommends; Hyperdrive keeps the real connections
+ * warm (2–6 ms to connect from a Worker, 2026-11-15 spike). No query relies
+ * on a session (the Neon HTTP driver has none either), so this is the same
+ * contract.
+ */
+const pgTypes = {
+  getTypeParser: makeGetTypeParser(
+    pg.types.getTypeParser as (oid: number, format?: "text" | "binary") => unknown,
+  ),
+};
+export function pgRunner(connectionString: string): QueryRunner {
+  return async <Row>(text: string, params: readonly unknown[] = []) => {
+    const client = new pg.Client({ connectionString, types: pgTypes as never });
+    await client.connect();
+    try {
+      return (await client.query(text, params as unknown[])).rows as Row[];
+    } finally {
+      await client.end().catch(() => {});
+    }
+  };
+}
+
+/** Where queries go: Neon over HTTP (default), or Postgres through Hyperdrive. */
+export type DbTarget =
+  | { driver: "neon"; url: string }
+  | { driver: "hyperdrive"; connectionString: string };
+
+/**
+ * DATABASE_DRIVER=hyperdrive with a HYPERDRIVE binding selects Hyperdrive;
+ * anything else is Neon over DATABASE_URL, as before. Switching back is a
+ * runtime setting (no rebuild). Null when nothing is configured.
+ */
+export function resolveDbTarget(
+  read: (key: string) => string | undefined,
+  hyperdrive: { connectionString?: string } | undefined,
+): DbTarget | null {
+  if (read("DATABASE_DRIVER")?.trim().toLowerCase() === "hyperdrive") {
+    const cs = hyperdrive?.connectionString;
+    if (cs) return { driver: "hyperdrive", connectionString: cs };
+    console.error(
+      "DATABASE_DRIVER=hyperdrive but there is no HYPERDRIVE binding; using DATABASE_URL.",
+    );
+  }
+  const url = read("DATABASE_URL")?.trim();
+  return url ? { driver: "neon", url } : null;
+}
+
+/** The Worker's HYPERDRIVE binding, if any (undefined outside Workers). */
+async function hyperdriveBinding(): Promise<{ connectionString?: string } | undefined> {
+  try {
+    const { env } = await import("cloudflare:workers");
+    return (env as unknown as { HYPERDRIVE?: { connectionString?: string } }).HYPERDRIVE;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The current target, for code that needs a connection of its own (Better Auth). */
+export async function currentDbTarget(): Promise<DbTarget | null> {
+  return resolveDbTarget(getRuntimeEnv, await hyperdriveBinding());
 }
 
 /** Error thrown for every failed query: says which statement failed, never the URL or the values. */
@@ -68,15 +133,22 @@ export async function query<Row = Record<string, unknown>>(
 ): Promise<Row[]> {
   let run = testRunner;
   if (!run) {
-    const url = getRuntimeEnv("DATABASE_URL")?.trim();
-    if (!url) {
+    const target = await currentDbTarget();
+    if (!target) {
       // Unit tests set this hook (src/test/unitSetup.ts) so a query nobody mocked fails the test.
       (globalThis as { __unconfiguredQuery?: (statement: string) => void }).__unconfiguredQuery?.(
         describeStatement(text),
       );
       throw new DbQueryError(describeStatement(text), new Error("DATABASE_URL is not set"));
     }
-    if (cached?.url !== url) cached = { url, run: neonRunner(url) };
+    const key =
+      target.driver === "neon" ? `neon:${target.url}` : `hyperdrive:${target.connectionString}`;
+    if (cached?.url !== key) {
+      cached = {
+        url: key,
+        run: target.driver === "neon" ? neonRunner(target.url) : pgRunner(target.connectionString),
+      };
+    }
     run = cached.run;
   }
   try {

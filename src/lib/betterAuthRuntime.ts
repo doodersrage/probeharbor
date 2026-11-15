@@ -7,7 +7,9 @@
  * Imports cloudflare:workers (via runtimeEnv): load it with a dynamic
  * import from anything the middleware or a prerendered page imports.
  */
-import { Pool } from "@neondatabase/serverless";
+import { Pool as NeonPool } from "@neondatabase/serverless";
+import pg from "pg";
+import { currentDbTarget } from "./db/client";
 import type { Locale } from "../i18n/locales";
 import { accountEmailLink, sendConfirmationEmail, sendPasswordResetEmail } from "./accountEmails";
 import { createBetterAuth, type ProbeHarborAuth } from "./betterAuthConfig";
@@ -65,10 +67,14 @@ export async function withBetterAuth<T>(
   run: (auth: ProbeHarborAuth) => Promise<T>,
   options: WithBetterAuthOptions = {},
 ): Promise<T> {
-  const url = getRuntimeEnv("DATABASE_URL");
+  const target = await currentDbTarget();
   const secret = getRuntimeEnv("BETTER_AUTH_SECRET");
-  if (!url || !secret) throw new Error("Better Auth needs DATABASE_URL and BETTER_AUTH_SECRET.");
-  const pool = new Pool({ connectionString: url, max: 2 });
+  if (!target || !secret) throw new Error("Better Auth needs DATABASE_URL and BETTER_AUTH_SECRET.");
+  // Same database as every other query: Neon's pool, or pg through Hyperdrive.
+  const pool =
+    target.driver === "neon"
+      ? new NeonPool({ connectionString: target.url, max: 2 })
+      : new pg.Pool({ connectionString: target.connectionString, max: 2 });
   try {
     const siteUrl = buildSiteUrl(request);
     const auth = createBetterAuth({

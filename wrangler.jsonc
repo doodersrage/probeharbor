@@ -75,6 +75,15 @@
 			"entrypoint": "I18n"
 		}
 	],
+	// Postgres through Hyperdrive (Layerbase). Inert unless the runtime setting
+	// DATABASE_DRIVER=hyperdrive (src/lib/db/client.ts); otherwise Neon over
+	// DATABASE_URL. Config made by the owner in the dashboard (caching off).
+	"hyperdrive": [
+		{
+			"binding": "HYPERDRIVE",
+			"id": "9b5d0cb63a214ef4b899920f3e021f7b"
+		}
+	],
 	"r2_buckets": [
 		{
 			"binding": "HISTORY_ARCHIVE",

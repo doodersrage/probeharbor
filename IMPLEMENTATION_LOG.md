@@ -6385,3 +6385,24 @@ permission.
 Next if the owner goes ahead: step 2, the driver behind a setting (Neon HTTP
 or pg through Hyperdrive; Better Auth's pool too), all suites, then a
 cutover with Neon kept as a read-only fallback for a week.
+
+Step 2 (2026-11-15): the database driver behind a runtime setting.
+`src/lib/db/client.ts`: `DATABASE_DRIVER=hyperdrive` plus the `HYPERDRIVE`
+binding sends every query through `pgRunner` (a fresh pg client per query;
+Hyperdrive pools); anything else stays Neon over `DATABASE_URL`, as before.
+Better Auth gets a pg Pool on the same target. `pg` moved to dependencies.
+`wrangler.jsonc` binds the owner's Hyperdrive config (inert until the
+setting is set). Switching either way is a runtime setting, no rebuild.
+
+Evidence: unit 3 (selection: default Neon, Hyperdrive only with setting and
+binding, nothing configured); DB 2 (pgRunner on its own connection in a
+New York session: timestamps, dates, counts, numerics, jsonb in the app's
+shapes; parameters bound; a new connection per query). `pnpm test` 3776,
+`pnpm test:db` 421, lint, build. The built Worker run locally with
+DATABASE_DRIVER=hyperdrive, Hyperdrive pointed at the Layerbase trial DB and
+DATABASE_URL replaced by an unreachable dummy: `/api/health` answered from
+Layerbase (`stale`: no cron has run there), /demo, /pricing,
+/api/home/demo-history 200, no database errors.
+
+Next (owner's go-ahead): cutover. Not done yet: production still on Neon.
+

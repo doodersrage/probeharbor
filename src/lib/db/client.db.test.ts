@@ -42,3 +42,41 @@ describe("query() errors", () => {
     expect(error.message).not.toContain(secret);
   });
 });
+
+describe("pgRunner (Postgres through Hyperdrive) returns the same shapes", () => {
+  // Its own connection, like Hyperdrive's, in a non-UTC session zone.
+  const run = async <Row>(text: string, params: unknown[] = []) => {
+    const { pgRunner } = await import("./client");
+    const { testDatabaseUrl } = await import("../../test/db");
+    const url = new URL(testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!));
+    url.searchParams.set("options", "-c TimeZone=America/New_York");
+    return pgRunner(url.toString())<Row>(text, params);
+  };
+
+  it("timestamps, dates, counts, numerics and jsonb", async () => {
+    const [row] = await run<Record<string, unknown>>(
+      `select '2026-11-07 13:22:38.104689+00'::timestamptz as ts, '2026-11-07'::date as d,
+              count(*) as n, sum(x::bigint) as s, avg(x) as a, '{"a":1}'::jsonb as j
+       from (values (1), (2)) v(x)`,
+    );
+    expect(row).toEqual({
+      ts: "2026-11-07T13:22:38.104689+00:00",
+      d: "2026-11-07",
+      n: 2,
+      s: 3,
+      a: 1.5,
+      j: { a: 1 },
+    });
+  });
+
+  it("binds parameters and opens a fresh connection per query", async () => {
+    const tricky = "x'); drop table public.groups; --";
+    const [a] = await run<{ t: string; pid: number }>(
+      "select $1::text as t, pg_backend_pid() as pid",
+      [tricky],
+    );
+    const [b] = await run<{ pid: number }>("select pg_backend_pid() as pid");
+    expect(a?.t).toBe(tricky);
+    expect(a?.pid).not.toBe(b?.pid);
+  });
+});
