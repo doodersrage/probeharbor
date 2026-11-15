@@ -6350,3 +6350,38 @@ Decision: stay on Neon. Moving would need the Workers driver changed (Neon
 HTTP → Hyperdrive or TCP), a restore from the daily pg_dump (restorable to
 plain Postgres 18, rehearsed 2026-11-14) and a latency test from Workers.
 Revisit only if Neon's cost or reliability becomes a problem.
+
+**Revisited the same day: cost.** Neon runs ~$1/day (~$30/month; the
+compute never idles: readings every minute); Layerbase Solo is $5/month
+flat (10 GB, one always-on database, 100 pooled connections, backups every
+12 h kept 7 days, US East = Virginia; no point-in-time restore, no SLA).
+
+Step 1 spike (2026-11-15): a throwaway Worker (`probeharbor-db-spike`,
+ProbeHarbor account, deleted afterwards) ran the app's queries from
+Cloudflare IAD, 15 times each, 3 runs; medians in ms:
+
+| | Neon HTTP (e2e branch) | Layerbase via Hyperdrive | Layerbase plain TCP |
+|---|---|---|---|
+| connect | 0 | 2–6 | 98–181 |
+| select 1 | 18–21 | 3–7 | 4 |
+| latest values | 18–20 | 5–10 | 53–55 |
+| 7-day buckets | 34–41 | 17–25 | 66–86 |
+| write | 20–21 (1 insert) | 15–22 (begin+insert+rollback) | 60–65 |
+
+Hyperdrive (config `probeharbor-db-spike`, caching off, created by the
+owner in the dashboard) is required: plain TCP from a Worker costs ~50 ms a
+query. Through it Layerbase is about twice as fast as Neon is today
+(Virginia is ~3 ms from IAD; Neon is in us-east-2, Ohio). Caveat: Neon side
+ran the e2e branch with real data, Layerbase synthetic data of the same
+size.
+
+Found on the way: in a folder without the repo's `.env`, wrangler fell back
+to an OAuth login for the owner's work account. Nothing was created there
+(every call targeted the ProbeHarbor account and was refused). ProbeHarbor
+wrangler calls must pass CLOUDFLARE_API_TOKEN from the repo's .env
+explicitly. That account token (id …4327dfb) has Workers but not Hyperdrive
+permission.
+
+Next if the owner goes ahead: step 2, the driver behind a setting (Neon HTTP
+or pg through Hyperdrive; Better Auth's pool too), all suites, then a
+cutover with Neon kept as a read-only fallback for a week.
