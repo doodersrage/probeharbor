@@ -62,12 +62,23 @@ test.describe("device ingest", () => {
       await expect(page.getByRole("heading", { name: /Sensors \(1\)/ })).toBeVisible({ timeout: 15_000 });
       await expect(page.locator(".device-sensor-reading")).toContainText("41.2");
 
-      // The last 24 hours, charted on the device page (the History chart, loaded when visible).
+      // The last 24 hours on the device page (the History chart, loaded when visible).
+      // One reading is not a line: the chart says so.
       const chartCard = page.locator("#chart");
       await chartCard.scrollIntoViewIfNeeded();
       await expect(chartCard.getByRole("heading", { name: "Last 24 hours" })).toBeVisible();
       await expect(chartCard.getByTestId("device-chart-empty")).toHaveCount(0);
-      await expect(chartCard.locator("canvas.history-chart-canvas")).toBeVisible({ timeout: 15_000 });
+      await expect(chartCard.getByText("Not enough readings yet for a chart.")).toBeVisible({ timeout: 15_000 });
+
+      // A second reading, half an hour earlier (the device's own time), makes a line.
+      const earlier = Math.floor(Date.now() / 1000) - 30 * 60;
+      const earlierRes = await page.request.post(`/api/ingest/${ingestKey}`, {
+        data: { temp1: 40.6, recorded_at: earlier },
+      });
+      expect(earlierRes.ok()).toBeTruthy();
+      await page.reload();
+      await page.locator("#chart").scrollIntoViewIfNeeded();
+      await expect(page.locator("#chart canvas.history-chart-canvas")).toBeVisible({ timeout: 15_000 });
 
       // A probe crash report (firmware 1.5.1+) is decoded with that build's function
       // table: 1f770d3282f88e89 is the released 1.5.0 ESP32 image, whose loop() starts
