@@ -515,5 +515,20 @@ few seconds, normal). Flashed the released 1.5.0 with esptool.
 - **DHT22 on GPIO 4 (published 1.5.1, 2026-11-14):** `TT sensor: DHT22 on
   GPIO 4`, posting 200 each minute; the leak input used as a stand-in during
   the tests switched off (`TT extras: none`).
-- Not run on this board yet: the setup portal from a phone.
+- **Setup portal from a phone (test 1), 19:36–19:58:** BOOT held 5 s:
+  `TT reset: clearing Wi-Fi and device key`, restart, `ProbeHarbor-Setup`
+  network, WiFiManager page on the phone, Wi-Fi and key saved → `TT key
+  saved`, DHT22 found, `post 200` with verified TLS (the portal's own
+  full-power join worked that time). A hold that ends right at 5 s can be
+  missed while a post is running; 8 s always worked.
+- **Found in 1.5.1, fixed in 1.5.2:** after the reset the C3 spent ~40 s
+  trying a saved network that didn't exist (20 s full power, 20 s low)
+  before opening the portal: the code asked WiFiManager whether a network
+  was saved before starting the Wi-Fi driver, which reads an uninitialised
+  config. 1.5.2 starts the driver first: portal 1 s after the restart
+  (19:48:23 → 19:48:24, and again 19:55:40 → 19:55:41). This also delayed
+  every new C3's first settings from /flash by ~40 s.
+- A mistyped key in the portal: `post 401`, `TT key rejected…`, readings
+  kept (`buffered=4`); after setting it again they went with the next post
+  (`"readings":12`).
 

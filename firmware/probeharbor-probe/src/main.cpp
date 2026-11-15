@@ -88,7 +88,7 @@
 #include "ota_pubkey.h"
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.5.1"
+#define FIRMWARE_VERSION "1.5.2"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -1383,11 +1383,16 @@ void setup() {
   bool online = false;
 #if CONFIG_IDF_TARGET_ESP32C3
   lowTxPower = prefs.getBool("lowtx", false);
+  // Start the Wi-Fi driver before asking for the saved network: before that,
+  // getWiFiIsSaved() reads an uninitialised config and usually says yes, so
+  // 1.5.1 spent ~40 s joining nothing on a C3 with no saved network (a fresh
+  // install, or after the BOOT reset) before reading settings or opening
+  // the portal (found 2026-11-14, C3 SuperMini, phone portal test).
+  WiFi.mode(WIFI_STA);
+  applyTxPower();
   if (wifiManager.getWiFiIsSaved()) {
     // Join the saved network here first, so a failure can retry at low power
     // before WiFiManager gives up and opens the setup portal.
-    WiFi.mode(WIFI_STA);
-    applyTxPower();
     WiFi.begin();
     online = waitForWifi() || joinAtLowPower(nullptr, nullptr);
   }
