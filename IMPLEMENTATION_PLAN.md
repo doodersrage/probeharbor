@@ -60,7 +60,7 @@ decision with its test and hardware evidence) is
 | Security | Done for the audit gaps; probe TLS verified with fallback | Watch the bcrypt re-hash count reach 0, then drop `bcryptjs` |
 | Dashboard | Done; certificate warning per probe | Warning text not yet seen in a browser |
 | Integrations | Spec done; HA in the default HACS store | — |
-| Firmware updates | Signed OTA with rollback; 1.5.1 (first real OTA release) at 10% since 2026-11-14 | Raise the rollout after watching 1.5.1 probes |
+| Firmware updates | Signed OTA with rollback; 1.5.1 (first real OTA release) at 100% since 2026-11-14 | Watch probes move to 1.5.1 over the next day |
 
 ## Decisions in force
 
@@ -96,9 +96,8 @@ decision with its test and hardware evidence) is
 4. **Firmware 1.5.1 released** (2026-11-14, OTA rollout 10%): crash
    reports (test 14 passed on the S3 and the C3 SuperMini), the settings
    resend crash fix (found by 1.5.0 on the C3, confirmed on the S3), and the
-   C3 low-power Wi-Fi fallback. Next: watch devices on 1.5.1 (device pages:
-   firmware version, any "Last crash"), then raise the rollout with
-   `pnpm firmware:sign --rollout 100`. A C3 SuperMini on 1.5.0 that can't
+   C3 low-power Wi-Fi fallback. Rollout raised to 100% by the owner the same day;
+   probes check daily, so all should be on 1.5.1 within about a day. A C3 SuperMini on 1.5.0 that can't
    join Wi-Fi needs one USB reflash from /flash.
 5. **ESP32-C3:** run tests 10–13 on 1.5.0. So far compile-tested and boot-tested in QEMU (reaches its version line), not hardware-tested.
 6. **Existing probes:** one USB reflash to 1.5.0 (device pages already link
