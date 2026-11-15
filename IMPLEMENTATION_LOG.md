@@ -6454,3 +6454,13 @@ published hash, so the device page names it. The owner's "House Living
 Room" report is the deliberate `stopportal-old` repro from the plain ESP32
 test (build 41473adf, 1.5.2-test).
 
+Second field report, same day: "Garage Rear" (ESP32 + BME280, created
+2026-10-27), set up again from /flash on 1.5.2. At boot 1.5.2 reported a
+dump left by its old firmware: build `8eec25996a1f1957` = the published
+ESP32 1.2.2. Rebuilt from c0d68e8: code segments byte-identical, 41 bytes
+of build-time data differ. Decoded: LoadProhibited in
+`WiFiManager::shutdownConfigPortal() +0x4c` ← `stopConfigPortal` ←
+`handleConfigLine` ← `readSerial` ← `loop`: the settings-resend crash
+again (fixed in 1.5.1). Two of the owner's real probes had hit it. The 1.5.2
+session itself was clean: key saved, wifi ok, TLS verified, post 200.
+
