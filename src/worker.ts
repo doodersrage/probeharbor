@@ -18,6 +18,7 @@ import {
   startJobRun,
 } from "./lib/jobRuns";
 import { formatJobFailureBody, notifyOps } from "./lib/opsNotify";
+import { isMaintenanceMode } from "./lib/maintenanceMode";
 import { collectFreezeMapSnapshots } from "./lib/freezeMap";
 import { runFeedUptimeForAllUsers } from "./lib/feedUptimeMonitor";
 import { archiveOldReadings } from "./lib/archiveHistory";
@@ -511,6 +512,11 @@ const worker = {
   },
 
   async scheduled(controller: ScheduledController, env: WorkerEnv, ctx: ExecutionContext) {
+    // A database move in progress: skip this run; the next one catches up.
+    if (isMaintenanceMode()) {
+      console.warn(`Scheduled run ${controller.cron} skipped: MAINTENANCE_MODE is on.`);
+      return;
+    }
     ctx.waitUntil(
       (async () => {
         // Alerts and emails go out in each user's language; load those tables once per isolate.

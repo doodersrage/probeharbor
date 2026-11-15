@@ -18,6 +18,7 @@ import { enrichDeviceMetaHistories } from "../../../lib/rssiHistory";
 import { runAfterResponse } from "../../../lib/backgroundWork";
 import { nextReportInterval } from "../../../lib/reportInterval";
 import { splitIngestBody } from "../../../lib/ingestTime";
+import { isMaintenanceMode, maintenanceIngestResponse } from "../../../lib/maintenanceMode";
 import type { StoredCrash } from "../../../lib/crashReport";
 import type { DiscoveredPushSensor } from "../../../lib/pushSensorDiscovery";
 
@@ -27,6 +28,8 @@ async function sha256Hex(value: string): Promise<string> {
 }
 
 export const POST: APIRoute = async ({ params, request, locals }) => {
+  // A database move in progress: probes keep the reading and resend it later.
+  if (isMaintenanceMode()) return maintenanceIngestResponse();
   const headerKey = request.headers.get("X-Ingest-Key")?.trim() ?? "";
   const pathKey = params.deviceKey?.trim() ?? "";
   // Prefer header so bridges need not put secrets in the URL path. Path `_`

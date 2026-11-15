@@ -190,6 +190,20 @@ beforeEach(() => {
 });
 
 describe("POST /api/ingest/[deviceKey]", () => {
+  it("answers 503 with Retry-After in maintenance mode, before touching the database", async () => {
+    vi.stubEnv("MAINTENANCE_MODE", "1");
+    try {
+      const { POST } = await import("./[deviceKey]");
+      const response = await POST(makeContext({ headerKey: "any-key" }));
+      expect(response.status).toBe(503);
+      expect(response.headers.get("Retry-After")).toBe("120");
+      expect(mockFindDeviceByIngestKeyHash).not.toHaveBeenCalled();
+      expect(mockInsertSensorReadings).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("returns 400 when the device key is missing", async () => {
     const { POST } = await import("./[deviceKey]");
 
