@@ -6437,3 +6437,20 @@ Neon stays untouched as the fallback (`DATABASE_DRIVER=neon`) until about
 2026-11-22, then delete the project. Still to do: local `.env`
 `DATABASE_URL` / `DATABASE_URL_UNPOOLED` → Layerbase (owner); CI's e2e
 branch stays on Neon until then.
+
+### First field crash report (2026-11-15)
+
+The owner's "Shed" probe (ESP32-C3), updated over USB to 1.5.2, reported a
+crash its old firmware had left in flash (reset "other" = the USB flash).
+Build `4affe36f4473cdd5` = the published C3 1.2.5 image (found by scanning
+every committed image's embedded hash in git history). 1.2.5's ELF was
+never kept, so it was rebuilt from 106b1b9: all code segments (IROM 818 KB,
+both IRAM) byte-identical to the published image, only 40 bytes of rodata
+(build time/hash) differ, so its symbols are exact. Decoded: Load access
+fault in `WiFiManager::shutdownConfigPortal() +0x50` ← `handleConfigLine`
+← `readSerial` ← `loop`: the settings-resend crash fixed in 1.5.1 (same
+function and offset as the test C3's). The table is committed under the
+published hash, so the device page names it. The owner's "House Living
+Room" report is the deliberate `stopportal-old` repro from the plain ESP32
+test (build 41473adf, 1.5.2-test).
+
