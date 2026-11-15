@@ -32,7 +32,8 @@ decision with its test and hardware evidence) is
 - **Data:** never present missing or stale readings as current, or turn
   missing data into zero. Readings keep the device's `recorded_at` when
   sent (up to 72 h old, 5 min ahead); resends are skipped as duplicates.
-- **Access:** production is Neon Postgres + Better Auth. RLS is on for every
+- **Access:** production is Postgres on Layerbase (through Cloudflare
+  Hyperdrive, since 2026-11-15; Neon before) + Better Auth. RLS is on for every
   table with no policies: the app connects as the owner role (BYPASSRLS)
   and enforces household access in code. Keep it that way, and keep the
   cross-household isolation tests (`src/lib/isolationAudit.*.db.test.ts`)
@@ -56,7 +57,7 @@ decision with its test and hardware evidence) is
 | Sensor data | Done for the audit gaps; device times and batches (2026-11-13); SenML record times (2026-11-14) | Pull feeds store what the URL serves at poll time, for every format; source times (SenML `t`/`bt`, HA `last_updated`) aren't read, so a source serving an old value looks fresh (stuck-sensor checks catch flatlines). Build only if a pull-feed user needs it |
 | Alerts | Done for the audit gaps | Property name in alert titles (deferred: every user has one property) |
 | Setup and hardware | Firmware 1.5.0 released; tests 9–13 passed on an ESP32-S3 and a plain ESP32; every firmware change boots in QEMU on all three chips (CI, 2026-11-14) | ESP32-C3 on 1.5.0; portal, router power cut, leak/battery inputs, Feathers (`HARDWARE-TESTS.md`) |
-| Operations | Health endpoint + GitHub Actions heartbeat; daily encrypted off-site backups, restore rehearsed locally (2026-11-14) | Neon restore window; staging; optional restore into a Neon branch |
+| Operations | Health endpoint + GitHub Actions heartbeat; encrypted off-site backups every 6 h, restore rehearsed locally (2026-11-14); database on Layerbase (2026-11-15) | Delete Neon after the fallback week (~2026-11-22); staging |
 | Security | Done for the audit gaps; probe TLS verified with fallback | Watch the bcrypt re-hash count reach 0, then drop `bcryptjs` |
 | Dashboard | Done; certificate warning per probe | Warning text not yet seen in a browser |
 | Integrations | Spec done; HA in the default HACS store | — |
@@ -85,15 +86,15 @@ decision with its test and hardware evidence) is
 
 ### Waiting on the owner
 
-1. **Backups:** done 2026-11-14 (log: "Off-site backups set up"). Daily
-   at 08:17 UTC; the age private key is in the owner's password manager.
-   Optional: one restore into a Neon branch (rehearsed locally so far).
-2. **Neon plan:** upgraded by the owner (2026-11-14), so production can't
-   be paused for transfer this month. Production had used 3.05 GB of the
-   free 5 GB in a week; fixes deployed since (log: "Neon transfer"). Watch
-   daily transfer for a few days to judge whether the free plan would do.
-3. **Neon restore window and storage limit:** read them from the Neon
-   console and record them in `docs/guide/deploy.md`.
+1. **Backups:** done 2026-11-14 (log: "Off-site backups set up"); every
+   6 h from Layerbase since 2026-11-15. The age private key is in the
+   owner's password manager.
+2. **Neon:** production moved to Layerbase 2026-11-15 (log: "Cutover to
+   Layerbase"). Neon is the untouched fallback until ~2026-11-22; then the
+   owner deletes the project and cancels the plan, and the Worker's
+   `DATABASE_URL` and CI's e2e database move to Layerbase.
+3. **Layerbase:** watch the scheduled history job's run time (30 s on the
+   first run vs Neon's 22 s average).
 4. **Firmware 1.5.1 released** (2026-11-14, OTA rollout 10%): crash
    reports (test 14 passed on the S3 and the C3 SuperMini), the settings
    resend crash fix (found by 1.5.0 on the C3, confirmed on the S3), and the

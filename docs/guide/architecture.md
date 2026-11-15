@@ -1,17 +1,17 @@
 ---
-description: "How ProbeHarbor is built: Astro on Cloudflare Workers, Neon Postgres, Better Auth sign-in, Stripe billing, and the push and pull data paths."
+description: "How ProbeHarbor is built: Astro on Cloudflare Workers, Postgres (Layerbase through Hyperdrive), Better Auth sign-in, Stripe billing, and the push and pull data paths."
 ---
 
 # Architecture
 
-ProbeHarbor is an **Astro 7** app with **`output: 'server'`** on **Cloudflare Workers**, **Neon** Postgres, **Better Auth** for sign-in (inside the app), and **Stripe** for paid plans.
+ProbeHarbor is an **Astro 7** app with **`output: 'server'`** on **Cloudflare Workers**, **Postgres** (Layerbase, reached through Cloudflare **Hyperdrive**; the Neon HTTP driver is still supported, see `DATABASE_DRIVER`), **Better Auth** for sign-in (inside the app), and **Stripe** for paid plans.
 
 ```
 Sensors / relays ──push or pull──► Cloudflare Worker (Astro)
                                          │
                     ┌────────────────────┼────────────────────┐
                     ▼                    ▼                    ▼
-               Neon Postgres        Stripe webhooks      Email / SMS / push
+               Postgres (Hyperdrive) Stripe webhooks      Email / SMS / push
                (readings,           (subscriptions)      (alerts, digests)
                 devices,
                 households)

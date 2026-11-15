@@ -12,7 +12,16 @@ cp .env.example .env   # fill DATABASE_URL, BETTER_AUTH_SECRET, SITE_URL, etc.
 pnpm dev               # http://localhost:4321
 ```
 
-You typically need `DATABASE_URL` (a Neon branch of your own, never production), `BETTER_AUTH_SECRET`, and `SITE_URL` / `ORIGIN` (e.g. `http://localhost:4321`). Turnstile keys are required for register/sign-in.
+You typically need a database of your own (never production), `BETTER_AUTH_SECRET`, and `SITE_URL` / `ORIGIN` (e.g. `http://localhost:4321`). Turnstile keys are required for register/sign-in.
+
+The database driver is chosen at runtime (`src/lib/db/client.ts`):
+
+- **Any Postgres** (Layerbase, local, …): `DATABASE_DRIVER=hyperdrive` and
+  `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgresql://…`
+  (the local stand-in for the Worker's Hyperdrive binding). This is how
+  production runs since 2026-11-15.
+- **A Neon database**: leave `DATABASE_DRIVER` unset and set `DATABASE_URL`
+  to it (Neon's HTTP driver works only with Neon).
 
 Useful scripts:
 
@@ -30,7 +39,7 @@ Authenticated E2E: set `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD`, plus
 `E2E_DATABASE_URL` and `E2E_BETTER_AUTH_SECRET`. The last two must match the
 preview's `DATABASE_URL` / `BETTER_AUTH_SECRET` (in `dist/server/.dev.vars`):
 the helper signs in through Better Auth with them and hands the session cookie
-to the browser. Use the Neon dev branch, not production. CI does the same with
+to the browser. Use a test database, not production. CI does the same with
 the `E2E_DATABASE_URL` / `E2E_BETTER_AUTH_SECRET` GitHub secrets.
 
 ```bash
@@ -47,8 +56,9 @@ Configure in `.env` (local) and Cloudflare Worker secrets / vars (production). F
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | Neon Postgres (pooled) — server only |
-| `DATABASE_URL_UNPOOLED` | Direct connection for `db:migrate` / `db:backup` (local only) |
+| `DATABASE_DRIVER` | `hyperdrive` = Postgres through the `HYPERDRIVE` binding (production); unset = Neon over `DATABASE_URL` |
+| `DATABASE_URL` | Neon Postgres for the Neon driver; also what local scripts (`ops:*`) connect to — server only |
+| `DATABASE_URL_UNPOOLED` | Direct connection for `db:migrate` / `db:backup` / `db-copy` (local only) |
 | `BETTER_AUTH_SECRET` | Signs sessions (Better Auth) |
 | `GOOGLE_*` / `DISCORD_*` / `GITHUB_*` | OAuth sign-in apps |
 | `GARAGE_TEMP_FEED_URL` | Default public probe JSON feed (guest Home demo) |

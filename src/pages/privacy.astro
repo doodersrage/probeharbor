@@ -23,7 +23,7 @@ const schema = [
     <h1 class="card-title">Privacy</h1>
     <p class="card-subtitle">
       How ProbeHarbor handles your data (web and Android), who processes it, retention, and account deletion.
-      Last updated November 7, 2026.
+      Last updated November 15, 2026.
     </p>
 
     <h2 class="text-lg font-semibold mt-6 mb-2">What we store</h2>
@@ -50,8 +50,8 @@ const schema = [
 
     <h2 class="text-lg font-semibold mt-6 mb-2">Services that process data for us</h2>
     <ul class="list-disc pl-5 space-y-1 text-sm">
-      <li><strong>Neon</strong>: the database (accounts, devices, readings, alerts)</li>
-      <li><strong>Cloudflare</strong>: hosting, email delivery (account, alert and notice emails), bot checks (Turnstile), and file storage for history archives and shared chart images</li>
+      <li><strong>Layerbase</strong>: the database (accounts, devices, readings, alerts), in the United States</li>
+      <li><strong>Cloudflare</strong>: hosting, the database connection, email delivery (account, alert and notice emails), bot checks (Turnstile), and file storage for history archives, shared chart images and encrypted database backups</li>
       <li><strong>Stripe</strong>: billing, for paid plans</li>
       <li><strong>Google</strong>, <strong>GitHub</strong> or <strong>Discord</strong>: only if you sign in with them; they tell us your email and account ID</li>
       <li><strong>Google Analytics</strong> and <strong>Ahrefs</strong>: traffic analytics on marketing pages only (see <a class="text-link" href="#analytics">Analytics</a>)</li>
@@ -65,8 +65,9 @@ const schema = [
       </li>
     </ul>
     <p class="text-sm mt-2">
-      Until November 7, 2026, Supabase ran our database, sign-in and account emails. That copy of the data is
-      no longer used or updated, and is kept only until the old project is deleted.
+      Until November 7, 2026, Supabase ran our database, sign-in and account emails, and from then until
+      November 15, 2026, Neon ran the database. Those copies of the data are no longer used or updated, and
+      are kept only until the old projects are deleted.
     </p>
 
     <h2 class="text-lg font-semibold mt-6 mb-2">Android app</h2>
