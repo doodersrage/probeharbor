@@ -434,6 +434,16 @@ the backtrace `readSerial() +0x226` → `loop() +0xb` → `loopTask(void*)
 that build's table was deployed (CI had been blocked by the deleted e2e
 branch). The S3 joins at full power (the C3 fallback stays C3-only).
 
+**Plain ESP32 (DevKit, CP2102, AHT20), 2026-11-15, 1.5.2-test: passed.**
+`TTTEST crash`: StoreProhibited, reboot, `TT crash: loopTask stopped at
+0x400d4c06` (`readSerial() +0x296`), `report sent` with the next post.
+Settings-resend fix: the guarded stop (`TTTEST stopportal`, no portal
+running) did nothing; the 1.5.0 unguarded stop (`stopportal-old`) crashed
+with LoadProhibited in `WiFiManager::shutdownConfigPortal() +0x4c`, which the
+probe reported itself. So the bug was on all three chip families and the fix
+holds on all three. Back on the published 1.5.2 afterwards (app written at
+0x10000 with boot_app0; settings kept), posting 200 with verified TLS.
+
 Procedure (S3, then C3). A test build has its own ELF hash,
 so deploy its function table first or the page shows bare addresses:
 `node scripts/firmware-symbols.mjs .pio/build/<env>/firmware.elf <chip>
