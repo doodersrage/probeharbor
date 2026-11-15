@@ -60,6 +60,13 @@ const de: DeviceDetailMessages = {
     noReadingsYet:
       "Noch keine Messwerte. Richte das Gerät auf seine Ingest-URL aus (siehe Verbindung unten); Sensoren erscheinen mit dem ersten Upload.",
   },
+  chart: {
+    title: "Letzte 24 Stunden",
+    fullHistory: "Gesamter Verlauf",
+    empty: "Keine Temperatur- oder Feuchtigkeitswerte in den letzten 24 Stunden.",
+    error:
+      "Das Diagramm konnte nicht geladen werden. Der gesamte Verlauf funktioniert vielleicht trotzdem.",
+  },
   healthLabels: {
     healthy: "In Ordnung",
     watch: "Beobachten",

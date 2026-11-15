@@ -60,6 +60,12 @@ const ptBr: DeviceDetailMessages = {
     noReadingsYet:
       "Ainda não há leituras. Configure o dispositivo com a URL de ingestão dele (veja Conexão abaixo); os sensores aparecem no primeiro envio.",
   },
+  chart: {
+    title: "Últimas 24 horas",
+    fullHistory: "Histórico completo",
+    empty: "Nenhuma leitura de temperatura ou umidade nas últimas 24 horas.",
+    error: "Não foi possível carregar o gráfico. O histórico completo pode funcionar.",
+  },
   healthLabels: {
     healthy: "Saudável",
     watch: "Atenção",

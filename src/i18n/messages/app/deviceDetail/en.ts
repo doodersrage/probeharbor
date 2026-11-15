@@ -59,6 +59,12 @@ const en = {
     noReadingsYet:
       "No readings yet. Point the device at its ingest URL (see Connection below); sensors appear on the first upload.",
   },
+  chart: {
+    title: "Last 24 hours",
+    fullHistory: "Full history",
+    empty: "No temperature or humidity readings in the last 24 hours.",
+    error: "Couldn't load the chart. The full history may still work.",
+  },
   healthLabels: {
     healthy: "Healthy",
     watch: "Watch",

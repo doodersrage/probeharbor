@@ -60,6 +60,12 @@ const es: DeviceDetailMessages = {
     noReadingsYet:
       "Aún no hay lecturas. Configura el dispositivo con su URL de ingesta (consulta Conexión más abajo); los sensores aparecen con la primera subida.",
   },
+  chart: {
+    title: "Últimas 24 horas",
+    fullHistory: "Historial completo",
+    empty: "No hay lecturas de temperatura ni humedad en las últimas 24 horas.",
+    error: "No se pudo cargar el gráfico. Puede que el historial completo sí funcione.",
+  },
   healthLabels: {
     healthy: "Bien",
     watch: "Vigilar",

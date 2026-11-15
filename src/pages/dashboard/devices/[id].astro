@@ -24,7 +24,7 @@ import { ingestKeyVaultConfigured } from "../../../lib/ingestKeyVault";
 import { formatRelativeAge } from "../../../lib/relativeTime";
 import { escapeHtml } from "../../../lib/htmlEscape";
 import type { SensorKind } from "../../../lib/sensorKinds";
-import { fmt, formatNumber, getLocale, plural } from "../../../i18n";
+import { fmt, formatNumber, getLocale, LOCALE_META, plural } from "../../../i18n";
 import { deviceDetailMessages } from "../../../i18n/messages/app/deviceDetail";
 import { shellMessages } from "../../../i18n/messages/app/shell";
 import UnsavedChangesGuard from "../../../components/UnsavedChangesGuard.astro";
@@ -32,6 +32,10 @@ import { deviceSetupPushMessages } from "../../../i18n/messages/app/deviceSetup/
 import { reportIntervalMsFromMeta } from "../../../lib/reportInterval";
 import { parseStoredCrash } from "../../../lib/crashReport";
 import { decodeCrash, loadSymbolTable } from "../../../lib/crashSymbols";
+import HistoryChart from "../../../components/HistoryChart";
+import { fetchGarageTempChartData } from "../../../lib/garageTempsHistory";
+import { getAlertSettingsForUser } from "../../../lib/notify";
+import { appHistoryChartsMessages } from "../../../i18n/messages/app/history/charts";
 
 /**
  * One device, everything about it: what it reads, its settings, how it
@@ -61,11 +65,22 @@ if (!device) return Astro.redirect("/dashboard/devices?view=ops&error=device_not
 const canEdit = canEditHousehold(role);
 const isPush = device.source === "push";
 const now = Date.now();
-const [latestAll, stuck, ingestStats] = await Promise.all([
+// The last 24 hours of this device's readings, as on History filtered to it.
+const hasChartSensors = device.sensors.some((s) => s.kind === "temperature" || s.kind === "humidity");
+const [latestAll, stuck, ingestStats, dayChart, alertSettings] = await Promise.all([
   latestFromShell(shell, householdId) ?? fetchLatestSensorValues(householdId),
   findStuckSensors([device], now, locale, useCelsius).catch(() => []),
   isPush ? listIngestStatsForHousehold(householdId, 7).catch(() => []) : Promise.resolve([]),
+  hasChartSensors
+    ? fetchGarageTempChartData(user.id, 1, { feedName: device.name }).catch(() => null)
+    : Promise.resolve(null),
+  hasChartSensors ? getAlertSettingsForUser(user.id).catch(() => null) : Promise.resolve(null),
 ]);
+const dayChartHasData = Boolean(
+  dayChart && !dayChart.error && (dayChart.points.length > 0 || (dayChart.humidityOnly?.length ?? 0) > 0),
+);
+const chartUi = appHistoryChartsMessages(locale).history;
+const chartLocale = locale === "en" ? undefined : LOCALE_META[locale].intl;
 const latestBySensor = new Map(latestAll.map((row) => [row.sensor.id, row]));
 const health = scoreDeviceHealth(device, latestAll, now, -80, stuck, locale);
 const stuckById = new Map(stuck.map((s) => [s.sensorId, s]));
@@ -248,6 +263,32 @@ function offsetWithUnit(sensor: { offset_num?: number | null; kind?: string | nu
         </p>
       )}
     </section>
+
+    {hasChartSensors && (
+      <section class="card" aria-labelledby="device-chart-title" id="chart">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="card-title" id="device-chart-title">{t.chart.title}</h2>
+          <a class="text-link text-sm" href={`/dashboard/history?feed=${encodeURIComponent(device.name)}`}>{t.chart.fullHistory}</a>
+        </div>
+        {dayChartHasData && dayChart ? (
+          <HistoryChart
+            client:visible
+            points={dayChart.points}
+            humidityOnlyPoints={dayChart.humidityOnly ?? []}
+            sampleIntervalMs={dayChart.sampleIntervalMs ?? 0}
+            freezeThresholdF={alertSettings?.freezeThresholdF}
+            showHumidity
+            title={t.chart.title}
+            hideTitle
+            ui={chartUi}
+            locale={chartLocale}
+            useCelsius={useCelsius}
+          />
+        ) : (
+          <p class="card-subtitle mb-0" data-testid="device-chart-empty">{dayChart?.error ? t.chart.error : t.chart.empty}</p>
+        )}
+      </section>
+    )}
 
     <section class="card" aria-labelledby="device-sensors-title" id="sensors">
       <h2 class="card-title" id="device-sensors-title">{fmt(t.sensors.title, { count: formatNumber(device.sensors.length, locale) })}</h2>

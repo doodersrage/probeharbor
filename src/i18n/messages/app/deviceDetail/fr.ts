@@ -60,6 +60,12 @@ const fr: DeviceDetailMessages = {
     noReadingsYet:
       "Aucune mesure pour l’instant. Configurez l’appareil avec son URL d’ingestion (voir Connexion ci-dessous) ; les capteurs apparaissent au premier envoi.",
   },
+  chart: {
+    title: "Dernières 24 heures",
+    fullHistory: "Historique complet",
+    empty: "Aucune mesure de température ou d’humidité ces dernières 24 heures.",
+    error: "Impossible de charger le graphique. L’historique complet fonctionne peut-être.",
+  },
   healthLabels: {
     healthy: "Bon",
     watch: "À surveiller",
