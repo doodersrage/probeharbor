@@ -6464,3 +6464,20 @@ of build-time data differ. Decoded: LoadProhibited in
 again (fixed in 1.5.1). Two of the owner's real probes had hit it. The 1.5.2
 session itself was clean: key saved, wifi ok, TLS verified, post 200.
 
+
+### Layerbase dumps didn't restore into plain Postgres (found 2026-11-15)
+
+Found while copying production for the e2e database: Layerbase sets a
+private column option, `pg_attver`, on its columns (2,051 cluster-wide, 479
+in public), which pg_dump writes as `ALTER TABLE ONLY … ALTER COLUMN … SET
+(pg_attver=N);`. Plain Postgres rejects it (`unrecognized parameter
+"pg_attver"`), so the documented `pg_restore` of a backup taken since the
+cutover would have failed at the first such line (the backups themselves
+are complete; the 2026-11-14 rehearsal used a Neon dump).
+`scripts/lib/restoreDump.mjs` restores via SQL, dropping exactly those
+statements, in one transaction with ON_ERROR_STOP; `db-copy.mjs` uses it,
+and `scripts/db-restore.mjs` restores a decrypted backup with it (refuses a
+non-empty target). Rehearsed: Layerbase production → plain Postgres 18, 54
+tables / 301,914 rows equal (db-copy) and 301,924 rows (db-restore), 479
+options left out. `deploy.md`'s restore steps updated. Unit tests for the
+filter (exactly those lines; data rows and other ALTERs untouched).

@@ -9,8 +9,9 @@
  * 1. Refuses unless the target's public schema has no tables (never
  *    overwrites anything).
  * 2. pg_dump of the source (custom format; Neon's unused neon_auth schema
- *    left out, as the backups do), then pg_restore into the target with
- *    --exit-on-error, --no-owner and --no-privileges (the target's own user
+ *    left out, as the backups do), then restored into the target (as SQL,
+ *    without Layerbase's pg_attver column options: lib/restoreDump.mjs) with
+ *    ON_ERROR_STOP in one transaction, no owners, no privileges (the target's own user
  *    owns everything, as the app expects).
  * 3. Re-applies migration 0005's grants (the migration_reader role for CI's
  *    pending-migration check), which --no-privileges leaves out.
@@ -25,6 +26,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseEnvFile } from "./parseEnvFile.mjs";
+import { restoreDumpPortably } from "./lib/restoreDump.mjs";
 
 const args = process.argv.slice(2);
 const arg = (name, fallback) => {
@@ -106,7 +108,7 @@ const work = mkdtempSync(join(tmpdir(), "db-copy-"));
 const file = join(work, "copy.dump");
 try {
   console.log(`Dumping ${fromEnv}…`);
-  let r = spawnSync(
+  const r = spawnSync(
     "pg_dump",
     [
       "--format=custom",
@@ -121,12 +123,12 @@ try {
   if (r.status !== 0) throw new Error(`pg_dump failed (exit ${r.status})`);
 
   console.log(`Restoring into ${toEnv}…`);
-  r = spawnSync(
-    "pg_restore",
-    ["--exit-on-error", "--no-owner", "--no-privileges", "--dbname", pgEnv(to).PGDATABASE, file],
-    { env: pgEnv(to), stdio: ["ignore", "inherit", "inherit"] },
-  );
-  if (r.status !== 0) throw new Error(`pg_restore failed (exit ${r.status})`);
+  const restored = restoreDumpPortably(file, pgEnv(to), join(work, "copy.sql"));
+  if (restored.removedVendorOptions) {
+    console.log(
+      `  (left out ${restored.removedVendorOptions} Layerbase-only column options, pg_attver)`,
+    );
+  }
 
   // Migration 0005's grants (the role is cluster-wide; create it if missing).
   await target.query(`do $$ begin

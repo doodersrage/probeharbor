@@ -176,12 +176,21 @@ pnpm db:backup
   shared drives, and delete old ones you don't need.
 - Check a dump with `pg_restore --list <file> | head`.
 
-To restore into a **new, empty** database, e.g. a new Neon branch (never
-over the live database without a fresh dump first):
+To restore into a **new, empty** database (never over the live database
+without a fresh dump first), put its connection string in `.env` (e.g. as
+`RESTORE_DATABASE_URL`) and run:
 
 ```bash
-pg_restore --no-owner --no-privileges --dbname "<connection string of the new project>" <file>
+node scripts/db-restore.mjs <file>.dump --to-env RESTORE_DATABASE_URL
 ```
+
+It refuses a target that already has tables, and works for any Postgres 18+.
+A plain `pg_restore` of a **Layerbase** dump fails on Postgres elsewhere
+(`unrecognized parameter "pg_attver"`: Layerbase marks columns with a private
+option that pg_dump writes out); the script leaves those options out (they
+hold no data) and restores the rest in one transaction, stopping at the
+first error. Rehearsed 2026-11-15: a Layerbase production dump into plain
+Postgres 18: 54 tables, 301,924 rows, 479 options left out.
 
 Restoring loses everything written after the dump.
 
@@ -269,7 +278,7 @@ product, unused here). `BACKUP_DATABASE_URL` may be the bare URL or Neon's
 `aws s3 cp s3://probeharbor-db-backups/db/<file> . --endpoint-url https://<account id>.r2.cloudflarestorage.com`
 with an R2 token), then
 `age -d -i probeharbor-backup-key.txt <file>.dump.age > <file>.dump` and
-`pg_restore` it as above, into a new, empty database.
+restore it with `scripts/db-restore.mjs` as above, into a new, empty database.
 
 ### Other state
 
