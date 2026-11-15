@@ -81,7 +81,11 @@
 	"hyperdrive": [
 		{
 			"binding": "HYPERDRIVE",
-			"id": "9b5d0cb63a214ef4b899920f3e021f7b"
+			"id": "9b5d0cb63a214ef4b899920f3e021f7b",
+			// Local dev / CI preview need some value to start; it is only used with
+			// DATABASE_DRIVER=hyperdrive. Override with
+			// CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE.
+			"localConnectionString": "postgresql://unused:unused@127.0.0.1:5432/hyperdrive_unused"
 		}
 	],
 	"r2_buckets": [
