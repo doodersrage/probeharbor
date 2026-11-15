@@ -60,7 +60,7 @@ decision with its test and hardware evidence) is
 | Security | Done for the audit gaps; probe TLS verified with fallback | Watch the bcrypt re-hash count reach 0, then drop `bcryptjs` |
 | Dashboard | Done; certificate warning per probe | Warning text not yet seen in a browser |
 | Integrations | Spec done; HA in the default HACS store | — |
-| Firmware updates | Signed OTA with rollback; 1.5.1 (first real OTA release) at 100% since 2026-11-14 | Watch probes move to 1.5.1 over the next day |
+| Firmware updates | Signed OTA with rollback; 1.5.2 at 100% since 2026-11-14 (1.5.1 earlier the same day) | Watch probes move to 1.5.2 over the next day |
 
 ## Decisions in force
 
