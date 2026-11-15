@@ -67,6 +67,16 @@ const de: DeviceDetailMessages = {
     error:
       "Das Diagramm konnte nicht geladen werden. Der gesamte Verlauf funktioniert vielleicht trotzdem.",
   },
+  phoneSetup: {
+    title: "Mit dem Handy einrichten",
+    intro:
+      "Für eine Sonde, die ihr Netz ProbeHarbor-Setup zeigt (neu oder nach 5 Sekunden BOOT gedrückt). Mit der Handykamera scannen.",
+    copyKey:
+      "Öffne diese Seite auf dem Handy, zeige den Geräteschlüssel an und tippe auf Kopieren.",
+    joinNetwork:
+      "Verbinde dich mit dem Netz {network} der Sonde. Ihre Einrichtungsseite öffnet sich: WLAN wählen, Schlüssel einfügen, Speichern.",
+    hint: "Öffnet sich die Seite nicht, rufe 192.168.4.1 auf. Die Sonde schließt ihr Netz nach 3 Minuten ohne Nutzung; starte sie neu, um es erneut zu versuchen.",
+  },
   healthLabels: {
     healthy: "In Ordnung",
     watch: "Beobachten",

@@ -66,6 +66,16 @@ const fr: DeviceDetailMessages = {
     empty: "Aucune mesure de température ou d’humidité ces dernières 24 heures.",
     error: "Impossible de charger le graphique. L’historique complet fonctionne peut-être.",
   },
+  phoneSetup: {
+    title: "Configurer depuis votre téléphone",
+    intro:
+      "Pour une sonde qui affiche son réseau ProbeHarbor-Setup (neuve, ou après un appui de 5 secondes sur BOOT). Scannez avec l’appareil photo du téléphone.",
+    copyKey:
+      "Ouvrez cette page sur votre téléphone, affichez la clé de l’appareil et touchez Copier.",
+    joinNetwork:
+      "Rejoignez le réseau {network} de la sonde. Sa page de configuration s’ouvre : choisissez votre Wi-Fi, collez la clé, Enregistrez.",
+    hint: "Si la page ne s’ouvre pas, allez sur 192.168.4.1. La sonde ferme son réseau après 3 minutes sans activité ; redémarrez-la pour réessayer.",
+  },
   healthLabels: {
     healthy: "Bon",
     watch: "À surveiller",

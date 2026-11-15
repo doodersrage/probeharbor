@@ -35,6 +35,7 @@ import { decodeCrash, loadSymbolTable } from "../../../lib/crashSymbols";
 import HistoryChart from "../../../components/HistoryChart";
 import { fetchGarageTempChartData } from "../../../lib/garageTempsHistory";
 import { getAlertSettingsForUser } from "../../../lib/notify";
+import { PROBE_SETUP_SSID, renderIngestQrSvg, wifiQrText } from "../../../lib/qrSvg";
 import { appHistoryChartsMessages } from "../../../i18n/messages/app/history/charts";
 
 /**
@@ -96,6 +97,12 @@ const crashTop = crash?.frames[0] ?? null;
 const firmware = typeof device.meta?.firmware_version === "string" ? device.meta.firmware_version : null;
 const rssi = typeof device.meta?.rssi === "number" ? device.meta.rssi : null;
 const recoverableKey = typeof device.meta?.ingest_key_enc === "string";
+// Phone setup for the probe firmware's portal: a QR to open this page on the
+// phone (to copy the key), and one that joins the probe's setup network.
+const phoneSetup = isPush && canEdit;
+const keyCopyable = phoneSetup && ingestKeyVaultConfigured() && recoverableKey;
+const pageQrSvg = keyCopyable ? renderIngestQrSvg(`${Astro.url.origin}/dashboard/devices/${device.id}#connection`, 150) : "";
+const setupWifiQrSvg = phoneSetup ? renderIngestQrSvg(wifiQrText(PROBE_SETUP_SSID), 150) : "";
 const transferTargets = userHouseholds.households.filter((h) => h.household_id !== householdId);
 const self = `/dashboard/devices/${encodeURIComponent(device.id)}`;
 const listHref = "/dashboard/devices?view=ops";
@@ -479,7 +486,7 @@ function offsetWithUnit(sensor: { offset_num?: number | null; kind?: string | nu
     )}
 
     {isPush && (
-      <section class="card" aria-labelledby="device-connection-title">
+      <section class="card" aria-labelledby="device-connection-title" id="connection">
         <h2 class="card-title" id="device-connection-title">{t.connection.title}</h2>
         <p
           class="card-subtitle mb-3"
@@ -501,6 +508,25 @@ function offsetWithUnit(sensor: { offset_num?: number | null; kind?: string | nu
           <a class="btn-ghost" href="/flash">{t.connection.browserFlasher}</a>
           <a class="btn-ghost" href="/about/ingest-and-webhooks">{t.connection.ingestDocs}</a>
         </div>
+        {phoneSetup && (
+          <details class="mb-3" data-testid="phone-setup">
+            <summary class="cursor-pointer text-sm font-semibold">{t.phoneSetup.title}</summary>
+            <p class="text-sm mt-2 mb-3">{t.phoneSetup.intro}</p>
+            <div class="flex flex-wrap gap-6">
+              {keyCopyable && (
+                <figure class="m-0 max-w-[16rem]">
+                  <div class="bg-white p-2 rounded inline-block" aria-hidden="true" set:html={pageQrSvg} />
+                  <figcaption class="text-sm mt-2"><strong>1.</strong> {t.phoneSetup.copyKey}</figcaption>
+                </figure>
+              )}
+              <figure class="m-0 max-w-[16rem]">
+                <div class="bg-white p-2 rounded inline-block" aria-hidden="true" set:html={setupWifiQrSvg} />
+                <figcaption class="text-sm mt-2"><strong>{keyCopyable ? "2." : "1."}</strong> {fmt(t.phoneSetup.joinNetwork, { network: PROBE_SETUP_SSID })}</figcaption>
+              </figure>
+            </div>
+            <p class="form-hint mt-3 mb-0">{t.phoneSetup.hint}</p>
+          </details>
+        )}
         <p class="m-0 text-sm text-[var(--color-text-muted)]">
           {plural(t.connection.accepted, accepted, locale)}
           {rejected > 0 && <span class="text-[var(--color-warning)]">{fmt(t.connection.rejected, { count: formatNumber(rejected, locale) })}</span>}{t.connection.end}

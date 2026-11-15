@@ -66,6 +66,15 @@ const ptBr: DeviceDetailMessages = {
     empty: "Nenhuma leitura de temperatura ou umidade nas últimas 24 horas.",
     error: "Não foi possível carregar o gráfico. O histórico completo pode funcionar.",
   },
+  phoneSetup: {
+    title: "Configurar pelo celular",
+    intro:
+      "Para uma sonda que mostra a rede ProbeHarbor-Setup (nova, ou depois de segurar BOOT por 5 segundos). Escaneie com a câmera do celular.",
+    copyKey: "Abra esta página no celular, mostre a chave do dispositivo e toque em Copiar.",
+    joinNetwork:
+      "Entre na rede {network} da sonda. A página de configuração abre: escolha seu Wi-Fi, cole a chave e Salve.",
+    hint: "Se a página não abrir, acesse 192.168.4.1. A sonda fecha a rede após 3 minutos sem uso; reinicie-a para tentar de novo.",
+  },
   healthLabels: {
     healthy: "Saudável",
     watch: "Atenção",

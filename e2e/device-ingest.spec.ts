@@ -70,6 +70,12 @@ test.describe("device ingest", () => {
       await expect(chartCard.getByTestId("device-chart-empty")).toHaveCount(0);
       await expect(chartCard.getByText("Not enough readings yet for a chart.")).toBeVisible({ timeout: 15_000 });
 
+      // Phone setup: QR codes for the probe's setup network (and this page, when the key can be shown).
+      const phone = page.getByTestId("phone-setup");
+      await phone.locator("summary").click();
+      await expect(phone.getByText("Join the probe's ProbeHarbor-Setup network", { exact: false })).toBeVisible();
+      expect(await phone.locator("svg").count()).toBeGreaterThanOrEqual(1);
+
       // A second reading, half an hour earlier (the device's own time), makes a line.
       const earlier = Math.floor(Date.now() / 1000) - 30 * 60;
       const earlierRes = await page.request.post(`/api/ingest/${ingestKey}`, {

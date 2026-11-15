@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderIngestQrDataUrl, renderIngestQrSvg } from "./qrSvg";
+import { PROBE_SETUP_SSID, renderIngestQrDataUrl, renderIngestQrSvg, wifiQrText } from "./qrSvg";
 
 describe("renderIngestQrSvg", () => {
   it("renders an svg tagged with the requested display size", () => {
@@ -48,5 +48,21 @@ describe("renderIngestQrDataUrl", () => {
     const dataUrl = renderIngestQrDataUrl("hello");
     const encoded = dataUrl.slice("data:image/svg+xml;charset=utf-8,".length);
     expect(decodeURIComponent(encoded)).toContain('width="200"');
+  });
+});
+
+describe("wifiQrText", () => {
+  it("joins the probe's open setup network", () => {
+    expect(wifiQrText(PROBE_SETUP_SSID)).toBe("WIFI:T:nopass;S:ProbeHarbor-Setup;;");
+  });
+  it("escapes the format's special characters and adds a password when given", () => {
+    // Name a;b,c:d"e\f (one backslash) and password p;w.
+    const name = String.raw`a;b,c:d"e\f`;
+    expect(wifiQrText(name, "p;w")).toBe(String.raw`WIFI:T:WPA;S:a\;b\,c\:d\"e\\f;P:p\;w;;`);
+  });
+  it("renders as an SVG QR code", () => {
+    expect(renderIngestQrSvg(wifiQrText(PROBE_SETUP_SSID), 160)).toMatch(
+      /^<svg width="160" height="160"/,
+    );
   });
 });

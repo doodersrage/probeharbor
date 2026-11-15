@@ -65,6 +65,15 @@ const en = {
     empty: "No temperature or humidity readings in the last 24 hours.",
     error: "Couldn't load the chart. The full history may still work.",
   },
+  phoneSetup: {
+    title: "Set up from your phone",
+    intro:
+      "For a probe that shows its ProbeHarbor-Setup network (new, or after holding BOOT for 5 seconds). Scan with your phone's camera.",
+    copyKey: "Open this page on your phone, show the device key and tap Copy.",
+    joinNetwork:
+      "Join the probe's {network} network. Its setup page opens: pick your Wi-Fi, paste the key, Save.",
+    hint: "If the setup page doesn't open, browse to 192.168.4.1. The probe closes its network after 3 minutes untouched; restart it to try again.",
+  },
   healthLabels: {
     healthy: "Healthy",
     watch: "Watch",

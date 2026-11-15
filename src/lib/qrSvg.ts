@@ -38,3 +38,17 @@ export function renderIngestQrDataUrl(text: string, size = 200): string {
   const svg = renderIngestQrSvg(text, size);
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
+
+/** The probe firmware's setup network (WiFiManager autoConnect, no password). */
+export const PROBE_SETUP_SSID = "ProbeHarbor-Setup";
+
+/**
+ * Text for a Wi-Fi QR code (the WIFI: format phone cameras join directly).
+ * Special characters in the name are escaped as the format requires.
+ */
+export function wifiQrText(ssid: string, password?: string): string {
+  const esc = (v: string) => v.replace(/([\\;,:"])/g, "\\$1");
+  return password
+    ? `WIFI:T:WPA;S:${esc(ssid)};P:${esc(password)};;`
+    : `WIFI:T:nopass;S:${esc(ssid)};;`;
+}
