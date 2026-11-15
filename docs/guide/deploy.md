@@ -206,7 +206,8 @@ the rehearsal: restoring into Neon itself and pointing the Worker at it
 ### Automatic off-site backups
 
 `.github/workflows/db-backup.yml` runs `scripts/db-backup-offsite.sh` every
-day at 08:17 UTC (and on demand: Actions → Database backup → Run workflow):
+6 hours (02:17, 08:17, 14:17, 20:17 UTC; the database is Layerbase since
+2026-11-15, which has no point-in-time restore) (and on demand: Actions → Database backup → Run workflow):
 
 1. `pg_dump` (via `scripts/db-backup.mjs`) with a read-only role;
 2. checks the dump with `pg_restore --list` and refuses one without

@@ -6406,3 +6406,34 @@ Layerbase (`stale`: no cron has run there), /demo, /pricing,
 
 Next (owner's go-ahead): cutover. Not done yet: production still on Neon.
 
+
+### Cutover to Layerbase (2026-11-15, owner's go-ahead)
+
+Layerbase Solo, the `probeharbor` database pinned (always on), reached via
+the direct connection (Hyperdrive config edited by the owner to the direct
+string; checked from a Worker: connect 4 ms, latest values 7 ms). The
+synthetic trial data was dropped after checking it held no real accounts.
+
+- 14:06:56–14:07:02 UTC `MAINTENANCE_MODE=1`: uploads 503 + Retry-After 120.
+  Neon then had no active app queries; newest reading 14:06:42.
+- 14:07:44–14:07:57 `db-copy.mjs` Neon → Layerbase: 54 tables, 295,269
+  rows, every count equal.
+- 14:08:08 `DATABASE_DRIVER=hyperdrive`. 14:09:26 maintenance off (set to
+  `0`: `wrangler secret delete` has no `--force`).
+- Checks: a bad key → 401 (lookup reached Layerbase); by 14:12 36 new
+  readings in Layerbase, 6 of them recorded during maintenance and resent
+  by probes with their own times (nothing lost); Neon unchanged since
+  14:06:42; health `ok`; /, /demo, /pricing 200. First scheduled run on
+  Layerbase 14:15:48: collect-history success, 11 households, 30 s (Neon's
+  2-day average 22 s; one sample, watch it).
+- Follow-ups done: `backup_reader` (bypassrls, select only) and
+  `ci_migration_check` (in migration_reader) created on Layerbase and
+  checked (backup reads everything, writes nothing; the CI role reads only
+  schema_migrations); `BACKUP_DATABASE_URL` and
+  `MIGRATION_CHECK_DATABASE_URL` now point there. Backup from Layerbase:
+  54 tables, 3.6 MB, verified. Backups now every 6 h.
+
+Neon stays untouched as the fallback (`DATABASE_DRIVER=neon`) until about
+2026-11-22, then delete the project. Still to do: local `.env`
+`DATABASE_URL` / `DATABASE_URL_UNPOOLED` → Layerbase (owner); CI's e2e
+branch stays on Neon until then.

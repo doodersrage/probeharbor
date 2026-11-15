@@ -78,7 +78,7 @@ decision with its test and hardware evidence) is
 | Device times up to 72 h; duplicates skipped in the app, no unique index | 2026-11-13 | "Ingest keeps the device's reading time" |
 | OTA on by default (opt-out `noupdate`); signing key offline with the owner; TLS failure falls back with a warning | 2026-11-13 | "Design: signed OTA updates" |
 | Product focus: no new features until more sign-ups reach a first reading; work goes to reliability, setup and the funnel. No new flasher boards (ESP8266, ESP32-C6) until users ask. GitHub Discussions only if the owner will check it weekly | 2026-11-13 | `IMPROVEMENT_PLAN.md` §4 |
-| Layerbase considered for cost ($5 vs ~$30/month): compatible, and via Hyperdrive about 2× faster from Workers than Neon; switch pending the owner's go-ahead | 2026-11-15 | "Layerbase trial" |
+| Production database on Layerbase (Solo, pinned) through Hyperdrive since 2026-11-15 14:08 UTC; Neon kept untouched as the fallback until ~2026-11-22, then deleted. Backups every 6 h | 2026-11-15 | "Cutover to Layerbase" |
 | Worker `garage-temp` and bucket `thermaltrace-history` keep their names until a planned migration (a rename deploys a second Worker with its own crons) | 2026-11-13 | `IMPROVEMENT_PLAN.md` 3.2 |
 
 ## Open work
