@@ -6328,3 +6328,25 @@ committed image has its table), DB 3 through the route, e2e 1. Not yet:
 a real crash on hardware (HARDWARE-TESTS.md test 14), release of 1.5.1.
 Installed PlatformIO 6.2.0 into ~/.platformio/penv (the earlier copy was in
 a session scratchpad that's gone).
+
+## Layerbase trial (2026-11-15)
+
+Owner asked about moving from Neon to Layerbase (managed Postgres, flat
+monthly pricing; only vendor sources found, no independent reviews).
+Trial on a Layerbase project with **synthetic data only** (owner's choice:
+no users' data to a second provider): Postgres 18.7; all 7 migrations
+applied (0005's role creation included); 12 fake accounts
+(`@example.invalid`), 24 sensors, 252,024 readings (68 MB). The DB test
+suite can't run there (its helper refuses non-local hosts, by design).
+
+From the owner's machine, median of 15, the app's own queries, vs the Neon
+e2e branch (copy of production, 250,884 readings): round trip 25 ms Neon /
+8 ms Layerbase; latest values 26 / 9; 7-day buckets 33 / 28; 24 h raw
+25 / 18; insert (rolled back) 77 / 23; first connect 749 / 201. Minus the
+round trip, server time is similar (Layerbase's buckets slower). The gap is
+distance from this machine, not from Cloudflare, where production runs.
+
+Decision: stay on Neon. Moving would need the Workers driver changed (Neon
+HTTP → Hyperdrive or TCP), a restore from the daily pg_dump (restorable to
+plain Postgres 18, rehearsed 2026-11-14) and a latency test from Workers.
+Revisit only if Neon's cost or reliability becomes a problem.
