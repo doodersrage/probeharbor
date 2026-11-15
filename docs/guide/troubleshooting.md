@@ -43,6 +43,25 @@ After you create a push device, Devices shows **Waiting for the first reading** 
 
 Member/Pro (or admin) required. Free accounts see an upgrade nudge instead.
 
+## A device shows "Last crash"
+
+ProbeHarbor probe firmware 1.5.1 and newer saves a crash to flash, sends it
+once with the next upload after restarting, then clears it. The device page
+shows where it stopped, decoded into a function name when ProbeHarbor knows
+that firmware build.
+
+- **"Restarted by the watchdog"**: the probe stopped responding for a
+  minute and restarted itself. The addresses are where the chip was when
+  the watchdog fired (usually idle), not the code that hung.
+- **A crash right after updating** is often an old one: the previous
+  firmware saved it and the new one reports it at its first boot. The
+  details show the crashed build's version.
+- **Bare addresses ("Stopped at 0x…")**: no function table for that build
+  (custom or very old builds). Still useful in a bug report.
+- **What to do:** one crash after which the probe kept posting usually
+  needs nothing. If it repeats, open an issue with the details box from the
+  device page (build, chain of functions and addresses).
+
 ## GitHub Pages 404 on `/probeharbor/`
 
 Site is published at the **project** base path:

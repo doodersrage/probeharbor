@@ -81,7 +81,7 @@ const es: HomeMessages = {
       'Los contactos de inundación alertan solos cuando se mojan, incluso con alertas pospuestas o en vacaciones. Añade un sensor de <code>level</code> en el pozo de bombeo o el depósito si quieres reglas de aviso temprano antes de que el agua llegue al suelo. <a class="text-link" href="/about/ingest-and-webhooks">Guía de ingesta de inundación y nivel</a>',
     stackTitle: "Tus sensores, tu stack",
     stackCopyHtml:
-      'Temperatura, humedad, calidad del aire, puertas, fugas, electricidad y movimiento en hardware que tú controlas. <a class="text-link" href="/about/ingest-and-webhooks">Guía de ingesta</a> · <a class="text-link" href="/docs/api">API HTTP</a>',
+      'Temperatura, humedad, calidad del aire, puertas, fugas, electricidad y movimiento en hardware que tú controlas. El firmware gratuito para sondas ESP32 se instala desde el navegador, se actualiza solo, guarda las lecturas durante los cortes de Wi-Fi e informa de sus propios fallos. <a class="text-link" href="/about/ingest-and-webhooks">Guía de ingesta</a> · <a class="text-link" href="/docs/api">API HTTP</a>',
     portfolioTitle: "De hogares a carteras de inmuebles",
     portfolioCopyHtml:
       'Invita a tu familia y comparte un enlace en vivo sin dar ninguna contraseña. Pro añade un <a class="text-link" href="/claims-pack">paquete de pruebas para reclamaciones</a>; Portfolio añade <a class="text-link" href="/property-management">accesos para administradores de propiedades</a> en alquileres y edificios.',

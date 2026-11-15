@@ -81,7 +81,7 @@ const ptBr: HomeMessages = {
       'Os contatos de alagamento alertam sozinhos quando molham, mesmo com alertas adiados ou nas férias. Adicione um sensor de <code>level</code> no poço de drenagem ou no tanque se quiser regras de aviso antecipado antes que a água chegue ao chão. <a class="text-link" href="/about/ingest-and-webhooks">Guia de ingestão de alagamento e nível</a>',
     stackTitle: "Seus sensores, seu stack",
     stackCopyHtml:
-      'Temperatura, umidade, qualidade do ar, portas, vazamentos, energia e movimento em hardware que você controla. <a class="text-link" href="/about/ingest-and-webhooks">Guia de ingestão</a> · <a class="text-link" href="/docs/api">API HTTP</a>',
+      'Temperatura, umidade, qualidade do ar, portas, vazamentos, energia e movimento em hardware que você controla. O firmware gratuito para sondas ESP32 é instalado pelo navegador, se atualiza sozinho, guarda as leituras durante quedas de Wi-Fi e relata as próprias falhas. <a class="text-link" href="/about/ingest-and-webhooks">Guia de ingestão</a> · <a class="text-link" href="/docs/api">API HTTP</a>',
     portfolioTitle: "De casas a carteiras de imóveis",
     portfolioCopyHtml:
       'Convide a família e compartilhe um link ao vivo sem passar nenhuma senha. O Pro adiciona um <a class="text-link" href="/claims-pack">pacote de evidências para sinistros</a>; o Portfolio adiciona <a class="text-link" href="/property-management">acessos para administradoras</a> de imóveis alugados e condomínios.',

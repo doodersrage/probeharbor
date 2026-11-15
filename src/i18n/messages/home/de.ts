@@ -81,7 +81,7 @@ const de: HomeMessages = {
       'Wassermelder lösen bei Nässe automatisch aus, auch bei pausierten Alarmen oder im Urlaub. Ergänze einen <code>level</code>-Sensor für Pumpensumpf oder Tank, wenn du Frühwarnregeln möchtest, bevor das Wasser den Boden erreicht. <a class="text-link" href="/about/ingest-and-webhooks">Anleitung für Wasser- und Füllstandsdaten</a>',
     stackTitle: "Deine Sensoren, dein Stack",
     stackCopyHtml:
-      'Temperatur, Luftfeuchte, Luftqualität, Türen, Lecks, Strom und Bewegung auf Hardware, die du kontrollierst. <a class="text-link" href="/about/ingest-and-webhooks">Anbindungsanleitung</a> · <a class="text-link" href="/docs/api">HTTP-API</a>',
+      'Temperatur, Luftfeuchte, Luftqualität, Türen, Lecks, Strom und Bewegung auf Hardware, die du kontrollierst. Die kostenlose ESP32-Sonden-Firmware installiert sich aus dem Browser, aktualisiert sich selbst, behält Messwerte bei WLAN-Ausfällen und meldet eigene Abstürze. <a class="text-link" href="/about/ingest-and-webhooks">Anbindungsanleitung</a> · <a class="text-link" href="/docs/api">HTTP-API</a>',
     portfolioTitle: "Vom Haushalt bis zum Immobilienbestand",
     portfolioCopyHtml:
       'Lade deine Familie ein und teile einen Live-Link, ohne ein Passwort herauszugeben. Pro ergänzt ein <a class="text-link" href="/claims-pack">Nachweispaket</a>; Portfolio ergänzt <a class="text-link" href="/property-management">Zugänge für Hausverwaltungen</a> für Mietobjekte und Mehrparteienhäuser.',

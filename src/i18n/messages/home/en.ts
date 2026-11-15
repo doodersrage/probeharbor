@@ -79,7 +79,7 @@ const en = {
       'Flood / leak contacts auto-alert when wet, even during snooze or vacation. Add a sump or tank <code>level</code> sensor if you want early-warning rules before water reaches the floor. <a class="text-link" href="/about/ingest-and-webhooks">Flood + level ingest guide</a>',
     stackTitle: "Your sensors, your stack",
     stackCopyHtml:
-      'Temperature, humidity, air quality, doors, leaks, power, and motion on hardware you control. <a class="text-link" href="/about/ingest-and-webhooks">Ingest guide</a> · <a class="text-link" href="/docs/api">HTTP API</a>',
+      'Temperature, humidity, air quality, doors, leaks, power, and motion on hardware you control. The free ESP32 probe firmware installs from your browser, updates itself, keeps readings through Wi-Fi outages and reports its own crashes. <a class="text-link" href="/about/ingest-and-webhooks">Ingest guide</a> · <a class="text-link" href="/docs/api">HTTP API</a>',
     portfolioTitle: "Households to portfolios",
     portfolioCopyHtml:
       'Invite family and share a live link without handing out a password. Pro adds a <a class="text-link" href="/claims-pack">claims evidence pack</a>; Portfolio adds <a class="text-link" href="/property-management">property-manager logins</a> for rentals and multi-unit sites.',

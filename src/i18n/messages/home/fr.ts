@@ -81,7 +81,7 @@ const fr: HomeMessages = {
       'Les contacts d’inondation alertent automatiquement dès qu’ils sont mouillés, même en sourdine ou en vacances. Ajoutez un capteur de <code>level</code> sur un puisard ou une cuve pour des règles d’alerte précoce avant que l’eau n’atteigne le sol. <a class="text-link" href="/about/ingest-and-webhooks">Guide d’ingestion inondation et niveau</a>',
     stackTitle: "Vos capteurs, votre stack",
     stackCopyHtml:
-      'Température, humidité, qualité de l’air, portes, fuites, électricité et mouvement, sur du matériel que vous maîtrisez. <a class="text-link" href="/about/ingest-and-webhooks">Guide d’ingestion</a> · <a class="text-link" href="/docs/api">API HTTP</a>',
+      'Température, humidité, qualité de l’air, portes, fuites, électricité et mouvement, sur du matériel que vous maîtrisez. Le firmware gratuit pour sondes ESP32 s’installe depuis le navigateur, se met à jour tout seul, conserve les mesures pendant les coupures Wi-Fi et signale ses propres plantages. <a class="text-link" href="/about/ingest-and-webhooks">Guide d’ingestion</a> · <a class="text-link" href="/docs/api">API HTTP</a>',
     portfolioTitle: "Des foyers aux parcs immobiliers",
     portfolioCopyHtml:
       'Invitez votre famille et partagez un lien en direct sans communiquer de mot de passe. Pro ajoute un <a class="text-link" href="/claims-pack">dossier de preuves pour sinistre</a> ; Portfolio ajoute des <a class="text-link" href="/property-management">accès gestionnaire</a> pour les locations et les immeubles.',
