@@ -531,9 +531,11 @@ Also seen: another program on the same USB port reset the C3
 (`USB_UART_CHIP_RESET`) and held BOOT during one round, wiping it; runs
 during that window were discarded.
 
-Not checked on hardware: whether the Save button visibly locks (the owner
-wasn't asked before the page closed), the plain ESP32 and the S3 (compile
-only), and /flash with a code.
+The Save button locks while the board joins (owner, phone, 2026-11-16,
+released 1.6.1). After pairing: 25 uploads in 30 minutes, all 200.
+
+Not checked on hardware: the plain ESP32 and the S3 (compile only), and
+/flash with a code.
 
 ## ESP32-C3 SuperMini (Teyleten Robot, native USB only): 2026-11-14
 
