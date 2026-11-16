@@ -543,6 +543,13 @@ installing 1.6.1 from /flash and sending Wi-Fi and the same code: paired;
 server `device_pairings` row used 15:49:55 UTC by chip `ESP32-S3`, device
 reporting 1.6.1, `TT post 200` every minute.
 
+**ESP32-C3 SuperMini, /flash (settings only, already on 1.6.1),
+2026-11-16: passed.** Code used 16:06:44 UTC by chip `ESP32-C3`; `TT
+paired: key saved`, `TT post 200`. The board was mid-upload with a refused
+key when /flash connected (`post -1`), so /flash's 5 s resends queued and
+the board handled three identical TTCFG lines in a row (code saved three
+times, claimed once): harmless, by design of the resend.
+
 Not checked on hardware: the plain ESP32 (compile only); /flash's new
 "firmware too old for a code" message (needs a pre-1.6.0 board).
 
