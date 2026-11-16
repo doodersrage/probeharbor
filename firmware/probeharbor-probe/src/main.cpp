@@ -88,7 +88,7 @@
 #include "ota_pubkey.h"
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.5.2"
+#define FIRMWARE_VERSION "1.6.0"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -377,10 +377,14 @@ String extras;
 
 Preferences prefs;
 WiFiManager wifiManager;
-WiFiManagerParameter keyParam("key", "Device key (Dashboard → Devices)", "", MAX_KEY_LEN);
+WiFiManagerParameter keyParam("key", "Device key or pairing code (Dashboard → Devices)", "", MAX_KEY_LEN);
 WiFiManagerParameter extrasParam("extras", "Also wired (any of: leak, door, battery)", "", MAX_EXTRAS_LEN);
 
 String deviceKey;
+// A pairing code typed where the key goes (1.6.0), traded for the key once
+// Wi-Fi is up (claimPairingCode). Kept in NVS ("pair") across restarts.
+String pairCode;
+unsigned long pairNextTry = 0;
 String serialLine;
 unsigned long lastPost = 0;
 unsigned long resetHeldSince = 0;
@@ -426,7 +430,51 @@ String normalizeKey(String raw) {
   return raw;
 }
 
+/** Letters and digits only, upper-cased: what's left of a typed code. */
+static String alnumUpper(const String& raw) {
+  String s;
+  for (unsigned i = 0; i < raw.length() && s.length() <= 64; i++) {
+    unsigned char ch = (unsigned char)raw[i];
+    if (isalnum(ch)) s += (char)toupper(ch);
+  }
+  return s;
+}
+
+/**
+ * A pairing code (8 characters of 23456789ABCDEFGHJKMNPQRSTUVWXYZ, shown
+ * XXXX-XXXX), normalised, or "". Everything but letters and digits is
+ * ignored: phones send other dashes, non-breaking spaces and full stops
+ * (the first phone test on 2026-11-16 saved a typed code as a key).
+ * Device keys (48 hex characters) are never codes. Matches
+ * src/lib/pairingCode.ts.
+ */
+static String asPairingCode(const String& raw) {
+  static const char* ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  String s = alnumUpper(raw);
+  if (s.length() != 8) return "";
+  for (unsigned i = 0; i < 8; i++) {
+    if (strchr(ALPHABET, s[i]) == nullptr) return "";
+  }
+  return s;
+}
+
 void saveKey(const String &raw) {
+  String code = asPairingCode(raw);
+  if (!code.isEmpty()) {
+    // The current key (if any) keeps working until the claim replaces it.
+    pairCode = code;
+    pairNextTry = 0;
+    prefs.putString("pair", pairCode);
+    Console.println("TT pairing code saved");
+    return;
+  }
+  // Something code-sized that isn't a valid code: never a device key (48
+  // characters), so don't replace the key with it; say so instead.
+  unsigned n = alnumUpper(raw).length();
+  if (n >= 6 && n <= 12) {
+    Console.printf("TT pairing code rejected: not a valid code (%u letters and digits, needs 8)\n", n);
+    return;
+  }
   String key = normalizeKey(raw);
   if (key.isEmpty()) return;
   deviceKey = key;
@@ -650,7 +698,12 @@ void checkResetButton() {
     if (resetHeldSince == 0) resetHeldSince = millis();
     if (millis() - resetHeldSince >= RESET_HOLD_MS) {
       Console.println("TT reset: clearing Wi-Fi and device key");
+      // lowtx describes the board (a C3 SuperMini that only joins at low
+      // power), not the user's settings: keep it, or the setup that follows
+      // fails to join at full power until the portal times out.
+      bool keepLowTx = prefs.getBool("lowtx", false);
       prefs.clear();
+      if (keepLowTx) prefs.putBool("lowtx", true);
       wifiManager.resetSettings();
       delay(500);
       ESP.restart();
@@ -917,6 +970,63 @@ static int postBody(const String& body, String* response = nullptr) {
   }
 #endif
   return code;
+}
+
+/**
+ * Trade the saved pairing code for this probe's device key:
+ * POST /api/pair/claim {code, chip} -> {key, device}. The code works once;
+ * 400/404 (malformed, unknown, used, expired) drop it, anything else
+ * (offline, 429, 5xx) is retried every PAIR_RETRY_MS. Same certificate
+ * policy as uploads.
+ */
+static const unsigned long PAIR_RETRY_MS = 30000UL;
+
+static void claimPairingCode(unsigned long now) {
+  if (pairCode.isEmpty() || WiFi.status() != WL_CONNECTED) return;
+  if (pairNextTry != 0 && (long)(now - pairNextTry) < 0) return;
+  pairNextTry = (now + PAIR_RETRY_MS) == 0 ? 1 : now + PAIR_RETRY_MS;
+  esp_task_wdt_reset();
+
+  WiFiClientSecure client;
+  if (tlsUnverified) client.setInsecure();
+  else client.setCACert(CA_ROOTS_PEM);
+  client.setHandshakeTimeout(20);
+  HTTPClient http;
+  http.setConnectTimeout(10000);
+  http.setTimeout(15000);
+  if (!http.begin(client, String("https://") + INGEST_HOST + "/api/pair/claim")) {
+    Console.println("TT pairing: could not open connection, retrying");
+    return;
+  }
+  http.addHeader("Content-Type", "application/json");
+  int code = http.POST(String("{\"code\":\"") + pairCode + "\",\"chip\":\"" + ESP.getChipModel() + "\"}");
+  String response = code > 0 ? http.getString() : String();
+  http.end();
+  if (!tlsUnverified) noteCertificateCheck(client, code);
+
+  if (code == 200) {
+    int at = response.indexOf("\"key\":\"");
+    int end = at < 0 ? -1 : response.indexOf('"', at + 7);
+    String key = end < 0 ? String() : response.substring(at + 7, end);
+    bool hex = key.length() >= 16 && key.length() <= MAX_KEY_LEN;
+    for (unsigned i = 0; hex && i < key.length(); i++) hex = isxdigit((unsigned char)key[i]);
+    if (!hex) {
+      Console.println("TT pairing: unexpected answer, retrying");
+      return;
+    }
+    deviceKey = key;
+    prefs.putString("key", deviceKey);
+    prefs.remove("pair");
+    pairCode = "";
+    Console.println("TT paired: key saved");
+    postNow = true;
+  } else if (code == 400 || code == 404) {
+    prefs.remove("pair");
+    pairCode = "";
+    Console.println("TT pairing code rejected: get a new code from Dashboard → Devices");
+  } else {
+    Console.printf("TT pairing: server said %d, retrying in 30 s\n", code);
+  }
 }
 
 static void reportKeyProblem(int code) {
@@ -1350,6 +1460,7 @@ void setup() {
   probes.begin();
   prefs.begin("probeharbor", false);
   deviceKey = prefs.getString("key", "");
+  pairCode = prefs.getString("pair", "");
   applyExtras(prefs.getString("extras", ""));
   extrasParam.setValue(extras.c_str(), MAX_EXTRAS_LEN);
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
@@ -1426,6 +1537,7 @@ void loop() {
     Console.println("TT clock set");
   }
   otaTick(now);
+  claimPairingCode(now);
 
   // A router that boots slower than this board (after a power cut) must not
   // leave the probe parked in the setup portal: once the portal has timed out
@@ -1448,7 +1560,7 @@ void loop() {
   lastPost = now == 0 ? 1 : now;
 
   if (deviceKey.isEmpty()) {
-    Console.println("TT waiting for device key");
+    Console.println(pairCode.isEmpty() ? "TT waiting for device key" : "TT waiting to pair");
     return;
   }
   if (WiFi.status() != WL_CONNECTED && !firstPostDone && !clockValid()) {

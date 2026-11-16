@@ -460,6 +460,35 @@ file named by the hash; harmless to keep).
 5. With `TTTEST<TAB>fail 120` before step 2: the report survives failed
    posts and goes with the first accepted one.
 
+## 15. Pairing codes (1.6.0, source only)
+
+The key box (phone setup page, /flash) also takes a pairing code from the
+device page's "Pair a probe" (XXXX-XXXX, 30 minutes, single use). 1.6.0
+prints `TT pairing code saved`, keeps any current key, and once Wi-Fi is up
+posts the code to `/api/pair/claim`: `TT paired: key saved` on success, then
+uploads with the new key. An unknown, used or expired code prints
+`TT pairing code rejected: …`; offline, 429 and 5xx retry every 30 s.
+Anything 6–12 letters and digits long that isn't a valid code is refused
+the same way and never replaces the key.
+
+**ESP32-C3 SuperMini (2026-11-16), against production, phone setup page:
+passed on the second try.** First try (first 1.6.0 build): the code typed
+on the phone printed `TT key saved` (taken as a key) and the code was never
+claimed. Likely cause: the phone sent a character other than an ASCII
+space or hyphen, which that build didn't ignore; what was typed wasn't
+captured. The same first try also showed the BOOT reset clearing the
+C3's low-power Wi-Fi flag, so the portal's join failed (reason 39) until the
+portal timed out. Fixed in the build that passed: letters and digits only
+(probe and server), code-sized junk refused, `lowtx` kept across the
+reset (after the reflash: `retrying at low transmit power`, `joined at low
+transmit power`). Second try: BOOT held 5 s (`TT reset: …`), the setup page
+on the phone with Wi-Fi and the code: `TT pairing code saved` (07:31:11),
+`TT paired: key saved` (07:31:20), `TT post 200 probes=1 buffered=0` (the 3
+readings held while it had the bad key went too). Server:
+`device_pairings` row used at 12:31:19 UTC by chip `ESP32-C3`; the device
+reports firmware 1.6.0. Not yet tested on hardware: /flash with a code,
+the plain ESP32 and the S3 (same code path; compile only).
+
 ## ESP32-C3 SuperMini (Teyleten Robot, native USB only): 2026-11-14
 
 A new board, blank flash (ROM: `invalid header: 0xffffffff`, reset every

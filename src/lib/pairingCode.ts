@@ -3,7 +3,7 @@
  * key (IMPLEMENTATION_LOG.md, "Pairing codes").
  *
  * 8 characters from an alphabet without look-alikes (no 0/O, 1/I/L), shown
- * as XXXX-XXXX; case, spaces and hyphens don't matter when typed. 31^8 ≈
+ * as XXXX-XXXX; case and anything but letters and digits are ignored. 31^8 ≈
  * 8.5 × 10^11 codes; each is single-use and lasts 30 minutes, and the claim
  * endpoint is rate-limited, so guessing a live one is not practical. Only the
  * SHA-256 of the normalised code is stored.
@@ -37,7 +37,8 @@ export function formatPairingCode(code: string): string {
  * characters) are never codes.
  */
 export function normalizePairingCode(input: string): string | null {
-  const s = input.replace(/[\s-]/g, "").toUpperCase();
+  // Letters and digits only: phones insert other dashes, non-breaking spaces, full stops.
+  const s = input.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
   if (s.length !== PAIRING_CODE_LENGTH) return null;
   for (const ch of s) if (!PAIRING_ALPHABET.includes(ch)) return null;
   return s;

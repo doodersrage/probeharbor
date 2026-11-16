@@ -6544,3 +6544,15 @@ Evidence: `e2e/device-ingest.spec.ts` run locally against a copy of the e2e
 database with 0008 applied: 3 passed (clicks Pair a probe, claims the shown
 code in lowercase, second claim 404, old key 401, new key uploads).
 `pnpm test` 3795, typecheck 0 errors.
+
+Step 3 (firmware 1.6.0, unreleased): the key box takes a code; the probe
+claims it after Wi-Fi (`TT pairing code saved` → `TT paired: key saved`,
+`TT pairing code rejected` for 400/404 or a code-sized non-code); /flash
+follows those lines (a21b316). Admins see Pair a probe before release.
+Hardware: ESP32-C3 SuperMini via the phone setup page, passed on the second
+try (HARDWARE-TESTS.md test 15). The first try found that phone input can
+carry characters beyond ASCII space/hyphen, so codes are now letters and
+digits only on both sides, and that the BOOT reset cleared the C3's
+low-power Wi-Fi flag (now kept). Release = `pnpm firmware:build` + owner
+signs ota.json; publishing 1.6.0 also turns Pair a probe on for everyone
+(`pairingAvailable()` reads the manifest version).

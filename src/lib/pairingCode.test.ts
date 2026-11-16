@@ -25,7 +25,15 @@ describe("pairing codes", () => {
 
   it("are shown as XXXX-XXXX and read back however they're typed", () => {
     expect(formatPairingCode("K7QF3XZ9")).toBe("K7QF-3XZ9");
-    for (const typed of ["K7QF-3XZ9", "k7qf3xz9", " k7qf - 3xz9 ", "K7QF 3XZ9"]) {
+    for (const typed of [
+      "K7QF-3XZ9",
+      "k7qf3xz9",
+      " k7qf - 3xz9 ",
+      "K7QF 3XZ9",
+      "K7QF\u20133XZ9",
+      "K7QF\u00a03XZ9.",
+      "K7QF\u20113XZ9",
+    ]) {
       expect(normalizePairingCode(typed)).toBe("K7QF3XZ9");
     }
   });
