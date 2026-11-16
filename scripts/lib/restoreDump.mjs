@@ -24,6 +24,38 @@ export function stripVendorColumnOptions(sql) {
 }
 
 /**
+ * Roles the dump's row-level policies are granted to (`CREATE POLICY … TO
+ * role`). Roles live outside a database dump, so a fresh server lacks them
+ * (e.g. migration 0005's migration_reader) and the policy fails to restore.
+ */
+export function policyRoles(sql) {
+  const roles = new Set();
+  for (const m of sql.matchAll(
+    /^CREATE POLICY [\s\S]*?\bTO ([^;]+?)(?:\s+USING|\s+WITH CHECK|;)/gm,
+  )) {
+    for (const r of m[1].split(",")) {
+      const name = r.trim().replace(/^"(.*)"$/, "$1");
+      if (
+        name &&
+        !["public", "current_user", "session_user", "current_role"].includes(name.toLowerCase())
+      )
+        roles.add(name);
+    }
+  }
+  return [...roles];
+}
+
+/** SQL that creates each role (no login) when missing. */
+export function ensureRolesSql(roles) {
+  return roles
+    .map(
+      (r) =>
+        `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${r.replace(/'/g, "''")}') THEN CREATE ROLE "${r.replace(/"/g, '""')}" NOLOGIN; END IF; END $$;\n`,
+    )
+    .join("");
+}
+
+/**
  * pg_restore → SQL (no owners, no privileges), filtered, then psql in one
  * transaction with ON_ERROR_STOP. `env` carries the target's PG* settings.
  */
@@ -34,7 +66,7 @@ export function restoreDumpPortably(dumpFile, env, workFile) {
   });
   if (r.status !== 0) throw new Error(`pg_restore (to SQL) failed (exit ${r.status})`);
   const { sql, removed } = stripVendorColumnOptions(readFileSync(workFile, "utf8"));
-  writeFileSync(workFile, sql);
+  writeFileSync(workFile, ensureRolesSql(policyRoles(sql)) + sql);
   r = spawnSync(
     "psql",
     ["--no-psqlrc", "--quiet", "--single-transaction", "-v", "ON_ERROR_STOP=1", "--file", workFile],

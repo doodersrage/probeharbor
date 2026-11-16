@@ -26,3 +26,18 @@ describe("stripVendorColumnOptions (Layerbase dumps → plain Postgres)", () => 
     expect(stripVendorColumnOptions(sql)).toEqual({ sql, removed: 0 });
   });
 });
+
+describe("policy roles (restores into a fresh server)", () => {
+  it("finds the roles policies are granted to, not public", async () => {
+    const { policyRoles, ensureRolesSql } = await import("../../scripts/lib/restoreDump.mjs");
+    const sql = [
+      "CREATE POLICY migration_reader_select ON public.schema_migrations FOR SELECT TO migration_reader USING (true);",
+      'CREATE POLICY p2 ON public.t TO "Odd Role", public WITH CHECK (true);',
+      "CREATE POLICY p3 ON public.t USING (true);",
+    ].join("\n");
+    expect(policyRoles(sql).sort()).toEqual(["Odd Role", "migration_reader"]);
+    expect(ensureRolesSql(["migration_reader"])).toBe(
+      "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'migration_reader') THEN CREATE ROLE \"migration_reader\" NOLOGIN; END IF; END $$;\n",
+    );
+  });
+});
