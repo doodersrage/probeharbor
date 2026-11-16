@@ -171,9 +171,21 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     needs: build
-    # Authenticated specs sign in against the Neon dev branch (see the step
-    # before test:e2e). Stripe values are inlined at build time, so they mirror
-    # deploy.yml.
+    # Authenticated specs run against a local copy of the e2e database (one
+    # test account; see the steps before test:e2e). Stripe values are inlined
+    # at build time, so they mirror deploy.yml.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: ci-local-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       SITE_URL: ${{ secrets.SITE_URL || 'https://probeharbor.dev' }}
       ORIGIN: ${{ secrets.ORIGIN || 'https://probeharbor.dev' }}
@@ -199,8 +211,10 @@ jobs:
       E2E_TEST_PASSWORD: ${{ secrets.SUPABASE_E2E_TEST_PASSWORD }}
       # Inbox the owner controls; household-invites.spec.ts sends real invites there.
       E2E_INVITE_EMAIL: ${{ secrets.E2E_INVITE_EMAIL }}
-      # The preview's database and secret; e2e/helpers/auth.ts signs in with them too.
+      # Source of the local copy (the Layerbase e2e database, pruned to the test
+      # account with scripts/db-prune-to-account.mjs); never production.
       E2E_DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
+      E2E_LOCAL_DATABASE_URL: postgres://postgres:ci-local-only@127.0.0.1:5432/e2e
       E2E_BETTER_AUTH_SECRET: ${{ secrets.E2E_BETTER_AUTH_SECRET }}
     steps:
       - uses: actions/checkout@v5
@@ -216,24 +230,31 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm build || (rm -rf node_modules/.vite && pnpm build)
-      # Signed-in specs use a test database holding only the e2e account
-      # (scripts/db-prune-to-account.mjs), never production. The preview reads
-      # dist/server/.dev.vars as Worker secrets at runtime, so these aren't
-      # baked into the build. A Neon URL uses Neon's HTTP driver; anything else
-      # (Layerbase) goes through the local Hyperdrive stand-in.
-      - name: Database for signed-in specs
+      # Copy the e2e database into this job's Postgres, so every query is local
+      # (through the remote database each page took seconds) and every run
+      # starts from the same snapshot. The preview reads dist/server/.dev.vars
+      # as Worker secrets; the local Hyperdrive stand-in points at the copy.
+      - name: Postgres 18 client
+        if: env.E2E_DATABASE_URL != ''
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common >/dev/null
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y >/dev/null
+          sudo apt-get install -y -qq postgresql-client-18 >/dev/null
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+      - name: Local copy of the e2e database
+        if: env.E2E_DATABASE_URL != ''
+        run: |
+          psql "postgres://postgres:ci-local-only@127.0.0.1:5432/postgres" -qc "create database e2e"
+          node scripts/db-copy.mjs --env-file /dev/null --from-env E2E_DATABASE_URL --to-env E2E_LOCAL_DATABASE_URL
           mkdir -p dist/server
-          printf 'DATABASE_URL="%s"\nBETTER_AUTH_SECRET="%s"\n' "$E2E_DATABASE_URL" "$E2E_BETTER_AUTH_SECRET" >> dist/server/.dev.vars
-          case "$E2E_DATABASE_URL" in
-            *neon.tech*) ;;
-            ?*)
-              printf 'DATABASE_DRIVER="hyperdrive"\n' >> dist/server/.dev.vars
-              echo "CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=$E2E_DATABASE_URL" >> "$GITHUB_ENV"
-              ;;
-          esac
+          printf 'DATABASE_URL="%s"\nDATABASE_DRIVER="hyperdrive"\nBETTER_AUTH_SECRET="%s"\n' "$E2E_LOCAL_DATABASE_URL" "$E2E_BETTER_AUTH_SECRET" >> dist/server/.dev.vars
+          echo "CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=$E2E_LOCAL_DATABASE_URL" >> "$GITHUB_ENV"
       # Do not set PLAYWRIGHT_BASE_URL here — that disables webServer and nothing listens on :4321.
+      # e2e/helpers/auth.ts signs in against the same local copy.
       - run: pnpm test:e2e
+        env:
+          E2E_DATABASE_URL: ${{ secrets.E2E_DATABASE_URL != '' && 'postgres://postgres:ci-local-only@127.0.0.1:5432/e2e' || '' }}
 
   lighthouse:
     runs-on: ubuntu-latest
