@@ -6481,3 +6481,24 @@ non-empty target). Rehearsed: Layerbase production → plain Postgres 18, 54
 tables / 301,914 rows equal (db-copy) and 301,924 rows (db-restore), 479
 options left out. `deploy.md`'s restore steps updated. Unit tests for the
 filter (exactly those lines; data rows and other ALTERs untouched).
+
+### CI e2e database moved to Layerbase (2026-11-15/16)
+
+The Neon e2e branch disappeared a second time (password rejected a day
+after creation). New e2e database: a Layerbase branch of production, pruned
+to the e2e test account with `scripts/db-prune-to-account.mjs` (owner's
+choice: no other users' data in CI): 283,088 rows deleted, 1 account / 1
+household / 1 device kept, 56 FKs and 8 email columns checked; production
+refused by the script's guard. `E2E_DATABASE_URL` is its **pooled** string:
+the database allows 20 direct connections (20 of 40 concurrent succeeded;
+pooled: 40 of 40).
+
+Running the preview on it directly failed: through the local Hyperdrive
+stand-in every query opened a TLS connection from GitHub to Layerbase, so
+pages took seconds and specs timed out (5 failed). Now the e2e job copies
+the e2e database into its own Postgres 18 service with `db-copy.mjs` and
+runs against that: every query local, every run from the same snapshot.
+Found on the way: a restore into a fresh server failed on 0005's policy
+(`role "migration_reader" does not exist`); the restore now creates roles
+named by policies first (rehearsed into a brand-new Postgres). Result: CI
+green, e2e 3 minutes. The long device spec got 90 s.

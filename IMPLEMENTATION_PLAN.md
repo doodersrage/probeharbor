@@ -92,7 +92,7 @@ decision with its test and hardware evidence) is
 2. **Neon:** production moved to Layerbase 2026-11-15 (log: "Cutover to
    Layerbase"). Neon is the untouched fallback until ~2026-11-22; then the
    owner deletes the project and cancels the plan, and the Worker's
-   `DATABASE_URL` and CI's e2e database move to Layerbase.
+   `DATABASE_URL` moves to Layerbase (CI's e2e database already did, 2026-11-16).
 3. **Layerbase:** watch the scheduled history job's run time (30 s on the
    first run vs Neon's 22 s average).
 4. **Firmware 1.5.1 released** (2026-11-14, OTA rollout 10%): crash
