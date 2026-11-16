@@ -12,6 +12,11 @@ const de: FlashMessages = {
   breadcrumbFlash: "Web-Flasher",
   faqs: [
     {
+      question: "Muss ich den langen Geräteschlüssel eintippen?",
+      answer:
+        "Nein. Tippe auf der Seite des Geräts auf Sonde koppeln und gib den angezeigten kurzen Code (z. B. K7QF-3XZ9) dort ein, wo die Platine ihren Geräteschlüssel verlangt, auf dieser Seite oder im Netz ProbeHarbor-Setup. Die Platine tauscht ihn gegen ihren Schlüssel, sobald sie online ist. Ein Code gilt einmal und 30 Minuten; bei einem vertippten, benutzten oder abgelaufenen Code meldet die Platine eine Ablehnung: erstelle dann einen neuen. Braucht Firmware 1.6.0 oder neuer.",
+    },
+    {
       question: "Was brauche ich?",
       answer:
         "Ein ESP32-Board (getestet sind der originale ESP32, der ESP32-S3 und der ESP32-C3), einen wasserdichten DS18B20-Fühler oder einen DHT22-Sensor für Temperatur und Luftfeuchtigkeit (ein DHT11 wird unterstützt, ist aber noch nicht auf Hardware getestet) mit 4,7-kΩ-Pull-up-Widerstand an GPIO 4, ein USB-Datenkabel sowie Chrome oder Edge auf einem Desktop-PC oder Laptop.",
@@ -83,7 +88,7 @@ const de: FlashMessages = {
   featherHtml:
     "<strong>Adafruit Feather (HUZZAH32 oder ESP32 Feather V2):</strong> Nimm die ESP32-Spalte. Die Fühlerdaten (GPIO 4) liegen am Pin mit der Beschriftung A5, der Türschalter (GPIO 26) an A0, und der Leckkontakt kommt an Pin 27. Der Akku-Spannungsteiler ist schon auf dem Board: Steck einen LiPo-Akku in die Akkubuchse und hake Akku an, Widerstände brauchst du nicht. Ein I²C-Sensor kommt an die SDA/SCL-Pins des Feather oder an seinen STEMMA-QT-Port; die Firmware findet ihn beim Start (nach dem Anstecken einmal stromlos machen). Feathers haben keine BOOT-Taste an GPIO 0, daher funktioniert der 5-Sekunden-Reset nicht; um das WLAN zu wechseln, sende stattdessen neue Einstellungen über diese Seite.",
   deviceKeyHtml:
-    'Lege unter <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> ein Push-Gerät an und kopiere seinen Geräteschlüssel. Im kostenlosen Tarif sind zwei Geräte enthalten.',
+    'Lege unter <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> ein Push-Gerät an und kopiere seinen Geräteschlüssel. Im kostenlosen Tarif sind zwei Geräte enthalten. Auf der Seite des Geräts liefert <strong>Sonde koppeln</strong> einen kurzen Code (z. B. K7QF-3XZ9, 30 Minuten gültig), den du statt des Schlüssels eingeben kannst (Firmware 1.6.0+).',
   buyTitle: "Was du kaufen solltest",
   buyIntro:
     "Teile, die zu den Pins oben passen. Ein normaler ESP32, ein ESP32-S3 oder ein ESP32-C3 ist eine getestete Wahl. Die S3- und C3-Links führen zu Espressifs eigenen Entwicklerboards, für die die Firmware gebaut ist; sind sie ausverkauft, sollte auch ein anderes ESP32-S3-DevKitC-1- oder ESP32-C3-DevKitM-1-Board (oder ein Klon mit derselben Pinbelegung) funktionieren. Auch ein ESP32-C3 SuperMini ist getestet (ein DHT22 an GPIO 4, das Einrichtungsportal und der BOOT-Reset); diese kleinen Boards erreichen das WLAN mit voller Sendeleistung nicht, deshalb senkt die Firmware sie automatisch.",

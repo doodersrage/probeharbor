@@ -12,6 +12,11 @@ const ptBr: FlashMessages = {
   breadcrumbFlash: "Gravador web",
   faqs: [
     {
+      question: "Preciso digitar a chave longa do dispositivo?",
+      answer:
+        "Não. Na página do dispositivo, toque em Parear uma sonda e digite o código curto exibido (como K7QF-3XZ9) onde a placa pede a chave, nesta página ou na rede ProbeHarbor-Setup. A placa troca o código pela chave assim que fica online. Um código vale uma vez e dura 30 minutos; a placa avisa que o código foi recusado se estiver errado, usado ou expirado: crie um novo. Requer firmware 1.6.0 ou mais recente.",
+    },
+    {
       question: "Do que eu preciso?",
       answer:
         "Uma placa ESP32 (o ESP32 original, o ESP32-S3 e o ESP32-C3 estão testados), uma sonda DS18B20 à prova d’água ou um sensor de temperatura e umidade DHT22 (o DHT11 é suportado, mas ainda não foi testado em hardware) com um resistor pull-up de 4,7 kΩ no GPIO 4, um cabo USB de dados e o Chrome ou o Edge em um computador ou notebook.",
@@ -83,7 +88,7 @@ const ptBr: FlashMessages = {
   featherHtml:
     "<strong>Adafruit Feather (HUZZAH32 ou ESP32 Feather V2):</strong> use a coluna ESP32. Os dados da sonda (GPIO 4) vão no pino marcado A5, o interruptor da porta (GPIO 26) no A0 e o contato de vazamento no pino 27. O divisor da bateria já está na placa: conecte uma LiPo no conector de bateria e marque bateria, sem resistores. Um sensor I²C vai nos pinos SDA/SCL da própria Feather ou na porta STEMMA QT; o firmware o encontra na inicialização (desligue e religue a alimentação depois de conectar). As Feather não têm botão BOOT no GPIO 0, então o reset de 5 segundos não funciona; para trocar o Wi-Fi, envie novas configurações por esta página.",
   deviceKeyHtml:
-    'Adicione um dispositivo push em <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> e copie a chave do dispositivo. O plano gratuito inclui dois dispositivos.',
+    'Adicione um dispositivo push em <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> e copie a chave do dispositivo. O plano gratuito inclui dois dispositivos. Na página do dispositivo, <strong>Parear uma sonda</strong> dá um código curto (como K7QF-3XZ9, válido por 30 minutos) para digitar no lugar da chave (firmware 1.6.0+).',
   buyTitle: "O que comprar",
   buyIntro:
     "Peças que combinam com os pinos acima. Um ESP32 comum, um ESP32-S3 ou um ESP32-C3 é uma opção testada. Os links S3 e C3 são das placas de desenvolvimento da própria Espressif, para as quais o firmware foi compilado; se estiverem esgotadas, outra placa ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou um clone com a mesma pinagem) também deve funcionar. Um ESP32-C3 SuperMini também foi testado (um DHT22 no GPIO 4, o portal de configuração e o reset pelo BOOT); essas placas pequenas não alcançam o Wi-Fi na potência máxima, então o firmware a reduz automaticamente.",

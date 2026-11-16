@@ -11,6 +11,11 @@ const en = {
   breadcrumbFlash: "Browser flasher",
   faqs: [
     {
+      question: "Do I have to type the long device key?",
+      answer:
+        'No. On the device\'s page, tap Pair a probe and type the short code it shows (like K7QF-3XZ9) where the board asks for its device key, on this page or on the ProbeHarbor-Setup network. The board trades it for its key once it is online. A code works once and lasts 30 minutes; the board says "Pairing code rejected" for one that is mistyped, used or expired, so make a new one. Needs firmware 1.6.0 or newer.',
+    },
+    {
       question: "What do I need?",
       answer:
         "An ESP32 board (the original ESP32, the ESP32-S3 and the ESP32-C3 are tested), a waterproof DS18B20 probe or a DHT22 temperature and humidity sensor (a DHT11 is supported but not yet hardware-tested) with a 4.7kΩ pull-up resistor on GPIO 4, a USB data cable, and Chrome or Edge on a desktop or laptop.",
@@ -82,7 +87,7 @@ const en = {
   featherHtml:
     "<strong>Adafruit Feather (HUZZAH32 or ESP32 Feather V2):</strong> use the ESP32 column. Probe data (GPIO 4) is the pin labelled A5, the door switch (GPIO 26) is A0, and the leak contact goes on pin 27. The battery divider is already on the board: plug a LiPo into the battery connector and tick battery, no resistors needed. An I²C sensor goes on the Feather's own SDA/SCL pins or its STEMMA QT port; the firmware finds it there at startup (power-cycle after plugging one in). Feathers have no BOOT button on GPIO 0, so the 5-second reset won't work; to change Wi-Fi, send new settings from this page instead.",
   deviceKeyHtml:
-    'Add a push device under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> and copy its device key. The free plan includes two devices.',
+    'Add a push device under <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> and copy its device key. The free plan includes two devices. On the device\'s page, <strong>Pair a probe</strong> gives a short code (like K7QF-3XZ9, valid 30 minutes) you can type instead of the key (firmware 1.6.0+).',
   buyTitle: "What to buy",
   buyIntro:
     "Parts that match the pins above. A plain ESP32, an ESP32-S3 or an ESP32-C3 is a tested choice. The S3 and C3 links are Espressif's own dev boards, which the firmware is built for; when they're sold out, another ESP32-S3-DevKitC-1 or ESP32-C3-DevKitM-1 board (or a clone with the same pinout) should work too. An ESP32-C3 SuperMini is tested too (a DHT22 on GPIO 4, the setup portal and the BOOT reset); these small boards can't reach Wi-Fi at full power, so the firmware lowers it for them automatically.",

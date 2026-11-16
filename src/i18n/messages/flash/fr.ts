@@ -12,6 +12,11 @@ const fr: FlashMessages = {
   breadcrumbFlash: "Outil de flashage web",
   faqs: [
     {
+      question: "Dois-je saisir la longue clé d’appareil ?",
+      answer:
+        "Non. Sur la page de l’appareil, touchez Appairer une sonde et saisissez le code court affiché (comme K7QF-3XZ9) là où la carte demande sa clé, sur cette page ou sur le réseau ProbeHarbor-Setup. La carte l’échange contre sa clé une fois connectée. Un code sert une fois et dure 30 minutes ; la carte signale un code refusé s’il est mal saisi, déjà utilisé ou expiré : créez-en un nouveau. Nécessite le firmware 1.6.0 ou plus récent.",
+    },
+    {
       question: "De quoi ai-je besoin ?",
       answer:
         "Une carte ESP32 (l’ESP32 d’origine, l’ESP32-S3 et l’ESP32-C3 sont testés), une sonde étanche DS18B20 ou un capteur de température et d’humidité DHT22 (le DHT11 est pris en charge, mais pas encore testé sur du matériel) avec une résistance de tirage de 4,7 kΩ sur GPIO 4, un câble USB de données, et Chrome ou Edge sur un ordinateur fixe ou portable.",
@@ -83,7 +88,7 @@ const fr: FlashMessages = {
   featherHtml:
     "<strong>Adafruit Feather (HUZZAH32 ou ESP32 Feather V2) :</strong> utilisez la colonne ESP32. Les données de la sonde (GPIO 4) vont sur la broche marquée A5, l’interrupteur de porte (GPIO 26) sur A0 et le contact de fuite sur la broche 27. Le pont diviseur de batterie est déjà sur la carte : branchez une LiPo sur le connecteur batterie et cochez batterie, sans résistance. Un capteur I²C se branche sur les broches SDA/SCL de la Feather ou sur son port STEMMA QT ; le firmware le détecte au démarrage (coupez et remettez l’alimentation après l’avoir branché). Les Feather n’ont pas de bouton BOOT sur GPIO 0, donc la réinitialisation de 5 secondes ne fonctionne pas ; pour changer de Wi-Fi, envoyez plutôt de nouveaux réglages depuis cette page.",
   deviceKeyHtml:
-    'Ajoutez un appareil push dans <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> et copiez sa clé d’appareil. L’offre gratuite inclut deux appareils.',
+    'Ajoutez un appareil push dans <a class="text-link" href="/dashboard/devices">Dashboard → Devices</a> et copiez sa clé d’appareil. L’offre gratuite inclut deux appareils. Sur la page de l’appareil, <strong>Appairer une sonde</strong> donne un code court (comme K7QF-3XZ9, valable 30 minutes) à saisir à la place de la clé (firmware 1.6.0+).',
   buyTitle: "Quoi acheter",
   buyIntro:
     "Des pièces qui correspondent aux broches ci-dessus. Un ESP32 classique, un ESP32-S3 ou un ESP32-C3 est un choix testé. Les liens S3 et C3 renvoient aux cartes de développement d’Espressif, pour lesquelles le firmware est compilé ; en cas de rupture, une autre carte ESP32-S3-DevKitC-1 ou ESP32-C3-DevKitM-1 (ou un clone au brochage identique) devrait aussi fonctionner. Un ESP32-C3 SuperMini a aussi été testé (un DHT22 sur le GPIO 4, le portail de configuration et la réinitialisation par BOOT) ; ces petites cartes n’atteignent pas le Wi-Fi à pleine puissance, le firmware la réduit donc automatiquement.",

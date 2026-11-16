@@ -19,6 +19,25 @@ After you create a push device, Devices shows **Waiting for the first reading** 
 - Key typo or old key after **rotate**
 - Extra whitespace in firmware URL
 - Posting to the wrong host (`workers.dev` vs `probeharbor.dev`) — prefer the apex
+- A pairing code typed into firmware older than 1.6.0 (it's stored as a key): update the firmware, or use the full key
+
+## "Pairing code rejected"
+
+A pairing code (device page → **Pair a probe**, `XXXX-XXXX`) is typed where a
+probe asks for its device key, on its setup page or on `/flash`. It works
+once and for 30 minutes, and making a new code for a device cancels its
+unused one. Firmware 1.6.0+ prints `TT pairing code rejected` when:
+
+- the server doesn't know the code (mistyped, already used, expired, or
+  replaced by a newer one): make a new code and type it again;
+- what was typed isn't 8 letters and digits (`not a valid code`).
+
+The probe keeps whatever key it had, so a probe that was already reporting
+carries on. Older firmware stores a code as if it were a key and then gets
+401: update it on `/flash`, or paste the full device key instead.
+`TT pairing: no answer …, retrying` means it couldn't reach the server over a
+verified connection yet (Wi-Fi, DNS, clock or certificate); it retries
+every 30 s while the code is valid.
 
 ## Device online but Overview is empty
 
@@ -31,6 +50,7 @@ After you create a push device, Devices shows **Waiting for the first reading** 
 - Copy from the 30-minute callout right after device creation  
 - **Reveal ingest key** on the device card (requires operator `INGEST_KEY_ENCRYPTION_SECRET`)  
 - **Rotate key** to issue a new one (update firmware with the new URL)
+- Or skip it: **Pair a probe** on the device page gives a short code the probe trades for a new key (firmware 1.6.0+; the old key stops working)
 
 ## Alerts not arriving
 
