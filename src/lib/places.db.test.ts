@@ -163,7 +163,9 @@ describe("freeze map (Neon)", () => {
       ["", 1],
       ["", 2],
     ]);
-    const json = JSON.stringify(rows);
+    // Without captured_at: a time such as 16:23:33.574 contains "33.5" and made
+    // this fail by chance (CI, 2026-11-16).
+    const json = JSON.stringify(rows.map(({ captured_at: _time, ...rest }) => rest));
     for (const leaked of ["28.75", "31.5", "33.5", "32.5", "46.7867", "Burlington", "Duluth"])
       expect(json).not.toContain(leaked);
     await expect(listFreezeMapSparklines()).resolves.toEqual(new Map());
