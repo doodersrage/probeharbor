@@ -158,6 +158,8 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
         const startedAt = Date.now();
         let lastSent = 0;
         let acknowledged = false;
+        // With a pairing code, "live" needs the board to have traded it for its key.
+        let paired = false;
         let sensorName: string | null = null;
         // Last failed upload the board reported; it keeps retrying, so this is
         // shown while we wait and kept if no reading arrives in time.
@@ -200,7 +202,20 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
               // Funnel: device created → settings on the board → first reading.
               trackProductEvent("flasher_settings_sent");
             } else if (line === "TT paired: key saved") {
+              paired = true;
               status.textContent = text.paired ?? "";
+            } else if (
+              (!acknowledged &&
+                /^TT (post |key rejected|wifi failed|no probe|nothing sent)/.test(line)) ||
+              (sentCode && !paired && /^TT (post |key rejected)/.test(line))
+            ) {
+              // From the board's old settings: an already-configured board
+              // restarts when the port opens and uploads with its old key before
+              // it reads ours. Counting that "post 200" as live stopped /flash
+              // listening, and the new settings went unconfirmed (found
+              // 2026-11-16 with a plain ESP32 on 1.5.2 given a code). With a code,
+              // uploads before "paired" still use the old key, so they don't count
+              // either; a wrong Wi-Fi password does.
             } else if (line === "TT wifi ok") {
               status.textContent = text.wifiOk ?? "";
             } else if (line.startsWith("TT sensor: ")) {
