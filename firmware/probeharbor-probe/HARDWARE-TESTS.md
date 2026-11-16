@@ -550,8 +550,22 @@ key when /flash connected (`post -1`), so /flash's 5 s resends queued and
 the board handled three identical TTCFG lines in a row (code saved three
 times, claimed once): harmless, by design of the resend.
 
-Not checked on hardware: the plain ESP32 (compile only); /flash's new
-"firmware too old for a code" message (needs a pre-1.6.0 board).
+**Plain ESP32 (CP2102, AHT20; the owner's "House Living Room" probe),
+2026-11-16, /flash: passed after a /flash fix.** On 1.5.2 with a working
+key, settings sent with a code but no install: the board restarted when
+the port opened and uploaded with its old key (`post 200`), /flash took
+that as live and stopped listening, and the board then stored the code as
+its key unseen (`post 401`, probe offline). /flash now ignores results from
+before "settings received", and with a code counts live only after
+"paired" (683eb55). Then install 1.6.1 from /flash and the code: `pairing
+code saved`, `wifi ok`, `paired: key saved`, `post 200`; server: used
+16:23:08 UTC by chip `ESP32-D0WD-V3`, House Living Room on 1.6.1 and
+reporting. 1.6.1 printed `setup network: low transmit power` on this board
+although only the C3 lowers it (message fixed in source, unreleased).
+
+Not checked on hardware: /flash's "firmware too old for a code" message
+(needs a pre-1.6.0 board; on the plain ESP32 it was hidden by the bug
+above); the fixed flasher with an already-configured board.
 
 ## ESP32-C3 SuperMini (Teyleten Robot, native USB only): 2026-11-14
 

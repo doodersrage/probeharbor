@@ -1528,10 +1528,13 @@ void setup() {
   wifiManager.addParameter(&keyParam);
   wifiManager.addParameter(&extrasParam);
   wifiManager.setSaveParamsCallback(onPortalParamsSaved);
+#if CONFIG_IDF_TARGET_ESP32C3
+  // Only the C3 lowers it (1.6.1 printed this line on every board).
   wifiManager.setAPCallback([](WiFiManager*) {
     setupNetworkAtLowPower();
     Console.println("TT setup network: low transmit power");
   });
+#endif
   wifiManager.setConfigPortalBlocking(false);
   wifiManager.setConfigPortalTimeout(PORTAL_TIMEOUT_S);
   // A board with the right password joins in a few seconds; a C3 SuperMini at
