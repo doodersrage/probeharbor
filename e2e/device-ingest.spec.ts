@@ -18,6 +18,9 @@ test.describe("device ingest", () => {
 
   test("create device, POST a reading, see it land, then clean up", async ({ page }) => {
     test.skip(!getE2ECredentials(), "Set E2E_TEST_EMAIL and E2E_TEST_PASSWORD");
+    // A long flow (create, ingest, crash and watchdog reports, phone setup,
+    // chart, a second reading, delete) against a remote database.
+    test.setTimeout(90_000);
 
     await signIn(page, "/dashboard/devices?view=setup&tab=push");
 
