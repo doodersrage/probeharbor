@@ -489,6 +489,52 @@ readings held while it had the bad key went too). Server:
 reports firmware 1.6.0. Not yet tested on hardware: /flash with a code,
 the plain ESP32 and the S3 (same code path; compile only).
 
+## 16. Setup page on a C3 that has never joined (1.6.1, source only)
+
+1.6.1 changes the phone setup page (all boards unless noted):
+- **C3:** the setup network runs at 8.5 dBm (`TT setup network: low
+  transmit power`); after Save the join gets full power back, and if it
+  fails a C3 without "lowtx" retries at low power at once (`TT wifi:
+  retrying at low transmit power`) with the setup network kept up. `lowtx`
+  survives the BOOT reset.
+- If the join still fails: `TT wifi failed: check the network name and
+  password on the setup page`, and the station stops retrying (it pulled
+  the setup network off its channel every 3 s, so the phone couldn't load
+  the page).
+- Save locks while the board joins ("Joining your Wi-Fi… up to a minute");
+  WiFiManager's join timeout is 15 s (was 30); a note on the page says it
+  can take a minute. The key box has autocorrect, capitals and spellcheck
+  off.
+- Pairing claims only over a verified certificate.
+
+**ESP32-C3 SuperMini (2026-11-16), against production, phone setup page:
+passed** after five rounds of fixes found by the owner's tests that
+morning:
+1. Reading the entered network with `WiFi.SSID()` (empty after a failed
+   join) skipped the retry.
+2. Stopping the setup network for the retry dropped the phone back to its
+   Wi-Fi settings.
+3. At full power the setup network was missing from the phone's list.
+4. After a failed join, reconnect attempts every 3 s left the page
+   unloadable.
+5. A second Save during the 30 s join restarted the wait.
+
+From settings erased (NVS region wiped): pairing on the first Save
+(full-power join worked that time). With the final build, a wrong password:
+Save 10:06:22, full power failed by 10:06:28, `retrying at low transmit
+power` 10:06:39, `wifi failed …` 10:06:59 (37 s), no further join attempts,
+setup network still listed. Then the correct password: Save 10:08:24, full
+power failed (reasons 2/39), low power joined 10:08:42 (`this board will
+keep using it`), `TT paired: key saved` 10:08:46, `TT post 200` 10:08:50.
+
+Also seen: another program on the same USB port reset the C3
+(`USB_UART_CHIP_RESET`) and held BOOT during one round, wiping it; runs
+during that window were discarded.
+
+Not checked on hardware: whether the Save button visibly locks (the owner
+wasn't asked before the page closed), the plain ESP32 and the S3 (compile
+only), and /flash with a code.
+
 ## ESP32-C3 SuperMini (Teyleten Robot, native USB only): 2026-11-14
 
 A new board, blank flash (ROM: `invalid header: 0xffffffff`, reset every

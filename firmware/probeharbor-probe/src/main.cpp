@@ -88,7 +88,7 @@
 #include "ota_pubkey.h"
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.6.0"
+#define FIRMWARE_VERSION "1.6.1"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -377,7 +377,14 @@ String extras;
 
 Preferences prefs;
 WiFiManager wifiManager;
-WiFiManagerParameter keyParam("key", "Device key or pairing code (Dashboard → Devices)", "", MAX_KEY_LEN);
+// Phone keyboards must not "fix" what's typed (autocorrect, capitals, smart
+// punctuation can turn a code or key into something else).
+WiFiManagerParameter keyParam("key", "Device key or pairing code (Dashboard → Devices)", "", MAX_KEY_LEN,
+                              "autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"none\" spellcheck=\"false\"");
+// Shown on the setup page above the fields (a parameter with no id is text).
+WiFiManagerParameter setupHelp(
+    "<p>After Save the probe joins your Wi-Fi; that can take up to a minute. If the Wi-Fi "
+    "password was wrong, reconnect to ProbeHarbor-Setup, open 192.168.4.1 and try again.</p>");
 WiFiManagerParameter extrasParam("extras", "Also wired (any of: leak, door, battery)", "", MAX_EXTRAS_LEN);
 
 String deviceKey;
@@ -506,7 +513,21 @@ void saveExtras(const String& raw) {
   Console.println("TT extras: " + (extras.isEmpty() ? String("none") : extras));
 }
 
+#if CONFIG_IDF_TARGET_ESP32C3
+extern bool lowTxPower;  // defined with applyTxPower() below
+#endif
+// Set when the setup page is saved; WiFiManager joins the new network on
+// its next process() call (blocking), so loop() checks two passes later.
+uint8_t portalSavePasses = 0;
+
 void onPortalParamsSaved() {
+  portalSavePasses = 1;
+  WiFi.setAutoReconnect(true);  // off after a failed join (afterPortalSave)
+#if CONFIG_IDF_TARGET_ESP32C3
+  // WiFiManager joins the entered network next: at full power unless this
+  // board is known to need low (a normal C3 far from its router needs full).
+  if (!lowTxPower) WiFi.setTxPower(WIFI_POWER_19_5dBm);
+#endif
   saveKey(keyParam.getValue());
   saveExtras(extrasParam.getValue());
 }
@@ -535,13 +556,26 @@ static void applyTxPower() {
   if (lowTxPower) WiFi.setTxPower(WIFI_POWER_8_5dBm);
 }
 
+/**
+ * The setup network only has to reach a phone a few metres away. At full
+ * power a C3 SuperMini's setup network could be missing from the phone's
+ * list (owner's test 2026-11-16), the same radio fault that stops it
+ * joining at full power. WiFiManager starts the access point at full
+ * power, so lower it once it's up.
+ */
+static void setupNetworkAtLowPower() {
+  WiFi.setTxPower(WIFI_POWER_8_5dBm);
+}
+
 /** Retry a failed join at 8.5 dBm; ssid null means the saved network. */
 static bool joinAtLowPower(const char* ssid, const char* pass) {
   if (lowTxPower) return false;  // already low: nothing else to try
   Console.println("TT wifi: retrying at low transmit power");
   WiFi.disconnect();
   lowTxPower = true;
-  WiFi.mode(WIFI_STA);
+  // Keep the setup network if it's up (AP+STA): a phone on the setup page
+  // stays connected while this retry runs.
+  if ((WiFi.getMode() & WIFI_MODE_STA) == 0) WiFi.mode(WIFI_STA);
   applyTxPower();
   if (ssid == nullptr) WiFi.begin();
   else WiFi.begin(ssid, pass);
@@ -556,6 +590,7 @@ static bool joinAtLowPower(const char* ssid, const char* pass) {
 }
 #else
 static void applyTxPower() {}
+static void setupNetworkAtLowPower() {}
 static bool joinAtLowPower(const char*, const char*) { return false; }
 #endif
 
@@ -987,9 +1022,10 @@ static void claimPairingCode(unsigned long now) {
   pairNextTry = (now + PAIR_RETRY_MS) == 0 ? 1 : now + PAIR_RETRY_MS;
   esp_task_wdt_reset();
 
+  // Always a verified connection, even when uploads have fallen back to
+  // unverified TLS: the answer is the device key.
   WiFiClientSecure client;
-  if (tlsUnverified) client.setInsecure();
-  else client.setCACert(CA_ROOTS_PEM);
+  client.setCACert(CA_ROOTS_PEM);
   client.setHandshakeTimeout(20);
   HTTPClient http;
   http.setConnectTimeout(10000);
@@ -1002,7 +1038,12 @@ static void claimPairingCode(unsigned long now) {
   int code = http.POST(String("{\"code\":\"") + pairCode + "\",\"chip\":\"" + ESP.getChipModel() + "\"}");
   String response = code > 0 ? http.getString() : String();
   http.end();
-  if (!tlsUnverified) noteCertificateCheck(client, code);
+  if (code <= 0) {
+    char why[80] = "";
+    client.lastError(why, sizeof(why));
+    Console.printf("TT pairing: no answer (%d%s%s), retrying in 30 s\n", code, why[0] ? ", " : "", why);
+    return;
+  }
 
   if (code == 200) {
     int at = response.indexOf("\"key\":\"");
@@ -1483,12 +1524,26 @@ void setup() {
   }
   loadCrashReport();
 
+  wifiManager.addParameter(&setupHelp);
   wifiManager.addParameter(&keyParam);
   wifiManager.addParameter(&extrasParam);
   wifiManager.setSaveParamsCallback(onPortalParamsSaved);
+  wifiManager.setAPCallback([](WiFiManager*) {
+    setupNetworkAtLowPower();
+    Console.println("TT setup network: low transmit power");
+  });
   wifiManager.setConfigPortalBlocking(false);
   wifiManager.setConfigPortalTimeout(PORTAL_TIMEOUT_S);
-  wifiManager.setConnectTimeout(30);
+  // A board with the right password joins in a few seconds; a C3 SuperMini at
+  // full power fails within a few. 15 s keeps the setup page's wait (this
+  // plus the C3's 20 s low-power retry) near half a minute; it was 30.
+  wifiManager.setConnectTimeout(15);
+  // While it joins, the board can't serve the page: lock Save so a second tap
+  // doesn't start the wait over, and say what's happening.
+  wifiManager.setCustomHeadElement(
+      "<script>document.addEventListener('submit',function(e){var b=e.target.querySelector("
+      "'button[type=submit],button');if(b){setTimeout(function(){b.disabled=true;},0);"
+      "b.textContent='Joining your Wi-Fi\u2026 up to a minute';}},true);</script>");
   logWifiDisconnects();
   wifiManager.setDebugOutput(false);
   bool online = false;
@@ -1523,8 +1578,51 @@ void setup() {
   enableLoopWDT();
 }
 
+/**
+ * After the setup page is saved, WiFiManager joins the entered network in
+ * the same process() call (blocking, up to 30 s), so this runs on the pass
+ * right after it.
+ *
+ * C3 SuperMini boards only join at low transmit power: a board that has
+ * never joined (no "lowtx" yet) retries at low power at once instead of
+ * waiting out the portal (3 minutes) and a restart (found 2026-11-16).
+ *
+ * If the join still fails (a wrong password, say), stop the station
+ * retrying: the Wi-Fi library reconnects every few seconds, and on the one
+ * radio each attempt pulls the setup network off its channel, so the phone
+ * stays connected but can't load the page to correct it (owner's test
+ * 2026-11-16). The next Save turns reconnecting back on.
+ */
+static void afterPortalSave() {
+  if (portalSavePasses == 0 || ++portalSavePasses < 2) return;
+  portalSavePasses = 0;
+  if (WiFi.status() == WL_CONNECTED) return;
+#if CONFIG_IDF_TARGET_ESP32C3
+  if (!lowTxPower) {
+    // The network just entered, from the station config. Not WiFi.SSID():
+    // that's the network joined, empty after a failed join.
+    String ssid = wifiManager.getWiFiSSID(true);
+    String pass = wifiManager.getWiFiPass(true);
+    WiFi.persistent(true);
+    if (!ssid.isEmpty() && joinAtLowPower(ssid.c_str(), pass.c_str())) {
+      // The setup network stayed up during the retry; it closes only now.
+      if (wifiManager.getConfigPortalActive()) wifiManager.stopConfigPortal();
+      Console.println("TT wifi ok");
+      postNow = true;
+      return;
+    }
+  }
+#endif
+  if (!wifiManager.getConfigPortalActive()) return;
+  Console.println("TT wifi failed: check the network name and password on the setup page");
+  WiFi.setAutoReconnect(false);
+  WiFi.disconnect();
+  setupNetworkAtLowPower();
+}
+
 void loop() {
   wifiManager.process();
+  afterPortalSave();
   readSerial();
   checkResetButton();
 

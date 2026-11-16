@@ -6556,3 +6556,12 @@ digits only on both sides, and that the BOOT reset cleared the C3's
 low-power Wi-Fi flag (now kept). Release = `pnpm firmware:build` + owner
 signs ota.json; publishing 1.6.0 also turns Pair a probe on for everyone
 (`pairingAvailable()` reads the manifest version).
+
+Firmware 1.6.1 (2026-11-16): the setup page on boards that have never
+joined. C3 setup network at low power; immediate low-power retry after Save
+with the setup network kept up; reconnect attempts stopped after a failed
+join (they made the page unloadable); Save locked while joining, 15 s join
+timeout; key box without autocorrect; pairing claims over verified TLS only.
+Passed on the C3 SuperMini via the phone (HARDWARE-TESTS.md test 16) after
+five rounds of fixes found in the owner's tests. Docs: /flash key step and
+FAQ, troubleshooting (2b4edf8).
