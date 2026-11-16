@@ -1,28 +1,28 @@
 {
   "format": 1,
-  "version": "1.5.2",
+  "version": "1.6.0",
   "rollout_pct": 100,
   "builds": {
     "esp32": {
-      "url": "/firmware/probeharbor-probe-esp32.bin?v=1.5.2",
+      "url": "/firmware/probeharbor-probe-esp32.bin?v=1.6.0",
       "offset": 65536,
-      "size": 1117888,
-      "sha256": "91b0c07b27459c6fe1c345e1a8eb9a1817b4ced1f9c75be93d53ddab60382474",
-      "sig": "MEUCIB28R3ghWtIL2EG5lVkvSFBHOMg0F2m2UQHvIzIdZYYnAiEA+8rVvcenNOx9W5mBgF8b96yjBZwHIfZ+a/1edjYsYwI="
+      "size": 1121504,
+      "sha256": "919ffc5e38b30756165d23ccabb0fea6a3fefd5ca46c87c5a789c3c77e0be734",
+      "sig": "MEUCICR75XpggL5hu9eYv50aUaHca5PLz46FsSSVCgrBkx79AiEAjoUY08O13T9aJan2N+YliMOOgpqdtclBrZkZadhpMr8="
     },
     "esp32s3": {
-      "url": "/firmware/probeharbor-probe-esp32s3.bin?v=1.5.2",
+      "url": "/firmware/probeharbor-probe-esp32s3.bin?v=1.6.0",
       "offset": 65536,
-      "size": 1076112,
-      "sha256": "04981346876104c5626141493f2d53c6d7cfe434db5b58893f14f75a858d3f31",
-      "sig": "MEUCIEtKJf/nNV5FBaDOSCmRZYJAgnvSVLCIStoun0DrbLVBAiEA115Vx3ltRoUg+5ueZbEd1jWWwHe5eSqP/KJ6ao9Bfwk="
+      "size": 1079584,
+      "sha256": "76e609c213327f792ec357c3e5276a708abaa0a37ecd12cc8af677588749e782",
+      "sig": "MEQCIH4iA1eLS+35Qo+wkL9GeQAFbK8JKMcgB41zFYAcsBgEAiBZJd88Xm4ERaATnE4pXHFYkZ5NHYTF6TdaIDNkPtT8Ig=="
     },
     "esp32c3": {
-      "url": "/firmware/probeharbor-probe-esp32c3.bin?v=1.5.2",
+      "url": "/firmware/probeharbor-probe-esp32c3.bin?v=1.6.0",
       "offset": 65536,
-      "size": 1149824,
-      "sha256": "25e6e88df2eef98f85245d8cb6c1549a1c639b8f54a1cdc3b4053ecd48e859b5",
-      "sig": "MEUCIH0bV/B9rGA+KzoN8henJ1sQdPGIuccWnYP/Y3lrpL5hAiEArWW3G2xnAtswVSQOXqtDrtf/lt5x9K67MLJ7Lq/ttvw="
+      "size": 1153008,
+      "sha256": "7be7cc7dbb466fcab2f5fd7b5343244363d540dedf59aba87962ecf460066d81",
+      "sig": "MEYCIQCV4oQCE7Mxfh2E269ZPONSe/54L7up49FgeqAuGo1JzQIhAJCZURKQ5iUvCv3yKcyXu/kzBcyUTxX2pb9Xj2Z+g5Pd"
     }
   }
 }
