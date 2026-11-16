@@ -43,6 +43,7 @@ describe("flasherFailureMessage", () => {
       for (const key of [
         "wifiFailed",
         "keyRejected",
+        "pairingRejected",
         "configError",
         "noProbe",
         "sensorNotReading",
@@ -53,6 +54,12 @@ describe("flasherFailureMessage", () => {
       expect(messages.status.sensorNotReading).toContain("{sensor}");
       expect(messages.status.postConnectionLost).toContain("{code}");
     }
+  });
+
+  it("explains a rejected pairing code (firmware 1.6.0+)", () => {
+    const line = "TT pairing code rejected: get a new code from Dashboard → Devices";
+    expect(flasherFailureMessage(line, en.status)).toMatch(/^Pairing code rejected/);
+    expect(flasherFailureMessage(line, de.status)).toMatch(/^Kopplungscode abgelehnt/);
   });
 
   it("falls back to the board's own words for an unknown line or missing copy", () => {

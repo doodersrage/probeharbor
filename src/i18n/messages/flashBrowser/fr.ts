@@ -21,7 +21,7 @@ const fr: BrowserFlasherMessages = {
   ssidLabel: "Nom du réseau Wi‑Fi",
   ssidHint: "Réseau 2,4 GHz ; les cartes ESP32 ne peuvent pas se connecter en 5 GHz.",
   passwordLabel: "Mot de passe Wi‑Fi",
-  keyLabel: "Clé de l’appareil",
+  keyLabel: "Clé d’appareil ou code d’appairage",
   keyHintPrefilled: "Pré-remplie pour l’appareil que vous venez de créer.",
   keyHint:
     "Dans Dashboard → Devices, après avoir ajouté un appareil push. Coller l’URL d’ingestion complète fonctionne aussi.",
@@ -49,6 +49,9 @@ const fr: BrowserFlasherMessages = {
     live: "Premier relevé reçu. La sonde est en service : vous pouvez la débrancher et l’installer.",
     wifiFailed:
       "Échec du Wi‑Fi : vérifiez le nom du réseau et le mot de passe. Les cartes ESP32 ne rejoignent que les réseaux 2,4 GHz.",
+    pairingRejected:
+      "Code d’appairage refusé : inconnu, déjà utilisé ou expiré. Créez-en un nouveau sur la page de l’appareil.",
+    paired: "Appairée. Connexion au Wi‑Fi et envoi d’une première mesure…",
     keyRejected: "Clé refusée : recopiez la clé d’appareil depuis Dashboard → Devices.",
     configError:
       "La carte n’a pas accepté les réglages. Renseignez le nom du réseau et la clé d’appareil, puis renvoyez-les.",

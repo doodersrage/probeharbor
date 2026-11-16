@@ -20,7 +20,7 @@ const en = {
   ssidLabel: "Wi‑Fi network name",
   ssidHint: "2.4 GHz network; ESP32 boards cannot join 5 GHz.",
   passwordLabel: "Wi‑Fi password",
-  keyLabel: "Device key",
+  keyLabel: "Device key or pairing code",
   keyHintPrefilled: "Filled in for the device you just created.",
   keyHint:
     "From Dashboard → Devices after you add a push device. Pasting the whole ingest URL works too.",
@@ -48,6 +48,9 @@ const en = {
     live: "First reading delivered. The probe is live: you can unplug it and mount it.",
     wifiFailed:
       "Wi‑Fi failed: check the network name and password. ESP32 boards only join 2.4 GHz networks.",
+    pairingRejected:
+      "Pairing code rejected: it's unknown, used or expired. Make a new one on the device's page.",
+    paired: "Paired. Joining Wi‑Fi and sending a first reading…",
     keyRejected: "Key rejected: copy the device key again from Dashboard → Devices.",
     configError:
       "The board didn't accept the settings. Fill in the network name and device key, then send again.",

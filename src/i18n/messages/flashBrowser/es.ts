@@ -21,7 +21,7 @@ const es: BrowserFlasherMessages = {
   ssidLabel: "Nombre de la red Wi‑Fi",
   ssidHint: "Red de 2,4 GHz; las placas ESP32 no pueden conectarse a 5 GHz.",
   passwordLabel: "Contraseña del Wi‑Fi",
-  keyLabel: "Clave del dispositivo",
+  keyLabel: "Clave del dispositivo o código de emparejamiento",
   keyHintPrefilled: "Rellenada para el dispositivo que acabas de crear.",
   keyHint:
     "En Dashboard → Devices, después de añadir un dispositivo push. También puedes pegar la URL de ingesta completa.",
@@ -49,6 +49,9 @@ const es: BrowserFlasherMessages = {
     live: "Primera lectura recibida. La sonda ya está funcionando: puedes desconectarla y montarla.",
     wifiFailed:
       "Falló el Wi‑Fi: revisa el nombre de la red y la contraseña. Las placas ESP32 solo se conectan a redes de 2,4 GHz.",
+    pairingRejected:
+      "Código de emparejamiento rechazado: es desconocido, ya usado o caducado. Crea uno nuevo en la página del dispositivo.",
+    paired: "Emparejada. Conectando al Wi‑Fi y enviando una primera lectura…",
     keyRejected:
       "Clave rechazada: vuelve a copiar la clave del dispositivo desde Dashboard → Devices.",
     configError:

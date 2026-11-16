@@ -20,6 +20,7 @@ import { getDisplayPreferencesFromMetadata } from "../../../lib/userPreferences"
 import { calibrationOffsetUnit } from "../../../lib/sensorCalibration";
 import { firmwareUpdateAvailable, LATEST_FIRMWARE_VERSION, pairingAvailable } from "../../../lib/firmwareVersion";
 import PairProbeButton from "../../../components/PairProbeButton";
+import { isUserAdmin } from "../../../lib/adminAccess";
 import { getRuntimeEnv } from "../../../lib/runtimeEnv";
 import { listIngestStatsForHousehold } from "../../../lib/ingestStats";
 import { ingestKeyVaultConfigured } from "../../../lib/ingestKeyVault";
@@ -104,7 +105,11 @@ const recoverableKey = typeof device.meta?.ingest_key_enc === "string";
 const phoneSetup = isPush && canEdit;
 // Pairing codes need probe firmware 1.6.0+ (older firmware would store a
 // code as a key): offered once that's released, or early with PAIRING_PREVIEW=1.
-const canPair = isPush && canEdit && (pairingAvailable() || getRuntimeEnv("PAIRING_PREVIEW") === "1");
+// Admins see it early too, to test new firmware against production.
+const canPair =
+  isPush &&
+  canEdit &&
+  (pairingAvailable() || getRuntimeEnv("PAIRING_PREVIEW") === "1" || (await isUserAdmin(user.id)));
 const keyCopyable = phoneSetup && !canPair && ingestKeyVaultConfigured() && recoverableKey;
 const pageQrSvg = keyCopyable ? renderIngestQrSvg(`${Astro.url.origin}/dashboard/devices/${device.id}#connection`, 150) : "";
 const setupWifiQrSvg = phoneSetup ? renderIngestQrSvg(wifiQrText(PROBE_SETUP_SSID), 150) : "";

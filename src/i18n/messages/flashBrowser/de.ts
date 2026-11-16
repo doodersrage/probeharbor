@@ -21,7 +21,7 @@ const de: BrowserFlasherMessages = {
   ssidLabel: "WLAN-Name",
   ssidHint: "2,4-GHz-Netz; ESP32-Boards können sich nicht mit 5 GHz verbinden.",
   passwordLabel: "WLAN-Passwort",
-  keyLabel: "Geräteschlüssel",
+  keyLabel: "Geräteschlüssel oder Kopplungscode",
   keyHintPrefilled: "Für das gerade angelegte Gerät ausgefüllt.",
   keyHint:
     "Aus Dashboard → Devices, nachdem du ein Push-Gerät angelegt hast. Die komplette Ingest-URL einzufügen funktioniert auch.",
@@ -49,6 +49,9 @@ const de: BrowserFlasherMessages = {
     live: "Erster Messwert angekommen. Der Fühler ist live: Du kannst ihn abstecken und montieren.",
     wifiFailed:
       "WLAN fehlgeschlagen: Prüfe Netzwerkname und Passwort. ESP32-Boards verbinden sich nur mit 2,4-GHz-Netzen.",
+    pairingRejected:
+      "Kopplungscode abgelehnt: unbekannt, schon benutzt oder abgelaufen. Erstelle auf der Seite des Geräts einen neuen.",
+    paired: "Gekoppelt. WLAN wird verbunden und ein erster Messwert gesendet…",
     keyRejected:
       "Schlüssel abgelehnt: Kopiere den Geräteschlüssel erneut unter Dashboard → Devices.",
     configError:

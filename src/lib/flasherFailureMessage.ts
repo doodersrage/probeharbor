@@ -11,6 +11,7 @@ export function flasherFailureMessage(
   const pick = (key: string) => text[key] || own;
   if (line.startsWith("TT wifi failed")) return pick("wifiFailed");
   if (line.startsWith("TT key rejected")) return pick("keyRejected");
+  if (line.startsWith("TT pairing code rejected")) return pick("pairingRejected");
   if (line.startsWith("TT config error")) return pick("configError");
   if (line.startsWith("TT no probe")) {
     const pin = /GPIO (\d+)/.exec(line)?.[1] ?? "4";

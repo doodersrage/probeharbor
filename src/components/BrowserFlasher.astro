@@ -183,11 +183,14 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
             const line = raw.trim();
             if (!line.startsWith("TT ")) continue;
             log.textContent += `${line.slice(3)}\n`;
-            if (line === "TT key saved") {
+            // A pairing code (firmware 1.6.0+) is saved first, then traded for the key.
+            if (line === "TT key saved" || line === "TT pairing code saved") {
               acknowledged = true;
               status.textContent = text.received ?? "";
               // Funnel: device created → settings on the board → first reading.
               trackProductEvent("flasher_settings_sent");
+            } else if (line === "TT paired: key saved") {
+              status.textContent = text.paired ?? "";
             } else if (line === "TT wifi ok") {
               status.textContent = text.wifiOk ?? "";
             } else if (line.startsWith("TT sensor: ")) {
@@ -214,6 +217,7 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
             } else if (
               line.startsWith("TT wifi failed") ||
               line.startsWith("TT key rejected") ||
+              line.startsWith("TT pairing code rejected") ||
               line.startsWith("TT config error") ||
               line.startsWith("TT no probe") ||
               line.startsWith("TT nothing sent")
