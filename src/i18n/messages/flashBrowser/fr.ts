@@ -49,6 +49,8 @@ const fr: BrowserFlasherMessages = {
     live: "Premier relevé reçu. La sonde est en service : vous pouvez la débrancher et l’installer.",
     wifiFailed:
       "Échec du Wi‑Fi : vérifiez le nom du réseau et le mot de passe. Les cartes ESP32 ne rejoignent que les réseaux 2,4 GHz.",
+    codeNeedsUpdate:
+      "Le firmware de cette carte est antérieur à la 1.6.0 et n’accepte pas les codes d’appairage. Installez d’abord le firmware ci-dessus, puis renvoyez les réglages (le code reste valable).",
     pairingRejected:
       "Code d’appairage refusé : inconnu, déjà utilisé ou expiré. Créez-en un nouveau sur la page de l’appareil.",
     paired: "Appairée. Connexion au Wi‑Fi et envoi d’une première mesure…",

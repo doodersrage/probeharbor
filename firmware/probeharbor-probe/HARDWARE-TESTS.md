@@ -534,8 +534,17 @@ during that window were discarded.
 The Save button locks while the board joins (owner, phone, 2026-11-16,
 released 1.6.1). After pairing: 25 uploads in 30 minutes, all 200.
 
-Not checked on hardware: the plain ESP32 and the S3 (compile only), and
-/flash with a code.
+**ESP32-S3 (98:C3:77:B5:D0:0C, AHT20), 2026-11-16, /flash in the owner's
+browser: passed.** The board was on 1.5.1 with a key the C3's pairing had
+replaced (`post 401`). First try: settings sent without installing, so
+1.5.1 stored the code as a key and got 401 again (the code wasn't spent;
+/flash now says so on the spot when a code meets `TT key saved`). After
+installing 1.6.1 from /flash and sending Wi-Fi and the same code: paired;
+server `device_pairings` row used 15:49:55 UTC by chip `ESP32-S3`, device
+reporting 1.6.1, `TT post 200` every minute.
+
+Not checked on hardware: the plain ESP32 (compile only); /flash's new
+"firmware too old for a code" message (needs a pre-1.6.0 board).
 
 ## ESP32-C3 SuperMini (Teyleten Robot, native USB only): 2026-11-14
 

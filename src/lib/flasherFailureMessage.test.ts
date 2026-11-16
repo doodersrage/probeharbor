@@ -44,6 +44,7 @@ describe("flasherFailureMessage", () => {
         "wifiFailed",
         "keyRejected",
         "pairingRejected",
+        "codeNeedsUpdate",
         "configError",
         "noProbe",
         "sensorNotReading",

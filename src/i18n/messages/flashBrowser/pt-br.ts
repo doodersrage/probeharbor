@@ -49,6 +49,8 @@ const ptBr: BrowserFlasherMessages = {
     live: "Primeira leitura recebida. A sonda está funcionando: você já pode desconectar e instalar.",
     wifiFailed:
       "Falha no Wi‑Fi: confira o nome da rede e a senha. Placas ESP32 só se conectam a redes de 2,4 GHz.",
+    codeNeedsUpdate:
+      "O firmware desta placa é anterior ao 1.6.0 e não aceita códigos de pareamento. Instale primeiro o firmware acima e envie as configurações de novo (o código continua valendo).",
     pairingRejected:
       "Código de pareamento recusado: desconhecido, já usado ou expirado. Crie um novo na página do dispositivo.",
     paired: "Pareada. Entrando no Wi‑Fi e enviando uma primeira leitura…",

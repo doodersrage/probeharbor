@@ -87,6 +87,7 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
   import "esp-web-tools/dist/web/install-button.js";
   import { trackProductEvent } from "../lib/productAnalytics";
   import { flasherFailureMessage } from "../lib/flasherFailureMessage";
+  import { normalizePairingCode } from "../lib/pairingCode";
 
   type SerialPortLike = {
     open(options: { baudRate: number }): Promise<void>;
@@ -127,6 +128,8 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
       const password = String(data.get("password") ?? "").replace(/[\t\r\n]/g, "");
       const key = clean(data.get("key"));
       if (!ssid || !key) return;
+      // A pairing code needs firmware 1.6.0+; older firmware saves it as a key.
+      const sentCode = normalizePairingCode(key) !== null;
 
       button.disabled = true;
       log.hidden = false;
@@ -183,8 +186,15 @@ const untestedLabel = hardwareMessages(locale).statusLabels["built-in"];
             const line = raw.trim();
             if (!line.startsWith("TT ")) continue;
             log.textContent += `${line.slice(3)}\n`;
-            // A pairing code (firmware 1.6.0+) is saved first, then traded for the key.
-            if (line === "TT key saved" || line === "TT pairing code saved") {
+            if (sentCode && line === "TT key saved") {
+              // 1.6.0+ answers a code with "TT pairing code saved"; this board
+              // stored it as a key and will be refused (found 2026-11-16, an S3
+              // on 1.5.1 given a code). Say so now instead of after a 401.
+              acknowledged = true;
+              outcome = "failed";
+              status.textContent = text.codeNeedsUpdate ?? "";
+              // A pairing code (firmware 1.6.0+) is saved first, then traded for the key.
+            } else if (line === "TT key saved" || line === "TT pairing code saved") {
               acknowledged = true;
               status.textContent = text.received ?? "";
               // Funnel: device created → settings on the board → first reading.

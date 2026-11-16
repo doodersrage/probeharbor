@@ -49,6 +49,8 @@ const de: BrowserFlasherMessages = {
     live: "Erster Messwert angekommen. Der Fühler ist live: Du kannst ihn abstecken und montieren.",
     wifiFailed:
       "WLAN fehlgeschlagen: Prüfe Netzwerkname und Passwort. ESP32-Boards verbinden sich nur mit 2,4-GHz-Netzen.",
+    codeNeedsUpdate:
+      "Die Firmware dieser Platine ist älter als 1.6.0 und nimmt keine Kopplungscodes an. Installiere zuerst die Firmware oben und sende die Einstellungen dann erneut (der Code gilt weiter).",
     pairingRejected:
       "Kopplungscode abgelehnt: unbekannt, schon benutzt oder abgelaufen. Erstelle auf der Seite des Geräts einen neuen.",
     paired: "Gekoppelt. WLAN wird verbunden und ein erster Messwert gesendet…",

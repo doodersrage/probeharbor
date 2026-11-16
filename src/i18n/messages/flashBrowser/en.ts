@@ -48,6 +48,8 @@ const en = {
     live: "First reading delivered. The probe is live: you can unplug it and mount it.",
     wifiFailed:
       "Wi‑Fi failed: check the network name and password. ESP32 boards only join 2.4 GHz networks.",
+    codeNeedsUpdate:
+      "This board's firmware is older than 1.6.0 and doesn't take pairing codes. Install the firmware above first, then send the settings again (the code still works).",
     pairingRejected:
       "Pairing code rejected: it's unknown, used or expired. Make a new one on the device's page.",
     paired: "Paired. Joining Wi‑Fi and sending a first reading…",
