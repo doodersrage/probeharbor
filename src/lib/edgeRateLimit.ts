@@ -12,7 +12,10 @@
  * limiter must never stop freeze readings from arriving.
  */
 
-export type EdgeRateLimiterName = "INGEST_RATE_LIMITER" | "SHARE_READINGS_RATE_LIMITER";
+export type EdgeRateLimiterName =
+  | "INGEST_RATE_LIMITER"
+  | "SHARE_READINGS_RATE_LIMITER"
+  | "PAIR_RATE_LIMITER";
 
 const warnedMissing = new Set<string>();
 

@@ -6502,3 +6502,33 @@ Found on the way: a restore into a fresh server failed on 0005's policy
 (`role "migration_reader" does not exist`); the restore now creates roles
 named by policies first (rehearsed into a brand-new Postgres). Result: CI
 green, e2e 3 minutes. The long device spec got 90 s.
+
+## Pairing codes (design approved by the owner 2026-11-16)
+
+Typing the 48-character device key into a probe (phone portal or /flash)
+is the setup step people get wrong (the owner's own 401 on 2026-11-15). The
+probe has no screen, so the dashboard shows a short code and the person
+types it where the key goes; the probe trades it for its key.
+
+- Code: 8 characters from `23456789ABCDEFGHJKMNPQRSTUVWXYZ` (no 0/O, 1/I/L),
+  shown `XXXX-XXXX`, case/spaces/hyphen ignored; 31^8 ≈ 8.5 × 10^11.
+  Single use, 30 minutes; a new code for a device replaces its unused one.
+  Stored as SHA-256 only (`device_pairings`, migration 0008, additive).
+- `POST /api/devices/pairing {device_id}`: signed-in editors, push devices
+  of their household; returns the code once.
+- `POST /api/pair/claim {code, chip}`: no sign-in (the code is the
+  credential); 10 tries a minute per address (`PAIR_RATE_LIMITER`, in-memory
+  fallback); atomically spends the code, gives the device a NEW key (hash +
+  encrypted copy, as "reveal" needs), returns it once. Unknown, used and
+  expired codes get the same answer.
+- Firmware 1.6.0 (next): the key box takes a key or a code; after Wi-Fi it
+  claims the code and saves the key. Device keys keep working everywhere.
+
+Step 1 (server) evidence: `pairingCode.test.ts` 6 (alphabet, uniform use,
+normalising, keys aren't codes, hashing); `db/pairings.db.test.ts` 7 (single
+use, expiry, replacement, per device, push only, a race of two claims has
+one winner, cascade on device delete); `pairingClaim.db.test.ts` 4 through
+the real route (the new key ingests, the OLD key then gets 401; second claim
+404; malformed and key-shaped input 400; 11th try in a minute 429);
+`api/devices/pairing.test.ts` 3 (codes stored only as hashes; 401/403/404/
+400; 503 before the migration). `pnpm test` 3794, `pnpm test:db` 432.
