@@ -61,7 +61,12 @@ describe("checkIngestPayload", () => {
 
 describe("checkIngestPayload and recorded_at", () => {
   it("doesn't list recorded_at as an ignored key or read it as a sensor", () => {
-    const result = checkIngestPayload({ temp1: 42.5, recorded_at: 1794575880 });
+    // A fixed "now" a minute after recorded_at: against the real clock this
+    // reading became too old to accept on 2026-11-16 and the test failed.
+    const result = checkIngestPayload(
+      { temp1: 42.5, recorded_at: 1794575880 },
+      1794575880_000 + 60_000,
+    );
 
     expect(result.accepted).toBe(true);
     expect(result.ignoredKeys).not.toContain("recorded_at");
