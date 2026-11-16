@@ -6532,3 +6532,15 @@ the real route (the new key ingests, the OLD key then gets 401; second claim
 404; malformed and key-shaped input 400; 11th try in a minute 429);
 `api/devices/pairing.test.ts` 3 (codes stored only as hashes; 401/403/404/
 400; 503 before the migration). `pnpm test` 3794, `pnpm test:db` 432.
+
+Step 2 (dashboard): "Pair a probe" on the device page (Connection card,
+editors, push devices) shows the code large with its expiry, struck through
+once expired; the phone-setup panel then says "type the pairing code" instead
+of offering the key copy. Five languages. Hidden until /flash serves firmware
+1.6.0+ (`pairingAvailable()`, since older firmware would save a code as its
+key); `PAIRING_PREVIEW=1` shows it early (CI e2e sets it). CI's e2e job now
+also migrates its database copy, so a commit's new migrations are tested.
+Evidence: `e2e/device-ingest.spec.ts` run locally against a copy of the e2e
+database with 0008 applied: 3 passed (clicks Pair a probe, claims the shown
+code in lowercase, second claim 404, old key 401, new key uploads).
+`pnpm test` 3795, typecheck 0 errors.

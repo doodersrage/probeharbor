@@ -20,3 +20,14 @@ export function firmwareUpdateAvailable(
   }
   return false;
 }
+
+/** The first probe firmware that accepts a pairing code where the key goes. */
+export const PAIRING_MIN_FIRMWARE = "1.6.0";
+
+/**
+ * Offer pairing codes only once /flash (and OTA) hand out firmware that
+ * understands them: older firmware would store a code as if it were a key.
+ */
+export function pairingAvailable(latest: string = LATEST_FIRMWARE_VERSION): boolean {
+  return !firmwareUpdateAvailable(latest, PAIRING_MIN_FIRMWARE);
+}

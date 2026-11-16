@@ -247,8 +247,11 @@ jobs:
         run: |
           psql "postgres://postgres:ci-local-only@127.0.0.1:5432/postgres" -qc "create database e2e"
           node scripts/db-copy.mjs --env-file /dev/null --from-env E2E_DATABASE_URL --to-env E2E_LOCAL_DATABASE_URL
+          # The copy has production's schema; this commit may add migrations.
+          node scripts/db-migrate.mjs --env-file /dev/null --url-env E2E_LOCAL_DATABASE_URL
           mkdir -p dist/server
-          printf 'DATABASE_URL="%s"\nDATABASE_DRIVER="hyperdrive"\nBETTER_AUTH_SECRET="%s"\n' "$E2E_LOCAL_DATABASE_URL" "$E2E_BETTER_AUTH_SECRET" >> dist/server/.dev.vars
+          # PAIRING_PREVIEW: test pairing codes before the firmware that takes them is released.
+          printf 'DATABASE_URL="%s"\nDATABASE_DRIVER="hyperdrive"\nBETTER_AUTH_SECRET="%s"\nPAIRING_PREVIEW="1"\n' "$E2E_LOCAL_DATABASE_URL" "$E2E_BETTER_AUTH_SECRET" >> dist/server/.dev.vars
           echo "CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=$E2E_LOCAL_DATABASE_URL" >> "$GITHUB_ENV"
       # Do not set PLAYWRIGHT_BASE_URL here — that disables webServer and nothing listens on :4321.
       # e2e/helpers/auth.ts signs in against the same local copy.

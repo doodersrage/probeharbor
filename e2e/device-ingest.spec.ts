@@ -45,7 +45,7 @@ test.describe("device ingest", () => {
 
     try {
       await expect(page.locator("#ingest-key-value")).toBeVisible({ timeout: 10_000 });
-      const ingestKey = (await page.locator("#ingest-key-value").textContent())?.trim();
+      let ingestKey = (await page.locator("#ingest-key-value").textContent())?.trim();
       expect(ingestKey).toBeTruthy();
 
       // This is the core product loop: probe posts JSON, dashboard reflects it.
@@ -78,6 +78,21 @@ test.describe("device ingest", () => {
       await phone.locator("summary").click();
       await expect(phone.getByText("Join the probe's ProbeHarbor-Setup network", { exact: false })).toBeVisible();
       expect(await phone.locator("svg").count()).toBeGreaterThanOrEqual(1);
+
+      // Pairing code (PAIRING_PREVIEW in CI): the code shown trades once for a new
+      // key; the new key uploads and the old one is refused.
+      const pair = page.getByTestId("pair-probe");
+      await pair.getByRole("button", { name: "Pair a probe" }).click();
+      await expect(pair.getByTestId("pair-probe-code")).toBeVisible({ timeout: 10_000 });
+      const shown = (await pair.getByTestId("pair-probe-code").textContent())?.trim() ?? "";
+      expect(shown).toMatch(/^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4}-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4}$/);
+      const claimed = await page.request.post("/api/pair/claim", { data: { code: shown.toLowerCase(), chip: "e2e" } });
+      expect(claimed.status()).toBe(200);
+      const newKey = ((await claimed.json()) as { key: string }).key;
+      expect((await page.request.post("/api/pair/claim", { data: { code: shown } })).status()).toBe(404);
+      expect((await page.request.post(`/api/ingest/${ingestKey}`, { data: { temp1: 41.5 } })).status()).toBe(401);
+      expect((await page.request.post(`/api/ingest/${newKey}`, { data: { temp1: 41.5 } })).ok()).toBeTruthy();
+      ingestKey = newKey;
 
       // A second reading, half an hour earlier (the device's own time), makes a line.
       const earlier = Math.floor(Date.now() / 1000) - 30 * 60;

@@ -73,9 +73,21 @@ const de: DeviceDetailMessages = {
       "Für eine Sonde, die ihr Netz ProbeHarbor-Setup zeigt (neu oder nach 5 Sekunden BOOT gedrückt). Mit der Handykamera scannen.",
     copyKey:
       "Öffne diese Seite auf dem Handy, zeige den Geräteschlüssel an und tippe auf Kopieren.",
+    joinNetworkCode:
+      "Verbinde dich mit dem Netz {network} der Sonde. Ihre Einrichtungsseite öffnet sich: WLAN wählen, den Kopplungscode dort eingeben, wo der Geräteschlüssel verlangt wird, Speichern.",
     joinNetwork:
       "Verbinde dich mit dem Netz {network} der Sonde. Ihre Einrichtungsseite öffnet sich: WLAN wählen, Schlüssel einfügen, Speichern.",
     hint: "Öffnet sich die Seite nicht, rufe 192.168.4.1 auf. Die Sonde schließt ihr Netz nach 3 Minuten ohne Nutzung; starte sie neu, um es erneut zu versuchen.",
+  },
+  pairing: {
+    button: "Sonde koppeln",
+    newCode: "Neuer Code",
+    making: "Code wird erstellt…",
+    hint: "Gib diesen Code dort ein, wo die Sonde ihren Geräteschlüssel verlangt: auf ihrer Einrichtungsseite (Handy) oder auf /flash. Er gilt nur einmal.",
+    validUntil: "Gültig bis {time}",
+    expired: "Dieser Code ist abgelaufen. Erstelle einen neuen.",
+    error: "Der Code konnte nicht erstellt werden. Versuche es erneut.",
+    phoneStep: "Tippe oben auf Sonde koppeln und behalte den Code im Blick.",
   },
   healthLabels: {
     healthy: "In Ordnung",

@@ -71,9 +71,21 @@ const es: DeviceDetailMessages = {
     intro:
       "Para una sonda que muestra su red ProbeHarbor-Setup (nueva, o tras mantener BOOT 5 segundos). Escanea con la cámara del teléfono.",
     copyKey: "Abre esta página en el teléfono, muestra la clave del dispositivo y toca Copiar.",
+    joinNetworkCode:
+      "Conéctate a la red {network} de la sonda. Se abre su página de configuración: elige tu Wi-Fi, escribe el código de emparejamiento donde pide la clave del dispositivo y Guarda.",
     joinNetwork:
       "Conéctate a la red {network} de la sonda. Se abre su página de configuración: elige tu Wi-Fi, pega la clave y Guarda.",
     hint: "Si no se abre la página, visita 192.168.4.1. La sonda cierra su red tras 3 minutos sin uso; reiníciala para volver a intentarlo.",
+  },
+  pairing: {
+    button: "Emparejar una sonda",
+    newCode: "Código nuevo",
+    making: "Creando un código…",
+    hint: "Escribe este código donde la sonda pide su clave de dispositivo: en su página de configuración (teléfono) o en /flash. Sirve una sola vez.",
+    validUntil: "Válido hasta las {time}",
+    expired: "Este código ha caducado. Crea uno nuevo.",
+    error: "No se pudo crear un código. Inténtalo de nuevo.",
+    phoneStep: "Toca Emparejar una sonda arriba y ten el código a la vista.",
   },
   healthLabels: {
     healthy: "Bien",

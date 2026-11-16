@@ -72,9 +72,21 @@ const fr: DeviceDetailMessages = {
       "Pour une sonde qui affiche son réseau ProbeHarbor-Setup (neuve, ou après un appui de 5 secondes sur BOOT). Scannez avec l’appareil photo du téléphone.",
     copyKey:
       "Ouvrez cette page sur votre téléphone, affichez la clé de l’appareil et touchez Copier.",
+    joinNetworkCode:
+      "Rejoignez le réseau {network} de la sonde. Sa page de configuration s’ouvre : choisissez votre Wi-Fi, saisissez le code d’appairage là où elle demande la clé d’appareil, Enregistrez.",
     joinNetwork:
       "Rejoignez le réseau {network} de la sonde. Sa page de configuration s’ouvre : choisissez votre Wi-Fi, collez la clé, Enregistrez.",
     hint: "Si la page ne s’ouvre pas, allez sur 192.168.4.1. La sonde ferme son réseau après 3 minutes sans activité ; redémarrez-la pour réessayer.",
+  },
+  pairing: {
+    button: "Appairer une sonde",
+    newCode: "Nouveau code",
+    making: "Création d’un code…",
+    hint: "Saisissez ce code là où la sonde demande sa clé d’appareil : sur sa page de configuration (téléphone) ou sur /flash. Il ne sert qu’une fois.",
+    validUntil: "Valable jusqu’à {time}",
+    expired: "Ce code a expiré. Créez-en un nouveau.",
+    error: "Impossible de créer un code. Réessayez.",
+    phoneStep: "Touchez Appairer une sonde ci-dessus et gardez le code sous les yeux.",
   },
   healthLabels: {
     healthy: "Bon",

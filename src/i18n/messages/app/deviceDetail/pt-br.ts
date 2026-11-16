@@ -71,9 +71,21 @@ const ptBr: DeviceDetailMessages = {
     intro:
       "Para uma sonda que mostra a rede ProbeHarbor-Setup (nova, ou depois de segurar BOOT por 5 segundos). Escaneie com a câmera do celular.",
     copyKey: "Abra esta página no celular, mostre a chave do dispositivo e toque em Copiar.",
+    joinNetworkCode:
+      "Entre na rede {network} da sonda. A página de configuração abre: escolha seu Wi-Fi, digite o código de pareamento onde ela pede a chave do dispositivo e Salve.",
     joinNetwork:
       "Entre na rede {network} da sonda. A página de configuração abre: escolha seu Wi-Fi, cole a chave e Salve.",
     hint: "Se a página não abrir, acesse 192.168.4.1. A sonda fecha a rede após 3 minutos sem uso; reinicie-a para tentar de novo.",
+  },
+  pairing: {
+    button: "Parear uma sonda",
+    newCode: "Novo código",
+    making: "Criando um código…",
+    hint: "Digite este código onde a sonda pede a chave do dispositivo: na página de configuração (celular) ou no /flash. Ele vale uma só vez.",
+    validUntil: "Válido até {time}",
+    expired: "Este código expirou. Crie um novo.",
+    error: "Não foi possível criar um código. Tente de novo.",
+    phoneStep: "Toque em Parear uma sonda acima e mantenha o código à vista.",
   },
   healthLabels: {
     healthy: "Saudável",

@@ -18,3 +18,13 @@ describe("firmwareUpdateAvailable", () => {
     expect(LATEST_FIRMWARE_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
   });
 });
+
+describe("pairingAvailable", () => {
+  it("is on only once the released firmware is 1.6.0 or newer", async () => {
+    const { pairingAvailable } = await import("./firmwareVersion");
+    expect(pairingAvailable("1.5.2")).toBe(false);
+    expect(pairingAvailable("1.6.0")).toBe(true);
+    expect(pairingAvailable("1.10.0")).toBe(true);
+    expect(pairingAvailable("2.0.0")).toBe(true);
+  });
+});
