@@ -6565,3 +6565,10 @@ timeout; key box without autocorrect; pairing claims over verified TLS only.
 Passed on the C3 SuperMini via the phone (HARDWARE-TESTS.md test 16) after
 five rounds of fixes found in the owner's tests. Docs: /flash key step and
 FAQ, troubleshooting (2b4edf8).
+
+Rollout check (2026-11-17): Garage Door, Garage Rear, House Hallway, House
+Living Room and Shed all report 1.6.1 and posted within the last minute;
+no crash report received after the update (the three stored are the
+2026-11-15 pre-1.5.1 ones). Pairing verified on hardware on all three
+boards (HARDWARE-TESTS.md tests 15 and 16). Open: /flash's "firmware too
+old for a code" message is untested in a browser (needs a pre-1.6.0 board).

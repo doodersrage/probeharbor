@@ -61,7 +61,7 @@ decision with its test and hardware evidence) is
 | Security | Done for the audit gaps; probe TLS verified with fallback | Watch the bcrypt re-hash count reach 0, then drop `bcryptjs` |
 | Dashboard | Done; certificate warning per probe | Warning text not yet seen in a browser |
 | Integrations | Spec done; HA in the default HACS store | — |
-| Firmware updates | Signed OTA with rollback; 1.6.1 (setup page fixes) at 100% since 2026-11-16, after 1.6.0 (pairing codes) the same day; 1.5.2 before them (the owner's 3 probes on 1.5.2, 2026-11-15) | Watch device pages for any "Last crash" |
+| Firmware updates | Signed OTA with rollback; 1.6.1 (setup page fixes) at 100% since 2026-11-16, after 1.6.0 (pairing codes) the same day; 1.5.2 before them; all 5 of the owner's probes on 1.6.1 and reporting, no new crash reports (2026-11-17) (the owner's 3 probes on 1.5.2, 2026-11-15) | Watch device pages for any "Last crash" |
 
 ## Decisions in force
 
