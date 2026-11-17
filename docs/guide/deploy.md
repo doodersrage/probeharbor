@@ -125,7 +125,7 @@ the run. Run `pnpm db:pending` first to list what isn't applied yet.
 ## Rollback and recovery
 
 **Rehearsed:** restoring a `pnpm db:backup` dump (2026-11-11, see below).
-**Not rehearsed:** a Worker rollback, a Neon point-in-time restore, and R2.
+**Not rehearsed:** a Worker rollback, a Layerbase restore from its own backups, and R2.
 Treat those parts as the procedure to follow and test, not as proof that they
 work.
 
@@ -149,26 +149,25 @@ npx wrangler rollback <version-id> --config dist/server/wrangler.json -m "reason
   the migration first, using the SQL in its header comment, after checking
   what data the undo would drop.
 
-### Database backups (Neon)
+### Database backups (Layerbase)
 
-Neon can restore a branch to an earlier point only within the plan's
-history window (check it in the Neon console; it isn't verified here). For
-anything older, the copies are the ones you make. If the database is lost or
-corrupted beyond that window, every reading, alert, account and device key
-is gone.
+Layerbase has no point-in-time restore; it keeps its own backup every 12
+hours (not verified here). The copies that matter are the ones you make: if
+the database is lost or corrupted between them, every reading, alert,
+account and device key since the last copy is gone.
 
-Off-site copies are made daily (below, once set up). Also make a local one
+Off-site copies are made every 6 hours (below). Also make a local one
 before a migration that changes or removes data:
 
 ```bash
 pnpm db:backup
 ```
 
-- It reads `DATABASE_URL_UNPOOLED` from `.env` (Neon → **Connect** with
-  connection pooling off; the pooled `-pooler` host doesn't work with
-  `pg_dump`), or another variable with `--url-env NAME`. It's local only and
+- It reads `DATABASE_URL_UNPOOLED` from `.env` (Layerbase's **direct**
+  connection string; the pooled one doesn't work with `pg_dump`), or another
+  variable with `--url-env NAME`. It's local only and
   isn't pushed to the Worker.
-- It needs `pg_dump` 18 or newer (Neon runs Postgres 18).
+- It needs `pg_dump` 18 or newer (the database runs Postgres 18).
 - It writes `backups/probeharbor-<UTC time>.dump` (compressed, custom
   format; `backups/` is gitignored). It only reads from the database.
 - A failed run leaves no file behind.
@@ -209,8 +208,8 @@ select string_agg(format('select %L t, count(*) n from public.%I', table_name, t
 ```
 
 Run it on production inside `begin read only; … rollback;`. Not covered by
-the rehearsal: restoring into Neon itself and pointing the Worker at it
-(`DATABASE_URL`, `pnpm secrets:push`), and signing in against a restored copy.
+the rehearsal: restoring into a new Layerbase database and pointing the
+Worker at it (the Hyperdrive config's connection string, and `DATABASE_URL`), and signing in against a restored copy.
 
 ### Automatic off-site backups
 
@@ -246,20 +245,20 @@ run (including "not configured") emails whoever last changed the schedule.
    Write*, that bucket only. `gh secret set R2_BACKUP_ACCESS_KEY_ID` and
    `gh secret set R2_BACKUP_SECRET_ACCESS_KEY` (paste when asked).
 4. **Read-only database role.** Every table has row-level security, so the
-   role needs `BYPASSRLS` to see all rows. In the Neon SQL editor, on the
-   production branch, as `neondb_owner`:
+   role needs `BYPASSRLS` to see all rows. On Layerbase (`psql` with the
+   direct string), as the owner `postgres`, in database `probeharbor`:
 
    ```sql
    create role backup_reader login bypassrls password '<long random>';
-   grant connect on database neondb to backup_reader;
+   grant connect on database probeharbor to backup_reader;
    grant usage on schema public to backup_reader;
    grant select on all tables in schema public to backup_reader;
    grant select on all sequences in schema public to backup_reader;
-   alter default privileges for role neondb_owner in schema public grant select on tables to backup_reader;
-   alter default privileges for role neondb_owner in schema public grant select on sequences to backup_reader;
+   alter default privileges for role postgres in schema public grant select on tables to backup_reader;
+   alter default privileges for role postgres in schema public grant select on sequences to backup_reader;
    ```
 
-   If Neon refuses `bypassrls`, use the owner's direct connection string
+   If a host refuses `bypassrls`, use the owner's direct connection string
    instead (what `pnpm db:backup` uses); it works, with more access than a
    backup needs. Either way use the **direct** (unpooled) string:
    `gh secret set BACKUP_DATABASE_URL`.
@@ -267,10 +266,12 @@ run (including "not configured") emails whoever last changed the schedule.
    summary ("Backed up N tables, … verified") and that the object is in the
    bucket.
 
-**Status:** set up 2026-11-14; restore rehearsed the same day into an empty
-local Postgres 18 (no errors; schema identical to a database built from the
-migrations). The dump leaves out Neon's `neon_auth` schema (Neon's own auth
-product, unused here). `BACKUP_DATABASE_URL` may be the bare URL or Neon's
+**Status:** set up 2026-11-14 on Neon; restore rehearsed the same day into
+an empty local Postgres 18 (no errors; schema identical to a database built
+from the migrations). Moved to Layerbase with the database (2026-11-15:
+`backup_reader` with `BYPASSRLS` there, every 6 hours). The dump still
+leaves out a `neon_auth` schema if one exists (Neon's own auth product,
+unused; Layerbase has none). `BACKUP_DATABASE_URL` may be the bare URL or a
 `psql '…'` form.
 
 **Restore from R2:** download the object (dashboard,

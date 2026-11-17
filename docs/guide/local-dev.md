@@ -20,8 +20,8 @@ The database driver is chosen at runtime (`src/lib/db/client.ts`):
   `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgresql://…`
   (the local stand-in for the Worker's Hyperdrive binding). This is how
   production runs since 2026-11-15.
-- **A Neon database**: leave `DATABASE_DRIVER` unset and set `DATABASE_URL`
-  to it (Neon's HTTP driver works only with Neon).
+- **Directly**: leave `DATABASE_DRIVER` unset and set `DATABASE_URL` to any
+  Postgres; the app connects with `pg` (no Hyperdrive).
 
 Useful scripts:
 
@@ -56,8 +56,8 @@ Configure in `.env` (local) and Cloudflare Worker secrets / vars (production). F
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_DRIVER` | `hyperdrive` = Postgres through the `HYPERDRIVE` binding (production); unset = Neon over `DATABASE_URL` |
-| `DATABASE_URL` | Neon Postgres for the Neon driver; also what local scripts (`ops:*`) connect to — server only |
+| `DATABASE_DRIVER` | `hyperdrive` = Postgres through the `HYPERDRIVE` binding (production); unset = straight to `DATABASE_URL` |
+| `DATABASE_URL` | Postgres (Layerbase in production) when not using Hyperdrive; also what local scripts (`ops:*`) connect to — server only |
 | `DATABASE_URL_UNPOOLED` | Direct connection for `db:migrate` / `db:backup` / `db-copy` (local only) |
 | `BETTER_AUTH_SECRET` | Signs sessions (Better Auth) |
 | `GOOGLE_*` / `DISCORD_*` / `GITHUB_*` | OAuth sign-in apps |

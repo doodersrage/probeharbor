@@ -6572,3 +6572,17 @@ no crash report received after the update (the three stored are the
 2026-11-15 pre-1.5.1 ones). Pairing verified on hardware on all three
 boards (HARDWARE-TESTS.md tests 15 and 16). Open: /flash's "firmware too
 old for a code" message is untested in a browser (needs a pre-1.6.0 board).
+
+Neon removed (2026-11-17). The owner deleted the Neon project (five days
+before the planned 2026-11-22) after pointing the Worker's DATABASE_URL at
+Layerbase. Checked first: production unaffected (all queries already go
+through Hyperdrive; probes posting, /api/health 200, backups and deploys
+green). The app's fallback without Hyperdrive was still Neon's HTTP
+driver, which can't reach Layerbase: it now connects with pg straight to
+DATABASE_URL (`DbTarget` = {via: hyperdrive | direct, connectionString}),
+Better Auth always uses a pg Pool, and @neondatabase/serverless is gone
+(dependency, client, the nine DB tests' pool mocks). Docs: local-dev,
+architecture, database-move (marked done), deploy (Layerbase backups and
+backup role), README, .env.example, wrangler.jsonc. Checks: typecheck 0,
+lint clean, `pnpm test` 3796, `pnpm test:db` 432 (the auth tests now run
+the direct pg path), build (no Neon code in the bundle), docs build.

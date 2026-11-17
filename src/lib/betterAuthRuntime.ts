@@ -1,13 +1,12 @@
 /**
  * Better Auth on Workers. A database pool can't be
- * shared between requests on Workers, so each call opens a Neon pool
- * (WebSocket, pg-compatible), builds the auth instance, runs, and closes the
- * pool before returning.
+ * shared between requests on Workers, so each call opens a small pg pool
+ * (through Hyperdrive in production), builds the auth instance, runs, and
+ * closes the pool before returning.
  *
  * Imports cloudflare:workers (via runtimeEnv): load it with a dynamic
  * import from anything the middleware or a prerendered page imports.
  */
-import { Pool as NeonPool } from "@neondatabase/serverless";
 import pg from "pg";
 import { currentDbTarget } from "./db/client";
 import type { Locale } from "../i18n/locales";
@@ -70,11 +69,8 @@ export async function withBetterAuth<T>(
   const target = await currentDbTarget();
   const secret = getRuntimeEnv("BETTER_AUTH_SECRET");
   if (!target || !secret) throw new Error("Better Auth needs DATABASE_URL and BETTER_AUTH_SECRET.");
-  // Same database as every other query: Neon's pool, or pg through Hyperdrive.
-  const pool =
-    target.driver === "neon"
-      ? new NeonPool({ connectionString: target.url, max: 2 })
-      : new pg.Pool({ connectionString: target.connectionString, max: 2 });
+  // Same database as every other query (through Hyperdrive in production).
+  const pool = new pg.Pool({ connectionString: target.connectionString, max: 2 });
   try {
     const siteUrl = buildSiteUrl(request);
     const auth = createBetterAuth({

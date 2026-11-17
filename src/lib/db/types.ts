@@ -71,8 +71,7 @@ const PARSERS: Record<number, (text: string) => unknown> = {
 };
 
 /**
- * Wrap a driver's default `getTypeParser` with ours. Works with both pg and
- * @neondatabase/serverless, which share pg's types interface.
+ * Wrap pg's default `getTypeParser` with ours.
  */
 export function makeGetTypeParser(
   fallback: (oid: number, format?: "text" | "binary") => unknown,

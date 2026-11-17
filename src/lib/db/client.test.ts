@@ -1,34 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
 
-const calls: unknown[][] = [];
-vi.mock("@neondatabase/serverless", async (orig) => {
-  const real = await orig<typeof import("@neondatabase/serverless")>();
-  return {
-    ...real,
-    neon: () => ({
-      query: async (...args: unknown[]) => {
-        calls.push(args);
-        return [];
-      },
-    }),
-  };
+const clients: Array<{ types?: { getTypeParser: (oid: number) => (t: string) => unknown } }> = [];
+vi.mock("pg", async (orig) => {
+  const real = await orig<typeof import("pg")>();
+  class Client {
+    constructor(options: (typeof clients)[number]) {
+      clients.push(options);
+    }
+    async connect() {}
+    async query() {
+      return { rows: [] };
+    }
+    async end() {}
+  }
+  return { ...real, default: { ...real.default, Client } };
 });
 
-import { neonRunner } from "./client";
+import { pgRunner } from "./client";
 
-describe("neonRunner", () => {
-  it("passes the Supabase-shape type parsers on every query", async () => {
-    await neonRunner("postgres://u:p@example.invalid/db")("select count(*) as n", [1]);
-    const [text, params, options] = calls[0] as [
-      string,
-      unknown[],
-      { types?: { getTypeParser: (oid: number) => (t: string) => unknown } },
-    ];
-    expect(text).toBe("select count(*) as n");
-    expect(params).toEqual([1]);
-    // The HTTP driver ignores neon(url, { types }) for .query(): without this, counts are strings
-    // and timestamps are Date objects (checked against a Neon branch, 2026-11-07).
-    const parse = options?.types?.getTypeParser;
+describe("pgRunner", () => {
+  it("gives each client the app's type parsers (counts as numbers, dates as text)", async () => {
+    await pgRunner("postgres://u:p@example.invalid/db")("select count(*) as n", [1]);
+    const parse = clients[0]?.types?.getTypeParser;
     expect(parse?.(20)("12")).toBe(12); // bigint
     expect(parse?.(1082)("2026-11-07")).toBe("2026-11-07"); // date stays text
     expect(parse?.(1184)("2026-11-07 16:02:33.474049+00")).toBe("2026-11-07T16:02:33.474049+00:00"); // timestamptz
@@ -39,11 +32,11 @@ describe("resolveDbTarget", () => {
   const env = (vars: Record<string, string>) => (k: string) => vars[k];
   const hd = { connectionString: "postgresql://hd.invalid/db" };
 
-  it("is Neon over DATABASE_URL by default, with or without a binding", async () => {
+  it("connects straight to DATABASE_URL by default, with or without a binding", async () => {
     const { resolveDbTarget } = await import("./client");
-    expect(resolveDbTarget(env({ DATABASE_URL: "postgresql://neon.invalid/db" }), hd)).toEqual({
-      driver: "neon",
-      url: "postgresql://neon.invalid/db",
+    expect(resolveDbTarget(env({ DATABASE_URL: "postgresql://db.invalid/db" }), hd)).toEqual({
+      via: "direct",
+      connectionString: "postgresql://db.invalid/db",
     });
   });
 
@@ -55,7 +48,7 @@ describe("resolveDbTarget", () => {
         hd,
       ),
     ).toEqual({
-      driver: "hyperdrive",
+      via: "hyperdrive",
       connectionString: hd.connectionString,
     });
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -65,8 +58,8 @@ describe("resolveDbTarget", () => {
         undefined,
       ),
     ).toEqual({
-      driver: "neon",
-      url: "postgresql://n/db",
+      via: "direct",
+      connectionString: "postgresql://n/db",
     });
     expect(err).toHaveBeenCalledWith(expect.stringContaining("no HYPERDRIVE binding"));
     err.mockRestore();

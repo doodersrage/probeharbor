@@ -75,9 +75,10 @@
 			"entrypoint": "I18n"
 		}
 	],
-	// Postgres through Hyperdrive (Layerbase). Inert unless the runtime setting
-	// DATABASE_DRIVER=hyperdrive (src/lib/db/client.ts); otherwise Neon over
-	// DATABASE_URL. Config made by the owner in the dashboard (caching off).
+	// Postgres through Hyperdrive (Layerbase). Used when the runtime setting
+	// DATABASE_DRIVER=hyperdrive (src/lib/db/client.ts); otherwise the app
+	// connects straight to DATABASE_URL. Config made by the owner in the
+	// dashboard (caching off).
 	"hyperdrive": [
 		{
 			"binding": "HYPERDRIVE",

@@ -17,10 +17,6 @@ vi.mock("../../../lib/runtimeEnv", () => ({
     key === "DATABASE_URL" ? testDatabaseUrl(process.env.PROBEHARBOR_TEST_DB!) : ENV[key],
   hasRuntimeEnv: () => false,
 }));
-vi.mock("@neondatabase/serverless", async (orig) => ({
-  ...(await orig<typeof import("@neondatabase/serverless")>()),
-  Pool: (await import("pg")).default.Pool,
-}));
 vi.mock("../../../lib/turnstile", () => ({
   getTurnstileToken: () => "ok",
   verifyTurnstileToken: async () => ({ success: true }),

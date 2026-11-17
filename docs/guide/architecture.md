@@ -4,7 +4,7 @@ description: "How ProbeHarbor is built: Astro on Cloudflare Workers, Postgres (L
 
 # Architecture
 
-ProbeHarbor is an **Astro 7** app with **`output: 'server'`** on **Cloudflare Workers**, **Postgres** (Layerbase, reached through Cloudflare **Hyperdrive**; the Neon HTTP driver is still supported, see `DATABASE_DRIVER`), **Better Auth** for sign-in (inside the app), and **Stripe** for paid plans.
+ProbeHarbor is an **Astro 7** app with **`output: 'server'`** on **Cloudflare Workers**, **Postgres** (Layerbase, reached through Cloudflare **Hyperdrive** with `pg`; Neon until 2026-11-15), **Better Auth** for sign-in (inside the app), and **Stripe** for paid plans.
 
 ```
 Sensors / relays ──push or pull──► Cloudflare Worker (Astro)

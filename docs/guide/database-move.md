@@ -1,10 +1,13 @@
 # Moving the database (Neon → Layerbase)
 
-Why and the measurements: `IMPLEMENTATION_LOG.md`, "Layerbase trial". The
-app already supports both: `DATABASE_DRIVER=hyperdrive` sends every query
-through the `HYPERDRIVE` binding (Postgres, e.g. Layerbase); anything else
-is Neon over `DATABASE_URL`. Both are runtime settings: switching takes
-effect without a rebuild.
+**Done.** Production moved to Layerbase on 2026-11-15; the owner deleted the
+Neon project on 2026-11-17, and the Neon driver was removed from the app the
+same day. This page is the record of how, and a guide for a future move.
+
+Why and the measurements: `IMPLEMENTATION_LOG.md`, "Layerbase trial".
+`DATABASE_DRIVER=hyperdrive` sends every query through the `HYPERDRIVE`
+binding; without it the app connects straight to `DATABASE_URL` (both with
+`pg`). The Worker's `DATABASE_URL` points at Layerbase too.
 
 ## Before
 
@@ -33,9 +36,11 @@ effect without a rebuild.
    scheduled run; a probe posts `200` (its buffered readings arrive with
    their times); Overview and a device page load; sign in and out.
 
-Rollback while Neon is kept: `pnpm wrangler secret put DATABASE_DRIVER` →
-`neon`. Anything written to Layerbase after step 3 isn't in Neon, so roll
-back only for a real failure, early.
+Rollback (while the old database existed): point `DATABASE_URL` back at it
+and unset `DATABASE_DRIVER`. Anything written after step 3 isn't in the old
+database, so roll back only for a real failure, early. Since Neon was
+deleted (2026-11-17) there is no rollback target; restores come from the
+backups (`deploy.md`).
 
 ## After
 
@@ -48,7 +53,9 @@ back only for a real failure, early.
 - Local `DATABASE_URL_UNPOOLED` → Layerbase, so `pnpm db:migrate` targets it.
 - CI's e2e branch can stay on Neon until Neon is closed, then move to
   Layerbase's second database.
-- After a week without problems: delete the Neon project.
+- After a week without problems: delete the Neon project (done early, on
+  2026-11-17, by the owner; the Worker's `DATABASE_URL` was moved to
+  Layerbase first).
 
 Rehearsed 2026-11-15: `db-copy.mjs` from the Neon e2e branch (a copy of
 production) into an empty local Postgres 18: 54 tables, 282,081 rows, all

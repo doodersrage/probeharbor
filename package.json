@@ -60,7 +60,6 @@
     "@better-auth/passkey": "1.7.18",
     "@block65/webcrypto-web-push": "^2.0.0",
     "@lucide/astro": "~1.68.0",
-    "@neondatabase/serverless": "1.2.0",
     "@sentry/astro": "^11.10.0",
     "@sentry/cloudflare": "^11.10.0",
     "@tailwindcss/vite": "^4.3.4",

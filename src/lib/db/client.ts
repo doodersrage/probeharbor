@@ -1,15 +1,14 @@
 /**
- * Database access: Neon Postgres (the app moved here from Supabase in
- * IMPLEMENTATION_LOG.md steps 3-7).
+ * Database access: Postgres on Layerbase (since 2026-11-15; Neon before,
+ * Supabase before that: IMPLEMENTATION_LOG.md).
  *
- * Queries go to Neon over HTTP (@neondatabase/serverless), one request per
- * query, no connection to open: measured ~25-30 ms per query from a Worker
- * vs ~160 ms to open a TCP connection first (2026-11-07 trial). Results are
+ * On Workers, queries go through Cloudflare Hyperdrive (DATABASE_DRIVER=
+ * hyperdrive and the HYPERDRIVE binding); otherwise straight to
+ * DATABASE_URL (local development, scripts). Both use pg. Results are
  * converted to the shapes the app expects (see ./types).
  *
  * Always pass values as parameters ($1, $2, ...); never build SQL from input.
  */
-import { neon, types as neonTypes } from "@neondatabase/serverless";
 import pg from "pg";
 import { getRuntimeEnv } from "../runtimeEnv";
 import { makeGetTypeParser } from "./types";
@@ -22,30 +21,11 @@ export type QueryRunner = <Row = Record<string, unknown>>(
 let testRunner: QueryRunner | null = null;
 let cached: { url: string; run: QueryRunner } | null = null;
 
-const getTypeParser = makeGetTypeParser(
-  neonTypes.getTypeParser as (oid: number, format?: "text" | "binary") => unknown,
-);
-
-const queryTypes = { types: { getTypeParser } as never };
-
 /**
- * The parsers go on every query: the HTTP driver ignores `types` given to
- * neon(url, ...) when queries run through sql.query() (checked against a
- * Neon branch with @neondatabase/serverless 1.2.0: counts came back as
- * strings, timestamps and dates as Date objects).
- */
-export function neonRunner(url: string): QueryRunner {
-  const sql = neon(url, queryTypes);
-  return async <Row>(text: string, params: readonly unknown[] = []) =>
-    (await sql.query(text, params as unknown[], queryTypes)) as Row[];
-}
-
-/**
- * Postgres over Cloudflare Hyperdrive (e.g. Layerbase): a fresh pg client per
- * query, as Cloudflare recommends; Hyperdrive keeps the real connections
- * warm (2–6 ms to connect from a Worker, 2026-11-15 spike). No query relies
- * on a session (the Neon HTTP driver has none either), so this is the same
- * contract.
+ * A fresh pg client per query, as Cloudflare recommends for Hyperdrive,
+ * which keeps the real connections warm (2–6 ms to connect from a Worker,
+ * 2026-11-15 spike). No query relies on a session. Without Hyperdrive each
+ * query opens its own connection: fine for scripts and local development.
  */
 const pgTypes = {
   getTypeParser: makeGetTypeParser(
@@ -64,15 +44,13 @@ export function pgRunner(connectionString: string): QueryRunner {
   };
 }
 
-/** Where queries go: Neon over HTTP (default), or Postgres through Hyperdrive. */
-export type DbTarget =
-  | { driver: "neon"; url: string }
-  | { driver: "hyperdrive"; connectionString: string };
+/** Where queries go: through Hyperdrive, or straight to DATABASE_URL. */
+export type DbTarget = { via: "hyperdrive" | "direct"; connectionString: string };
 
 /**
- * DATABASE_DRIVER=hyperdrive with a HYPERDRIVE binding selects Hyperdrive;
- * anything else is Neon over DATABASE_URL, as before. Switching back is a
- * runtime setting (no rebuild). Null when nothing is configured.
+ * DATABASE_DRIVER=hyperdrive with a HYPERDRIVE binding selects Hyperdrive
+ * (production); anything else connects straight to DATABASE_URL. Null when
+ * nothing is configured.
  */
 export function resolveDbTarget(
   read: (key: string) => string | undefined,
@@ -80,13 +58,13 @@ export function resolveDbTarget(
 ): DbTarget | null {
   if (read("DATABASE_DRIVER")?.trim().toLowerCase() === "hyperdrive") {
     const cs = hyperdrive?.connectionString;
-    if (cs) return { driver: "hyperdrive", connectionString: cs };
+    if (cs) return { via: "hyperdrive", connectionString: cs };
     console.error(
       "DATABASE_DRIVER=hyperdrive but there is no HYPERDRIVE binding; using DATABASE_URL.",
     );
   }
   const url = read("DATABASE_URL")?.trim();
-  return url ? { driver: "neon", url } : null;
+  return url ? { via: "direct", connectionString: url } : null;
 }
 
 /** The Worker's HYPERDRIVE binding, if any (undefined outside Workers). */
@@ -141,14 +119,8 @@ export async function query<Row = Record<string, unknown>>(
       );
       throw new DbQueryError(describeStatement(text), new Error("DATABASE_URL is not set"));
     }
-    const key =
-      target.driver === "neon" ? `neon:${target.url}` : `hyperdrive:${target.connectionString}`;
-    if (cached?.url !== key) {
-      cached = {
-        url: key,
-        run: target.driver === "neon" ? neonRunner(target.url) : pgRunner(target.connectionString),
-      };
-    }
+    const key = `${target.via}:${target.connectionString}`;
+    if (cached?.url !== key) cached = { url: key, run: pgRunner(target.connectionString) };
     run = cached.run;
   }
   try {

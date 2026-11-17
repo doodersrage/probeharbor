@@ -76,7 +76,7 @@ export async function upgradeCopiedPasswordHash(
 export type AuthEmail = { email: string; url: string; token: string };
 
 export type BetterAuthDeps = {
-  /** A pg-compatible Pool (pg locally, @neondatabase/serverless Pool on Workers). */
+  /** A pg Pool (through Hyperdrive on Workers). */
   database: unknown;
   /** BETTER_AUTH_SECRET: signs sessions and encrypts TOTP secrets. */
   secret: string;
