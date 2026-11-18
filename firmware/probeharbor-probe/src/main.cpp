@@ -88,7 +88,7 @@
 #include "ota_pubkey.h"
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "1.6.1"
+#define FIRMWARE_VERSION "1.6.2"
 #endif
 /*
  * The flasher talks to whichever USB port the board is plugged into. On the
@@ -382,9 +382,52 @@ WiFiManager wifiManager;
 WiFiManagerParameter keyParam("key", "Device key or pairing code (Dashboard → Devices)", "", MAX_KEY_LEN,
                               "autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"none\" spellcheck=\"false\"");
 // Shown on the setup page above the fields (a parameter with no id is text).
-WiFiManagerParameter setupHelp(
+// WiFiManager keeps a pointer to this text, so rewriting the buffer changes
+// the next page load: after a failed join it says why (setupNoteFailed).
+static const char SETUP_HELP[] =
     "<p>After Save the probe joins your Wi-Fi; that can take up to a minute. If the Wi-Fi "
-    "password was wrong, reconnect to ProbeHarbor-Setup, open 192.168.4.1 and try again.</p>");
+    "password was wrong, reconnect to ProbeHarbor-Setup, open 192.168.4.1 and try again.</p>";
+static char setupNote[512];
+WiFiManagerParameter setupHelp(setupNote);
+// Last station disconnect reason (esp_wifi_types.h), for the setup page note.
+volatile uint8_t lastWifiReason = 0;
+
+static void setupNoteHelp() {
+  strlcpy(setupNote, SETUP_HELP, sizeof(setupNote));
+}
+
+/**
+ * "Couldn't join <network>" and the likely cause, on the setup page. Before
+ * 1.6.2 the reason only went to the serial log; on the phone the page just
+ * said "Saving credentials" (owner's tests, 2026-11-16).
+ */
+static void setupNoteFailed(const String& ssid) {
+  String name;
+  for (unsigned i = 0; i < ssid.length() && i < 32; i++) {  // the name is shown as HTML
+    char ch = ssid[i];
+    if (ch == '&') name += "&amp;";
+    else if (ch == '<') name += "&lt;";
+    else if (ch == '>') name += "&gt;";
+    else if (ch == '"') name += "&quot;";
+    else if (ch == '\'') name += "&#39;";
+    else name += ch;
+  }
+  const char* why;
+  switch (lastWifiReason) {
+    case 2: case 15: case 202: case 204:  // auth expired, 4-way handshake, auth failed, handshake timeout
+      why = "The password looks wrong (passwords are case-sensitive).";
+      break;
+    case 201:  // no AP found
+      why = "The network wasn't found: check its name, and that it's a 2.4 GHz network (the probe "
+            "can't use 5 GHz).";
+      break;
+    default:
+      why = "Check the network name and password, and that the network is in range.";
+  }
+  snprintf(setupNote, sizeof(setupNote),
+           "<p style=\"color:#b00\"><strong>Couldn't join %s.</strong> %s Choose it and try again.</p>%s",
+           name.c_str(), why, SETUP_HELP);
+}
 WiFiManagerParameter extrasParam("extras", "Also wired (any of: leak, door, battery)", "", MAX_EXTRAS_LEN);
 
 String deviceKey;
@@ -522,6 +565,7 @@ uint8_t portalSavePasses = 0;
 
 void onPortalParamsSaved() {
   portalSavePasses = 1;
+  lastWifiReason = 0;
   WiFi.setAutoReconnect(true);  // off after a failed join (afterPortalSave)
 #if CONFIG_IDF_TARGET_ESP32C3
   // WiFiManager joins the entered network next: at full power unless this
@@ -598,6 +642,14 @@ static bool joinAtLowPower(const char*, const char*) { return false; }
 static void logWifiDisconnects() {
   WiFi.onEvent(
       [](WiFiEvent_t, WiFiEventInfo_t info) {
+        // Keep the most telling reason since the last Save: a plain timeout
+        // (39) or our own disconnect (8) came after "wrong password" (2)
+        // and hid it (S3 test, 2026-11-17).
+        uint8_t r = info.wifi_sta_disconnected.reason;
+        bool telling = r == 2 || r == 15 || r == 201 || r == 202 || r == 204;
+        bool keep = lastWifiReason == 2 || lastWifiReason == 15 || lastWifiReason == 201 ||
+                    lastWifiReason == 202 || lastWifiReason == 204;
+        if (telling || !keep) lastWifiReason = r;
         Console.printf("TT wifi disconnected: reason %u\n", (unsigned)info.wifi_sta_disconnected.reason);
       },
       ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
@@ -1528,13 +1580,18 @@ void setup() {
   wifiManager.addParameter(&keyParam);
   wifiManager.addParameter(&extrasParam);
   wifiManager.setSaveParamsCallback(onPortalParamsSaved);
+  setupNoteHelp();
+  wifiManager.setAPCallback([](WiFiManager* wm) {
+    // Opened because the saved network failed (a changed router password,
+    // say): say so on the page.
+    String saved = wm->getWiFiSSID(true);
+    if (!saved.isEmpty()) setupNoteFailed(saved);
 #if CONFIG_IDF_TARGET_ESP32C3
-  // Only the C3 lowers it (1.6.1 printed this line on every board).
-  wifiManager.setAPCallback([](WiFiManager*) {
+    // Only the C3 lowers it (1.6.1 printed this line on every board).
     setupNetworkAtLowPower();
     Console.println("TT setup network: low transmit power");
-  });
 #endif
+  });
   wifiManager.setConfigPortalBlocking(false);
   wifiManager.setConfigPortalTimeout(PORTAL_TIMEOUT_S);
   // A board with the right password joins in a few seconds; a C3 SuperMini at
@@ -1546,10 +1603,23 @@ void setup() {
   wifiManager.setCustomHeadElement(
       "<script>document.addEventListener('submit',function(e){var b=e.target.querySelector("
       "'button[type=submit],button');if(b){setTimeout(function(){b.disabled=true;},0);"
-      "b.textContent='Joining your Wi-Fi\u2026 up to a minute';}},true);</script>");
+      "b.textContent='Joining your Wi-Fi\u2026 up to a minute';}},true);"
+      // WiFiManager's "Saving credentials" page never moves on: after the
+      // join has had its time, go back to the form (which then says why it
+      // failed); if it worked, the setup network is gone and nothing happens.
+      "if(location.pathname.indexOf('wifisave')>=0)setTimeout(function(){location.replace('/wifi');},35000);"
+      "</script>");
   logWifiDisconnects();
   wifiManager.setDebugOutput(false);
   bool online = false;
+#ifdef PROBE_DIAG_WIFI
+  {
+    // Test builds only: what's saved, without the password itself.
+    WiFi.mode(WIFI_STA);
+    Console.printf("TT diag: saved network '%s', password %u characters\n",
+                   wifiManager.getWiFiSSID(true).c_str(), (unsigned)wifiManager.getWiFiPass(true).length());
+  }
+#endif
 #if CONFIG_IDF_TARGET_ESP32C3
   lowTxPower = prefs.getBool("lowtx", false);
   // Start the Wi-Fi driver before asking for the saved network: before that,
@@ -1618,6 +1688,7 @@ static void afterPortalSave() {
 #endif
   if (!wifiManager.getConfigPortalActive()) return;
   Console.println("TT wifi failed: check the network name and password on the setup page");
+  setupNoteFailed(wifiManager.getWiFiSSID(true));
   WiFi.setAutoReconnect(false);
   WiFi.disconnect();
   setupNetworkAtLowPower();

@@ -567,6 +567,41 @@ Not checked on hardware: /flash's "firmware too old for a code" message
 (needs a pre-1.6.0 board; on the plain ESP32 it was hidden by the bug
 above); the fixed flasher with an already-configured board.
 
+## 17. Setup page says why a join failed (1.6.2, source only)
+
+1.6.2: after a failed join from the setup page (or a saved network failing
+at startup) the page shows "Couldn't join <network>" in red with the likely
+cause (password for reasons 2/15/202/204, not found / 2.4 GHz for 201,
+otherwise general), keeping the most telling reason since the Save; the
+network name is HTML-escaped. WiFiManager's "Saving credentials" page goes
+back to the form by itself after 35 s. /flash: a code sent to pre-1.6.0
+firmware is stopped with "install the firmware first" (web change,
+2026-11-16).
+
+**ESP32-S3 (98:C3:77:B5:D0:0C), 2026-11-17/18, phone setup page: passed.**
+- /flash warning: the released 1.5.2 image on the S3, Wi-Fi and a code
+  sent without installing: /flash showed "This board's firmware is older
+  than 1.6.0 …" on `TT key saved`.
+- Note on a saved network failing at startup: seen (owner).
+- Wrong then correct password: reason 15, `wifi failed` 17 s after Save,
+  the page returned to the form with the red note (owner), the correct
+  password paired 5 s after Save.
+- Test build with `-DPROBE_DIAG_WIFI` (prints the saved network and the
+  password's LENGTH at startup; never in releases): after wrong (5) then
+  correct (12) from the phone, 12 saved, rejoined 3/3 restarts in 1–2 s.
+  After a wrong password saved over USB (10) and the setup network opened
+  by the failed startup join, then the correct one from the phone: 12
+  saved, rejoined 3/3.
+
+Not reproduced: on 2026-11-17 evening the S3 failed its startup join 5
+times in a row (on 1.6.2 and on released 1.6.1, reasons none / 39 / 204)
+after a wrong-then-correct setup that had joined and paired; a clean setup
+minutes later rejoined 3/3. Cause unknown (possibly network conditions);
+watch for it.
+
+Also seen: the phone setup page doesn't show whether pairing worked (a
+code the server rejected looked like success to the owner). Not yet fixed.
+
 ## ESP32-C3 SuperMini (Teyleten Robot, native USB only): 2026-11-14
 
 A new board, blank flash (ROM: `invalid header: 0xffffffff`, reset every
