@@ -5,7 +5,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { insertTestUser, useTestDatabase } from "../../test/db";
-import { claimPairing, createPairing } from "./pairings";
+import { claimPairing, createPairing, getPairingStatus } from "./pairings";
 
 const db = useTestDatabase();
 const sql = async <R>(text: string, params: unknown[] = []) =>
@@ -105,5 +105,27 @@ describe("device pairings", () => {
     expect(
       await sql("select 1 from public.device_pairings where device_id = $1", [d.deviceId]),
     ).toHaveLength(0);
+  });
+
+  it("a code's status: waiting, then used with its chip; gone once replaced; never another household's", async () => {
+    const d = await device("a@example.com");
+    const other = await device("b@example.com");
+    const id = await createPairing({ ...d, codeHash: h("follow"), expiresAt: soon() });
+    expect(await getPairingStatus(d.householdId, id)).toMatchObject({
+      usedAt: null,
+      usedChip: null,
+    });
+    expect(await getPairingStatus(other.householdId, id)).toBeNull();
+
+    await claimPairing(h("follow"), "ESP32-S3");
+    const used = await getPairingStatus(d.householdId, id);
+    expect(used?.usedChip).toBe("ESP32-S3");
+    expect(used?.usedAt).toBeTruthy();
+
+    const next = await createPairing({ ...d, codeHash: h("next"), expiresAt: soon() });
+    const newer = await createPairing({ ...d, codeHash: h("newer"), expiresAt: soon() });
+    expect(await getPairingStatus(d.householdId, next)).toBeNull(); // replaced by "newer"
+    expect(await getPairingStatus(d.householdId, newer)).not.toBeNull();
+    expect(await getPairingStatus(d.householdId, id)).not.toBeNull(); // used codes stay
   });
 });

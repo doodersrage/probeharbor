@@ -86,6 +86,11 @@ const es: DeviceDetailMessages = {
     expired: "Este código ha caducado. Crea uno nuevo.",
     error: "No se pudo crear un código. Inténtalo de nuevo.",
     phoneStep: "Toca Emparejar una sonda arriba y ten el código a la vista.",
+    waiting: "Esperando a que la sonda lo use…",
+    paired: "Emparejada ✓ con {chip} a las {time}",
+    pairedHint:
+      "La sonda ya usa su nueva clave; su próxima lectura aparecerá aquí en menos de un minuto.",
+    replaced: "Un código más nuevo sustituyó a este.",
   },
   healthLabels: {
     healthy: "Bien",

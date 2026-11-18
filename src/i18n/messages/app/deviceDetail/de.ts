@@ -88,6 +88,11 @@ const de: DeviceDetailMessages = {
     expired: "Dieser Code ist abgelaufen. Erstelle einen neuen.",
     error: "Der Code konnte nicht erstellt werden. Versuche es erneut.",
     phoneStep: "Tippe oben auf Sonde koppeln und behalte den Code im Blick.",
+    waiting: "Warte darauf, dass die Sonde ihn verwendet…",
+    paired: "Gekoppelt ✓ mit {chip} um {time}",
+    pairedHint:
+      "Die Sonde nutzt jetzt ihren neuen Schlüssel; ihr nächster Messwert erscheint hier innerhalb einer Minute.",
+    replaced: "Ein neuerer Code hat diesen ersetzt.",
   },
   healthLabels: {
     healthy: "In Ordnung",

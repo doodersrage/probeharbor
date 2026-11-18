@@ -89,6 +89,9 @@ test.describe("device ingest", () => {
       const claimed = await page.request.post("/api/pair/claim", { data: { code: shown.toLowerCase(), chip: "e2e" } });
       expect(claimed.status()).toBe(200);
       const newKey = ((await claimed.json()) as { key: string }).key;
+      // The page follows its code (every 5 s) and says it paired, with the chip.
+      await expect(pair.getByTestId("pair-probe-paired")).toContainText("Paired", { timeout: 15_000 });
+      await expect(pair.getByTestId("pair-probe-paired")).toContainText("e2e");
       expect((await page.request.post("/api/pair/claim", { data: { code: shown } })).status()).toBe(404);
       expect((await page.request.post(`/api/ingest/${ingestKey}`, { data: { temp1: 41.5 } })).status()).toBe(401);
       expect((await page.request.post(`/api/ingest/${newKey}`, { data: { temp1: 41.5 } })).ok()).toBeTruthy();

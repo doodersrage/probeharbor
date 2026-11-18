@@ -6586,3 +6586,14 @@ architecture, database-move (marked done), deploy (Layerbase backups and
 backup role), README, .env.example, wrangler.jsonc. Checks: typecheck 0,
 lint clean, `pnpm test` 3796, `pnpm test:db` 432 (the auth tests now run
 the direct pg path), build (no Neon code in the bundle), docs build.
+
+Pairing result on the device page (2026-11-18). The phone setup page closes
+once Wi-Fi joins, so it can't say whether pairing worked (the owner took a
+rejected code for success on 2026-11-17). POST /api/devices/pairing now
+returns the code's id; GET /api/devices/pairing?id= gives waiting / paired
+(chip, time) / expired / replaced for the editor's household only; the Pair
+a probe panel follows its code every 5 s while the tab is visible and shows
+"Paired ✓ with <chip> at <time>" (five languages). Tests: route 5 (states,
+401/403/400, no-store), DB 1 (status, other household null, replaced,
+used kept), e2e device spec checks "Paired" after the claim (local run on a
+copy of the e2e database: 3 passed); `pnpm test` 3798.

@@ -86,6 +86,10 @@ const ptBr: DeviceDetailMessages = {
     expired: "Este código expirou. Crie um novo.",
     error: "Não foi possível criar um código. Tente de novo.",
     phoneStep: "Toque em Parear uma sonda acima e mantenha o código à vista.",
+    waiting: "Aguardando a sonda usar o código…",
+    paired: "Pareada ✓ com {chip} às {time}",
+    pairedHint: "A sonda já usa a nova chave; a próxima leitura aparece aqui em até um minuto.",
+    replaced: "Um código mais novo substituiu este.",
   },
   healthLabels: {
     healthy: "Saudável",

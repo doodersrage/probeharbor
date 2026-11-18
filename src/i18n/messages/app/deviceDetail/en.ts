@@ -85,6 +85,10 @@ const en = {
     expired: "This code has expired. Make a new one.",
     error: "Couldn't make a code. Try again.",
     phoneStep: "Tap Pair a probe above and keep the code in view.",
+    waiting: "Waiting for the probe to use it…",
+    paired: "Paired ✓ with {chip} at {time}",
+    pairedHint: "The probe now uses its new key; its next reading appears here within a minute.",
+    replaced: "A newer code replaced this one.",
   },
   healthLabels: {
     healthy: "Healthy",

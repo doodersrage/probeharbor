@@ -87,6 +87,11 @@ const fr: DeviceDetailMessages = {
     expired: "Ce code a expiré. Créez-en un nouveau.",
     error: "Impossible de créer un code. Réessayez.",
     phoneStep: "Touchez Appairer une sonde ci-dessus et gardez le code sous les yeux.",
+    waiting: "En attente de la sonde…",
+    paired: "Appairée ✓ avec {chip} à {time}",
+    pairedHint:
+      "La sonde utilise désormais sa nouvelle clé ; sa prochaine mesure apparaîtra ici d’ici une minute.",
+    replaced: "Un code plus récent a remplacé celui-ci.",
   },
   healthLabels: {
     healthy: "Bon",
