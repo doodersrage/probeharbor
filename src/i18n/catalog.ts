@@ -8,8 +8,14 @@ import { mergeTranslation } from "./translate";
  * English lives in the main Worker bundle (each namespace's `en.ts`). The
  * es/fr/de/pt-br tables live in a separate Worker (workers/i18n) because the
  * main bundle is close to Cloudflare's 3 MB limit. `ensureLocale` fetches a
- * locale's tables over the `I18N` service binding once per isolate and keeps
- * them in memory; after that every lookup is synchronous.
+ * locale's tables over the `I18N` service binding and keeps them in memory
+ * for the isolate; after that every lookup is synchronous.
+ *
+ * In-flight loads are deliberately not shared between requests. Workers
+ * cancels a request's I/O when that request ends, so another request awaiting
+ * the same promise fails with "This promise was created by a request that has
+ * since ended" (and the page 500s). Two requests that race on a cold isolate
+ * each make their own RPC instead; whichever finishes first fills the cache.
  *
  * Middleware calls `ensureLocale` before rendering a page or API route. Code
  * that runs outside a request for a user's language (cron emails, alerts)
@@ -25,7 +31,6 @@ export interface I18nService {
 }
 
 const loaded = new Map<string, Tables>();
-const pending = new Map<string, Promise<void>>();
 const failedAt = new Map<string, number>();
 const RETRY_AFTER_MS = 30_000;
 
@@ -65,21 +70,15 @@ export async function ensureLocale(
       if (loaded.has(k) && !import.meta.env.DEV) return undefined;
       const last = failedAt.get(k);
       if (last !== undefined && Date.now() - last < RETRY_AFTER_MS) return undefined;
-      let job = pending.get(k);
-      if (!job) {
-        job = fetchTables(translated, group)
-          .then((tables) => {
-            loaded.set(k, tables);
-            failedAt.delete(k);
-          })
-          .catch((error: unknown) => {
-            failedAt.set(k, Date.now());
-            console.error(`i18n: could not load ${k}; serving English`, error);
-          })
-          .finally(() => pending.delete(k));
-        pending.set(k, job);
-      }
-      return job;
+      return fetchTables(translated, group)
+        .then((tables) => {
+          loaded.set(k, tables);
+          failedAt.delete(k);
+        })
+        .catch((error: unknown) => {
+          failedAt.set(k, Date.now());
+          console.error(`i18n: could not load ${k}; serving English`, error);
+        });
     }),
   );
 }
@@ -104,7 +103,6 @@ export function getCatalogEntry(namespace: string, locale: Locale): unknown {
 /** Test helper: forget loaded tables. */
 export function resetCatalogForTests(): void {
   loaded.clear();
-  pending.clear();
   failedAt.clear();
 }
 
