@@ -93,7 +93,7 @@ export const answers: Answer[] = [
       },
       {
         label: "How pipes freeze and burst (Farm Bureau Insurance)",
-        url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst",
+        url: "https://www.scfbins.com/resources/articles/how-pipes-freeze-and-burst",
       },
     ],
   },
@@ -385,7 +385,7 @@ export const answers: Answer[] = [
       {
         label:
           "How pipes freeze and burst (Farm Bureau Insurance, citing University of Illinois research)",
-        url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst",
+        url: "https://www.scfbins.com/resources/articles/how-pipes-freeze-and-burst",
       },
     ],
   },
@@ -509,7 +509,7 @@ export const answers: Answer[] = [
       },
       {
         label: "How pipes freeze and burst (Farm Bureau Insurance)",
-        url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst",
+        url: "https://www.scfbins.com/resources/articles/how-pipes-freeze-and-burst",
       },
     ],
   },
@@ -575,7 +575,7 @@ export const answers: Answer[] = [
       },
       {
         label: "How pipes freeze and burst (Farm Bureau Insurance)",
-        url: "https://www.scfbins.com/articles/how-pipes-freeze-and-burst",
+        url: "https://www.scfbins.com/resources/articles/how-pipes-freeze-and-burst",
       },
     ],
   },

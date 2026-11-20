@@ -528,7 +528,7 @@ export default {
       checkedOn: "outubro de 2026",
       links: [
         { label: "Hub YoLink com dois sensores de temperatura e umidade (US$ 59,99)" },
-        { label: "Ficha técnica do YoLink YS8003 (faixa, bateria, alertas)" },
+        { label: "Suporte do YoLink YS8003 (manuais e fichas técnicas)" },
       ],
     },
   },

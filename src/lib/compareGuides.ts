@@ -581,8 +581,8 @@ export const compareGuides: CompareGuide[] = [
           url: "https://shop.yosmart.com/products/ys1603-2ys8003",
         },
         {
-          label: "YoLink YS8003 datasheet (range, battery, alerts)",
-          url: "https://www.yosmart.com/wp-content/uploads/YOLINK-YS8003-TEMPERATURE-HUMIDITY-SENSOR-DATASHEET-091622.pdf",
+          label: "YoLink YS8003 product support (manuals and spec sheets)",
+          url: "https://shop.yosmart.com/pages/product-support?q=YS8003",
         },
       ],
     },

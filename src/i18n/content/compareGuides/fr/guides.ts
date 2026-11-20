@@ -526,7 +526,7 @@ export default {
       checkedOn: "octobre 2026",
       links: [
         { label: "Hub YoLink avec deux capteurs de température et d’humidité (59,99 $ US)" },
-        { label: "Fiche technique YoLink YS8003 (plage, pile, alertes)" },
+        { label: "Assistance YoLink YS8003 (manuels et fiches techniques)" },
       ],
     },
   },

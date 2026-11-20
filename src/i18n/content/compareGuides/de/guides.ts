@@ -522,7 +522,7 @@ export default {
       checkedOn: "Oktober 2026",
       links: [
         { label: "YoLink-Hub mit zwei Temperatur- und Feuchtesensoren (59,99 US$)" },
-        { label: "YoLink YS8003 Datenblatt (Messbereich, Batterie, Alarme)" },
+        { label: "YoLink YS8003 Produktsupport (Anleitungen und Datenblätter)" },
       ],
     },
   },
