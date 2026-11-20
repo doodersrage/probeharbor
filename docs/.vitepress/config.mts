@@ -9,6 +9,50 @@ const onMainDomain = base === "/developers/";
 // count toward probeharbor.dev.
 const docs = `${site}/developers/`;
 
+/**
+ * JSON-LD for a docs page: a TechArticle plus breadcrumbs back to the main
+ * site. No datePublished/dateModified: CI checks out with depth 1, so git
+ * dates would all read as the latest commit, which would be false.
+ */
+function docsStructuredData(url: string, pageTitle: string | undefined, description: string) {
+  const publisher = {
+    "@type": "Organization",
+    name: "ProbeHarbor",
+    url: site,
+    logo: { "@type": "ImageObject", url: `${site}/logo.svg` },
+  };
+  const crumbs = [
+    { name: "ProbeHarbor", url: site },
+    { name: "Developers", url: docs },
+  ];
+  if (url !== docs && pageTitle) crumbs.push({ name: pageTitle, url });
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        headline: pageTitle || "ProbeHarbor Docs",
+        description,
+        url,
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        image: [`${site}/og-dashboard.jpg`],
+        inLanguage: "en-US",
+        author: publisher,
+        publisher,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: crumbs.map((c, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: c.name,
+          item: c.url,
+        })),
+      },
+    ],
+  };
+}
+
 export default defineConfig({
   title: "ProbeHarbor Docs",
   description:
@@ -31,6 +75,7 @@ export default defineConfig({
       ["meta", { property: "og:title", content: title }],
       ["meta", { property: "og:description", content: description }],
       ["meta", { property: "og:url", content: url }],
+      ["script", { type: "application/ld+json" }, JSON.stringify(docsStructuredData(url, pageData.title, description))],
     ];
   },
   head: [
