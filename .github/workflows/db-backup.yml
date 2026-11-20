@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: 24
 
-      # Neon runs Postgres 18; the image ships the 16 client. age encrypts.
+      # The database runs Postgres 18; the image ships the 16 client. age encrypts.
       - name: Install pg_dump 18 and age
         run: |
           sudo apt-get update -qq

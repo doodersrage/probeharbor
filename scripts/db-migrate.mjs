@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Apply SQL migrations in db/migrations/ to the Neon database (production
- * since the 2026-11-07 move off Supabase). `pnpm db:pending` is `--check`.
+ * Apply SQL migrations in db/migrations/ to the production Postgres database
+ * (Layerbase since 2026-11-15; Neon from the 2026-11-07 move off Supabase). `pnpm db:pending` is `--check`.
  *
  * Usage:
  *   pnpm db:migrate                 apply pending migrations
@@ -129,7 +129,7 @@ export function checkTargetUrl(raw, name) {
     /(^|\.)supabase\.(co|com|net)$/i.test(url.hostname) ||
     /pooler\.supabase\./i.test(url.hostname)
   ) {
-    return `${name} points at Supabase. db:migrate is for the Neon database only.`;
+    return `${name} points at Supabase. db:migrate is for the app's Postgres database, not Supabase.`;
   }
   return null;
 }

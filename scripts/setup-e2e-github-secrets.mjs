@@ -5,7 +5,7 @@
  * Usage: pnpm setup:e2e-github-secrets
  *
  * Requires: gh CLI authenticated, .env with E2E_TEST_EMAIL, E2E_TEST_PASSWORD,
- * E2E_DATABASE_URL (the Neon dev branch, never production) and
+ * E2E_DATABASE_URL (the e2e database, never production) and
  * E2E_BETTER_AUTH_SECRET (any random value; CI only).
  */
 import { execSync } from "node:child_process";

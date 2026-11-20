@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Activation funnel and feature usage straight from the database (Neon), so it works
+ * Activation funnel and feature usage straight from the database, so it works
  * without GA4 and counts what actually happened rather than what was clicked.
  *
  * Usage: pnpm ops:funnel [--days 90] [--exclude a@x.com,b@y.com] [--list]

@@ -5,7 +5,7 @@
  *
  * Sets the same password in every database the e2e account is used with:
  * DATABASE_URL (production: ops:dogfood) and, when set, E2E_DATABASE_URL
- * (the Neon dev branch: CI e2e). Only touches the account matching
+ * (the e2e database: CI e2e). Only touches the account matching
  * E2E_TEST_EMAIL, and ends its sessions. Prints no password.
  *
  * The account must already exist with a password (sign up on the site first).

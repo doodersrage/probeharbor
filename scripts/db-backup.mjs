@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /**
- * Back up the production database (Neon) with pg_dump (read-only on the
- * server). Neon keeps only a limited restore window; this is the copy you keep:
- * run it regularly and before any risky migration or data fix.
+ * Back up the production database (Postgres on Layerbase) with pg_dump
+ * (read-only on the server). Layerbase has no point-in-time restore; this is
+ * the copy you keep: run it before any risky migration or data fix. (The
+ * scheduled off-site backup is .github/workflows/db-backup.yml.)
  *
  * Usage: pnpm db:backup [--env-file .env] [--out-dir backups] [--url-env NAME]
- * Reads DATABASE_URL_UNPOOLED from .env by default (Neon → Connect, with
- * "Connection pooling" off: pg_dump needs a direct session) and needs
- * pg_dump 18+ on PATH (Neon runs Postgres 18).
+ * Reads DATABASE_URL_UNPOOLED from .env by default (the database's direct
+ * connection string: pg_dump needs a direct session, not a pooler) and needs
+ * pg_dump 18+ on PATH (the database runs Postgres 18).
  *
  * Writes backups/probeharbor-<UTC time>.dump (pg_dump custom format,
  * compressed; restore with pg_restore). The connection string is passed to
@@ -32,13 +33,13 @@ const env = existsSync(envPath) ? parseEnvFile(readFileSync(envPath, "utf8")) : 
 const raw = (process.env[urlEnv] ?? env[urlEnv] ?? "").trim();
 if (!raw) {
   console.error(
-    `${urlEnv} is not set in ${envPath}. Copy the direct (unpooled) connection string from Neon → Connect into .env.`,
+    `${urlEnv} is not set in ${envPath}. Copy the database's direct (unpooled) connection string into .env (docs/guide/deploy.md, Backups).`,
   );
   process.exit(1);
 }
 
-// Neon's Connect dialog shows `psql 'postgresql://…'` by default; accept
-// that and stray quotes rather than fail on a copy-paste.
+// Connection dialogs often show `psql 'postgresql://…'`; accept that and
+// stray quotes rather than fail on a copy-paste.
 const cleaned = raw
   .replace(/^psql\s+/, "")
   .trim()
@@ -56,7 +57,7 @@ try {
     /['"]/.test(cleaned) && "contains quote characters",
   ].filter(Boolean);
   console.error(
-    `${urlEnv} is not a valid postgres:// URL${hints.length ? ` (${hints.join("; ")})` : ""}. Paste only the connection string from Neon → Connect.`,
+    `${urlEnv} is not a valid postgres:// URL${hints.length ? ` (${hints.join("; ")})` : ""}. Paste only the connection string.`,
   );
   process.exit(1);
 }
@@ -101,9 +102,9 @@ const dump = spawnSync(
     "--format=custom",
     "--no-owner",
     "--no-privileges",
-    // Neon's own auth product schema: switched on in the project but unused
-    // and empty (ProbeHarbor's auth is public.auth_*); the read-only backup
-    // role has no access to it.
+    // Neon's auth product schema, if a database copied from Neon still has
+    // one: unused (ProbeHarbor's auth is public.auth_*) and unreadable by the
+    // read-only backup role. Layerbase has none; excluding it is harmless.
     "--exclude-schema=neon_auth",
     "--file",
     file,
@@ -116,7 +117,7 @@ if (dump.status !== 0) {
   console.error(`pg_dump failed (exit ${dump.status}). No backup was written.`);
   if (/-pooler\./i.test(url.hostname)) {
     console.error(
-      'Hint: that is a pooled host (…-pooler…). Use the direct connection string (Neon → Connect, "Connection pooling" off).',
+      "Hint: that looks like a pooled host (…-pooler…). Use the direct connection string.",
     );
   }
   process.exit(dump.status ?? 1);

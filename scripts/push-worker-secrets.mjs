@@ -60,7 +60,7 @@ const SECRET_KEYS = [
   "NEST_PROJECT_ID",
   "ECOBEE_CLIENT_ID",
   "SENTRY_DSN",
-  // Neon + Better Auth.
+  // Database + Better Auth.
   "DATABASE_URL",
   "BETTER_AUTH_SECRET",
   "GOOGLE_CLIENT_ID",

@@ -1067,7 +1067,7 @@ const pages = [
     blocks: [
       {
         type: "p",
-        html: `Historical charts depend on rows stored in Postgres (Neon)—not on the browser remembering prior values. The Worker writes them: push devices post readings to the ingest API, and server code polls pull feeds on a schedule. Each row is tied to a household and a sensor.`,
+        html: `Historical charts depend on rows stored in Postgres—not on the browser remembering prior values. The Worker writes them: push devices post readings to the ingest API, and server code polls pull feeds on a schedule. Each row is tied to a household and a sensor.`,
       },
       { type: "h2", text: "Insert model" },
       {

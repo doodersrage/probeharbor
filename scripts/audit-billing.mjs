@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Read-only check that Stripe and the database (Neon) agree on who is paying for what.
+ * Read-only check that Stripe and the database agree on who is paying for what.
  * Run it after the first real subscription, and after any plan change or cancel.
  *
  *   - webhook endpoint is enabled on the canonical host with every handled event
