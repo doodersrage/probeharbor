@@ -8,6 +8,9 @@ const onMainDomain = base === "/developers/";
 // Both builds name the main-domain copy as canonical, so links to either one
 // count toward probeharbor.dev.
 const docs = `${site}/developers/`;
+/** The default share-image alt text from src/lib/ogMeta.ts. */
+const shareImageAlt =
+  "ProbeHarbor environmental sensor dashboard with live curves, freeze alerts, and flood/leak contacts";
 
 /**
  * JSON-LD for a docs page: a TechArticle plus breadcrumbs back to the main
@@ -68,20 +71,37 @@ export default defineConfig({
     const path = pageData.relativePath.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
     const url = `${docs}${path}`;
     // Per-page share previews: each page's own title, description, and URL.
-    const title = pageData.title ? `${pageData.title} | ${siteData.title}` : siteData.title;
+    // The home page's title is the site title; don't repeat it.
+    const title =
+      pageData.title && pageData.title !== siteData.title
+        ? `${pageData.title} | ${siteData.title}`
+        : siteData.title;
     const description = pageData.frontmatter.description ?? pageData.description ?? siteData.description;
     return [
       ["link", { rel: "canonical", href: url }],
       ["meta", { property: "og:title", content: title }],
       ["meta", { property: "og:description", content: description }],
       ["meta", { property: "og:url", content: url }],
+      ["meta", { property: "og:type", content: url === docs ? "website" : "article" }],
+      ["meta", { name: "twitter:title", content: title }],
+      ["meta", { name: "twitter:description", content: description }],
       ["script", { type: "application/ld+json" }, JSON.stringify(docsStructuredData(url, pageData.title, description))],
     ];
   },
   head: [
     ["link", { rel: "icon", href: `${site}/favicon.svg` }],
     ["meta", { name: "theme-color", content: "#090b0f" }],
+    // Same share image and tags as the main site's Layout (src/lib/ogMeta.ts).
+    ["meta", { property: "og:site_name", content: "ProbeHarbor" }],
+    ["meta", { property: "og:locale", content: "en_US" }],
     ["meta", { property: "og:image", content: `${site}/og-dashboard.jpg` }],
+    ["meta", { property: "og:image:type", content: "image/jpeg" }],
+    ["meta", { property: "og:image:width", content: "1200" }],
+    ["meta", { property: "og:image:height", content: "630" }],
+    ["meta", { property: "og:image:alt", content: shareImageAlt }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    ["meta", { name: "twitter:image", content: `${site}/og-dashboard.jpg` }],
+    ["meta", { name: "twitter:image:alt", content: shareImageAlt }],
   ],
   themeConfig: {
     logo: { src: `${site}/favicon.svg`, alt: "ProbeHarbor" },
