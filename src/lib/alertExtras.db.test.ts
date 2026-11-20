@@ -28,7 +28,7 @@ const db = useTestDatabase();
 const sql = async <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
   (await db.client().query(text, params)).rows as T[];
 
-describe("alert settings history (Neon)", () => {
+describe("alert settings history", () => {
   it("keeps the newest saves only, newest first, and restores one", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await saveAlertSettingsForUser(userId, DEFAULT_ALERT_SETTINGS);
@@ -71,7 +71,7 @@ describe("alert settings history (Neon)", () => {
   });
 });
 
-describe("snooze links (Neon)", () => {
+describe("snooze links", () => {
   it("a link snoozes once; a second use is refused", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await saveAlertSettingsForUser(userId, DEFAULT_ALERT_SETTINGS);
@@ -140,7 +140,7 @@ describe("snooze links (Neon)", () => {
   });
 });
 
-describe("webhook delivery log (Neon)", () => {
+describe("webhook delivery log", () => {
   it("records only the host and lists the user's own entries, newest first", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     const b = await insertTestUser(db.client(), "b@example.com");

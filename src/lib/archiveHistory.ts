@@ -14,11 +14,11 @@ export async function archiveOldReadings(options?: {
 }): Promise<ArchiveResult> {
   const retentionDays = options?.retentionDays ?? RAW_READING_RETENTION_DAYS;
   const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
-  return archiveOldReadingsNeon(cutoff, options?.r2);
+  return archiveHouseholdReadings(cutoff, options?.r2);
 }
 
 /** Archive each household's aged readings (queries in src/lib/db/householdTools.ts). */
-async function archiveOldReadingsNeon(
+async function archiveHouseholdReadings(
   cutoff: Date,
   r2: R2Bucket | undefined,
 ): Promise<ArchiveResult> {

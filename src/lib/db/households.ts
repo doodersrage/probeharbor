@@ -1,5 +1,5 @@
 /**
- * Neon versions of the queries in src/lib/households.ts. Same inputs, same
+ * Postgres versions of the queries in src/lib/households.ts. Same inputs, same
  * results and error shapes; households.ts calls these.
  *
  * Differences from the old Supabase code, all deliberate:

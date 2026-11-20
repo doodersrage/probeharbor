@@ -1,5 +1,5 @@
 /**
- * Neon versions of the alert-settings queries in src/lib/notify.ts: load /
+ * Postgres versions of the alert-settings queries in src/lib/notify.ts: load /
  * save settings, cooldown stamps (including the compare-and-set claim that
  * keeps one alert from going out twice), escalation stamp, delivery evidence.
  *
@@ -86,9 +86,10 @@ const JSONB_TIMESTAMPTZ = /^\d{4,}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?[+-]
 /**
  * The user's settings row, or null when there is none. Throws on failure.
  *
- * Read as one jsonb value, not `select *`: the table has ~90 columns, and
- * Neon's HTTP driver sends metadata for every column with every result, so
- * `select *` cost ~12.6 KB per read against ~2 KB this way. It's read on
+ * Read as one jsonb value, not `select *`: the table has ~90 columns. On
+ * Neon's HTTP driver (before the Layerbase move), which sent metadata for
+ * every column with every result, `select *` cost ~12.6 KB per read against
+ * ~2 KB this way; one value is still the smaller result. It's read on
  * every probe post and twice per user on every 15-minute pass. Values come
  * out as `select *` gave them (alertSettings.db.test.ts checks a full row):
  * jsonb already uses PostgREST's shapes, and timestamptz is normalized to UTC.

@@ -1,7 +1,7 @@
 /**
  * Email + password routes on Better Auth, end to end
  * against a local Postgres: the real route handlers, the real Better Auth
- * runtime (its Neon pool swapped for pg) and the real email builder (only
+ * runtime (its pool swapped for a test pg pool) and the real email builder (only
  * the final send is captured).
  */
 import pg from "pg";
@@ -110,7 +110,7 @@ async function registerAndConfirm(email: string, password = "a-good-password") {
   return confirm(ctx("GET", `${link.pathname}${link.search}`));
 }
 
-describe("register and confirm (Neon)", () => {
+describe("register and confirm", () => {
   it("sends a translated confirmation link; following it confirms and signs in", async () => {
     const res = await register(
       ctx("POST", "/api/auth/register", {
@@ -191,7 +191,7 @@ describe("register and confirm (Neon)", () => {
   });
 });
 
-describe("sign in and out (Neon)", () => {
+describe("sign in and out", () => {
   it("right password signs in; wrong password is the usual error", async () => {
     await registerAndConfirm("a@example.com");
     const bad = await signin(
@@ -280,7 +280,7 @@ function sessionJar(res: Response): Record<string, string> {
 const signIn = (email: string, password: string) =>
   signin(ctx("POST", "/api/auth/signin", { form: { email, password } }));
 
-describe("password reset (Neon)", () => {
+describe("password reset", () => {
   async function requestReset(email: string, locale = "en") {
     mail.length = 0;
     const res = await forgot(ctx("POST", "/api/auth/forgot-password", { form: { email }, locale }));

@@ -1,5 +1,5 @@
 /**
- * Neon versions of the device setup / settings queries in src/lib/devices.ts
+ * Postgres versions of the device setup / settings queries in src/lib/devices.ts
  * (the ingest-path ones are in ./ingest).
  * The caller-facing checks (name required, same household, messages) stay in
  * devices.ts; these run the SQL.

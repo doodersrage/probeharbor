@@ -1,5 +1,5 @@
 /**
- * The weekly digest counts only emails that went out (Neon path): a
+ * The weekly digest counts only emails that went out: a
  * suppressed address is "skipped", a failed send is an error, neither is
  * "sent". (Found when running the job on the scrubbed Neon dev copy: it
  * reported sent: 1 for an address the mailer had refused.)
@@ -64,7 +64,7 @@ beforeEach(() => {
   mail.failing.clear();
 });
 
-describe("weekly digest counts (Neon)", () => {
+describe("weekly digest counts", () => {
   it("a delivered digest is sent; a suppressed one is skipped; a failed one is an error", async () => {
     await ownerWithReadings("ok@example.com");
     await ownerWithReadings("bounced@example.com");

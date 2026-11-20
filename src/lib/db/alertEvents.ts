@@ -1,5 +1,5 @@
 /**
- * Neon versions of the alert-event queries in src/lib/alertEvents.ts (the
+ * Postgres versions of the alert-event queries in src/lib/alertEvents.ts (the
  * Alerts log, acknowledgement, auto-resolve, and the "unhandled" count).
  * Every query is scoped to one user.
  *

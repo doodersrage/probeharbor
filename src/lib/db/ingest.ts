@@ -1,5 +1,5 @@
 /**
- * Neon versions of the queries on the push-ingest path (POST /api/ingest/…):
+ * Postgres versions of the queries on the push-ingest path (POST /api/ingest/…):
  * device lookup by key, sensor discovery, device meta / last seen, readings,
  * and daily ingest counts. Called from devices.ts, sensorReadings.ts and
  * ingestStats.ts.

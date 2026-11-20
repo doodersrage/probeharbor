@@ -24,7 +24,7 @@ async function home(email: string) {
   return { id, home: m!.household_id };
 }
 
-describe("household fields (Neon)", () => {
+describe("household fields", () => {
   it("reads and updates allowed columns of one household only", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");

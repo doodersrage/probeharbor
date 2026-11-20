@@ -253,7 +253,7 @@ async function signInWithPasskey(key: SoftAuthenticator, next?: string, origin =
   return { browser, res, assertion };
 }
 
-describe("passkeys (Neon)", () => {
+describe("passkeys", () => {
   it("add one in settings, then sign in with it on a fresh browser", async () => {
     const { browser, id } = await signedIn("a@example.com");
     const key = new SoftAuthenticator();

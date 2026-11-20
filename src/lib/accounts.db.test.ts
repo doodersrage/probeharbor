@@ -41,7 +41,7 @@ async function deviceWithReading(householdId: string) {
 const exists = async (table: string, column: string, value: string) =>
   (await sql(`select 1 from public.${table} where ${column} = $1`, [value])).length > 0;
 
-describe("account deletion (Neon)", () => {
+describe("account deletion", () => {
   it("a sole owner's household, devices and readings go with the account", async () => {
     const a = await person("a@example.com");
     const device = await deviceWithReading(a.home);

@@ -1,5 +1,5 @@
 /**
- * Neon versions of smaller household tools: inbound webhooks
+ * Postgres versions of smaller household tools: inbound webhooks
  * (inboundWebhooks.ts), claims-pack exports (claimsPackExports.ts), saved
  * History views (historySavedViews.ts) and cold-storage archives
  * (archiveHistory.ts). Changes name the

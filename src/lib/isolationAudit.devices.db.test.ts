@@ -1,5 +1,5 @@
 /**
- * Household / user isolation audit for the device-side Neon modules
+ * Household / user isolation audit for the device-side database modules
  * (src/lib/db/devices.ts, deviceActions.ts, pucks.ts, thermostats.ts,
  * pushTokens.ts, remaining.ts).
  *

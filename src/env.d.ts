@@ -1,5 +1,5 @@
 interface ImportMetaEnv {
-  /** Neon pooled connection string. Server-only. */
+  /** Postgres connection string (when Hyperdrive isn't bound: local dev, scripts). Server-only. */
   readonly DATABASE_URL?: string;
   /** Date-based app version (YYYY.MM.DD[.N]) stamped by the deploy workflow; "" in local builds. */
   readonly APP_VERSION?: string;

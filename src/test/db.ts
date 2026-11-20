@@ -6,14 +6,13 @@
  * 127.0.0.1) where the user may create databases, e.g.
  *   TEST_DATABASE_URL=postgres://postgres@127.0.0.1:5432/postgres pnpm test:db
  * Global setup creates a throwaway database, applies db/migrations, and drops
- * it afterwards. Every query commits on its own, as in production (Neon
- * HTTP); after each test all tables are emptied except the seeded `groups`.
+ * it afterwards. Every query commits on its own, as in production; after each test all tables are emptied except the seeded `groups`.
  * (Not one rolled-back transaction per test: inside a transaction now() is
  * fixed, so rows would share created_at and ordering wouldn't match
  * production.)
  *
- * The app talks to Neon over HTTP in production; tests use `pg` with the same
- * type conversion, so the SQL and the result shapes are what get tested.
+ * Production also uses `pg` (through Hyperdrive); tests use the same type
+ * conversion, so the SQL and the result shapes are what get tested.
  */
 import path from "node:path";
 import pg from "pg";

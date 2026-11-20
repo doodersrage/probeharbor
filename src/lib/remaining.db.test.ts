@@ -24,7 +24,7 @@ async function home(email: string) {
   return { id, home: m!.household_id };
 }
 
-describe("last small queries (Neon)", () => {
+describe("last small queries", () => {
   it("mobile sign-in exchange tokens work once, and not after expiry", async () => {
     const token = await createMobileExchangeToken("access-1", "refresh-1");
     expect(token).toBeTruthy();

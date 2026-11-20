@@ -1,5 +1,5 @@
 /**
- * Neon versions of the reading queries in src/lib/sensorReadings.ts. Called
+ * Postgres versions of the reading queries in src/lib/sensorReadings.ts. Called
  *
  * Row cap: series are read newest first with a cap of MAX_SERIES_ROWS (the
  * 10 pages x 1000 rows the old Supabase reads used) and returned oldest first,

@@ -25,7 +25,7 @@ async function makeAdmin(userId: string) {
   );
 }
 
-describe("admin checks and user manager (Neon)", () => {
+describe("admin checks and user manager", () => {
   it("only members of the admin group are admins", async () => {
     const admin = await insertTestUser(db.client(), "admin@example.com");
     const user = await insertTestUser(db.client(), "user@example.com");
@@ -60,7 +60,7 @@ describe("admin checks and user manager (Neon)", () => {
   });
 });
 
-describe("contact submissions (Neon)", () => {
+describe("contact submissions", () => {
   it("pages, filters by status, searches safely, and updates one row", async () => {
     for (const [name, status] of [
       ["Alice", "new"],
@@ -89,7 +89,7 @@ describe("contact submissions (Neon)", () => {
   });
 });
 
-describe("ops logs (Neon)", () => {
+describe("ops logs", () => {
   it("server errors are recorded and listed newest first", async () => {
     await recordServerError({ path: "/a", method: "POST", error: new Error("first") });
     await recordServerError({ path: "/b", error: "second" });

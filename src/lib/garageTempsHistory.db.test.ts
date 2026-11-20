@@ -56,7 +56,7 @@ async function pair(
   );
 }
 
-describe("History table (Neon)", () => {
+describe("History table", () => {
   it("pages temperature readings newest first, with humidity paired, and counts them", async () => {
     const a = await setup("a@example.com", "Garage");
     const b = await setup("b@example.com", "Theirs");
@@ -114,7 +114,7 @@ describe("History table (Neon)", () => {
   });
 });
 
-describe("full history for export (Neon)", () => {
+describe("full history for export", () => {
   it("reads past one page without gaps or repeats, newest first", async () => {
     const a = await setup("a@example.com", "Garage");
     const total = HISTORY_PAGE_ROWS + 120;
@@ -141,7 +141,7 @@ describe("full history for export (Neon)", () => {
   });
 });
 
-describe("charts (Neon)", () => {
+describe("charts", () => {
   it("sampled chart points come from the household's own sensors", async () => {
     const a = await setup("a@example.com", "Garage");
     const b = await setup("b@example.com", "Theirs");
@@ -172,7 +172,7 @@ describe("charts (Neon)", () => {
   });
 });
 
-describe("History helpers (Neon)", () => {
+describe("History helpers", () => {
   it("filter options list the household's devices and temperature probes", async () => {
     const a = await setup("a@example.com", "Garage");
     await setup("b@example.com", "Theirs");

@@ -1,5 +1,5 @@
 /**
- * Neon versions of the admin and ops queries: user manager (the
+ * Postgres versions of the admin and ops queries: user manager (the
  * caller-checked Postgres functions), group membership (admin check),
  * server error log, contact submissions, checkout analytics, app status.
  *

@@ -47,7 +47,7 @@ async function home(email: string) {
   return m!.household_id;
 }
 
-describe("household status pages (Neon)", () => {
+describe("household status pages", () => {
   it("a page's token resolves to its household; regenerate and revoke stop the old link", async () => {
     const a = await home("a@example.com");
     const { token } = await createStatusPageToken(a, "  ");
@@ -77,7 +77,7 @@ describe("household status pages (Neon)", () => {
   });
 });
 
-describe("status email subscriptions (Neon)", () => {
+describe("status email subscriptions", () => {
   it("subscribe → confirm → listed; re-subscribing a confirmed address keeps its link; unsubscribe removes it", async () => {
     await expect(subscribeToStatusUpdates(" Ops@Example.com ")).resolves.toEqual({ ok: true });
     const token = lastEmailedToken();
@@ -128,7 +128,7 @@ describe("status email subscriptions (Neon)", () => {
   });
 });
 
-describe("status notifier state (Neon)", () => {
+describe("status notifier state", () => {
   it("no row reads as null, then remembers the last value", async () => {
     await expect(readLastKnownHealthy()).resolves.toBeNull();
     await writeLastKnownHealthy(false);
@@ -138,7 +138,7 @@ describe("status notifier state (Neon)", () => {
   });
 });
 
-describe("status links from before hashing (Neon)", () => {
+describe("status links from before hashing", () => {
   it("a row holding only a raw token (no hash) no longer opens a page", async () => {
     const a = await home("a@example.com");
     const raw = "0123456789abcdef0123456789abcdef0123";

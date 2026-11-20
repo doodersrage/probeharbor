@@ -1,5 +1,5 @@
 /**
- * Push registrations on the Neon path, through the real API routes (only the
+ * Push registrations against Postgres, through the real API routes (only the
  * sign-in and plan checks are stubbed). The Supabase client must never be
  * created on this path.
  */
@@ -52,7 +52,7 @@ beforeEach(() => {
   signedIn.userId = "";
 });
 
-describe("browser push subscriptions (Neon)", () => {
+describe("browser push subscriptions", () => {
   it("subscribe saves, re-subscribe updates keys, unsubscribe removes", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     signedIn.userId = a;
@@ -97,7 +97,7 @@ describe("browser push subscriptions (Neon)", () => {
   });
 });
 
-describe("app tokens (Neon)", () => {
+describe("app tokens", () => {
   it("register saves platform and app, re-register updates, delete removes", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     signedIn.userId = a;
@@ -135,7 +135,7 @@ describe("app tokens (Neon)", () => {
   });
 });
 
-describe("hand-off on its own keeps the current user's registration (Neon)", () => {
+describe("hand-off on its own keeps the current user's registration", () => {
   it("removes the endpoint / token from other users only", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     const b = await insertTestUser(db.client(), "b@example.com");

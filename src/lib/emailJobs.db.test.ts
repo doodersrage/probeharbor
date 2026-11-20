@@ -1,5 +1,5 @@
 /**
- * Email jobs on the Neon path. Mail sending is stubbed; everything else is
+ * Email jobs against Postgres. Mail sending is stubbed; everything else is
  * real. (Monthly / quarterly / freeze-drill also load preferences through
  * userTempConfig.ts, not converted yet; their queries are tested directly.)
  */
@@ -39,7 +39,7 @@ beforeEach(() => {
   mail.to = [];
 });
 
-describe("user records (Neon)", () => {
+describe("user records", () => {
   it("email, sign-up time, confirmation and both metadata objects", async () => {
     const id = await insertTestUser(db.client(), "a@example.com");
     await sql(
@@ -58,7 +58,7 @@ describe("user records (Neon)", () => {
   });
 });
 
-describe("email suppressions and unsubscribe (Neon)", () => {
+describe("email suppressions and unsubscribe", () => {
   it("suppress, check, list, unsuppress", async () => {
     await expect(addEmailSuppression(" Bounce@Example.com ", "bounce")).resolves.toEqual({
       ok: true,
@@ -94,7 +94,7 @@ describe("email suppressions and unsubscribe (Neon)", () => {
   });
 });
 
-describe("drip and trial emails (Neon)", () => {
+describe("drip and trial emails", () => {
   it("the first drip email goes out about an hour after sign-up, once, then advances the stage", async () => {
     const id = await insertTestUser(db.client(), "new@example.com");
     await sql(
@@ -150,7 +150,7 @@ describe("drip and trial emails (Neon)", () => {
   });
 });
 
-describe("report and digest queries (Neon)", () => {
+describe("report and digest queries", () => {
   it("flags, stamps (allow-listed), first reading, owned household, digest fan-out", async () => {
     const owner = await insertTestUser(db.client(), "owner@example.com");
     const member = await insertTestUser(db.client(), "member@example.com");

@@ -1,5 +1,5 @@
 /**
- * Neon versions of thermostat connections (thermostatConnections.ts) and
+ * Postgres versions of thermostat connections (thermostatConnections.ts) and
  * snapshots (thermostatSnapshots.ts).
  * One connection per household and provider; every query names the household.
  */

@@ -1,7 +1,7 @@
 /**
  * OAuth sign-in through the app's routes on Better Auth:
  * /api/auth/signin (start) → provider (stubbed) → the app's callback route
- * → /api/auth/oauth-done. Local Postgres; the runtime's Neon pool is pg.
+ * → /api/auth/oauth-done. Local Postgres; the runtime's pool is pg.
  */
 import bcrypt from "bcryptjs";
 import type { APIContext } from "astro";
@@ -154,7 +154,7 @@ async function passwordUser(email: string) {
   return u!.id;
 }
 
-describe("OAuth through the app's routes (Neon)", () => {
+describe("OAuth through the app's routes", () => {
   it("new GitHub user: lands on oauth-done, gets the sign-up language, the next page and a session", async () => {
     profile = { id: "5150", email: "octo@example.com", verified: true };
     const { back, appCookies } = await viaRoutes("github", { next: "/dashboard/alerts" });
@@ -230,7 +230,7 @@ describe("OAuth through the app's routes (Neon)", () => {
     );
   });
 
-  it("the Google/Discord callback route only answers on Neon and for known providers", async () => {
+  it("the Google/Discord callback route only answers for known providers", async () => {
     const res = await providerCallback(
       ctx("GET", "/api/auth/callback/twitter", { params: { provider: "twitter" } }),
     );

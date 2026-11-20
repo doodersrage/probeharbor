@@ -1,5 +1,5 @@
 /**
- * Neon versions of the public freeze-alert email subscriptions
+ * Postgres versions of the public freeze-alert email subscriptions
  * (src/lib/freezeAlerts.ts): no account, one row per email, a token in each
  * confirm / unsubscribe link.
  *

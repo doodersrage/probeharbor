@@ -85,7 +85,7 @@ async function reading(
   );
 }
 
-describe("latest value per sensor (Neon)", () => {
+describe("latest value per sensor", () => {
   it("only the household's visible sensors on enabled devices, newest value, offset applied", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -129,7 +129,7 @@ describe("latest value per sensor (Neon)", () => {
   });
 });
 
-describe("reading series (Neon)", () => {
+describe("reading series", () => {
   it("returns every reading in the window oldest first, past Supabase's 1000-row limit", async () => {
     const a = await home("a@example.com");
     const s = await sensor(await device(a, "Probe"), "t");
@@ -204,7 +204,7 @@ describe("reading series (Neon)", () => {
   });
 });
 
-describe("numeric readings in time buckets (Neon)", () => {
+describe("numeric readings in time buckets", () => {
   // Fixed, bucket-aligned times so the expected averages are exact.
   const t0 = Date.parse("2026-11-10T12:00:00.000Z");
   const at = (minutes: number) => new Date(t0 + minutes * 60_000).toISOString();

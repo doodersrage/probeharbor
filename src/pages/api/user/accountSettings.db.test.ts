@@ -1,7 +1,7 @@
 /**
  * Step 4g on Better Auth, against a local Postgres:
  * settings written to user_metadata (now user_profiles.metadata) and
- * account deletion. Real routes and helpers; the runtime's Neon pool is pg.
+ * account deletion. Real routes and helpers; the runtime's pool is pg.
  */
 import type { APIContext } from "astro";
 import { describe, expect, it, vi } from "vitest";
@@ -108,7 +108,7 @@ const metadataOf = async (id: string) =>
     )
   )[0]?.metadata;
 
-describe("settings in user_metadata (Neon)", () => {
+describe("settings in user_metadata", () => {
   it("helpers write user_profiles.metadata from the session token and keep other keys", async () => {
     const { id, token } = await account("a@example.com");
     await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [
@@ -145,7 +145,7 @@ describe("settings in user_metadata (Neon)", () => {
     expect(await metadataOf(id)).toMatchObject({ locale: "fr", onboarding_dismissed: true });
   });
 
-  it("set-session (Supabase tokens) doesn't exist on Neon", async () => {
+  it("set-session (Supabase tokens) no longer exists", async () => {
     const { browser } = await account("a@example.com");
     const res = await setSession(
       ctx(browser, "/api/auth/set-session", {}, { access_token: "a", refresh_token: "b" }),
@@ -154,7 +154,7 @@ describe("settings in user_metadata (Neon)", () => {
   });
 });
 
-describe("account deletion (Neon)", () => {
+describe("account deletion", () => {
   it("needs the right password, then removes the user with its logins and sessions", async () => {
     const { id, browser } = await account("a@example.com");
     const wrong = await deleteAccount(

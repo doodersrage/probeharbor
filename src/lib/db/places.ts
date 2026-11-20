@@ -1,5 +1,5 @@
 /**
- * Neon versions of the freeze map (freezeMap.ts), the indoor reference sensor
+ * Postgres versions of the freeze map (freezeMap.ts), the indoor reference sensor
  * (indoorReference.ts), cross-property snapshots (crossProperty.ts) and the
  * house reference line (houseContext.ts).
  *

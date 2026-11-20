@@ -63,7 +63,7 @@ async function metadataOf(userId: string) {
   return row?.metadata ?? null;
 }
 
-describe("creating households (Neon)", () => {
+describe("creating households", () => {
   it("returns the existing household instead of creating another", async () => {
     const a = await userWithHome("a@example.com");
     await expect(getOrCreateHouseholdForUser(a.id, "a@example.com")).resolves.toEqual({
@@ -117,7 +117,7 @@ describe("creating households (Neon)", () => {
   });
 });
 
-describe("which household a user sees (Neon)", () => {
+describe("which household a user sees", () => {
   it("prefers a shared household with devices over an empty one they own", async () => {
     const owner = await userWithHome("owner@example.com");
     const guest = await userWithHome("guest@example.com");
@@ -172,7 +172,7 @@ describe("which household a user sees (Neon)", () => {
   });
 });
 
-describe("cross-household access (Neon)", () => {
+describe("cross-household access", () => {
   it("membership and role checks say no for someone else's household", async () => {
     const a = await userWithHome("a@example.com");
     const b = await userWithHome("b@example.com");
@@ -212,7 +212,7 @@ describe("cross-household access (Neon)", () => {
   });
 });
 
-describe("changing membership (Neon)", () => {
+describe("changing membership", () => {
   it("adding an existing member changes their role instead of duplicating them", async () => {
     const a = await userWithHome("a@example.com");
     const c = await userWithHome("c@example.com");
@@ -259,7 +259,7 @@ describe("changing membership (Neon)", () => {
   });
 });
 
-describe("cron and admin lists (Neon)", () => {
+describe("cron and admin lists", () => {
   it("one entry per household with its first owner, and distinct owner ids", async () => {
     const a = await userWithHome("a@example.com");
     const b = await userWithHome("b@example.com");
@@ -276,7 +276,7 @@ describe("cron and admin lists (Neon)", () => {
   });
 });
 
-describe("invites never change an existing member's role (Neon)", () => {
+describe("invites never change an existing member's role", () => {
   const roleOf = async (userId: string, householdId: string) =>
     getUserHouseholdRole(userId, householdId);
 
@@ -353,7 +353,7 @@ describe("invites never change an existing member's role (Neon)", () => {
   });
 });
 
-describe("changeHouseholdMemberRole (Neon)", () => {
+describe("changeHouseholdMemberRole", () => {
   it("changes a non-owner member's role in that household only", async () => {
     const a = await userWithHome("a@example.com");
     const b = await userWithHome("b@example.com");

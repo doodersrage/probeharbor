@@ -29,7 +29,7 @@ const column = async (userId: string, name: string) =>
     )
   )[0]?.v;
 
-describe("alert settings (Neon)", () => {
+describe("alert settings", () => {
   it("first load stores the defaults; later loads read them back", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     const first = await getAlertSettingsForUser(userId, {});
@@ -104,7 +104,7 @@ describe("alert settings (Neon)", () => {
   });
 });
 
-describe("cooldowns (Neon)", () => {
+describe("cooldowns", () => {
   it("markCooldown stamps the field, creating the row if needed, and leaves other settings", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await markCooldown(userId, "last_alert_sent_at"); // no row yet
@@ -180,7 +180,7 @@ describe("cooldowns (Neon)", () => {
   });
 });
 
-describe("escalation and delivery evidence (Neon)", () => {
+describe("escalation and delivery evidence", () => {
   it("markEscalation stamps only that user's row", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     const b = await insertTestUser(db.client(), "b@example.com");

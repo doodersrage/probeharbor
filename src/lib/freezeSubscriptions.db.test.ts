@@ -1,5 +1,5 @@
 /**
- * Public freeze-alert email subscriptions on the Neon path: sign up, confirm,
+ * Public freeze-alert email subscriptions against Postgres: sign up, confirm,
  * unsubscribe, and the hourly job (forecast and email stubbed).
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -88,7 +88,7 @@ beforeEach(() => {
   vi.stubEnv("ALERT_ACK_SECRET", "db-test-alert-link-secret");
 });
 
-describe("freeze alert sign-up (Neon)", () => {
+describe("freeze alert sign-up", () => {
   it("subscribe → confirm → re-subscribing the same place changes nothing", async () => {
     await expect(
       subscribeToFreezeAlerts({ email: " Pat@Example.com ", ...place }),
@@ -218,7 +218,7 @@ describe("freeze alert sign-up (Neon)", () => {
   });
 });
 
-describe("hourly freeze alert job (Neon)", () => {
+describe("hourly freeze alert job", () => {
   it("emails confirmed subscribers once per night, never unconfirmed ones", async () => {
     await subscribeToFreezeAlerts({ email: "yes@example.com", ...place });
     await subscribeToFreezeAlerts({ email: "pending@example.com", ...place });

@@ -60,7 +60,7 @@ beforeEach(() => {
   sent.length = 0;
 });
 
-describe("Better Auth sessions in the app's AuthResult shape (Neon)", () => {
+describe("Better Auth sessions in the app's AuthResult shape", () => {
   it("bearer header and cookie both resolve to a Supabase-shaped user with profile metadata", async () => {
     const { token, user } = await confirmedUser("a@example.com");
     await sql(

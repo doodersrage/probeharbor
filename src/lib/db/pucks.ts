@@ -1,5 +1,5 @@
 /**
- * Neon versions of the puck (bay mood display) queries in pucks.ts. Called
+ * Postgres versions of the puck (bay mood display) queries in pucks.ts. Called
  * Pucks belong to one household; claims are
  * proved with an HMAC of a one-time nonce (checked by the caller).
  *

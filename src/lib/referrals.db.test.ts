@@ -27,7 +27,7 @@ const profile = async (userId: string) =>
     )
   )[0];
 
-describe("referral codes (Neon)", () => {
+describe("referral codes", () => {
   it("one code per user, stable, even when asked for twice at once", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     const [c1, c2] = await Promise.all([getOrCreateReferralCode(a), getOrCreateReferralCode(a)]);
@@ -38,7 +38,7 @@ describe("referral codes (Neon)", () => {
   });
 });
 
-describe("referral sign-ups and rewards (Neon)", () => {
+describe("referral sign-ups and rewards", () => {
   it("a new user's referral is recorded once, in the server-only fields", async () => {
     const referrer = await insertTestUser(db.client(), "ref@example.com");
     const newbie = await insertTestUser(db.client(), "new@example.com");

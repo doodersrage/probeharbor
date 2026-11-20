@@ -62,7 +62,7 @@ async function addReading(sensorId: string, householdId: string, value: number) 
   );
 }
 
-describe("device lists (Neon)", () => {
+describe("device lists", () => {
   it("lists only the household's devices, each with its own sensors in order", async () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");
@@ -88,7 +88,7 @@ describe("device lists (Neon)", () => {
   });
 });
 
-describe("device settings can't reach another household (Neon)", () => {
+describe("device settings can't reach another household", () => {
   it("rename, space, key rotation and Save all refuse a device from another household", async () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");
@@ -162,7 +162,7 @@ describe("device settings can't reach another household (Neon)", () => {
   });
 });
 
-describe("sensor edits stay on their device (Neon)", () => {
+describe("sensor edits stay on their device", () => {
   it("update and delete only touch a sensor that belongs to the given device", async () => {
     const a = await household("a@example.com");
     const d1 = await pushDevice(a, "One");
@@ -259,7 +259,7 @@ describe("sensor edits stay on their device (Neon)", () => {
   });
 });
 
-describe("moving a device between households (Neon)", () => {
+describe("moving a device between households", () => {
   it("moves the device and its readings together, and nothing else", async () => {
     const a = await household("a@example.com");
     const b = await household("b@example.com");
@@ -428,7 +428,7 @@ describe("moving a device between households (Neon)", () => {
   });
 });
 
-describe("pull feeds Save (Neon)", () => {
+describe("pull feeds Save", () => {
   const feed = (id: string, url: string, name = id) => ({
     id,
     name,
@@ -512,7 +512,7 @@ describe("pull feeds Save (Neon)", () => {
   });
 });
 
-describe("new push device (Neon)", () => {
+describe("new push device", () => {
   it("stores the key hash and prefix only, trims the space, and starts with no meta and no upload", async () => {
     const h = await household("a@example.com");
     const { device, error } = await createPushDevice(

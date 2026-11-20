@@ -1,5 +1,5 @@
 /**
- * Neon versions of the email-job queries: drip, trial reminders, weekly
+ * Postgres versions of the email-job queries: drip, trial reminders, weekly
  * digest, monthly / quarterly reports, freeze drills, email suppressions and
  * unsubscribe.
  *

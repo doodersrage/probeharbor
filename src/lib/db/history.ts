@@ -1,5 +1,5 @@
 /**
- * Neon versions of the query helpers in src/lib/garageTempsHistory.ts and
+ * Postgres versions of the query helpers in src/lib/garageTempsHistory.ts and
  * src/lib/readingCounts.ts. They return the same row shapes as the old Supabase
  * queries (sensor + device nested as `device_sensors.devices`), so pairing,
  * filtering and thinning stay shared.

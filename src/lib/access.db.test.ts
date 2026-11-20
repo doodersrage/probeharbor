@@ -38,7 +38,7 @@ async function owner(email: string) {
   return { id, home: m!.household_id };
 }
 
-describe("household invites (Neon)", () => {
+describe("household invites", () => {
   it("only the invited address can accept, with the invited role; the link is stored hashed", async () => {
     const a = await owner("owner@example.com");
     const guest = await owner("guest@example.com");
@@ -165,7 +165,7 @@ describe("household invites (Neon)", () => {
   });
 });
 
-describe("API keys (Neon)", () => {
+describe("API keys", () => {
   it("a new key resolves to its household and records use; a revoked key doesn't resolve", async () => {
     const a = await owner("a@example.com");
     const { plaintext, key } = await createHouseholdApiKey({

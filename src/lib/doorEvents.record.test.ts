@@ -5,7 +5,7 @@ vi.mock("./sensorReadings", () => ({
   fetchRecentBoolReadings: (...a: unknown[]) => mockFetchRecentBoolReadings(...a),
 }));
 
-// Neon door queries: saved-session keys (duplicate check), insert, and the
+// Door queries: saved-session keys (duplicate check), insert, and the
 // two lookups for a door already open at the window start.
 const mockSavedSessionKeysSince = vi.fn();
 const mockInsertDoorSessions = vi.fn();

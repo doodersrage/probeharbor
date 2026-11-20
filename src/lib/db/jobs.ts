@@ -1,5 +1,5 @@
 /**
- * Neon versions of the scheduled-job queries: the job-run log (jobRuns.ts,
+ * Postgres versions of the scheduled-job queries: the job-run log (jobRuns.ts,
  * cronHealth.ts), raw-reading retention, stuck-sensor facts
  * (stuckSensors.ts) and feed uptime checks (feedUptimeMonitor.ts).
  *

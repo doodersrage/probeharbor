@@ -66,7 +66,7 @@ async function everyCombination(userId: string) {
   }
 }
 
-describe("the unhandled rule matches isUnhandledAlertEvent exactly (Neon)", () => {
+describe("the unhandled rule matches isUnhandledAlertEvent exactly", () => {
   it("count, unhandled list and kind check agree with the app's rule on every combination", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await everyCombination(userId);
@@ -110,7 +110,7 @@ describe("the unhandled rule matches isUnhandledAlertEvent exactly (Neon)", () =
   });
 });
 
-describe("acknowledging (Neon)", () => {
+describe("acknowledging", () => {
   it("latest picks the newest unhandled alert; then the next; then says there's none", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     const older = await event(userId, "freeze", [], { minutesAgo: 30 });
@@ -160,7 +160,7 @@ describe("acknowledging (Neon)", () => {
   });
 });
 
-describe("auto-resolve (Neon)", () => {
+describe("auto-resolve", () => {
   it("closes matching unhandled alerts, marks why, keeps other meta, reports the channels used", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     const freeze = await event(userId, "freeze", ["email"], { meta: { probeLabel: "Pipe" } });
@@ -192,7 +192,7 @@ describe("auto-resolve (Neon)", () => {
   });
 });
 
-describe("recording and listing (Neon)", () => {
+describe("recording and listing", () => {
   it("records an event and reads it back the way Supabase returned it", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     const id = await recordAlertEvent({
@@ -252,7 +252,7 @@ describe("recording and listing (Neon)", () => {
   });
 });
 
-describe("has the user ever been alerted (Neon)", () => {
+describe("has the user ever been alerted", () => {
   it("false with no alerts, or with only alerts that went nowhere; true once one went out", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await expect(hasDeliveredAnyAlert(userId)).resolves.toBe(false);

@@ -38,7 +38,7 @@ async function home(email: string) {
   return { id, home: m!.household_id };
 }
 
-describe("inbound webhooks (Neon)", () => {
+describe("inbound webhooks", () => {
   it("a token resolves to its household and records use; lists never show the secret; other households can't revoke", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -65,7 +65,7 @@ describe("inbound webhooks (Neon)", () => {
   });
 });
 
-describe("claims-pack exports (Neon)", () => {
+describe("claims-pack exports", () => {
   it("a pack opens by token until revoked by its own household", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -109,7 +109,7 @@ describe("claims-pack exports (Neon)", () => {
   });
 });
 
-describe("saved History views (Neon)", () => {
+describe("saved History views", () => {
   it("each user sees and deletes only their own views", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -130,7 +130,7 @@ describe("saved History views (Neon)", () => {
   });
 });
 
-describe("cold-storage archive (Neon)", () => {
+describe("cold-storage archive", () => {
   it("writes old readings to storage, oldest first, and records the archive", async () => {
     const a = await home("a@example.com");
     const [d] = await sql<{ id: string }>(

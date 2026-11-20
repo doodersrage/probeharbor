@@ -29,7 +29,7 @@ async function endpointsOf(userId: string): Promise<string[]> {
   return rows.map((r) => r.endpoint);
 }
 
-describe("countPushSubscriptions (Neon)", () => {
+describe("countPushSubscriptions", () => {
   it("counts only the given user's subscriptions, as a number", async () => {
     const a = await insertTestUser(db.client(), "a@example.com");
     const b = await insertTestUser(db.client(), "b@example.com");
@@ -47,7 +47,7 @@ describe("countPushSubscriptions (Neon)", () => {
   });
 });
 
-describe("releasePushSubscriptionFromOtherUsers (Neon)", () => {
+describe("releasePushSubscriptionFromOtherUsers", () => {
   it("removes the endpoint from other accounts and leaves everything else", async () => {
     const shared = "https://push.example.com/shared-browser";
     const a = await insertTestUser(db.client(), "a@example.com");

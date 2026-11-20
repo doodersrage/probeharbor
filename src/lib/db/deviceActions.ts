@@ -1,5 +1,5 @@
 /**
- * Neon versions of the device-list actions in src/pages/api/devices/index.ts:
+ * Postgres versions of the device-list actions in src/pages/api/devices/index.ts:
  * delete, bulk enable/disable/space, and adding sensors. Every statement is
  * limited to devices in the given household.
  */

@@ -1,5 +1,5 @@
 /**
- * Postgres → JavaScript value conversion for the Neon database path.
+ * Postgres → JavaScript value conversion for the Postgres database path.
  *
  * The app was written against the JSON shapes Supabase (PostgREST) returned
  * before the move. Postgres drivers return different ones by default (Date

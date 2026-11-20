@@ -61,7 +61,7 @@ async function sensorWithReading(
   return s!.id;
 }
 
-describe("freeze map (Neon)", () => {
+describe("freeze map", () => {
   it("opted-in households are aggregated per city; the latest batch and sparklines read back; old batches prune", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -196,7 +196,7 @@ describe("freeze map (Neon)", () => {
   });
 });
 
-describe("indoor reference sensor (Neon)", () => {
+describe("indoor reference sensor", () => {
   it("only a temperature sensor from the same household can be chosen", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -224,7 +224,7 @@ describe("indoor reference sensor (Neon)", () => {
   });
 });
 
-describe("cross-property snapshots (Neon)", () => {
+describe("cross-property snapshots", () => {
   it("covers the user's households only, with coldest reading and leak state", async () => {
     const a = await home("a@example.com");
     const other = await home("other@example.com");

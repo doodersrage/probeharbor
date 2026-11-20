@@ -1,5 +1,5 @@
 /**
- * Neon versions of the door-history queries in doorEvents.ts,
+ * Postgres versions of the door-history queries in doorEvents.ts,
  * doorEventReport.ts and chartDoorBands.server.ts. Door sessions are scoped by household; door
  * readings by sensor and household (a sensor id from another household reads
  * as no data). Session inserts refuse a sensor outside the row's household.

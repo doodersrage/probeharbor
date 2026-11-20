@@ -54,7 +54,7 @@ async function series(
   );
 }
 
-describe("job-run log (Neon)", () => {
+describe("job-run log", () => {
   it("start, finish and list; abandoned runs are closed as errors, recent ones left alone", async () => {
     const id = await startJobRun("collect-history", { note: "test" });
     expect(typeof id).toBe("number");
@@ -75,7 +75,7 @@ describe("job-run log (Neon)", () => {
   });
 });
 
-describe("housekeeping (Neon)", () => {
+describe("housekeeping", () => {
   it("drops job runs older than 30 days and snooze links 30+ days past expiry; keeps the rest", async () => {
     const { userId } = await home("hk@example.com");
     await sql(
@@ -119,7 +119,7 @@ describe("housekeeping (Neon)", () => {
   });
 });
 
-describe("raw reading retention (Neon)", () => {
+describe("raw reading retention", () => {
   it("rolls old readings into hourly rows, deletes only those, keeps recent ones", async () => {
     const h = await home("a@example.com");
     const t = (await upsertDeviceSensor(h.householdId, h.deviceId, "t", "Bay", "temperature", "F"))
@@ -144,7 +144,7 @@ describe("raw reading retention (Neon)", () => {
   });
 });
 
-describe("stuck sensors (Neon)", () => {
+describe("stuck sensors", () => {
   it("flags a probe repeating one value for a day, not one that varies or one with too few samples", async () => {
     const h = await home("a@example.com");
     const stuck = (
@@ -170,7 +170,7 @@ describe("stuck sensors (Neon)", () => {
   });
 });
 
-describe("feed uptime (Neon)", () => {
+describe("feed uptime", () => {
   it("stores each check for its user", async () => {
     const a = await home("a@example.com");
     await storeFeedUptimeChecks(a.userId, [

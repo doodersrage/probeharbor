@@ -31,7 +31,7 @@ async function home(email: string) {
   return { id, home: m!.household_id };
 }
 
-describe("thermostat connections (Neon)", () => {
+describe("thermostat connections", () => {
   it("one per provider; reconnecting replaces it; token refresh keeps or rotates the refresh token", async () => {
     const a = await home("a@example.com");
     await saveConnection({
@@ -92,7 +92,7 @@ describe("thermostat connections (Neon)", () => {
   });
 });
 
-describe("thermostat snapshots (Neon)", () => {
+describe("thermostat snapshots", () => {
   it("chart points come from the household's snapshots in the window, oldest first", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");

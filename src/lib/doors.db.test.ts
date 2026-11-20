@@ -52,7 +52,7 @@ async function temp(sensorId: string, householdId: string, at: string, f: number
   );
 }
 
-describe("door sessions saved at ingest (Neon)", () => {
+describe("door sessions saved at ingest", () => {
   it("a close after an open saves one session; repeated closes don't duplicate it", async () => {
     const h = await homeWithDoor("a@example.com");
     const sensors = [{ id: h.door.id, label: h.door.label }];
@@ -89,7 +89,7 @@ describe("door sessions saved at ingest (Neon)", () => {
   });
 });
 
-describe("door report (Neon)", () => {
+describe("door report", () => {
   it("lists closed sessions in range for this household, filters by door, flags truncation", async () => {
     const a = await homeWithDoor("a@example.com");
     const b = await homeWithDoor("b@example.com");
@@ -143,7 +143,7 @@ describe("door report (Neon)", () => {
   });
 });
 
-describe("chart door bands (Neon)", () => {
+describe("chart door bands", () => {
   it("saved sessions overlapping the window, oldest first, plus a door open right now", async () => {
     const h = await homeWithDoor("a@example.com");
     await sql(

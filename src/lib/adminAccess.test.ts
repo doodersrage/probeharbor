@@ -5,14 +5,14 @@ vi.mock("./entitlements", () => ({
   getUserEntitlements: (...a: unknown[]) => mockGetUserEntitlements(...a),
 }));
 
-const mockNeonIsUserInGroup = vi.fn();
+const mockIsUserInGroup = vi.fn();
 vi.mock("./db/admin", () => ({
-  isUserInGroup: (...a: unknown[]) => mockNeonIsUserInGroup(...a),
+  isUserInGroup: (...a: unknown[]) => mockIsUserInGroup(...a),
 }));
 
 beforeEach(() => {
   mockGetUserEntitlements.mockReset().mockResolvedValue({ canDownloadCsv: false });
-  mockNeonIsUserInGroup.mockReset().mockResolvedValue(false);
+  mockIsUserInGroup.mockReset().mockResolvedValue(false);
 });
 
 describe("canDownloadHistoryCsv", () => {
@@ -34,11 +34,11 @@ describe("canDownloadHistoryCsv", () => {
 
 describe("isUserInGroup", () => {
   it("returns the database's answer for the given user and group", async () => {
-    mockNeonIsUserInGroup.mockResolvedValue(true);
+    mockIsUserInGroup.mockResolvedValue(true);
     const { isUserInGroup } = await import("./adminAccess");
 
     expect(await isUserInGroup("user-1", "portfolio")).toBe(true);
-    expect(mockNeonIsUserInGroup).toHaveBeenCalledWith("user-1", "portfolio");
+    expect(mockIsUserInGroup).toHaveBeenCalledWith("user-1", "portfolio");
   });
 
   it("returns false when the user isn't in the group", async () => {
@@ -50,10 +50,10 @@ describe("isUserInGroup", () => {
 
 describe("isUserAdmin", () => {
   it("checks membership in the admin group", async () => {
-    mockNeonIsUserInGroup.mockResolvedValue(true);
+    mockIsUserInGroup.mockResolvedValue(true);
     const { isUserAdmin } = await import("./adminAccess");
 
     expect(await isUserAdmin("user-1")).toBe(true);
-    expect(mockNeonIsUserInGroup).toHaveBeenCalledWith("user-1", "admin");
+    expect(mockIsUserInGroup).toHaveBeenCalledWith("user-1", "admin");
   });
 });

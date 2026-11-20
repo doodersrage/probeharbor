@@ -1,5 +1,5 @@
 /**
- * Neon versions of the referral queries (referrals.ts). Trusted referral fields (referred_by,
+ * Postgres versions of the referral queries (referrals.ts). Trusted referral fields (referred_by,
  * referral_reward_days) live in user_profiles.app_metadata (migration 0002),
  * never in the user-facing `metadata`.
  *

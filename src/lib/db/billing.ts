@@ -1,5 +1,5 @@
 /**
- * Neon versions of the billing queries: one Stripe subscription row per user
+ * Postgres versions of the billing queries: one Stripe subscription row per user
  * (stripeSubscriptions.ts), plan-group sync, and webhook event dedup
  * (stripeWebhookEvents.ts). Server-side
  * subscription rows stay the source of truth for plans; nothing here trusts

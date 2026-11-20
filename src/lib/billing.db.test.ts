@@ -33,7 +33,7 @@ const groupsOf = async (userId: string) =>
     )
   ).map((r) => r.name);
 
-describe("Stripe webhook dedup (Neon)", () => {
+describe("Stripe webhook dedup", () => {
   it("a duplicate delivery is skipped; a released event can be processed again", async () => {
     await expect(
       claimStripeWebhookEvent("evt_1", "customer.subscription.updated"),
@@ -55,7 +55,7 @@ describe("Stripe webhook dedup (Neon)", () => {
   });
 });
 
-describe("subscriptions (Neon)", () => {
+describe("subscriptions", () => {
   it("an active subscription is stored and grants the plan group; canceling removes it", async () => {
     const userId = await insertTestUser(db.client(), "a@example.com");
     await expect(

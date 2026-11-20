@@ -138,7 +138,7 @@ const snapshot = async (householdId: string) => ({
   ),
 });
 
-describe("API key scopes on /api/v1 (Neon)", () => {
+describe("API key scopes on /api/v1", () => {
   it("new keys are read-only by default, and resolve with their scope", async () => {
     const a = await home("a@example.com");
     const { plaintext, key } = await createHouseholdApiKey({

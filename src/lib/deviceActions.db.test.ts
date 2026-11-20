@@ -25,7 +25,7 @@ async function homeWithDevice(email: string) {
   return { home: m!.household_id, device: d!.id };
 }
 
-describe("device list actions (Neon)", () => {
+describe("device list actions", () => {
   it("bulk enable/space/delete touch only this household's devices", async () => {
     const a = await homeWithDevice("a@example.com");
     const b = await homeWithDevice("b@example.com");

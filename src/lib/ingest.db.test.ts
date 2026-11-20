@@ -1,5 +1,5 @@
 /**
- * The push-ingest endpoint end to end on the Neon path: a real request goes
+ * The push-ingest endpoint end to end against Postgres: a real request goes
  * through POST /api/ingest/[deviceKey] into Postgres. Only the after-response
  * work (alerts, webhooks, door history) is stubbed; those areas move later.
  */
@@ -80,7 +80,7 @@ beforeEach(() => {
   background.labels = [];
 });
 
-describe("POST /api/ingest on Neon", () => {
+describe("POST /api/ingest", () => {
   it("stores a classic temperature + humidity upload under the device's household", async () => {
     const dev = await pushDevice("a@example.com");
     const response = await ingest(dev.key, { temp: { "0": { c: 5, f: 41, h: 40 } } });
@@ -190,7 +190,7 @@ describe("POST /api/ingest on Neon", () => {
   });
 });
 
-describe("ingest helpers on Neon", () => {
+describe("ingest helpers", () => {
   it("parallel ingest counts are not lost", async () => {
     const dev = await pushDevice("a@example.com");
     const day = new Date().toISOString().slice(0, 10);

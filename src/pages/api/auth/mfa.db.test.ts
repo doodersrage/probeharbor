@@ -185,7 +185,7 @@ beforeEach(() => {
   yubiResult = { ok: false, error: "no" };
 });
 
-describe("TOTP in settings (Neon)", () => {
+describe("TOTP in settings", () => {
   it("asks for the password, sets up after the code, refuses a second one, removes with the password", async () => {
     await signUpConfirmed("a@example.com");
     const { browser } = await signIn("a@example.com");
@@ -292,7 +292,7 @@ describe("TOTP in settings (Neon)", () => {
   });
 });
 
-describe("account with both an authenticator app and a YubiKey (Neon)", () => {
+describe("account with both an authenticator app and a YubiKey", () => {
   async function bothFactors(email: string) {
     const id = await signUpConfirmed(email);
     await sql("insert into public.user_profiles (user_id, metadata) values ($1, $2)", [
@@ -358,7 +358,7 @@ describe("account with both an authenticator app and a YubiKey (Neon)", () => {
   });
 });
 
-describe("sign-in challenge (Neon)", () => {
+describe("sign-in challenge", () => {
   it("TOTP: password step, then a wrong code, then the right code signs in to the next page", async () => {
     await signUpConfirmed("a@example.com");
     const first = await signIn("a@example.com");

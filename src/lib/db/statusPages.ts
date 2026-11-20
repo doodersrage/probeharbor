@@ -1,5 +1,5 @@
 /**
- * Neon versions of household status pages (statusPage.ts), the public status
+ * Postgres versions of household status pages (statusPage.ts), the public status
  * email subscriptions (statusSubscriptions.ts) and the status-change notifier
  * state (statusNotify.ts).
  *

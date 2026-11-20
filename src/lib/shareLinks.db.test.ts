@@ -51,7 +51,7 @@ async function link(householdId: string, createdBy: string, token: string, scope
   )!;
 }
 
-describe("share links (Neon)", () => {
+describe("share links", () => {
   it("a token resolves to its household by hash; the raw token isn't stored", async () => {
     const a = await owner("a@example.com");
     const row = await link(a.home, a.id, "share-token-aaaa");
@@ -160,7 +160,7 @@ describe("share links (Neon)", () => {
   });
 });
 
-describe("chart image shares (Neon)", () => {
+describe("chart image shares", () => {
   it("stores and finds a share by token", async () => {
     const a = await owner("a@example.com");
     const expires = new Date(Date.now() + 86400_000).toISOString();

@@ -120,7 +120,7 @@ async function deliver(
 
 const tier = async (userId: string) => (await getUserEntitlements(userId)).tier;
 
-describe("billing lifecycle through the Stripe webhook (Neon)", () => {
+describe("billing lifecycle through the Stripe webhook", () => {
   it("subscribe, upgrade, downgrade, failed payment, retries exhausted, cancel: the plan follows each event", async () => {
     const userId = await insertTestUser(db.client(), "billing@example.com");
     const sub = { id: "sub_lifecycle_1", status: "active", price: "price_member_test" };

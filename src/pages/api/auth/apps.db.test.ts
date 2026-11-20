@@ -194,7 +194,7 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-describe("app sign-in on Better Auth (Neon)", () => {
+describe("app sign-in on Better Auth", () => {
   it("desktop: email sign-in in the browser hands the app its own bearer session", async () => {
     const id = await account("a@example.com");
     const browser: Browser = new Map();

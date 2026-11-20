@@ -41,7 +41,7 @@ async function claim(householdId: string, bayId = "bay-1", secret = SECRET) {
   return { nonceHex: started.nonceHex, responseHex };
 }
 
-describe("puck registration (Neon)", () => {
+describe("puck registration", () => {
   it("the owning household can re-key its puck; another household can't take it", async () => {
     const a = await home("a@example.com");
     const b = await home("b@example.com");
@@ -88,7 +88,7 @@ describe("puck registration (Neon)", () => {
   });
 });
 
-describe("puck claims and moods (Neon)", () => {
+describe("puck claims and moods", () => {
   it("a correct HMAC binds the bay once; replaying it fails; a wrong one never binds", async () => {
     const a = await home("a@example.com");
     await registerPuck({
