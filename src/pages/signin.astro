@@ -49,7 +49,7 @@ const registerHref = buildRegisterHref({ next: safeNext || REGISTER_NEXT_DEVICES
 <Layout
   title={t.title}
   description={t.description}
-  noindex
+  noindex="follow"
 >
   {registered && (
     <ProductAnalyticsTracker events={[{ name: "sign_up", props: { method: "email" } }]} />
