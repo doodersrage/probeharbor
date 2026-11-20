@@ -57,7 +57,7 @@ export default {
 
   "group-membership-model": [
     {
-      html: 'Los usuarios pertenecen a uno o varios grupos guardados en la base de datos Postgres (Neon): normalmente los usuarios registrados por defecto, los miembros de pago con acceso al CSV y los administradores que revisan los mensajes de contacto. Las rutas del servidor comprueban la pertenencia a un grupo antes de desbloquear la <a class="text-link" href="/about/stripe-csv-subscription">exportación CSV</a> o las herramientas del <a class="text-link" href="/about/admin-dashboard-features">panel de administración</a>, en lugar de repartir listas de correos permitidos por el código.',
+      html: 'Los usuarios pertenecen a uno o varios grupos guardados en la base de datos Postgres: normalmente los usuarios registrados por defecto, los miembros de pago con acceso al CSV y los administradores que revisan los mensajes de contacto. Las rutas del servidor comprueban la pertenencia a un grupo antes de desbloquear la <a class="text-link" href="/about/stripe-csv-subscription">exportación CSV</a> o las herramientas del <a class="text-link" href="/about/admin-dashboard-features">panel de administración</a>, en lugar de repartir listas de correos permitidos por el código.',
     },
     {
       alt: "Cuenta de usuario vinculada a los nodos de grupo de miembro y de administrador con indicadores de funciones",

@@ -101,7 +101,7 @@ export default {
     description:
       "Suivez un relevé du fil de la sonde aux flux JSON, au stockage, jusqu’au tableau de bord d’historique connecté.",
     summary:
-      "Matériel, relais, récupération par le site, stockage dans Neon Postgres et export CSV en une seule chaîne.",
+      "Matériel, relais, récupération par le site, stockage dans Postgres et export CSV en une seule chaîne.",
   },
   "debugging-stale-readings": {
     title: "Déboguer des relevés figés",

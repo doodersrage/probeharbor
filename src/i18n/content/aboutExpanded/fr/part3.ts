@@ -110,7 +110,7 @@ export default {
 
   "spotting-data-gaps": [
     {
-      html: `L’historique enregistré n’est complet que si la chaîne d’interrogation l’est. Une coupure de courant de l’Arduino, une panne du relais, une erreur de configuration d’authentification ou un échec d’insertion dans la base Neon Postgres laissent tous des trous. Savoir distinguer des **données manquantes** d’une **température stable** évite une fausse assurance pendant les vagues de froid et des litiges de facturation sur la complétude des CSV.`,
+      html: `L’historique enregistré n’est complet que si la chaîne d’interrogation l’est. Une coupure de courant de l’Arduino, une panne du relais, une erreur de configuration d’authentification ou un échec d’insertion dans la base Postgres laissent tous des trous. Savoir distinguer des **données manquantes** d’une **température stable** évite une fausse assurance pendant les vagues de froid et des litiges de facturation sur la complétude des CSV.`,
     },
     {
       alt: `Graphique comparant un trou visible et un segment plat, étiquetés différemment`,

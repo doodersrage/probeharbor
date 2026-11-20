@@ -3,7 +3,7 @@ import type { AboutExpandedOverlay } from "../index";
 export default {
   "group-membership-model": [
     {
-      html: 'Os usuários pertencem a um ou mais grupos armazenados no banco de dados Postgres (Neon): normalmente os usuários cadastrados padrão, os membros pagantes com acesso ao CSV e os administradores que revisam as mensagens de contato. As rotas do servidor verificam a participação nos grupos antes de liberar a <a class="text-link" href="/about/stripe-csv-subscription">exportação CSV</a> ou as ferramentas do <a class="text-link" href="/about/admin-dashboard-features">painel de administração</a>, em vez de espalhar listas de e-mails permitidos pelo código.',
+      html: 'Os usuários pertencem a um ou mais grupos armazenados no banco de dados Postgres: normalmente os usuários cadastrados padrão, os membros pagantes com acesso ao CSV e os administradores que revisam as mensagens de contato. As rotas do servidor verificam a participação nos grupos antes de liberar a <a class="text-link" href="/about/stripe-csv-subscription">exportação CSV</a> ou as ferramentas do <a class="text-link" href="/about/admin-dashboard-features">painel de administração</a>, em vez de espalhar listas de e-mails permitidos pelo código.',
     },
     {
       alt: "Conta de usuário ligada aos nós dos grupos member e admin, com flags de recursos",

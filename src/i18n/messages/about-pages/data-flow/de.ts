@@ -16,7 +16,7 @@ const de: Messages = {
     "Aufbau des Live-Feeds, den die Website verarbeitet, nachdem er das lokale Netz verlassen hat.",
   step3Title: "Schritt 3. Abruf und Anzeige auf der Website",
   step3Html:
-    "Wenn du die Startseite lädst, ruft der Server jede konfigurierte Feed-URL ab, liest die Fühlerschlüssel aus und zeigt die Messwertkarten an. Angemeldete Nutzer laden ihre Feed- und Fühlerzuordnungen aus der Datenbank (Neon Postgres) statt der Standardwerte. Wetterdaten nehmen parallel den Weg über OpenWeather, auf Wunsch mit deiner eigenen Stadt.",
+    "Wenn du die Startseite lädst, ruft der Server jede konfigurierte Feed-URL ab, liest die Fühlerschlüssel aus und zeigt die Messwertkarten an. Angemeldete Nutzer laden ihre Feed- und Fühlerzuordnungen aus der Datenbank (Postgres) statt der Standardwerte. Wetterdaten nehmen parallel den Weg über OpenWeather, auf Wunsch mit deiner eigenen Stadt.",
   step4Title: "Schritt 4. Verlauf speichern",
   step4Html:
     'Wenn du angemeldet bist, schreibt jeder erfolgreiche Fühlerabruf Zeilen in die Datenbank, beschränkt auf dein Konto bzw. deinen Haushalt: Feed-Name, Fühlerbezeichnung, Schlüssel, Temperaturen, Luftfeuchtigkeit und Zeitstempel. Gäste sehen weiterhin Live-Daten, ergänzen aber keinen Verlauf. Mehr dazu unter <a class="text-link" href="/about/historical-data">Nutzung der Verlaufsdaten</a>.',

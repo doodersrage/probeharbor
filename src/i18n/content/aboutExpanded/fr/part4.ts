@@ -55,11 +55,11 @@ export default {
 
   "group-membership-model": [
     {
-      html: `Les utilisateurs appartiennent à un ou plusieurs groupes enregistrés dans la base Neon Postgres : en général les utilisateurs inscrits par défaut, les membres payants avec accès CSV et les administrateurs qui traitent les messages de contact. Les routes serveur vérifient l’appartenance aux groupes avant de débloquer l’<a class="text-link" href="/about/stripe-csv-subscription">export CSV</a> ou les outils du <a class="text-link" href="/about/admin-dashboard-features">tableau de bord d’administration</a>, plutôt que d’éparpiller des listes d’e-mails autorisés dans le code.`,
+      html: `Les utilisateurs appartiennent à un ou plusieurs groupes enregistrés dans la base Postgres : en général les utilisateurs inscrits par défaut, les membres payants avec accès CSV et les administrateurs qui traitent les messages de contact. Les routes serveur vérifient l’appartenance aux groupes avant de débloquer l’<a class="text-link" href="/about/stripe-csv-subscription">export CSV</a> ou les outils du <a class="text-link" href="/about/admin-dashboard-features">tableau de bord d’administration</a>, plutôt que d’éparpiller des listes d’e-mails autorisés dans le code.`,
     },
     {
       alt: `Compte utilisateur relié aux groupes membre et administrateur, avec des indicateurs de fonctionnalités`,
-      caption: `Les lignes de groupe dans la base Neon Postgres déterminent l’export CSV, les fonctions de facturation et l’accès aux routes d’administration.`,
+      caption: `Les lignes de groupe dans la base Postgres déterminent l’export CSV, les fonctions de facturation et l’accès aux routes d’administration.`,
     },
     { text: `Groupes courants` },
     {

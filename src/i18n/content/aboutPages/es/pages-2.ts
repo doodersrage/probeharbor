@@ -101,7 +101,7 @@ export default {
     description:
       "Sigue una lectura desde el cable de la sonda pasando por los feeds JSON y el almacenamiento hasta el panel de historial con sesión iniciada.",
     summary:
-      "Hardware, relay, consulta del sitio web, almacenamiento en Postgres (Neon) y exportación CSV en un solo flujo.",
+      "Hardware, relay, consulta del sitio web, almacenamiento en Postgres y exportación CSV en un solo flujo.",
   },
   "debugging-stale-readings": {
     title: "Depurar lecturas desactualizadas",

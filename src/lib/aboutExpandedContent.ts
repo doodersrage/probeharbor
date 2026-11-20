@@ -947,7 +947,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   "history-inserts": [
     {
       type: "p",
-      html: "Historical charts depend on rows stored in Postgres (Neon), not on the browser remembering prior values. The Worker writes them: push devices post readings to the ingest API, and server code polls pull feeds on a schedule. Each row is tied to a household and a sensor.",
+      html: "Historical charts depend on rows stored in Postgres, not on the browser remembering prior values. The Worker writes them: push devices post readings to the ingest API, and server code polls pull feeds on a schedule. Each row is tied to a household and a sensor.",
     },
     { type: "h2", text: "Insert model" },
     {
@@ -1907,7 +1907,7 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
   "hosting-cost-comparison": [
     {
       type: "p",
-      html: 'Total cost of ownership includes domain, hosting, Stripe fees, Neon database plan, electricity for the Arduino stack, and optional VPS for Python relays. Comparing <a class="text-link" href="/about/comparing-full-stack-options">full-stack options</a> without dollars hides why this repo chose Astro on Cloudflare with residential upstream JSON.',
+      html: 'Total cost of ownership includes domain, hosting, Stripe fees, a Postgres database plan, electricity for the Arduino stack, and optional VPS for Python relays. Comparing <a class="text-link" href="/about/comparing-full-stack-options">full-stack options</a> without dollars hides why this repo chose Astro on Cloudflare with residential upstream JSON.',
     },
     {
       type: "figure",
@@ -1916,12 +1916,12 @@ export const expandedAboutContent: Record<string, AboutContentBlock[]> = {
       caption:
         "Hobby monitoring costs split across edge hosting, database tier, and home relay power.",
     },
-    { type: "h2", text: "Cloudflare + Neon path" },
+    { type: "h2", text: "Cloudflare + Postgres path" },
     {
       type: "ul",
       items: [
         "**Workers/Pages**, often free tier for modest traffic.",
-        "**Neon Postgres**: a small plan covers modest history; watch row growth.",
+        "**Hosted Postgres**: a small plan covers modest history; watch row growth.",
         "**Home relay**: existing PC or Pi power only.",
       ],
     },

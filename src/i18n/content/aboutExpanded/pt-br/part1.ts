@@ -195,7 +195,7 @@ export default {
 
   "history-dashboard-browsing": [
     {
-      html: "As leituras ao vivo respondem “como está agora?”. O histórico responde “quão ruim foi a semana passada?”. O dashboard para usuários conectados mostra em gráficos as linhas armazenadas no banco de dados Postgres (Neon), para que você vá das últimas horas a tendências de vários meses sem consultar a sonda de novo a cada carregamento de página.",
+      html: "As leituras ao vivo respondem “como está agora?”. O histórico responde “quão ruim foi a semana passada?”. O dashboard para usuários conectados mostra em gráficos as linhas armazenadas no banco de dados Postgres, para que você vá das últimas horas a tendências de vários meses sem consultar a sonda de novo a cada carregamento de página.",
     },
     { text: "O que é armazenado" },
     {

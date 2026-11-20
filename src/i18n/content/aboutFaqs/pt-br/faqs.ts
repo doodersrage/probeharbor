@@ -524,7 +524,7 @@ export default {
     {
       question: "Qual stack o ProbeHarbor usa?",
       answer:
-        "Astro SSR no Cloudflare Workers, Neon Postgres para os dados, Better Auth para o login e ingestão das sondas via HTTPS. As alternativas (Next, Express) são comparadas nesta página.",
+        "Astro SSR no Cloudflare Workers, Postgres via Cloudflare Hyperdrive para os dados, Better Auth para o login e ingestão das sondas via HTTPS. As alternativas (Next, Express) são comparadas nesta página.",
     },
     {
       question: "Devo reconstruir o ProbeHarbor por conta própria?",

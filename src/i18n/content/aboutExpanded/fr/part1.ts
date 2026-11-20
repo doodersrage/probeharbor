@@ -195,7 +195,7 @@ export default {
 
   "history-dashboard-browsing": [
     {
-      html: `Les relevés en direct répondent à « Où en est-on maintenant ? ». L’historique répond à « À quel point la semaine dernière a-t-elle été mauvaise ? ». Le tableau de bord, une fois connecté, affiche les lignes enregistrées dans la base Neon Postgres pour que vous puissiez passer des dernières heures aux tendances sur plusieurs mois sans réinterroger la sonde à chaque chargement de page.`,
+      html: `Les relevés en direct répondent à « Où en est-on maintenant ? ». L’historique répond à « À quel point la semaine dernière a-t-elle été mauvaise ? ». Le tableau de bord, une fois connecté, affiche les lignes enregistrées dans la base Postgres pour que vous puissiez passer des dernières heures aux tendances sur plusieurs mois sans réinterroger la sonde à chaque chargement de page.`,
     },
     { text: `Ce qui est enregistré` },
     {

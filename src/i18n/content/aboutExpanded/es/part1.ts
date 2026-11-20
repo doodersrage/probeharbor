@@ -195,7 +195,7 @@ export default {
 
   "history-dashboard-browsing": [
     {
-      html: "Las lecturas en vivo responden a “¿cómo está ahora?”. El historial responde a “¿qué tan mal fue la semana pasada?”. El panel con sesión iniciada grafica las filas guardadas en la base de datos Postgres (Neon) para que puedas pasar de las últimas horas a tendencias de varios meses sin volver a consultar la sonda en cada carga de página.",
+      html: "Las lecturas en vivo responden a “¿cómo está ahora?”. El historial responde a “¿qué tan mal fue la semana pasada?”. El panel con sesión iniciada grafica las filas guardadas en la base de datos Postgres para que puedas pasar de las últimas horas a tendencias de varios meses sin volver a consultar la sonda en cada carga de página.",
     },
     { text: "Qué se guarda" },
     {

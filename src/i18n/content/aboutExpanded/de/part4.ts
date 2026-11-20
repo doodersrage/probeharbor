@@ -57,7 +57,7 @@ export default {
 
   "group-membership-model": [
     {
-      html: 'Nutzer gehören zu einer oder mehreren Gruppen, die in der Datenbank (Neon Postgres) gespeichert sind: typischerweise registrierte Standardnutzer, zahlende Mitglieder mit CSV-Zugang und Admins, die Kontaktanfragen prüfen. Serverrouten prüfen die Gruppenzugehörigkeit, bevor sie den <a class="text-link" href="/about/stripe-csv-subscription">CSV-Export</a> oder Werkzeuge des <a class="text-link" href="/about/admin-dashboard-features">Admin-Dashboards</a> freischalten, statt E-Mail-Freigabelisten im Code zu verstreuen.',
+      html: 'Nutzer gehören zu einer oder mehreren Gruppen, die in der Datenbank (Postgres) gespeichert sind: typischerweise registrierte Standardnutzer, zahlende Mitglieder mit CSV-Zugang und Admins, die Kontaktanfragen prüfen. Serverrouten prüfen die Gruppenzugehörigkeit, bevor sie den <a class="text-link" href="/about/stripe-csv-subscription">CSV-Export</a> oder Werkzeuge des <a class="text-link" href="/about/admin-dashboard-features">Admin-Dashboards</a> freischalten, statt E-Mail-Freigabelisten im Code zu verstreuen.',
     },
     {
       alt: "Nutzerkonto, verbunden mit Mitglieder- und Admin-Gruppenknoten samt Feature-Flags",
