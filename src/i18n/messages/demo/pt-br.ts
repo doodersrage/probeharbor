@@ -8,7 +8,7 @@ import type { DemoMessages } from "./en";
 const ptBr: DemoMessages = {
   title: "Demo de sondas ao vivo",
   description:
-    "Experimente o ProbeHarbor sem conta: um simulador interativo de sondas, uma oficina de demonstração simulada movida pelo clima real da sua região e a mesma configuração de alertas de congelamento e inundação que o seu hardware vai usar.",
+    "Experimente o ProbeHarbor sem conta: simulador de sondas, oficina de demonstração com o clima real da sua região e os mesmos alertas de congelamento.",
   ogImageAlt: "Curvas de temperatura ao vivo das sondas do ProbeHarbor, sem precisar de conta",
   breadcrumbHome: "Início",
   breadcrumbDemo: "Demo ao vivo",

@@ -133,7 +133,7 @@ export default {
   "group-membership-model": {
     title: "Modelo de pertenencia a grupos",
     description:
-      "Cómo los grupos default, member y admin guardados en Postgres controlan el CSV, las herramientas de operador y las funciones del plan sin fijar emails en el código.",
+      "Cómo los grupos default, member y admin en Postgres controlan el CSV, las herramientas de operador y las funciones del plan sin emails en el código.",
     summary:
       "Los grupos codifican los roles de suscripción y de operador sin escribir correos electrónicos en el código fuente.",
   },

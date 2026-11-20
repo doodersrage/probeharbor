@@ -8,7 +8,7 @@ import type { DemoMessages } from "./en";
 const de: DemoMessages = {
   title: "Live-Fühler-Demo",
   description:
-    "Teste ProbeHarbor ohne Konto: interaktiver Fühlersimulator, eine simulierte Demo-Werkstatt, angetrieben vom echten Wetter vor Ort, und derselbe Frost- und Wasseralarm-Aufbau, den deine Hardware nutzt.",
+    "Teste ProbeHarbor ohne Konto: Fühlersimulator, Demo-Werkstatt mit echtem Wetter vor Ort und derselbe Frost- und Wasseralarm wie mit deiner Hardware.",
   ogImageAlt: "Live-Temperaturkurven von ProbeHarbor-Fühlern, ohne Konto",
   breadcrumbHome: "Startseite",
   breadcrumbDemo: "Live-Demo",

@@ -8,7 +8,7 @@ import type { DemoMessages } from "./en";
 const fr: DemoMessages = {
   title: "Démo des sondes en direct",
   description:
-    "Essayez ProbeHarbor sans compte : un simulateur de sondes interactif, un atelier de démonstration simulé piloté par la météo locale réelle, et la même configuration d’alertes gel et inondation que votre matériel utilisera.",
+    "Essayez ProbeHarbor sans compte : simulateur de sondes, atelier de démo piloté par la météo locale réelle et les mêmes alertes gel que votre matériel.",
   ogImageAlt: "Courbes de température en direct des sondes ProbeHarbor, sans compte",
   breadcrumbHome: "Accueil",
   breadcrumbDemo: "Démo en direct",

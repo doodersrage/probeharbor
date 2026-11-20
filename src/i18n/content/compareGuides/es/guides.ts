@@ -438,7 +438,7 @@ export default {
     seoTitle: "Alternativa a YoLink para alertas de tuberías congeladas",
     headline: "ProbeHarbor vs sensores de temperatura YoLink",
     description:
-      "YoLink vs ProbeHarbor: un kit con hub de 59,99 US$, sensores a pilas terminados y SMS, o sondas caseras sobre la tubería con software de código fuente disponible.",
+      "YoLink vs ProbeHarbor: kit con hub de 59,99 US$, sensores a pilas y SMS, o sondas caseras sobre la tubería con software de código fuente disponible.",
     summary:
       "YoLink es la opción más sencilla y a menudo más barata en sensores terminados: un hub y dos sensores a pilas cuestan 59,99 US$ y avisan por push, correo y SMS. ProbeHarbor encaja si quieres una sonda pegada a la tubería, sin hub, con tu propio hardware o con las lecturas en un sistema abierto.",
     lede: "YoLink vende un hub con dos sensores de temperatura y humedad a pilas por 59,99 US$. Los sensores funcionan de −30 °C a 60 °C (−22 °F a 140 °F), duran dos años o más con un par de pilas y envían alertas por push, correo y SMS. Para la mayoría de quienes quieren un producto terminado en un garaje frío, es una opción sólida. ProbeHarbor encaja mejor si quieres una sonda impermeable directamente sobre la tubería, sensores de fuga y alertas de helada en un mismo sitio, sin hub propietario, o software que puedas leer y alojar tú mismo: un ESP32 y una sonda cuestan unos 25 US$, las alertas por correo y chat son gratis y los SMS están en Pro.",

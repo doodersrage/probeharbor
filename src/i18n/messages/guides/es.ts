@@ -8,7 +8,7 @@ import type { GuidesMessages } from "./en";
 const es: GuidesMessages = {
   title: "Guías",
   description:
-    "Guías de ProbeHarbor por tarea: hardware, alertas de congelación e inundación/fugas, compartir con el hogar y la API HTTP, más todos los artículos en una biblioteca.",
+    "Guías de ProbeHarbor por tarea: hardware, alertas de helada y fugas, compartir con el hogar y la API HTTP, y todos los artículos en una biblioteca.",
   breadcrumbHome: "Inicio",
   breadcrumbPage: "Guías",
   kicker: "Guías",

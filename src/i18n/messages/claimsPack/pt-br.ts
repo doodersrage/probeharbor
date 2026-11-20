@@ -11,7 +11,7 @@ import type { ClaimsPackMessages } from "./en";
 const ptBr: ClaimsPackMessages = {
   title: "Pacote de provas para sinistros e seguros",
   description:
-    "Transforme o histórico de congelamento e vazamentos em um pacote verificável para sinistros: exposição ao frio, tabelas de dispositivos e linha do tempo de alertas.",
+    "Transforme o histórico de congelamento e vazamentos em um pacote verificável para sinistros: exposição ao frio, tabelas de dispositivos e alertas.",
   breadcrumbHome: "Início",
   breadcrumbPage: "Pacote para sinistros",
   disclaimer:

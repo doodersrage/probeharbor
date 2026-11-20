@@ -8,7 +8,7 @@ const fr: AboutMessages = {
   layoutTitle: "À propos",
   title: "À propos de ProbeHarbor",
   description:
-    "Guides sur les sondes de température, les alertes gel et inondation, le firmware Arduino, l’ingestion ESP, le partage au foyer et la pile technique de ProbeHarbor.",
+    "Guides ProbeHarbor : sondes de température, alertes gel et inondation, firmware Arduino, ingestion ESP, partage au foyer et pile technique.",
   breadcrumbHome: "Accueil",
   breadcrumbAbout: "À propos",
   kicker: "À propos",

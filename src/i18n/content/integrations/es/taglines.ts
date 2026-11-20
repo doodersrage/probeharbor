@@ -8,7 +8,7 @@ export default {
   automationTagline:
     "Recibe los webhooks de alertas de Pro en IFTTT o n8n, registra heladas en Google Sheets o Notion y pospón alertas desde otros flujos.",
   influxTagline:
-    "Recoge las métricas Prometheus de Pro en InfluxDB, VictoriaMetrics o cualquier salida de Telegraf, con el mismo /api/v1/metrics que Grafana.",
+    "Métricas Prometheus de Pro en InfluxDB, VictoriaMetrics o cualquier salida de Telegraf, con el mismo /api/v1/metrics que Grafana.",
   nodeRedTagline:
     "Importa un flujo listo para usar que replica topics de Mosquitto en ProbeHarbor por HTTPS; el broker sigue en local.",
   smartThingsTagline:

@@ -7,7 +7,7 @@
 const en = {
   title: "Live probe demo",
   description:
-    "Try ProbeHarbor without an account: an interactive probe simulator, a simulated demo shop driven by real local weather, and the freeze/flood alert setup your hardware will use.",
+    "Try ProbeHarbor without an account: a probe simulator, a demo shop driven by real local weather, and the same freeze/flood alerts your hardware uses.",
   ogImageAlt: "ProbeHarbor live probe temperature curves, no account required",
   breadcrumbHome: "Home",
   breadcrumbDemo: "Live demo",

@@ -130,7 +130,7 @@ export default {
   "group-membership-model": {
     title: "Das Modell der Gruppenmitgliedschaft",
     description:
-      "Wie die in der Datenbank gespeicherten Gruppen default, member und admin CSV-Export, Betreiberwerkzeuge und Tarif-Features steuern, ohne fest codierte E-Mail-Adressen.",
+      "Wie die Gruppen default, member und admin in der Datenbank CSV-Export, Betreiberwerkzeuge und Tarif-Features steuern – ohne fest codierte E-Mail-Adressen.",
     summary:
       "Gruppen bilden Abo- und Betreiberrollen ab, ohne E-Mail-Adressen fest im Quellcode zu hinterlegen.",
   },

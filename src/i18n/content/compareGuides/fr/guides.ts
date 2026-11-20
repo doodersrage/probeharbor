@@ -437,7 +437,7 @@ export default {
     seoTitle: "Alternative à YoLink pour les alertes de gel des canalisations",
     headline: "ProbeHarbor vs capteurs de température YoLink",
     description:
-      "YoLink vs ProbeHarbor : un kit hub à 59,99 $ US avec capteurs sur pile et SMS, ou des sondes maison sur la canalisation avec un logiciel au code source consultable.",
+      "YoLink vs ProbeHarbor : kit hub à 59,99 $ US, capteurs sur pile et SMS, ou sondes maison sur la canalisation et logiciel au code source consultable.",
     summary:
       "YoLink est le choix le plus simple, et souvent le moins cher, en capteurs prêts à l’emploi : un hub et deux capteurs sur pile coûtent 59,99 $ US et alertent par push, e-mail et SMS. ProbeHarbor convient si vous voulez une sonde scotchée sur le tuyau, pas de hub, votre propre matériel ou des relevés dans un système ouvert.",
     lede: "YoLink vend un hub avec deux capteurs de température et d’humidité sur pile pour 59,99 $ US. Les capteurs sont prévus pour −30 °C à 60 °C (−22 °F à 140 °F), tiennent deux ans ou plus avec une paire de piles et envoient des alertes push, e-mail et SMS. Pour la plupart des gens qui veulent un produit fini dans un garage froid, c’est une option solide. ProbeHarbor convient mieux si vous voulez une sonde étanche directement sur la canalisation, les contacts de fuite et les alertes gel au même endroit, aucun hub propriétaire, ou un logiciel que vous pouvez lire et auto-héberger : un ESP32 et une sonde coûtent environ 25 $ US, les alertes par e-mail et messagerie sont gratuites, et les SMS sont inclus dans Pro.",

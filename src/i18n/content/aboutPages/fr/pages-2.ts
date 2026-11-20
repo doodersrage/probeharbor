@@ -133,7 +133,7 @@ export default {
   "group-membership-model": {
     title: "Le modèle d’appartenance aux groupes",
     description:
-      "Comment les groupes default, member et admin, enregistrés dans Neon Postgres, régissent l’export CSV, les outils d’opérateur et les fonctions des offres, sans e-mails codés en dur.",
+      "Comment les groupes default, member et admin, stockés dans Postgres, régissent l’export CSV, les outils d’opérateur et les offres, sans e-mail codé en dur.",
     summary:
       "Les groupes portent les rôles d’abonnement et d’opérateur sans e-mails écrits en dur dans le code source.",
   },

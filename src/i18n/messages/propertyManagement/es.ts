@@ -9,7 +9,7 @@ import type { PropertyManagementMessages } from "./en";
 const es: PropertyManagementMessages = {
   title: "Monitoreo de carteras de propiedades",
   description:
-    "Panel de riesgo de congelación para todas tus propiedades, paquetes de reclamación y accesos para administradores, pensado para arrendadores y alquileres vacacionales.",
+    "Riesgo de congelación de todas tus propiedades en un panel, paquetes de reclamación y acceso de administrador para arrendadores y alquileres vacacionales.",
   breadcrumbHome: "Inicio",
   breadcrumbPage: "Administración de propiedades",
   kicker: "Para carteras",

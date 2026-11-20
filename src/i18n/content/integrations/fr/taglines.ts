@@ -6,7 +6,7 @@ export default {
   matterTagline:
     "Plugin Matterbridge qui reflète un lien de partage ProbeHarbor dans Apple Home, Google Home et Alexa — non certifié CSA, ce n’est pas une sonde.",
   automationTagline:
-    "Recevez les webhooks d’alerte Pro dans IFTTT ou n8n, consignez le gel dans Google Sheets ou Notion et mettez en pause depuis d’autres flows.",
+    "Webhooks d’alerte Pro dans IFTTT ou n8n, journal du gel dans Google Sheets ou Notion, et pause des alertes depuis d’autres flows.",
   influxTagline:
     "Collectez les métriques Prometheus Pro dans InfluxDB, VictoriaMetrics ou toute sortie Telegraf — même contrat /api/v1/metrics que Grafana.",
   nodeRedTagline:

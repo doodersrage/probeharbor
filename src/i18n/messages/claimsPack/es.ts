@@ -11,7 +11,7 @@ import type { ClaimsPackMessages } from "./en";
 const es: ClaimsPackMessages = {
   title: "Paquete de pruebas para reclamaciones y seguros",
   description:
-    "Convierte el historial de heladas y fugas en un paquete para reclamaciones verificable: exposición a la congelación, tablas de dispositivos y cronología de alertas.",
+    "Convierte el historial de heladas y fugas en un paquete verificable para reclamaciones: exposición al frío, tablas de dispositivos y cronología de alertas.",
   breadcrumbHome: "Inicio",
   breadcrumbPage: "Paquete para reclamaciones",
   disclaimer:

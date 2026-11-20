@@ -11,7 +11,7 @@ import type { ClaimsPackMessages } from "./en";
 const fr: ClaimsPackMessages = {
   title: "Dossier de preuves sinistre et assurance",
   description:
-    "Transformez l’historique de gel et de fuites en dossier de sinistre vérifiable : exposition au gel, tableaux d’appareils et chronologie des alertes pour l’assureur.",
+    "Transformez l’historique de gel et de fuites en dossier de sinistre vérifiable : exposition au gel, tableaux d’appareils et chronologie des alertes.",
   breadcrumbHome: "Accueil",
   breadcrumbPage: "Dossier de sinistre",
   disclaimer:
