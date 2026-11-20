@@ -31,6 +31,19 @@ describe("schemaMarkup", () => {
     expect(article.dateModified).toBe(DEFAULT_ARTICLE_MODIFIED);
   });
 
+  it("leaves Article dates out when asked", () => {
+    const article = getArticleSchema({
+      siteUrl: "https://probeharbor.dev",
+      pageUrl: "https://probeharbor.dev/compare/govee",
+      headline: "ProbeHarbor vs Govee",
+      description: "Compare",
+      omitDates: true,
+    });
+    expect(article["@type"]).toBe("Article");
+    expect(article).not.toHaveProperty("datePublished");
+    expect(article).not.toHaveProperty("dateModified");
+  });
+
   it("builds HowTo schema with ordered steps", () => {
     const howTo = getHowToSchema({
       name: "Build a freeze probe",

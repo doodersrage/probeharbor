@@ -147,8 +147,10 @@ export function getArticleSchema(options: {
   datePublished?: string;
   dateModified?: string;
   articleSection?: string;
+  /** Leave dates out when the page has no real ones (instead of the defaults above). */
+  omitDates?: boolean;
 }) {
-  return {
+  const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: options.headline,
@@ -176,6 +178,11 @@ export function getArticleSchema(options: {
       },
     },
   };
+  if (options.omitDates) {
+    delete schema.datePublished;
+    delete schema.dateModified;
+  }
+  return schema;
 }
 
 export function getBreadcrumbSchema(siteUrl: string, items: Array<{ name: string; path: string }>) {

@@ -4,6 +4,7 @@ import PageHeader from "./PageHeader.astro";
 import AboutCcFigure from "./AboutCcFigure.astro";
 import FaqSection from "./FaqSection.astro";
 import {
+  getArticleSchema,
   getBreadcrumbSchema,
   getFaqPageSchema,
   resolvePageUrl,
@@ -30,6 +31,16 @@ const relatedAnswers = getLocalizedAnswersRelatedTo(guide.path, locale, [
 const siteUrl = resolveSiteUrl(Astro.site);
 const pageUrl = resolvePageUrl(siteUrl, guide.path);
 const schema = [
+  // No dates: the guides only record a month for when competitor facts were
+  // checked (and not on every guide), so any exact date here would be invented.
+  getArticleSchema({
+    siteUrl,
+    pageUrl,
+    headline: guide.headline,
+    description: guide.description,
+    articleSection: t.breadcrumbCompare,
+    omitDates: true,
+  }),
   getBreadcrumbSchema(siteUrl, [
     { name: t.breadcrumbHome, path: "/" },
     { name: t.breadcrumbCompare, path: "/compare" },
