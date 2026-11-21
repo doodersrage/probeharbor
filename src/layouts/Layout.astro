@@ -28,8 +28,8 @@ import {
   OG_IMAGE_WIDTH,
   resolveOgImagePath,
 } from "../lib/ogMeta";
-import { DEFAULT_LOCALE, fmt, getLocale, LOCALE_META, LOCALES, localizePath } from "../i18n";
-import { getAlternatePaths, hasIndexedTranslations, isLocalizablePath, isMarketingPath } from "../i18n/routes";
+import { fmt, getLocale, LOCALE_META, LOCALES, localizePath } from "../i18n";
+import { getAlternatePaths, isLocalizablePath } from "../i18n/routes";
 import { layoutMessages } from "../i18n/messages/layout";
 import { brandMessages } from "../i18n/messages/brand";
 import { resolveLocalizedOgImageAlt } from "../i18n/messages/ogAlt";
@@ -103,10 +103,6 @@ const currentPath = Astro.url.pathname;
 const hasLocaleUrls = isLocalizablePath(currentPath);
 const pageUrl = resolvePageUrl(siteUrl, hasLocaleUrls ? localizePath(currentPath, locale) : currentPath);
 const alternates = getAlternatePaths(currentPath);
-// Translated marketing pages outside the indexed core are for visitors only.
-const unindexedTranslation =
-  locale !== DEFAULT_LOCALE && isMarketingPath(currentPath) && !hasIndexedTranslations(currentPath);
-const robotsNoindex = noindex || (unindexedTranslation ? "follow" : false);
 const languageLinks = hasLocaleUrls
   ? LOCALES.map((l) => ({ locale: l, href: localizePath(currentPath, l), label: LOCALE_META[l].label }))
   : LOCALES.map((l) => ({ locale: l, href: localizePath("/", l), label: LOCALE_META[l].label }));
@@ -179,7 +175,7 @@ const registerServiceWorker =
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="description" content={metaDescription} />
-		{robotsNoindex && <meta name="robots" content={robotsNoindex === "follow" ? "noindex, follow" : "noindex, nofollow"} />}
+		{noindex && <meta name="robots" content={noindex === "follow" ? "noindex, follow" : "noindex, nofollow"} />}
 		{referrerPolicy && <meta name="referrer" content={referrerPolicy} />}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
@@ -187,10 +183,10 @@ const registerServiceWorker =
 		<link rel="manifest" href="/manifest.webmanifest" />
 		<meta name="theme-color" content={resolvedTheme === "light" ? "#f3f8fb" : "#07111a"} />
 		<link rel="canonical" href={pageUrl} />
-		{!robotsNoindex && alternates.map((alt) => (
+		{!noindex && alternates.map((alt) => (
 			<link rel="alternate" hreflang={LOCALE_META[alt.locale].hreflang} href={resolvePageUrl(siteUrl, alt.path)} />
 		))}
-		{!robotsNoindex && alternates.length > 0 && (
+		{!noindex && alternates.length > 0 && (
 			<link rel="alternate" hreflang="x-default" href={resolvePageUrl(siteUrl, currentPath)} />
 		)}
 		<meta name="generator" content={Astro.generator} />
