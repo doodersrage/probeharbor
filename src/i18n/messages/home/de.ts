@@ -11,7 +11,7 @@ const de: HomeMessages = {
     "ProbeHarbor Live-Telemetrie: Sensorkurven mit Luftfeuchte, Taupunkt, Frostalarmen und Wassermeldern",
   breadcrumbHome: "Start",
   brandDefinition:
-    "ProbeHarbor überwacht Temperatur- und Lecksensoren in Garagen, Werkstätten, Dachböden, Kriechkellern und Hallen – mit Live-Diagrammen, Verlauf sowie Frost-, Leck- und Hitzealarmen. Quellcode einsehbar, mit kostenlosem Tarif.",
+    "ProbeHarbor (auch Probe Harbor geschrieben) überwacht Temperatur- und Lecksensoren in Garagen, Werkstätten, Dachböden, Kriechkellern und Hallen – mit Live-Diagrammen, Verlauf sowie Frost-, Leck- und Hitzealarmen. Quellcode einsehbar, mit kostenlosem Tarif.",
   hero: {
     promise: "Wisse Bescheid, bevor deine Rohre einfrieren oder deine Garage unter Wasser steht.",
     openDashboard: "Dashboard öffnen",

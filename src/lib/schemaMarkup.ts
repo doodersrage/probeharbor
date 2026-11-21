@@ -4,6 +4,8 @@ import { resolveConfiguredSiteUrl as resolveSiteUrl, resolvePageUrl } from "./si
 export { resolveSiteUrl, resolvePageUrl };
 
 const SITE_NAME = BRAND_NAME;
+/** Other spellings people search for. The former name is left out on purpose (BRAND_SEARCH_PLAN.md). */
+const BRAND_ALTERNATE_NAMES = ["Probe Harbor"] as const;
 const DEFAULT_DESCRIPTION = BRAND_DESCRIPTION;
 
 export function getDefaultDescription(): string {
@@ -19,7 +21,7 @@ export function getOrganizationSchema(siteUrl: string) {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
-    alternateName: "ProbeHarbor temperature dashboard",
+    alternateName: [...BRAND_ALTERNATE_NAMES],
     url: siteUrl,
     logo: {
       "@type": "ImageObject",
@@ -41,6 +43,7 @@ export function getWebSiteSchema(siteUrl: string) {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
+    alternateName: [...BRAND_ALTERNATE_NAMES],
     url: siteUrl,
     description: DEFAULT_DESCRIPTION,
     inLanguage: "en-US",

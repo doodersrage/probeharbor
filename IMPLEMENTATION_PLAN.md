@@ -116,6 +116,11 @@ decision with its test and hardware evidence) is
    acquisition. Next (owner): post the outreach drafts (bb4a9f5) and re-run
    `pnpm ops:funnel --days 30` once there are new sign-ups.
 
+8. **Brand search** (2026-11-20): `probeharbor` and `probe harbor` on
+   Google do not return the site. Plan, baseline steps and owner decisions:
+   [`BRAND_SEARCH_PLAN.md`](BRAND_SEARCH_PLAN.md). Mostly the same work as
+   item 7 (post the outreach drafts), plus one small on-site increment.
+
 ### Next engineering, in order
 
 1. **Staging** (`IMPROVEMENT_PLAN.md` 2.3). Done 2026-11-14: the deploy's

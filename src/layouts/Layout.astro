@@ -60,6 +60,8 @@ interface Props {
   ogPublishedTime?: string;
   ogModifiedTime?: string;
   ogSection?: string;
+  /** Put the brand before the title ("ProbeHarbor · …"); used on the home page. */
+  brandFirst?: boolean;
 }
 
 const {
@@ -77,12 +79,17 @@ const {
   ogPublishedTime,
   ogModifiedTime,
   ogSection,
+  brandFirst = false,
 } = Astro.props;
 // Search results cut titles around 60 characters. Long question-style titles
 // keep their wording and drop the brand suffix instead of losing the end.
 const MAX_TITLE_WITH_BRAND = 62;
 const brandedTitle = title ? `${title} · ${BRAND_NAME}` : BRAND_NAME;
-const pageTitle = title && brandedTitle.length > MAX_TITLE_WITH_BRAND ? title : brandedTitle;
+const pageTitle = brandFirst && title
+  ? `${BRAND_NAME} · ${title}`
+  : title && brandedTitle.length > MAX_TITLE_WITH_BRAND
+    ? title
+    : brandedTitle;
 const locale = getLocale(Astro);
 const localeMeta = LOCALE_META[locale];
 const t = layoutMessages(locale);

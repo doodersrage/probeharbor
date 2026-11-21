@@ -39,7 +39,7 @@ export default {
     {
       question: "Hieß ProbeHarbor früher ThermalTrace?",
       answer:
-        "Ja. ThermalTrace wurde im Oktober 2026 in ProbeHarbor umbenannt, um Verwechslungen mit einem anderen, nicht verwandten Produkt zu vermeiden. Konten, Sensoren, Verlauf und Alarme wurden unverändert übernommen. Alte Links auf thermaltrace.dev leiten hierher weiter, und Geräte, die noch an Ingest-URLs auf thermaltrace.dev senden, funktionieren weiter; neue Installationen sollten aber probeharbor.dev verwenden.",
+        "Ja. ThermalTrace wurde im Oktober 2026 in ProbeHarbor (manchmal Probe Harbor geschrieben) umbenannt, um Verwechslungen mit einem anderen, nicht verwandten Produkt zu vermeiden. Konten, Sensoren, Verlauf und Alarme wurden unverändert übernommen. Alte Links auf thermaltrace.dev leiten hierher weiter, und Geräte, die noch an Ingest-URLs auf thermaltrace.dev senden, funktionieren weiter; neue Installationen sollten aber probeharbor.dev verwenden.",
     },
     {
       question: "Wo wird ProbeHarbor gehostet?",

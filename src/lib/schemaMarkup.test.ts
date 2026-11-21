@@ -6,10 +6,22 @@ import {
   getBrandDefinition,
   getHowToSchema,
   getItemListSchema,
+  getOrganizationSchema,
   getWebSiteSchema,
 } from "./schemaMarkup";
 
 describe("schemaMarkup", () => {
+  it("lists the two-word spelling as an alternate name, not the former name", () => {
+    for (const schema of [
+      getOrganizationSchema("https://probeharbor.dev"),
+      getWebSiteSchema("https://probeharbor.dev"),
+    ]) {
+      expect(schema.name).toBe("ProbeHarbor");
+      expect(schema.alternateName).toEqual(["Probe Harbor"]);
+      expect(JSON.stringify(schema)).not.toContain("ThermalTrace");
+    }
+  });
+
   it("advertises a SearchAction that targets /about?q=", () => {
     const schema = getWebSiteSchema("https://probeharbor.dev");
     const action = schema.potentialAction as {
