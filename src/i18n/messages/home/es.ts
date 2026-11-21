@@ -11,7 +11,7 @@ const es: HomeMessages = {
     "Gráfico de telemetría en vivo de ProbeHarbor: curvas de sondas con humedad, punto de rocío, alertas de congelación y contactos de inundación",
   breadcrumbHome: "Inicio",
   brandDefinition:
-    "ProbeHarbor vigila sensores de temperatura y fugas en garajes, talleres, áticos, sótanos ventilados y naves, con gráficos en vivo, historial y alertas de congelación, fugas y calor. Código fuente disponible y con plan gratuito.",
+    "ProbeHarbor (también escrito Probe Harbor) vigila sensores de temperatura y fugas en garajes, talleres, áticos, sótanos ventilados y naves, con gráficos en vivo, historial y alertas de congelación, fugas y calor. Código fuente disponible y con plan gratuito.",
   hero: {
     promise: "Entérate antes de que se congelen tus tuberías o se inunde tu garaje.",
     openDashboard: "Abrir el panel",

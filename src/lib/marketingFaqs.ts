@@ -45,7 +45,7 @@ export const marketingFaqs = {
     {
       question: "Was ProbeHarbor called ThermalTrace?",
       answer:
-        "Yes. ThermalTrace was renamed ProbeHarbor in October 2026 to avoid confusion with an unrelated product. Accounts, sensors, history, and alerts carried over unchanged. Old thermaltrace.dev links redirect here, and devices still posting to thermaltrace.dev ingest URLs keep working, though new setups should use probeharbor.dev.",
+        "Yes. ThermalTrace was renamed ProbeHarbor (sometimes written Probe Harbor) in October 2026 to avoid confusion with an unrelated product. Accounts, sensors, history, and alerts carried over unchanged. Old thermaltrace.dev links redirect here, and devices still posting to thermaltrace.dev ingest URLs keep working, though new setups should use probeharbor.dev.",
     },
     {
       question: "Where is ProbeHarbor hosted?",

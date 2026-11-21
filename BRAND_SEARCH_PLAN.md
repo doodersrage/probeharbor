@@ -151,7 +151,16 @@ outreach list before anything else.
 | Step | Status |
 |---|---|
 | 0. Baseline | Open (owner) |
-| 1. On-site changes | Open |
+| 1. On-site changes | Done 2026-11-20 except `sameAs` (see below) |
 | 2. Name page | Open (optional) |
 | 3. Off-site mentions | Open (owner) |
 | 4. Review | Open |
+
+Step 1, 2026-11-20: `alternateName: ["Probe Harbor"]` on Organization and
+WebSite; home page title is brand-first in all five languages (Layout
+`brandFirst`); the home hero line and the FAQ answer about the name carry
+the two-word spelling in all five languages. `sameAs` is unchanged: no
+Discord, Hackaday.io, forum thread or Play Store URL is confirmed live from
+this repository. Add each one when it exists. Checks: `pnpm test` (3805
+passed), `pnpm typecheck`, `pnpm lint`, `pnpm build`; titles and JSON-LD
+checked on a local dev server. Rich Results Test after deploy: not yet run.

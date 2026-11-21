@@ -11,7 +11,7 @@ const ptBr: HomeMessages = {
     "Gráfico de telemetria ao vivo do ProbeHarbor: curvas das sondas com umidade, ponto de orvalho, alertas de congelamento e contatos de alagamento",
   breadcrumbHome: "Início",
   brandDefinition:
-    "O ProbeHarbor monitora sensores de temperatura e vazamento em garagens, oficinas, sótãos, porões e galpões, com gráficos ao vivo, histórico e alertas de congelamento, vazamento e calor. Código-fonte disponível, com plano gratuito.",
+    "O ProbeHarbor (também escrito Probe Harbor) monitora sensores de temperatura e vazamento em garagens, oficinas, sótãos, porões e galpões, com gráficos ao vivo, histórico e alertas de congelamento, vazamento e calor. Código-fonte disponível, com plano gratuito.",
   hero: {
     promise: "Saiba antes que seus canos congelem ou sua garagem alague.",
     openDashboard: "Abrir o painel",

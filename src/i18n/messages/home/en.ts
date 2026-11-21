@@ -10,7 +10,7 @@ const en = {
     "ProbeHarbor live telemetry graph: probe curves with humidity, dew point, freeze alerts, and flood/wet contacts",
   breadcrumbHome: "Home",
   brandDefinition:
-    "ProbeHarbor watches temperature and leak sensors in garages, workshops, attics, crawlspaces, and shops, with live charts, history, and freeze, leak, and heat alerts. Source available, with a free plan.",
+    "ProbeHarbor (also written Probe Harbor) watches temperature and leak sensors in garages, workshops, attics, crawlspaces, and shops, with live charts, history, and freeze, leak, and heat alerts. Source available, with a free plan.",
   hero: {
     promise: "Know before your pipes freeze or your garage floods.",
     openDashboard: "Open dashboard",
